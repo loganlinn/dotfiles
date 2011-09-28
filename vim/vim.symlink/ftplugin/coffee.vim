@@ -18,11 +18,6 @@ setlocal errorformat=Error:\ In\ %f\\,\ %m\ on\ line\ %l,
                     \SyntaxError:\ In\ %f\\,\ %m,
                     \%-G%.%#
 
-" DEPRECATED: Fold by indentation, but only if enabled.
-if exists("coffee_folding")
-  setlocal foldmethod=indent
-endif
-
 " Extra options passed to CoffeeMake
 if !exists("coffee_make_options")
   let coffee_make_options = ""
@@ -37,7 +32,7 @@ endfunction
 
 " Set `makeprg` initially.
 call s:SetMakePrg()
-" Reset `makeprg` on rename.
+" Set `makeprg` on rename.
 autocmd BufFilePost,BufWritePost,FileWritePost <buffer> call s:SetMakePrg()
 
 " Reset the global variables used by CoffeeCompile.

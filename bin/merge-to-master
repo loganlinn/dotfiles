@@ -1,0 +1,6 @@
+#!/bin/bash
+branch_name="$(git name-rev --name-only HEAD)"
+
+echo "Merging $branch_name to master"
+
+git pull origin $branch_name && git checkout master && git pull origin master && git merge $branch_name && git push origin master && git checkout $branch_name

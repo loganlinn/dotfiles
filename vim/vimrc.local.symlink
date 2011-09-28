@@ -1,0 +1,32 @@
+color wombat256
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+set noexpandtab
+set rnu
+set nobackup
+set nowritebackup
+set noswapfile
+
+let NERDTreeShowHidden=1
+let Tlist_GainFocus_On_ToggleOpen=1
+let Tlist_Show_One_File=1
+nnoremap <silent> <Leader>d :TlistToggle <CR>
+
+let $JS_CMD='node'
+
+iab AlP ABCDEFGHIJKLMNOPQRSTUVWXYZ
+iab MoN January February March April May June July August September October November December
+iab MoO Jan Feb Mar Apr May Jun Jul Aug Sep Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+iab NuM 12345678901234567890123456789012345678901234567890123456789012345678901234567890 
+iab RuL ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0
+
+" Useful snippets
+imap <C-l> <C-g>g<Space>=><Space>,<Left>
+imap <C-a> array(
+
+" Create Blank Newlines and stay in Normal mode
+nnoremap <silent> zj o<Esc>
+nnoremap <silent> zk O<Esc>
+
+

@@ -1,0 +1,100 @@
+#!/usr/bin/ruby
+
+require 'rubygems'
+require 'grit'
+
+begin
+    r = Grit::Repo.new Dir.pwd
+rescue
+    puts "Did not detect git repository"
+    exit
+end
+
+def repo_descriptor
+    descrip = %x{git remote -v}.match(/^.+git@github\.com:(.+\/.+)\.git/)
+    if descrip.nil?
+        puts "Could not find github remote"
+        exit
+    end
+    descrip[1]
+end
+
+def url_base
+    "https://github.com/#{repo_descriptor}"
+end
+
+# open a url relative to current repository github URL
+#
+def gh_open(path)
+    %x{open #{url_base}#{path}}
+end
+
+command = unless ARGV[0].nil?
+              ARGV[0]
+          else
+              'open'
+          end
+
+case command
+when 'open', 'o'
+  branch = if ARGV[1].nil?
+               r.head.name
+           else
+               ARGV[1]
+           end
+  gh_open "/tree/#{branch}"
+
+when 'compare'
+    if ARGV[1].nil?
+      puts 'Missing branch to diff with'
+      exit
+    end
+
+    # optionaly provide two branches to compare
+    unless ARGV[2].nil?
+        current = ARGV[1]
+        other = ARGV[2]
+    else # otherwise compare to current branch
+        current = r.head.name
+        other = ARGV[1]
+    end
+
+    gh_open "/compare/#{other}...#{current}"
+
+when 'commits', 'c'
+    branch = if ARGV[1].nil?
+                 r.head.name
+             else
+                 ARGV[1]
+             end
+    gh_open "/commits/#{branch}"
+
+when 'commit', 'sha'
+    if ARGV[1].nil?
+        puts 'Missing commit id'
+        exit
+    end
+    commit_hash = ARGV[1]
+    gh_open "/commit/#{commit_hash}"
+
+when 'tree'
+    if ARGV[1].nil?
+        puts 'Missing tree id'
+        exit
+    end
+    tree_hash = ARGV[1]
+    gh_open "/tree/#{tree_hash}"
+
+when 'network', 'n'
+    gh_open '/network'
+
+when 'branches', 'b'
+    gh_open '/branches'
+
+when 'pulls'
+    gh_open '/pulls'
+
+else
+    puts 'Unknown command'
+
+end

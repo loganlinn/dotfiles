@@ -1,0 +1,83 @@
+#!/usr/bin/ruby
+
+require 'rubygems'
+require 'rb-fsevent'
+require 'ruby-growl'
+
+
+class SyncWatch
+	
+
+	def initialize(params)
+		@path            = params[:path]         || Dir.pwd
+		@remote_host     = params[:remote_host]  || 'localhost'
+		@remote_path     = params[:remote_path]  || Dir.pwd
+		@ignore_rules  ||= params[:ignore_rules] || [/^\.git/, /^\.svn/, /\.DS_Store/]
+
+		@rsync_excludes = gen_rsync_excludes(params[:rsync_excludes]) || '';
+
+		@fsevent = FSEvent.new
+		@fsevent.watch @path do |dirs|
+			puts "[#{Time.now.to_s}] Detected #{dirs.length} change#{'s' if dirs.length > 1}"
+			ignore = false
+			dirs.each do |dir|
+				dir.gsub!(@path, '')
+				if ignore? dir
+					ignore = true
+				else #only need 1 non-ignore to run the sync
+					ignore = false
+					break
+				end
+			end
+			if ignore
+				puts "\tOnly ignored files changed -- skipping sync"
+			else
+				run_sync
+			end
+		end
+		
+		@growl = Growl.new "127.0.0.1", "rudy-watch", ["sync complete"], nil, 'gr0wl?'
+	end
+
+	def run_sync
+		start = Time.now
+		print "\tSyncing..."
+		%x[rsync -avPz --delete #{@rsync_excludes} -e ssh #{@path} #{@remote_host}:#{@remote_path}]
+		duration = '%.2f' % (Time.now - start)
+		msg = "rsync complete (took #{duration}s)"
+		puts msg
+		@growl.notify 'sync complete', '', msg
+	end
+
+	def run
+		puts '==  Starting SyncWatch =='
+		puts 'Initial Sync:'
+		run_sync
+		@fsevent.run
+	end
+
+	def add_ignore(new_ignore)
+		@ignore_rules << new_ignore
+	end
+
+	def gen_rsync_excludes(exludes_list)
+		unless exludes_list.empty?
+			exludes_list.reduce(''){|list, excl| list += "--exclude=#{excl} "}
+		end
+	end
+
+	def ignore?(dir)
+		 @ignore_rules.reduce(false) {|v,r| break(true) if dir =~ r }
+	end
+end
+
+
+rsync_excludes = ['config/facebook-connectdemo-config.php',
+                  'v2/system/application/libraries/ObjectTypes.php',
+                  'v2/system/application/libraries/RawColumns.php']
+
+sw = SyncWatch.new  :path => '/Users/loganlinn/Sites/huddler/',
+					:remote_host => 'logan@rudy.huddler.com',
+					:remote_path => '/home/logan/www',
+					:rsync_excludes => rsync_excludes
+sw.run
