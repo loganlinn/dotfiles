@@ -1,1 +1,1 @@
-eval "$(rbenv init -)"
+eval "$($HOME/.rbenv/bin/rbenv init -)"
