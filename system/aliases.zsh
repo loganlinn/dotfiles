@@ -9,7 +9,5 @@ then
   alias la='gls -A --color'
 fi
 
-alias genctags='ctags -R --sort=yes --languages=+PHP,-JavaScript --verbose=yes --exclude=@$HOME/.ctags.exclude'
 alias sshrudy='ssh logan@rudy.huddler.com'
 alias sshnewdy='ssh logan@newdy.huddler.com'
-
