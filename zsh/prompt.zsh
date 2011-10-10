@@ -69,7 +69,7 @@ directory_name(){
 
 export PROMPT=$'\n$(whoami_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
 set_prompt () {
-  export RPROMPT="%{$fg_bold[grey]%}$(todo)%{$reset_color%}"
+  export RPROMPT="%{$fg_bold[green]%}$(todo)%{$reset_color%}"
 }
 
 precmd() {
