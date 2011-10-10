@@ -11,3 +11,4 @@ fi
 
 alias sshrudy='ssh logan@rudy.huddler.com'
 alias sshnewdy='ssh logan@newdy.huddler.com'
+alias b='bundle exec'
