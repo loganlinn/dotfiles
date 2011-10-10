@@ -29,4 +29,5 @@ imap <C-a> array(
 nnoremap <silent> zj o<Esc>
 nnoremap <silent> zk O<Esc>
 
-
+" Disable session dialog
+let g:session_autosave='no'
