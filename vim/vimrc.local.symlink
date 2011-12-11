@@ -31,3 +31,6 @@ nnoremap <silent> zk O<Esc>
 
 " Disable session dialog
 let g:session_autosave='no'
+
+" Enable filetype plugin
+filetype plugin on
