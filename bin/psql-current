@@ -1,2 +1,4 @@
 #!/bin/bash
+cd $HOME/Huddler
+
 `php ~/bin/huddler_current_community_psql.php`
