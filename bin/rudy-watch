@@ -76,9 +76,12 @@ class SyncWatch
 end
 
 
-rsync_excludes = ['config/facebook-connectdemo-config.php',
+rsync_excludes = [
+  'config/facebook-connectdemo-config.php',
   'v2/system/application/libraries/ObjectTypes.php',
-  'v2/system/application/libraries/RawColumns.php']
+  'v2/system/application/libraries/RawColumns.php',
+  'mini'
+]
 
 sw = SyncWatch.new	:path => '/Users/loganlinn/Sites/huddler/',
   :remote_host => 'logan@rudy.huddler.com',
