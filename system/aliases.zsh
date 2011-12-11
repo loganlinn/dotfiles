@@ -12,3 +12,5 @@ fi
 alias sshrudy='ssh logan@rudy.huddler.com'
 alias sshnewdy='ssh logan@newdy.huddler.com'
 alias b='bundle exec'
+alias rake='noglob rake'
+alias ackjs='ack --js -G lib --invert-file-match'
