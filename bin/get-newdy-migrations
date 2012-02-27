@@ -1,0 +1,3 @@
+#! /bin/sh
+
+rsync -avPz -e ssh logan@newdy.huddler.com:/home/logan/www/sql/ ~/Sites/huddler/sql/
