@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# vim: setf ruby
+
+if ARGV.empty?
+  File.open('/Users/loganlinn/Sites/huddler/config/config.db.php') do |f|
+    f.each do |line|
+      if line =~ /\$DATABASE\s*=\s*['"](\w+)['"]/
+        puts $1
+        break
+      end
+    end
+  end
+else
+  %x[ sed -i '' -e "s/\$DATABASE[ \t]*=.*$/\$DATABASE = '#{ARGV[0]}';/g" ~/Sites/huddler/config/config.db.php ]
+end
+
