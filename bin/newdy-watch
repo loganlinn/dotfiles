@@ -1,0 +1,8 @@
+#!/bin/zsh
+syncwatch --use-growl gr0wl\? \
+	--exclude=config/facebook-connectdemo-config.php \
+	--exclude=v2/system/application/libraries/ObjectTypes.php \
+	--exclude=v2/system/application/libraries/RawColumns.php \
+	--exclude=mini \
+	--exclude=v2/system/application/libraries/base/\* \
+	/Users/loganlinn/Sites/huddler/ logan@newdy.huddler.com:/home/logan/www
