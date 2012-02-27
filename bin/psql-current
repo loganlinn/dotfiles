@@ -1,4 +1,9 @@
-#!/bin/bash
-cd $HOME/Huddler
+#!/usr/bin/env ruby
+#
+psql_cmd = `cd ~/Huddler && php ~/bin/huddler_current_community_psql.php`
 
-`php ~/bin/huddler_current_community_psql.php`
+if ARGV.empty?
+  exec(psql_cmd)
+else
+  puts psql_cmd
+end
