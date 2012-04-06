@@ -69,7 +69,11 @@ when 'commits', 'c'
              end
     gh_open "/commits/#{branch}"
 
-when 'commit', 'sha'
+when 'commit', 'sha', 'show'
+    if command == 'show' and ARGV[1].nil?
+      ARGV[1] = %x{git rev-parse HEAD}
+    end
+
     if ARGV[1].nil?
         puts 'Missing commit id'
         exit

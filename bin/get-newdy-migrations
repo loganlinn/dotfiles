@@ -1,3 +1,8 @@
 #! /bin/sh
 
-rsync -avPz -e ssh logan@newdy.huddler.com:/home/logan/www/sql/ ~/Sites/huddler/sql/
+if [ ! -d "$PROJECTS" ]; then
+	echo "PROJECT directory not set"
+	exit
+fi
+
+rsync -avPz -e ssh logan@newdy.huddler.com:/home/logan/www/sql/ $PROJECTS/huddler/sql/
