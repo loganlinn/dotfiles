@@ -6,6 +6,12 @@ set nu
 set nobackup
 set nowritebackup
 set noswapfile
+set mouse=a
+
+" Colors
+set t_Co=256
+set background=dark
+color wombat256-logan
 
 "let Tlist_GainFocus_On_ToggleOpen=1
 "let Tlist_Show_One_File=1
@@ -28,11 +34,17 @@ nnoremap <silent> zj o<Esc>
 nnoremap <silent> zk O<Esc>
 
 " General
-map <Leader>d :e ~/Sites/huddler/common/defines.php<Enter>:vsp ~/Sites/huddler/config/config.overrides.php<Enter>:sp ~/Sites/huddler/config/config.db.php<Enter>
+map <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/config.db.php<Enter>
+map <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>
 map <Leader>dt :tabnew<Enter><Leader>d
-map <Leader>t :CtrlP<Enter>
-map <Leader>= :Align=
-map <Leader>> :Align=>
+map <Leader>= :Align=<Enter>
+map <Leader>- :Align=><Enter>
+map <Leader>w :w<Enter>
+map <Leader>] <C-w>]<C-w>H
+"map <C-[> :po<Enter>
+map <C-j> jjjjjjjjjj
+map <C-k> kkkkkkkkkk
+map <Leader>gr :Gread<Enter>
 
 """"""""""""""""""""""""
 
@@ -46,4 +58,3 @@ filetype plugin on
 autocmd Filetype ruby setlocal ts=2 sts=2 sw=2 expandtab
 autocmd Filetype shell setlocal ts=2 sts=2 sw=2 expandtab
 autocmd Filetype python setlocal ts=4 sts=4 sw=4 expandtab
-
