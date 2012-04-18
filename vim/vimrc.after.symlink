@@ -28,6 +28,7 @@ iab RuL ----+----1----+----2----+----3----+----4----+----5----+----6----+----7--
 " Useful snippets
 imap <C-l> <C-g>g<Space>=><Space>,<Left>
 imap <C-a> array(
+" map <C-l> wwwwyt-O$this->lm('<Esc>pA;<Esc>
 
 " Create Blank Newlines and stay in Normal mode
 nnoremap <silent> zj o<Esc>
@@ -39,7 +40,6 @@ map <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerContr
 map <Leader>dt :tabnew<Enter><Leader>d
 map <Leader>= :Align=<Enter>
 map <Leader>- :Align=><Enter>
-map <Leader>w :w<Enter>
 map <Leader>] <C-w>]<C-w>H
 "map <C-[> :po<Enter>
 map <C-j> jjjjjjjjjj
