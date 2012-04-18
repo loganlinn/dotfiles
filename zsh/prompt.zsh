@@ -40,8 +40,13 @@ need_push () {
   fi
 }
 
-whoami_prompt(){
-  echo "%{$fg_bold[yellow]%}`whoami`%{$reset_color%}"
+rb_prompt(){
+  if $(which rbenv &> /dev/null)
+  then
+	  echo "%{$fg_bold[yellow]%}$(rbenv version | awk '{print $1}')%{$reset_color%}"
+	else
+	  echo ""
+  fi
 }
 
 # This keeps the number of todos always available the right hand side of my
@@ -67,7 +72,7 @@ directory_name(){
   echo "%{$fg_bold[cyan]%}%1/%\/%{$reset_color%}"
 }
 
-export PROMPT=$'\n$(whoami_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
+export PROMPT=$'\n$(rb_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
 set_prompt () {
   export RPROMPT="%{$fg_bold[green]%}$(todo)%{$reset_color%}"
 }
