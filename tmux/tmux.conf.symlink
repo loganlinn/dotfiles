@@ -2,6 +2,7 @@
 set -g prefix C-f
 unbind C-b
 bind C-f send-prefix
+unbind C-s
 
 # Relax!
 set -sg escape-time 0
@@ -22,6 +23,9 @@ setw -g pane-base-index 1
 
 # Reload the config.
 bind r source-file ~/.tmux.conf \; display "Reloaded ~/.tmux.conf"
+
+# Renumber the windows
+bind R run "renum_tmux > /dev/null 2>&1"
 
 # Saner splitting.
 bind v split-window -h
@@ -46,15 +50,10 @@ bind l select-pane -R
 ## bind 9 select-pane -t 9
 
 # Pane resizing
-bind -r C-h resize-pane -L 5
-bind -r C-j resize-pane -D 5
-bind -r C-k resize-pane -U 5
-bind -r C-l resize-pane -R 5
-
-# Window movement
-# Only really makes sense if you have your parens bound to shifts like me.
-bind -r ( select-window -t :-
-bind -r ) select-window -t :+
+bind -r C-Left  resize-pane -L 5
+bind -r C-Right resize-pane -R 5
+bind -r C-Down  resize-pane -D 5
+bind -r C-Up    resize-pane -U 5
 
 # 256 colors please
 set -g default-terminal "screen-256color"
@@ -108,4 +107,9 @@ bind -t vi-copy v begin-selection
 bind -t vi-copy y copy-selection
 bind -t vi-copy Escape cancel
 bind y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
+
+# Window movement
+bind \; last-window
+bind -r ] next-window
+bind -r [ previous-window
 
