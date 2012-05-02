@@ -61,3 +61,8 @@ autocmd Filetype python setlocal ts=4 sts=4 sw=4 expandtab
 
 " vim-slime
 let g:slime_target = "tmux"
+
+" Last tab binding
+let g:lasttab = 1
+nmap <C-w>; :exe "tabn ".g:lasttab<CR>
+au TabLeave * let g:lasttab = tabpagenr()
