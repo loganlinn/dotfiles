@@ -1,7 +1,7 @@
 # GRC colorizes nifty unix tools all over the place
-if $(which grc &>/dev/null)
+if $(which -s grc)
 then
-  if $(which brew &>/dev/null)
+  if $(which -s brew)
   then
     source `brew --prefix`/etc/grc.bashrc
   fi
