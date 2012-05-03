@@ -1,5 +1,5 @@
 # rehash shims
-if $(which rbenv &> /dev/null)
+if which rbenv &>/dev/null
 then
 	rbenv rehash 2>/dev/null
 
