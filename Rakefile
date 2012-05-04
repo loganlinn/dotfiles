@@ -2,6 +2,12 @@ require 'rake'
 
 desc "Hook our dotfiles into system-standard positions."
 task :install do
+  # Update submodules
+  if File.exists?('.gitmodules')
+    `git submodule init`
+    sh 'git submodule update'
+  end
+
   linkables = Dir.glob('*/**{.symlink}')
 
   skip_all = false
