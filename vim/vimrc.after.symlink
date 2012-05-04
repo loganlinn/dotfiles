@@ -35,7 +35,7 @@ nnoremap <silent> zj o<Esc>
 nnoremap <silent> zk O<Esc>
 
 " General
-map <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/config.db.php<Enter>
+map <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>
 map <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>
 map <Leader>dt :tabnew<Enter><Leader>d
 map <Leader>= :Align=<Enter>
