@@ -13,3 +13,6 @@
 [submodule "janus/janus.symlink/delimitMate"]
 	path = janus/janus.symlink/delimitMate
 	url = https://github.com/Raimondi/delimitMate.git
+[submodule "janus/janus.symlink/vim-less"]
+	path = janus/janus.symlink/vim-less
+	url = https://github.com/groenewege/vim-less.git
