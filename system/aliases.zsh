@@ -7,6 +7,10 @@ then
   alias l="gls -lAh --color"
   alias ll="gls -l --color"
   alias la='gls -A --color'
+else
+  alias ls="ls --color"
+  alias l="ls -al --color"
+  alias ll="ls -l --color"
 fi
 
 alias sshrudy='ssh logan@rudy.huddler.com'
