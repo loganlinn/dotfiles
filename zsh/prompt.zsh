@@ -46,7 +46,7 @@ rb_prompt(){
     echo "%{$fg_bold[yellow]%}$(rbenv version | awk '{print $1}')%{$reset_color%}"
   else
     # whoami prompt
-    echo "%{$fg_bold[yellow]%}`whoami`@`hostname`%{$reset_color%}"
+    echo "%{$fg_bold[yellow]%}`whoami`@`hostname -s`%{$reset_color%}"
   fi
 }
 
