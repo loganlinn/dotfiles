@@ -6,7 +6,7 @@ if [ -d "$PROJECTS/huddler" ]; then
 		--exclude=v2/system/application/libraries/RawColumns.php \
 		--exclude=mini \
 		--exclude=v2/system/application/libraries/base/\* \
-		$PROJECTS/huddler/ logan@newdy.huddler.com:/home/logan/www
+		$PROJECTS/huddler/ logan@newdy.huddler.com:/home/logan/www_sync
 else
 	echo "huddler directory not found"
 fi
