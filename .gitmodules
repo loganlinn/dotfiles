@@ -16,3 +16,6 @@
 [submodule "janus/janus.symlink/vim-less"]
 	path = janus/janus.symlink/vim-less
 	url = https://github.com/groenewege/vim-less.git
+[submodule "janus/janus.symlink/VimClojure"]
+	path = janus/janus.symlink/VimClojure
+	url = https://github.com/vim-scripts/VimClojure.git
