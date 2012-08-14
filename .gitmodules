@@ -19,3 +19,6 @@
 [submodule "janus/janus.symlink/VimClojure"]
 	path = janus/janus.symlink/VimClojure
 	url = https://github.com/vim-scripts/VimClojure.git
+[submodule "janus/janus.symlink/vim-golang"]
+	path = janus/janus.symlink/vim-golang
+	url = git://github.com/jnwhiteh/vim-golang.git
