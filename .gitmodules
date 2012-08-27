@@ -22,3 +22,6 @@
 [submodule "janus/janus.symlink/vim-golang"]
 	path = janus/janus.symlink/vim-golang
 	url = git://github.com/jnwhiteh/vim-golang.git
+[submodule "janus/janus.symlink/vcl-vim-plugin"]
+	path = janus/janus.symlink/vcl-vim-plugin
+	url = git://github.com/pkufranky/vcl-vim-plugin.git
