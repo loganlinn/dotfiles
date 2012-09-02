@@ -1,13 +1,24 @@
 #!/usr/bin/ruby
 
+require 'pathname'
 require 'rubygems'
 require 'grit'
 
-begin
-    r = Grit::Repo.new Dir.pwd
-rescue
-    puts "Did not detect git repository"
-    exit
+# Find closest git repo
+repo_path = Pathname.new(Dir.pwd)
+r = nil
+repo_path.descend do |p|
+  begin
+    r = Grit::Repo.new(p.to_s)
+    break
+  rescue
+    # try parent dir
+  end
+end
+
+if r.nil?
+  puts "Failed to find Git repository in #{Dir.pwd}"
+  exit
 end
 
 def repo_descriptor
