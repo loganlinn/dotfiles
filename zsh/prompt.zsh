@@ -40,13 +40,16 @@ need_push () {
   fi
 }
 
+whoami_prompt(){
+    echo "%{$fg_bold[yellow]%}`whoami`@`hostname -s`%{$reset_color%}"
+}
+
 rb_prompt(){
   if which rbenv &> /dev/null
   then
     echo "%{$fg_bold[yellow]%}$(rbenv version | awk '{print $1}')%{$reset_color%}"
   else
-    # whoami prompt
-    echo "%{$fg_bold[yellow]%}`whoami`@`hostname -s`%{$reset_color%}"
+    whoami_prompt
   fi
 }
 
