@@ -41,7 +41,8 @@ need_push () {
 }
 
 whoami_prompt(){
-    echo "%{$fg_bold[yellow]%}`whoami`@`hostname -s`%{$reset_color%}"
+    # username @ hostname
+    echo "%{$fg_bold[yellow]%}%n@%m%{$reset_color%}"
 }
 
 rb_prompt(){
@@ -57,7 +58,7 @@ directory_name(){
   echo "%{$fg_bold[cyan]%}%1/%\/%{$reset_color%}"
 }
 
-export PROMPT=$'\n$(rb_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
+export PROMPT=$'\n$(whoami_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
 set_prompt () {
   export RPROMPT="%{$fg_bold[green]%}%{$reset_color%}"
 }
