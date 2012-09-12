@@ -37,7 +37,13 @@ end
 # open a url relative to current repository github URL
 #
 def gh_open(path)
-    %x{open #{url_base}#{path}}
+  url = url_base + path.chomp
+  # use open if on OSX
+  if RUBY_PLATFORM.downcase.include?("darwin")
+    %x{open #{url}}
+  else
+    puts url
+  end
 end
 
 command = unless ARGV[0].nil?
