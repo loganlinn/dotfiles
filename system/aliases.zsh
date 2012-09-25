@@ -15,6 +15,4 @@ fi
 
 alias sshrudy='ssh logan@rudy.huddler.com'
 alias sshnewdy='ssh logan@newdy.huddler.com'
-alias b='bundle exec'
-alias rake='noglob rake'
 alias genctags='ctags -R --sort=yes --verbose --languages=+PHP,-JavaScript --exclude=@$HOME/.ctags.exclude'
