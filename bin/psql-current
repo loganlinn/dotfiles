@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 #
-psql_cmd = `cd ~/Huddler && php ~/bin/huddler_current_community_psql.php`
+db_info = `cd #{ENV['PROJECTS']}/huddler && php ~/.dotfiles/bin/huddler_current_community.php`
+db_host, db_name = db_info.chomp.split("\n")
+
+psql_cmd = "psql -U postgres -h #{db_host} #{db_name}"
 
 if ARGV.empty?
   exec(psql_cmd)
