@@ -1,6 +1,6 @@
 #!/bin/zsh
 if [ -d "$PROJECTS/huddler" ]; then
-	syncwatch --use-growl gr0wl\? \
+	syncwatch \
 		--exclude=config/facebook-connectdemo-config.php \
 		--exclude=v2/system/application/libraries/ObjectTypes.php \
 		--exclude=v2/system/application/libraries/RawColumns.php \
