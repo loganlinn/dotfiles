@@ -1,3 +1,6 @@
+"--------------------------------------------------------------------------------
+" Tabs & Formatting
+"--------------------------------------------------------------------------------
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
@@ -8,17 +11,85 @@ set nowritebackup
 set noswapfile
 set mouse=a
 
+" Custom whitespace rules
+autocmd Filetype ruby setlocal ts=2 sts=2 sw=2 expandtab
+autocmd Filetype shell setlocal ts=2 sts=2 sw=2 expandtab
+autocmd Filetype python setlocal ts=4 sts=4 sw=4 expandtab
+
+"--------------------------------------------------------------------------------
 " Colors
+"--------------------------------------------------------------------------------
 set t_Co=256
 set background=dark
 color wombat256-logan
 
+"--------------------------------------------------------------------------------
+" Abbreviations
+"--------------------------------------------------------------------------------
+iab AlP ABCDEFGHIJKLMNOPQRSTUVWXYZ
+iab MoN January February March April May June July August September October November December
+iab MoO Jan Feb Mar Apr May Jun Jul Aug Sep Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+iab NuM 12345678901234567890123456789012345678901234567890123456789012345678901234567890
+iab RuL ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0
+
+iabbrev ldis ಠ_ಠ
+iabbrev lsad ಥ_ಥ
+iabbrev lhap ಥ‿ಥ
+iabbrev lmis ಠ‿ಠ
+
+"--------------------------------------------------------------------------------
+" Mappings
+"--------------------------------------------------------------------------------
+" Huddler
+noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>
+noremap <Leader>dt :tabnew<Enter><Leader>d
+noremap <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/Huddler/Controller.php<Enter>
+
+" Align
+noremap <Leader>= :Align=<Enter>
+noremap <Leader>- :Align=><Enter>
+noremap <Leader>] <c-w>]<c-w>H
+
+" Last tab binding
+let g:lasttab = 1
+nmap <c-w>; :exe "tabn ".g:lasttab<cr>
+au TabLeave * let g:lasttab = tabpagenr()
+
+" Safely alias :we to :w
+cnoreabbrev <expr> we ((getcmdtype() is# ':' && getcmdline() is# 'w')?('we'):('w'))
+
+" From https://github.com/sjl/dotfiles/blob/master/vim/vimrc
+" Fuck you, help key
+noremap  <F1> :set invfullscreen<CR>
+inoremap <F1> <ESC>:set invfullscreen<CR>a
+" Emacs bindings in command line mode
+cnoremap <c-a> <home>
+cnoremap <c-e> <end>
+" Formatting, TextMate-style
+nnoremap Q gqip
+vnoremap Q gq
+" Don't move on *
+nnoremap * *<c-o>
+" Keep search matches in the middle of the window.
+nnoremap n nzzzv
+nnoremap N Nzzzv
+" Heresy
+inoremap <c-a> <esc>I
+inoremap <c-e> <esc>A
+"--------------------------------------------------------------------------------
 " Plugin Settings
+"--------------------------------------------------------------------------------
+let $JS_CMD='node'
+
+" VimClojure
 let g:vimclojure#HighlightBuiltins = 1
 let g:vimclojure#ParenRainbow = 1
 let g:vimclojure#WantNailgun = 1
 let g:vimclojure#NailgunClient = $HOME."/vimclojure/client/ng"
 let g:syntastic_auto_loc_list = 1
+
+" CtrlP
+let g:ctrlp_switch_buffer = 0
 let g:ctrlp_user_command = {
 \ 'types': {
   \ 1: ['.git', 'cd %s && git ls-files'],
@@ -26,65 +97,20 @@ let g:ctrlp_user_command = {
   \ },
 \ 'fallback': 'find %s -type f'
 \ }
-let $JS_CMD='node'
 
-"let Tlist_GainFocus_On_ToggleOpen=1
-"let Tlist_Show_One_File=1
-"nnoremap <silent> <Leader>d :TlistToggle <CR>
+" Ack
+nnoremap <leader>a :Ack!<space>
+let g:ackprg = 'ag --nogroup --nocolor --column'
 
-" Useful replacements
-iab AlP ABCDEFGHIJKLMNOPQRSTUVWXYZ
-iab MoN January February March April May June July August September October November December
-iab MoO Jan Feb Mar Apr May Jun Jul Aug Sep Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
-iab NuM 12345678901234567890123456789012345678901234567890123456789012345678901234567890
-iab RuL ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0
-
-" Useful snippets
-imap <C-l> <C-g>g<Space>=><Space>,<Left>
-imap <C-a> array(
-" map <C-l> wwwwyt-O$this->lm('<Esc>pA;<Esc>
-
-" Create Blank Newlines and stay in Normal mode
-nnoremap <silent> zj o<Esc>
-nnoremap <silent> zk O<Esc>
-
-" General
-"" Huddler Config
-map <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>
-map <Leader>dt :tabnew<Enter><Leader>d
-"" Huddler Controllers
-map <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/Huddler/Controller.php<Enter>
-"" Align
-map <Leader>= :Align=<Enter>
-map <Leader>- :Align=><Enter>
-map <Leader>] <C-w>]<C-w>H
-map <C-j> jjjjjjjjjj
-map <C-k> kkkkkkkkkk
-map <Leader>gr :Gread<Enter>
-
-""""""""""""""""""""""""
-
+"--------------------------------------------------------------------------------
+" General Settings & Modifications
+"--------------------------------------------------------------------------------
 " Disable session dialog
 let g:session_autosave='no'
 " Enable filetype plugin
 filetype plugin on
 
-" Custom whitespace rules
-autocmd Filetype ruby setlocal ts=2 sts=2 sw=2 expandtab
-autocmd Filetype shell setlocal ts=2 sts=2 sw=2 expandtab
-autocmd Filetype python setlocal ts=4 sts=4 sw=4 expandtab
-
-" Last tab binding
-let g:lasttab = 1
-nmap <C-w>; :exe "tabn ".g:lasttab<CR>
-au TabLeave * let g:lasttab = tabpagenr()
-
-" Safely alias :we to :w
-cnoreabbrev <expr> we ((getcmdtype() is# ':' && getcmdline() is# 'w')?('we'):('w'))
-
-
-" tabline modifications
-
+" Tabline modifications
 if has('gui')
   set guioptions-=e
 endif
