@@ -86,7 +86,10 @@ let g:vimclojure#HighlightBuiltins = 1
 let g:vimclojure#ParenRainbow = 1
 let g:vimclojure#WantNailgun = 1
 let g:vimclojure#NailgunClient = $HOME."/vimclojure/client/ng"
+
+" Syntastic
 let g:syntastic_auto_loc_list = 1
+let g:syntastic_javascript_jsl_conf = "-conf ~/.jsl"
 
 " CtrlP
 let g:ctrlp_switch_buffer = 0
@@ -101,6 +104,10 @@ let g:ctrlp_user_command = {
 " Ack
 nnoremap <leader>a :Ack!<space>
 let g:ackprg = 'ag --nogroup --nocolor --column'
+
+" Tagbar
+"" Move focus to tagbar when it opens to make it usable for windows on right side
+let g:tagbar_autofocus = 1
 
 "--------------------------------------------------------------------------------
 " General Settings & Modifications
