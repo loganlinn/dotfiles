@@ -121,4 +121,3 @@
 # To add a set of files, use "+process FileName", "+process Folder\Path\*.js",
 # or "+process Folder\Path\*.htm".
 #
-+process jsl-test.js

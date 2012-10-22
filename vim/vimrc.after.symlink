@@ -89,17 +89,22 @@ let g:vimclojure#NailgunClient = $HOME."/vimclojure/client/ng"
 
 " Syntastic
 let g:syntastic_auto_loc_list = 1
-let g:syntastic_javascript_jsl_conf = "-conf ~/.jsl"
+let g:syntastic_javascript_jsl_conf = "-conf ~/.jslconf"
+let g:syntastic_mode_map = {
+		\ 'mode': 'active',
+		\ 'active_filetypes': [],
+		\ 'passive_filetypes': ['sass', 'scss']
+	\}
 
 " CtrlP
 let g:ctrlp_switch_buffer = 0
 let g:ctrlp_user_command = {
-\ 'types': {
-  \ 1: ['.git', 'cd %s && git ls-files'],
-  \ 2: ['.hg', 'hg --cwd %s locate -I .'],
-  \ },
-\ 'fallback': 'find %s -type f'
-\ }
+		\ 'types': {
+		  \ 1: ['.git', 'cd %s && git ls-files'],
+		  \ 2: ['.hg', 'hg --cwd %s locate -I .'],
+		  \ },
+		\ 'fallback': 'find %s -type f'
+	\ }
 
 " Ack
 nnoremap <leader>a :Ack!<space>
