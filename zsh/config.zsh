@@ -57,3 +57,7 @@ bindkey ';5C' forward-word
 bindkey '^a' beginning-of-line
 bindkey '^e' end-of-line
 bindkey '^r' history-incremental-search-backward
+
+# vim mode
+bindkey -v
+bindkey '^R' history-incremental-search-backward
