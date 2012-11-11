@@ -40,6 +40,10 @@ iabbrev lmis ಠ‿ಠ
 "--------------------------------------------------------------------------------
 " Mappings
 "--------------------------------------------------------------------------------
+" Leaders
+let mapleader = ","
+let maplocalleader = "\\"
+
 " Huddler
 noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>
 noremap <Leader>dt :tabnew<Enter><Leader>d
