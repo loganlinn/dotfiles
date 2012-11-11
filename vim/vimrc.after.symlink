@@ -90,6 +90,8 @@ let g:vimclojure#HighlightBuiltins = 1
 let g:vimclojure#ParenRainbow = 1
 let g:vimclojure#WantNailgun = 1
 let g:vimclojure#NailgunClient = $HOME."/vimclojure/client/ng"
+let g:vimclojure#SetupKeyMapEvalToplevel = 0
+let g:vimclojure#SetupKeyMapRunTests = 0
 
 " Syntastic
 let g:syntastic_auto_loc_list = 1
