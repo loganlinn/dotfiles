@@ -1,20 +1,18 @@
 "--------------------------------------------------------------------------------
 " Tabs & Formatting
 "--------------------------------------------------------------------------------
-set tabstop=4
-set shiftwidth=4
-set softtabstop=4
-set noexpandtab
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set expandtab
 set nu
 set nobackup
 set nowritebackup
 set noswapfile
 set mouse=a
 
-" Custom whitespace rules
-autocmd Filetype ruby setlocal ts=2 sts=2 sw=2 expandtab
-autocmd Filetype shell setlocal ts=2 sts=2 sw=2 expandtab
-autocmd Filetype python setlocal ts=4 sts=4 sw=4 expandtab
+" Huddler whitespace conventions: use tabs, 4 space width
+autocmd BufRead */huddler*/* setlocal ts=4 sts=4 sw=4 noexpandtab
 
 "--------------------------------------------------------------------------------
 " Colors
