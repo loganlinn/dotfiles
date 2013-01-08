@@ -12,10 +12,22 @@ set noswapfile
 set mouse=a
 
 " Huddler whitespace conventions: use tabs, 4 space width
-autocmd BufNewFile,BufRead */huddler/* setlocal ts=4 sts=4 sw=4 noexpandtab
+fun! SetHuddlerWhitespace()
+  "Ignore certain filetypes
+  if &ft =~ 'clojure'
+    return
+  endif
+  setlocal ts=4 sts=4 sw=4 noexpandtab
+endfun
+autocmd BufNewFile,BufRead */huddler/* call SetHuddlerWhitespace()
+
+
 
 " FileType specific
+"" Java
 autocmd FileType java setlocal expandtab
+"" Clojure
+autocmd FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided
 
 "--------------------------------------------------------------------------------
 " Colors
@@ -87,12 +99,14 @@ inoremap <c-e> <esc>A
 let $JS_CMD='node'
 
 " VimClojure
-let g:vimclojure#HighlightBuiltins = 1
-let g:vimclojure#ParenRainbow = 1
 let g:vimclojure#WantNailgun = 1
 let g:vimclojure#NailgunClient = $HOME."/vimclojure/client/ng"
+let g:vimclojure#HighlightBuiltins = 1
+let g:vimclojure#DynamicHighlighting = 1
+let g:vimclojure#ParenRainbow = 1
 let g:vimclojure#SetupKeyMapEvalToplevel = 0
 let g:vimclojure#SetupKeyMapRunTests = 0
+let vimclojure#SplitPos = "right"
 
 " Syntastic
 let g:syntastic_auto_loc_list = 1
@@ -171,3 +185,9 @@ if exists("+showtabline")
   set stal=2
   set tabline=%!MyTabLine()
 endif
+
+augroup ft_clojure
+  au!
+  " Indent top-level form.
+  au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
+augroup END
