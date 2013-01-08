@@ -25,3 +25,6 @@
 [submodule "janus/janus.symlink/vcl-vim-plugin"]
 	path = janus/janus.symlink/vcl-vim-plugin
 	url = git://github.com/pkufranky/vcl-vim-plugin.git
+[submodule "janus/janus.symlink/paredit"]
+	path = janus/janus.symlink/paredit
+	url = git://github.com/vim-scripts/paredit.vim.git
