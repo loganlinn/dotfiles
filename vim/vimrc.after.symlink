@@ -26,8 +26,17 @@ autocmd BufNewFile,BufRead */huddler/* call SetHuddlerWhitespace()
 " FileType specific
 "" Java
 autocmd FileType java setlocal expandtab
+
 "" Clojure
-autocmd FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided
+augroup ft_clojure
+  au!
+  au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided
+  au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers
+  au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers
+
+  " Indent top-level form.
+  au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
+augroup END
 
 "--------------------------------------------------------------------------------
 " Colors
@@ -108,24 +117,27 @@ let g:vimclojure#SetupKeyMapEvalToplevel = 0
 let g:vimclojure#SetupKeyMapRunTests = 0
 let vimclojure#SplitPos = "right"
 
+" Paredit
+"let g:paredit_electric_return=1
+
 " Syntastic
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_javascript_jsl_conf = "-conf ~/.jslconf"
 let g:syntastic_mode_map = {
-		\ 'mode': 'active',
-		\ 'active_filetypes': [],
-		\ 'passive_filetypes': ['sass', 'scss']
-	\}
+    \ 'mode': 'active',
+    \ 'active_filetypes': [],
+    \ 'passive_filetypes': ['sass', 'scss']
+  \}
 
 " CtrlP
 let g:ctrlp_switch_buffer = 0
 let g:ctrlp_user_command = {
-		\ 'types': {
-		  \ 1: ['.git', 'cd %s && git ls-files'],
-		  \ 2: ['.hg', 'hg --cwd %s locate -I .'],
-		  \ },
-		\ 'fallback': 'find %s -type f'
-	\ }
+    \ 'types': {
+      \ 1: ['.git', 'cd %s && git ls-files'],
+      \ 2: ['.hg', 'hg --cwd %s locate -I .'],
+      \ },
+    \ 'fallback': 'find %s -type f'
+  \ }
 
 " Ack
 nnoremap <leader>a :Ack!<space>
@@ -185,9 +197,3 @@ if exists("+showtabline")
   set stal=2
   set tabline=%!MyTabLine()
 endif
-
-augroup ft_clojure
-  au!
-  " Indent top-level form.
-  au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
-augroup END
