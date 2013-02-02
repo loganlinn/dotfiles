@@ -30,7 +30,7 @@ autocmd FileType java setlocal expandtab
 "" Clojure
 augroup ft_clojure
   au!
-  au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided
+  au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided,defroutes,defproject
   au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers
   au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers
 
