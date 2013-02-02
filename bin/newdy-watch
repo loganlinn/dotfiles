@@ -1,4 +1,10 @@
 #!/bin/zsh
+if [ -z "$1" ]; then
+  dest="logan@newdy.huddler.com:/home/logan/www_sync"
+else
+  dest=$1
+fi
+
 if [ -d "$PROJECTS/huddler" ]; then
 	syncwatch \
 		--exclude=config/facebook-connectdemo-config.php \
@@ -7,7 +13,8 @@ if [ -d "$PROJECTS/huddler" ]; then
 		--exclude=mini \
 		--exclude=v2/system/application/libraries/base/\* \
 		--exclude=xhprof \
-		$PROJECTS/huddler/ logan@newdy.huddler.com:/home/logan/www_sync
+		--exclude=build \
+		$PROJECTS/huddler/ $dest
 else
 	echo "huddler directory not found"
 fi
