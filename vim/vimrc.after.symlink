@@ -11,6 +11,10 @@ set nowritebackup
 set noswapfile
 set mouse=a
 
+" Highlight after 80 chars
+highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+match OverLength /\%81v.\+/
+
 " Huddler whitespace conventions: use tabs, 4 space width
 fun! SetHuddlerWhitespace()
   "Ignore certain filetypes
@@ -20,7 +24,6 @@ fun! SetHuddlerWhitespace()
   setlocal ts=4 sts=4 sw=4 noexpandtab
 endfun
 autocmd BufNewFile,BufRead */huddler/* call SetHuddlerWhitespace()
-
 
 
 " FileType specific
