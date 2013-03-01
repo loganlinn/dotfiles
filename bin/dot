@@ -4,6 +4,10 @@
 #
 # `dot` handles installation, updates, things like that. Run it periodically
 # to make sure you're on the latest and greatest.
+if [[ "$(uname)" != 'Darwin' ]]
+then
+  exit
+fi
 
 # Set OS X defaults
 $ZSH/osx/set-defaults.sh
