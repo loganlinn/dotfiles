@@ -4,7 +4,7 @@
 #
 # This installs some of the common dependencies needed (or at least desired)
 # using Homebrew.
-[[ "$(uname)" == 'Darwin' ]] || exit
+[[ "$PLATFORM" == "osx" ]] || exit
 
 # Check for Homebrew
 if test ! $(which brew)

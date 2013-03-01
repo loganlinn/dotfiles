@@ -1,5 +1,5 @@
 # GRC colorizes nifty unix tools all over the place
-[[ "$(uname)" == 'Darwin' ]] || exit
+[[ "$PLATFORM" == "osx" ]] || exit
 
 if $(grc &>/dev/null) && $(brew &>/dev/null)
 then
