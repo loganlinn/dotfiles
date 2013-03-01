@@ -1,4 +1,5 @@
 # gcc on lion
-[[ "$PLATFORM" == "osx" ]] || exit
-
-export CC=/usr/bin/gcc-4.2
+if [ "$(uname -s)" = 'Darwin' ]
+then
+	export CC=/usr/bin/gcc-4.2
+fi
