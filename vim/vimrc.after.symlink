@@ -35,7 +35,7 @@ augroup ft_clojure
   au!
   au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided,defroutes,defproject
   au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers
-  au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers
+  au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers,sql/update-values,sql/insert-record,sql/insert-records,sql/insert!,sql/delete-rows
 
   " Indent top-level form.
   au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
