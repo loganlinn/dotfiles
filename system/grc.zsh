@@ -1,8 +1,5 @@
 # GRC colorizes nifty unix tools all over the place
-if [[ "$(uname)" != 'Darwin' ]]
-then
-  exit
-fi
+[[ "$(uname)" == 'Darwin' ]] || exit
 
 if $(grc &>/dev/null) && $(brew &>/dev/null)
 then

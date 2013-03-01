@@ -4,11 +4,7 @@
 #
 # This installs some of the common dependencies needed (or at least desired)
 # using Homebrew.
-
-if [[ "$(uname)" != 'Darwin' ]]
-then
-  exit
-fi
+[[ "$(uname)" == 'Darwin' ]] || exit
 
 # Check for Homebrew
 if test ! $(which brew)
