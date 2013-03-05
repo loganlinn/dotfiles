@@ -36,6 +36,8 @@ fun! SetHuddlerWhitespace()
 endfun
 autocmd BufNewFile,BufRead */huddler/* call SetHuddlerWhitespace()
 
+" Disable folding
+set nofoldenable
 
 " FileType specific
 "" Java
@@ -58,6 +60,7 @@ augroup END
 ""set t_Co=256
 ""set background=dark
 """color wombat256-logan
+highlight clear SignColumn
 
 "--------------------------------------------------------------------------------
 " Abbreviations
