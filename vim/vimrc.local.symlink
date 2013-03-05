@@ -60,7 +60,7 @@ augroup END
 ""set t_Co=256
 ""set background=dark
 """color wombat256-logan
-highlight clear SignColumn
+au VimEnter * highlight clear SignColumn
 
 "--------------------------------------------------------------------------------
 " Abbreviations
