@@ -22,10 +22,6 @@ set listchars+=extends:>  " The character to show in the last column when wrap i
 set listchars+=precedes:< " The character to show in the last column when wrap is
                           " off and the line continues beyond the right of the screen
 
-" Highlight after 80 chars
-highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-match OverLength /\%81v.\+/
-
 " Huddler whitespace conventions: use tabs, 4 space width
 fun! SetHuddlerWhitespace()
   "Ignore certain filetypes
@@ -61,6 +57,10 @@ augroup END
 ""set background=dark
 """color wombat256-logan
 au VimEnter * highlight clear SignColumn
+
+" Highlight 81st column
+set textwidth=80
+set colorcolumn=+1
 
 "--------------------------------------------------------------------------------
 " Abbreviations
