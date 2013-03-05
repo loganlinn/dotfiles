@@ -1,0 +1,5 @@
+Bundle "vim-less"
+Bundle "VimClojure"
+Bundle "paredit"
+Bundle "vim-golang"
+Bundle "vcl-vim-plugin"
