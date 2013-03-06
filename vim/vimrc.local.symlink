@@ -1,4 +1,3 @@
-
 "-------------------------------------------------------------------------------
 " Tabs & Formatting
 "-------------------------------------------------------------------------------
@@ -156,6 +155,9 @@ let g:DisableAutoPHPFolding = 1
 
 " vim-indent-guides
 let g:indent_guides_enable_on_vim_startup = 0
+
+" spf13-vim
+let g:spf13_no_autochdir = 1
 
 "-------------------------------------------------------------------------------
 " General Settings & Modifications
