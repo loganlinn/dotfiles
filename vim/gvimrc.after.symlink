@@ -1,5 +1,0 @@
-color no_quarter_logan
-let g:session_autoload=1
-
-" Remove toolbar
-set guioptions-=T

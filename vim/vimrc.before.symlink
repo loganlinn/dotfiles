@@ -1,7 +1,0 @@
-" Powerline
-let g:Powerline_symbols='fancy'
-
-call janus#disable_plugin('watchtower')
-call janus#disable_plugin('gundo')
-call janus#disable_plugin('nrrwrgn')
-call janus#disable_plugin('vimwiki')

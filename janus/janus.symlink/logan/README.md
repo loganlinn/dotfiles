@@ -1,1 +1,0 @@
-Personal customizations for janus
