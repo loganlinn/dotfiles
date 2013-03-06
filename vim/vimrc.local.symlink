@@ -1,8 +1,7 @@
-let g:Powerline_symbols='fancy'
 
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 " Tabs & Formatting
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 set tabstop=2
 set shiftwidth=2
 set softtabstop=2
@@ -50,35 +49,27 @@ augroup ft_clojure
   au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
 augroup END
 
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 " Colors
-"--------------------------------------------------------------------------------
-""set t_Co=256
-""set background=dark
-"""color wombat256-logan
+"-------------------------------------------------------------------------------
+" Clear color on vim-gitgutter gutter
 au VimEnter * highlight clear SignColumn
 
 " Highlight 81st column
 set textwidth=80
 set colorcolumn=+1
 
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 " Abbreviations
-"--------------------------------------------------------------------------------
-iab AlP ABCDEFGHIJKLMNOPQRSTUVWXYZ
-iab MoN January February March April May June July August September October November December
-iab MoO Jan Feb Mar Apr May Jun Jul Aug Sep Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
-iab NuM 12345678901234567890123456789012345678901234567890123456789012345678901234567890
-iab RuL ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0
-
+"-------------------------------------------------------------------------------
 iabbrev ldis ಠ_ಠ
 iabbrev lsad ಥ_ಥ
 iabbrev lhap ಥ‿ಥ
 iabbrev lmis ಠ‿ಠ
 
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 " Mappings
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 " Leaders
 let mapleader = ","
 let maplocalleader = "\\"
@@ -88,11 +79,6 @@ noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/h
 noremap <Leader>dt :tabnew<Enter><Leader>d
 noremap <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/Huddler/Controller.php<Enter>
 
-" Align
-noremap <Leader>= :Align=<Enter>
-noremap <Leader>- :Align=><Enter>
-noremap <Leader>] <c-w>]<c-w>H
-
 " Last tab binding
 let g:lasttab = 1
 nmap <c-w>; :exe "tabn ".g:lasttab<cr>
@@ -101,28 +87,29 @@ au TabLeave * let g:lasttab = tabpagenr()
 " Safely alias :we to :w
 cnoreabbrev <expr> we ((getcmdtype() is# ':' && getcmdline() is# 'w')?('we'):('w'))
 
-" From https://github.com/sjl/dotfiles/blob/master/vim/vimrc
-" Fuck you, help key
+" From https://github.com/sjl/dotfiles/blob/master/vim/vimrc: Fuck you, help key
 noremap  <F1> :set invfullscreen<CR>
 inoremap <F1> <ESC>:set invfullscreen<CR>a
-" Emacs bindings in command line mode
-cnoremap <c-a> <home>
-cnoremap <c-e> <end>
-" Formatting, TextMate-style
-nnoremap Q gqip
-vnoremap Q gq
+
 " Don't move on *
 nnoremap * *<c-o>
+
 " Keep search matches in the middle of the window.
 nnoremap n nzzzv
 nnoremap N Nzzzv
+
 " Heresy
 inoremap <c-a> <esc>I
 inoremap <c-e> <esc>A
-"--------------------------------------------------------------------------------
+
+"-------------------------------------------------------------------------------
 " Plugin Settings
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
+" jslint
 let $JS_CMD='node'
+
+" Powerline
+let g:Powerline_symbols='fancy'
 
 " VimClojure
 let g:vimclojure#WantNailgun = 1
@@ -164,11 +151,18 @@ let g:ackprg = 'ag --nogroup --nocolor --column'
 "" Move focus to tagbar when it opens to make it usable for windows on right side
 let g:tagbar_autofocus = 1
 
-"--------------------------------------------------------------------------------
+" PIV
+let g:DisableAutoPHPFolding = 1
+
+" vim-indent-guides
+let g:indent_guides_enable_on_vim_startup = 0
+
+"-------------------------------------------------------------------------------
 " General Settings & Modifications
-"--------------------------------------------------------------------------------
+"-------------------------------------------------------------------------------
 " Disable session dialog
 let g:session_autosave='no'
+
 " Enable filetype plugin
 filetype plugin on
 
@@ -214,9 +208,3 @@ if exists("+showtabline")
   set stal=2
   set tabline=%!MyTabLine()
 endif
-
-" PIV
-let g:DisableAutoPHPFolding = 1
-
-" vim-indent-guides
-let g:indent_guides_enable_on_vim_startup = 0
