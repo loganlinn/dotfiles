@@ -150,6 +150,10 @@ let g:ackprg = 'ag --nogroup --nocolor --column'
 "" Move focus to tagbar when it opens to make it usable for windows on right side
 let g:tagbar_autofocus = 1
 
+" Tabularize
+nmap <Leader>a- :Tabularize /=><CR>
+vmap <Leader>a- :Tabularize /=><CR>
+
 " PIV
 let g:DisableAutoPHPFolding = 1
 

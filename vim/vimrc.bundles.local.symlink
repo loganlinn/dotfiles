@@ -1,6 +1,7 @@
+let g:spf13_no_autochdir = 1
+
 Bundle "vim-less"
 Bundle "VimClojure"
 Bundle "paredit.vim"
 Bundle "jnwhiteh/vim-golang"
 Bundle "smerrill/vcl-vim-plugin"
-Bundle "airblade/vim-gitgutter"
