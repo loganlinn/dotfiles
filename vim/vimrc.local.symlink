@@ -74,7 +74,7 @@ let mapleader = ","
 let maplocalleader = "\\"
 
 " Huddler
-noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>
+noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>:cd $PROJECTS/huddler<Enter>
 noremap <Leader>dt :tabnew<Enter><Leader>d
 noremap <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/Huddler/Controller.php<Enter>
 
@@ -162,6 +162,11 @@ let g:indent_guides_enable_on_vim_startup = 0
 
 " spf13-vim
 let g:spf13_no_autochdir = 1
+let g:spf13_no_neosnippet_expand = 1
+
+" neocomplcache
+let g:neocomplcache_enable_wildcard = 0
+let g:neocomplcache_enable_at_startup = 0
 
 "-------------------------------------------------------------------------------
 " General Settings & Modifications
