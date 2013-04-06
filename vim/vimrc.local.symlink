@@ -33,6 +33,9 @@ autocmd BufNewFile,BufRead */huddler/* call SetHuddlerWhitespace()
 " Disable folding
 set nofoldenable
 
+" Automatically read
+set autoread
+
 " FileType specific
 "" Java
 autocmd FileType java setlocal expandtab
@@ -104,6 +107,13 @@ inoremap <c-e> <esc>A
 "-------------------------------------------------------------------------------
 " Plugin Settings
 "-------------------------------------------------------------------------------
+" Disable neo* plugins
+UnBundle 'Shougo/neocomplcache'
+UnBundle 'Shougo/neosnippet'
+UnBundle 'mbbill/undotree'
+UnBundle 'arnaud-lb/vim-php-namespace'
+UnBundle 'spf13/PIV'
+
 " jslint
 let $JS_CMD='node'
 
@@ -161,12 +171,11 @@ let g:DisableAutoPHPFolding = 1
 let g:indent_guides_enable_on_vim_startup = 0
 
 " spf13-vim
-let g:spf13_no_autochdir = 1
 let g:spf13_no_neosnippet_expand = 1
 
-" neocomplcache
-let g:neocomplcache_enable_wildcard = 0
-let g:neocomplcache_enable_at_startup = 0
+" vim-gitgutter
+let g:gitgutter_on_bufenter = 0
+let g:gitgutter_all_on_focusgained = 0
 
 "-------------------------------------------------------------------------------
 " General Settings & Modifications
