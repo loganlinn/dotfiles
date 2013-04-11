@@ -114,6 +114,12 @@ UnBundle 'mbbill/undotree'
 UnBundle 'arnaud-lb/vim-php-namespace'
 UnBundle 'spf13/PIV'
 
+" kein/rainbow_parens.vim
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+
 " jslint
 let $JS_CMD='node'
 
