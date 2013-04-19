@@ -49,6 +49,11 @@ augroup ft_clojure
 
   " Indent top-level form.
   au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
+  "" TODO: visual bindings
+  au Filetype clojure nnoremap <localleader>ee :Eval<CR>
+  au Filetype clojure nnoremap <localleader>ef :%Eval<CR>
+  au Filetype clojure nnoremap <localleader>er :Require<CR>
+  au Filetype clojure nnoremap <localleader>eR :Require!<CR>
 augroup END
 
 "-------------------------------------------------------------------------------
