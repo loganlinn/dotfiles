@@ -1,90 +1,20 @@
-#!/usr/bin/ruby
-# SyncWatch by loganlinn
-# rsyncs filesystem changes
+#!/bin/zsh
+if [ -z "$1" ]; then
+  dest="logan@rudy.huddler.com:/home/logan/www"
+else
+  dest=$1
+fi
 
-require 'rubygems'
-require 'rb-fsevent'
-
-class SyncWatch
-  def initialize(params)
-    @path			   = params[:path]		   || Dir.pwd
-	@remote_path       = params[:remote_path]  || Dir.pwd
-    @remote_host	   = params[:remote_host]  || 'localhost'
-    @ignore_rules	 ||= params[:ignore_rules] || [/^\.git/, /^\.svn/, /\.DS_Store/]
-    @use_notifications = params[:use_notifications] || true
-    @verbose		   = params[:verbose]	   || true
-
-    require 'ruby-growl' if @use_notifications
-
-    @rsync_excludes = gen_rsync_excludes(params[:rsync_excludes]) || '';
-
-    @fsevent = FSEvent.new
-
-    ## trigger event
-    @fsevent.watch @path do |dirs|
-      puts "[#{Time.now.to_s}] Detected #{dirs.length} change#{'s' if dirs.length > 1}" if @verbose
-
-      if requires_sync? dirs
-        run_sync
-      else
-        puts "\tOnly ignored files changed -- skipping sync" if @verbose
-      end
-    end
-
-    if @use_notifications
-      @growl = Growl.new "127.0.0.1", "rudy-watch", ["sync complete"], nil, 'gr0wl?'
-    end
-  end
-
-  def requires_sync? (dirs)
-    # run through directories. sync if 1+ non-ignored files change
-    dirs.each do |dir|
-      dir.gsub!(@path, '') # normalize
-      return true unless dir_ignored? dir  #only need 1 non-ignore to run the syncd
-    end
-    false
-  end
-
-  def run_sync
-    start = Time.now
-    print "\tSyncing..." if @verbose
-    %x[rsync -avPz --delete #{@rsync_excludes} -e ssh #{@path} #{@remote_host}:#{@remote_path}]
-    duration = '%.2f' % (Time.now - start)
-    msg = "rsync complete (took #{duration}s)"
-    puts msg if @verbose
-    @growl.notify('sync complete', '', msg) if @use_notifications
-  end
-
-  def run
-    if @verbose
-      puts '==  Starting SyncWatch =='
-      puts 'Initial Sync:'
-    end
-    run_sync
-    @fsevent.run
-  end
-
-  def gen_rsync_excludes(exludes_list)
-    unless exludes_list.empty?
-      exludes_list.reduce(''){|list, excl| list += "--exclude=#{excl} "}
-    end
-  end
-
-  def dir_ignored?(dir)
-    @ignore_rules.reduce(false) {|v,r| break(true) if dir =~ r }
-  end
-end
-
-
-rsync_excludes = [
-  'config/facebook-connectdemo-config.php',
-  'v2/system/application/libraries/ObjectTypes.php',
-  'v2/system/application/libraries/RawColumns.php',
-  'mini'
-]
-
-sw = SyncWatch.new	:path => '/Users/loganlinn/Sites/huddler/',
-  :remote_host => 'logan@rudy.huddler.com',
-  :remote_path => '/home/logan/www',
-  :rsync_excludes => rsync_excludes
-sw.run
+if [ -d "$PROJECTS/huddler" ]; then
+	syncwatch \
+		--exclude=config/facebook-connectdemo-config.php \
+		--exclude=v2/system/application/libraries/ObjectTypes.php \
+		--exclude=v2/system/application/libraries/RawColumns.php \
+		--exclude=mini \
+		--exclude=v2/system/application/libraries/base/\* \
+		--exclude=xhprof \
+		--exclude=build \
+		$PROJECTS/huddler/ $dest
+else
+	echo "huddler directory not found"
+fi
