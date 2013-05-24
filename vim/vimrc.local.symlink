@@ -193,8 +193,10 @@ autocmd FileType java setlocal expandtab
 augroup ft_clojure
   au!
   au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided,defroutes,defproject
-  au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers
+  au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers,update-or-insert-values,insert-record,delete-rows,insert!
   au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers,sql/update-values,sql/insert-record,sql/insert-records,sql/insert!,sql/delete-rows
+  "" ClojureScript separate filetype?
+  au FileType clojure setlocal lispwords+=this-as
 
   " Indent top-level form.
   au FileType clojure nmap <buffer> <localleader>= mz99[(v%='z
@@ -267,6 +269,7 @@ UnBundle 'Shougo/neosnippet'
 UnBundle 'mbbill/undotree'
 UnBundle 'arnaud-lb/vim-php-namespace'
 UnBundle 'spf13/PIV'
+UnBundle 'myusuf3/numbers.vim'
 
 " kein/rainbow_parens.vim
 au VimEnter * RainbowParenthesesToggle
@@ -324,9 +327,6 @@ let g:tagbar_autofocus = 1
 nmap <Leader>a- :Tabularize /=><CR>
 vmap <Leader>a- :Tabularize /=><CR>
 
-" PIV
-let g:DisableAutoPHPFolding = 1
-
 " vim-indent-guides
 let g:indent_guides_enable_on_vim_startup = 0
 
@@ -334,8 +334,7 @@ let g:indent_guides_enable_on_vim_startup = 0
 let g:spf13_no_neosnippet_expand = 1
 
 " vim-gitgutter
-let g:gitgutter_on_bufenter = 0
-let g:gitgutter_all_on_focusgained = 0
+let g:gitgutter_eager = 0
 
 "-------------------------------------------------------------------------------
 " General Settings & Modifications
@@ -351,7 +350,7 @@ if has('gui')
   set guioptions-=e
 endif
 if exists("+showtabline")
-  function MyTabLine()
+  function! MyTabLine()
     let s = ''
     let t = tabpagenr()
     let i = 1
