@@ -20,6 +20,155 @@ set listchars+=extends:>  " The character to show in the last column when wrap i
 set listchars+=precedes:< " The character to show in the last column when wrap is
                           " off and the line continues beyond the right of the screen
 
+" Function : HuddlerTestFilePath
+" Purpose  : Return guessed path to associated unit test of current file
+" Returns  : file path
+" Author   : loganlinn <logan@loganlinn.com>
+fun! HuddlerTestFilePath()
+  return substitute(substitute(expand("%:p"), 'v2/system', 'tests/phpunit', ''), '\.php', 'Test.php', '')
+endfun
+
+" Function : FindOrCreateBuffer (PRIVATE)
+" Purpose  : searches the buffer list (:ls) for the specified filename. If
+"            found, checks the window list for the buffer. If the buffer is in
+"            an already open window, it switches to the window. If the buffer
+"            was not in a window, it switches to that buffer. If the buffer did
+"            not exist, it creates it.
+" Args     : filename (IN) -- the name of the file
+"            doSplit (IN) -- indicates whether the window should be split
+"                            ("v", "h", "n", "v!", "h!", "n!", "t", "t!") 
+"            findSimilar (IN) -- indicate weather existing buffers should be
+"                                prefered
+" Returns  : nothing
+" Author   : Michael Sharpe <feline@irendi.com>
+" Copied from "Alternate Files" plugin http://www.vim.org/scripts/script.php?script_id=31
+" TODO: Put in util file"
+function! <SID>FindOrCreateBuffer(fileName, doSplit, findSimilar)
+  " Check to see if the buffer is already open before re-opening it.
+  let FILENAME = escape(a:fileName, ' ')
+  let bufNr = -1
+  let lastBuffer = bufnr("$")
+  let i = 1
+  if (a:findSimilar)
+    while i <= lastBuffer
+      if expand("#".i.":p") == a:fileName
+        let bufNr = i
+        break
+      endif
+      let i = i + 1
+    endwhile
+
+    if (bufNr == -1)
+      let bufName = bufname(a:fileName)
+      let bufFilename = fnamemodify(a:fileName,":t")
+
+      if (bufName == "")
+        let bufName = bufname(bufFilename)
+      endif
+
+      if (bufName != "")
+        let tail = fnamemodify(bufName, ":t")
+        if (tail != bufFilename)
+          let bufName = ""
+        endif
+      endif
+      if (bufName != "")
+        let bufNr = bufnr(bufName)
+        let FILENAME = bufName
+      endif
+    endif
+  endif
+
+  let splitType = a:doSplit[0]
+  let bang = a:doSplit[1]
+  if (bufNr == -1)
+    " Buffer did not exist....create it
+    let v:errmsg=""
+    if (splitType == "h")
+      silent! execute ":split".bang." " . FILENAME
+    elseif (splitType == "v")
+      silent! execute ":vsplit".bang." " . FILENAME
+    elseif (splitType == "t")
+      silent! execute ":tab split".bang." " . FILENAME
+    else
+      silent! execute ":e".bang." " . FILENAME
+    endif
+    if (v:errmsg != "")
+      echo v:errmsg
+    endif
+  else
+
+    " Find the correct tab corresponding to the existing buffer
+    let tabNr = -1
+    " iterate tab pages
+    for i in range(tabpagenr('$'))
+      " get the list of buffers in the tab
+      let tabList =  tabpagebuflist(i + 1)
+      let idx = 0
+      " iterate each buffer in the list
+      while idx < len(tabList)
+        " if it matches the buffer we are looking for...
+        if (tabList[idx] == bufNr)
+          " ... save the number
+          let tabNr = i + 1
+          break
+        endif
+        let idx = idx + 1
+      endwhile
+      if (tabNr != -1)
+        break
+      endif
+    endfor
+    " switch the the tab containing the buffer
+    if (tabNr != -1)
+      execute "tabn ".tabNr
+    endif
+
+    " Buffer was already open......check to see if it is in a window
+    let bufWindow = bufwinnr(bufNr)
+    if (bufWindow == -1) 
+      " Buffer was not in a window so open one
+      let v:errmsg=""
+      if (splitType == "h")
+        silent! execute ":sbuffer".bang." " . FILENAME
+      elseif (splitType == "v")
+        silent! execute ":vert sbuffer " . FILENAME
+      elseif (splitType == "t")
+        silent! execute ":tab sbuffer " . FILENAME
+      else
+        silent! execute ":buffer".bang." " . FILENAME
+      endif
+      if (v:errmsg != "")
+        echo v:errmsg
+      endif
+    else
+      " Buffer is already in a window so switch to the window
+      execute bufWindow."wincmd w"
+      if (bufWindow != winnr()) 
+        " something wierd happened...open the buffer
+        let v:errmsg=""
+        if (splitType == "h")
+          silent! execute ":split".bang." " . FILENAME
+        elseif (splitType == "v")
+          silent! execute ":vsplit".bang." " . FILENAME
+        elseif (splitType == "t")
+          silent! execute ":tab split".bang." " . FILENAME
+        else
+          silent! execute ":e".bang." " . FILENAME
+        endif
+        if (v:errmsg != "")
+          echo v:errmsg
+        endif
+      endif
+    endif
+  endif
+endfunction
+
+autocmd FileType php comm! -bang A  call <SID>FindOrCreateBuffer(HuddlerTestFilePath(), "n<bang>", 1)
+autocmd FileType php comm! -bang AS call <SID>FindOrCreateBuffer(HuddlerTestFilePath(), "h<bang>", 1)
+autocmd FileType php comm! -bang AV call <SID>FindOrCreateBuffer(HuddlerTestFilePath(), "v<bang>", 1)
+autocmd FileType php comm! -bang AT call <SID>FindOrCreateBuffer(HuddlerTestFilePath(), "t<bang>", 1)
+
 " Huddler whitespace conventions: use tabs, 4 space width
 fun! SetHuddlerWhitespace()
   "Ignore certain filetypes
