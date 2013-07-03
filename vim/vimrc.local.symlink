@@ -195,6 +195,7 @@ augroup ft_clojure
   au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided,defroutes,defproject
   au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers,update-or-insert-values,insert-record,delete-rows,insert!
   au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers,sql/update-values,sql/insert-record,sql/insert-records,sql/insert!,sql/delete-rows
+  au FileType clojure setlocal lispwords+=domonad,with-monad,defmonad
   "" ClojureScript separate filetype?
   au FileType clojure setlocal lispwords+=this-as
 
@@ -205,6 +206,7 @@ augroup ft_clojure
   au Filetype clojure nnoremap <localleader>ef :%Eval<CR>
   au Filetype clojure nnoremap <localleader>er :Require<CR>
   au Filetype clojure nnoremap <localleader>eR :Require!<CR>
+  au Filetype clojure nnoremap <localleader>r :call fireplace#eval("(user/reset)")<CR>
 augroup END
 
 "-------------------------------------------------------------------------------
