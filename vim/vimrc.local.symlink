@@ -235,9 +235,8 @@ let mapleader = ","
 let maplocalleader = "\\"
 
 " Huddler
-noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>:cd $PROJECTS/huddler<Enter>
+noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>:tabe $PROJECTS/huddler/test.php<Enter>:cd $PROJECTS/huddler<Enter>
 noremap <Leader>dt :tabnew<Enter><Leader>d
-noremap <Leader>dc :e $PROJECTS/huddler/v2/system/application/libraries/HuddlerController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/HuddlerMobileController.php<Enter>:vsp $PROJECTS/huddler/v2/system/application/libraries/Huddler/Controller.php<Enter>
 
 " Last tab binding
 let g:lasttab = 1
@@ -304,7 +303,7 @@ let g:syntastic_javascript_jsl_conf = "-conf ~/.jslconf"
 let g:syntastic_mode_map = {
     \ 'mode': 'active',
     \ 'active_filetypes': [],
-    \ 'passive_filetypes': ['sass', 'scss']
+    \ 'passive_filetypes': ['sass', 'scss', 'html']
   \}
 
 " CtrlP
