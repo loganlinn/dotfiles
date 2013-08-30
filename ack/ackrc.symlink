@@ -1,3 +1,6 @@
 --type-set=css=.less
 --type-set=css=.scss
 --type-set=clj=.cljs
+--ignore-file=match:tags
+--ignore-dir=log
+--ignore-dir=tmp
