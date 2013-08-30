@@ -5,7 +5,7 @@ set tabstop=2
 set shiftwidth=2
 set softtabstop=2
 set expandtab
-set nu
+set rnu
 set nobackup
 set nowritebackup
 set noswapfile
@@ -208,6 +208,12 @@ augroup ft_clojure
   au Filetype clojure nnoremap <localleader>eR :Require!<CR>
   au Filetype clojure nnoremap <localleader>r :call fireplace#eval("(user/reset)")<CR>
 augroup END
+
+"" EDN
+au BufRead,BufNewFile *.edn setfiletype clojure
+
+"" Twig
+au BufRead,BufNewFile *.twig so ~/.vim/bundle/vim-twig/syntax/twig.vim
 
 "-------------------------------------------------------------------------------
 " Colors
