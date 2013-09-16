@@ -1,20 +1,23 @@
 #!/bin/zsh
 if [ -z "$1" ]; then
-  dest="logan@newdy.huddler.com:/home/logan/www_sync"
+  dest="$USER@newdy.huddler.com:/home/$USER/www_sync"
 else
   dest=$1
 fi
 
 if [ -d "$PROJECTS/huddler" ]; then
-	syncwatch \
-		--exclude=config/facebook-connectdemo-config.php \
-		--exclude=v2/system/application/libraries/ObjectTypes.php \
-		--exclude=v2/system/application/libraries/RawColumns.php \
-		--exclude=mini \
-		--exclude=v2/system/application/libraries/base/\* \
-		--exclude=xhprof \
-		--exclude=build \
-		$PROJECTS/huddler/ $dest
+  syncwatch \
+    --exclude=config/facebook-connectdemo-config.php \
+    --exclude=v2/system/application/libraries/ObjectTypes.php \
+    --exclude=v2/system/application/libraries/RawColumns.php \
+    --exclude=mini \
+    --exclude=v2/system/application/libraries/base/\* \
+    --exclude=xhprof \
+    --exclude=build \
+    --exclude=.grunt \
+    --exclude=vendor \
+    --exclude=_SpecRunner.html \
+    $PROJECTS/huddler/ $dest
 else
-	echo "huddler directory not found"
+  echo "huddler directory not found"
 fi
