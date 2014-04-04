@@ -1,5 +1,0 @@
-git_branch() {
-  echo $(/usr/bin/git symbolic-ref HEAD 2>/dev/null | awk -F/ {'print $NF'})
-}
-
-git branch --set-upstream `git_branch` origin/`git_branch`

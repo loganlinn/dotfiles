@@ -1,4 +1,0 @@
-#! /usr/bin/env bash
-
-
-ack -o '\$\w+' $1 | sort | uniq
