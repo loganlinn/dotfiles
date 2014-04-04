@@ -53,10 +53,10 @@ bind l select-pane -R
 ## bind 9 select-pane -t 9
 
 # Pane resizing
-bind -r C-Left  resize-pane -L 5
-bind -r C-Right resize-pane -R 5
-bind -r C-Down  resize-pane -D 5
-bind -r C-Up    resize-pane -U 5
+bind -r C-Left  resize-pane -L 10
+bind -r C-Right resize-pane -R 10
+bind -r C-Down  resize-pane -D 10
+bind -r C-Up    resize-pane -U 10
 
 # 256 colors please
 #set -g default-terminal "screen-256color"
