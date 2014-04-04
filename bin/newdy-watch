@@ -17,6 +17,7 @@ if [ -d "$PROJECTS/huddler" ]; then
     --exclude=.grunt \
     --exclude=vendor \
     --exclude=_SpecRunner.html \
+    --exclude=node_modules \
     $PROJECTS/huddler/ $dest
 else
   echo "huddler directory not found"
