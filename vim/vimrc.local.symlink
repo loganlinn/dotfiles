@@ -193,9 +193,16 @@ autocmd FileType java setlocal expandtab
 augroup ft_clojure
   au!
   au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided,defroutes,defproject
+  "" jdbc
   au FileType clojure setlocal lispwords+=with-connection,with-query-results,with-naming-strategy,with-quoted-identifiers,update-or-insert-values,insert-record,delete-rows,insert!
-  au FileType clojure setlocal lispwords+=sql/with-connection,sql/with-query-results,sql/with-naming-strategy,sql/with-quoted-identifiers,sql/update-values,sql/insert-record,sql/insert-records,sql/insert!,sql/delete-rows
-  au FileType clojure setlocal lispwords+=domonad,with-monad,defmonad
+  "" algo.monads
+  au FileType clojure setlocal lispwords+=domonad,with-monad,defmonad,match
+  "" core.async
+  au FileType clojure setlocal lispwords+=go,go-loop
+  "" carmine (redis)
+  au FileType clojure setlocal lispwords+=wcar
+  "" storm
+  au FileType clojure setlocal lispwords+=nextTuple,ack,execute
   "" ClojureScript separate filetype?
   au FileType clojure setlocal lispwords+=this-as
 
@@ -208,6 +215,9 @@ augroup ft_clojure
   au Filetype clojure nnoremap <localleader>eR :Require!<CR>
   au Filetype clojure nnoremap <localleader>r :call fireplace#eval("(user/reset)")<CR>
 augroup END
+
+"" cljx
+au BufNewFile,BufReadPost *.cljx setfiletype clojure
 
 "" EDN
 au BufRead,BufNewFile *.edn setfiletype clojure
@@ -240,6 +250,9 @@ iabbrev lmis ಠ‿ಠ
 let mapleader = ","
 let maplocalleader = "\\"
 
+" Disable Ex mode
+map Q <Nop>
+
 " Huddler
 noremap <Leader>d :e $PROJECTS/huddler/common/defines.php<Enter>:vsp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.overrides.php<Enter>:sp $PROJECTS/huddler/config/sites/logan.huddler.com/conf/config.db.php<Enter>:tabe $PROJECTS/huddler/test.php<Enter>:cd $PROJECTS/huddler<Enter>
 noremap <Leader>dt :tabnew<Enter><Leader>d
@@ -267,6 +280,9 @@ nnoremap N Nzzzv
 inoremap <c-a> <esc>I
 inoremap <c-e> <esc>A
 
+" Tab close
+nnoremap <Leader>C :tabc<CR>
+
 "-------------------------------------------------------------------------------
 " Plugin Settings
 "-------------------------------------------------------------------------------
@@ -283,6 +299,17 @@ au VimEnter * RainbowParenthesesToggle
 au Syntax * RainbowParenthesesLoadRound
 au Syntax * RainbowParenthesesLoadSquare
 au Syntax * RainbowParenthesesLoadBraces
+"  Parentheses colours using Solarized"
+let g:rbpt_colorpairs = [
+  \ [ '13', '#6c71c4'],
+  \ [ '5',  '#d33682'],
+  \ [ '1',  '#dc322f'],
+  \ [ '9',  '#cb4b16'],
+  \ [ '3',  '#b58900'],
+  \ [ '2',  '#859900'],
+  \ [ '6',  '#2aa198'],
+  \ [ '4',  '#268bd2'],
+  \ ]
 
 " jslint
 let $JS_CMD='node'
