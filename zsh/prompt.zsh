@@ -15,16 +15,11 @@ git_branch() {
 
 git_dirty() {
   st=$($git status 2>/dev/null | tail -n 1)
-  if [[ $st == "" ]]
+  if [[ $st == "" ]] || [[ "$st" =~ ^nothing ]]
   then
-    echo ""
+    echo "on %{$fg_bold[green]%}$(git_prompt_info)%{$reset_color%}"
   else
-    if [[ "$st" =~ ^nothing ]]
-    then
-      echo "on %{$fg_bold[green]%}$(git_prompt_info)%{$reset_color%}"
-    else
-      echo "on %{$fg_bold[red]%}$(git_prompt_info)%{$reset_color%}"
-    fi
+    echo "on %{$fg_bold[red]%}$(git_prompt_info)%{$reset_color%}"
   fi
 }
 
