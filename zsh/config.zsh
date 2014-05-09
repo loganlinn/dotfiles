@@ -58,10 +58,6 @@ bindkey '^a' beginning-of-line
 bindkey '^e' end-of-line
 bindkey '^r' history-incremental-search-backward
 
-# vim mode
-bindkey -v
-bindkey '^R' history-incremental-search-backward
-
 # C-x C-e to edit
 autoload -U edit-command-line
 zle -N edit-command-line
