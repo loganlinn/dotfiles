@@ -1,0 +1,1 @@
+open -a /Applications/Emacs.app $1
