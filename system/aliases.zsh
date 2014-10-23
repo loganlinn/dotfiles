@@ -13,6 +13,4 @@ else
   alias ll="ls -l"
 fi
 
-alias sshrudy='ssh logan@rudy.huddler.com'
-alias sshnewdy='ssh logan@newdy.huddler.com'
 alias genctags='ctags -R --sort=yes --verbose --languages=+PHP,-JavaScript --PHP-kinds=+cf --exclude=@$HOME/.ctags.exclude'
