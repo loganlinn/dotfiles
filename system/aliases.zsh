@@ -14,3 +14,5 @@ else
 fi
 
 alias genctags='ctags -R --sort=yes --verbose --languages=+PHP,-JavaScript --PHP-kinds=+cf --exclude=@$HOME/.ctags.exclude'
+alias tmux='TERM=xterm-256color tmux'
+alias cljsbuild="lein trampoline cljsbuild $@"
