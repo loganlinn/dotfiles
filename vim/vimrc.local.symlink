@@ -1,6 +1,58 @@
 "-------------------------------------------------------------------------------
-" Tabs & Formatting
+" NeoBundle
 "-------------------------------------------------------------------------------
+
+" Note: Skip initialization for vim-tiny or vim-small.
+if !1 | finish | endif
+
+if has('vim_starting')
+  if &compatible
+    set nocompatible               " Be iMproved
+  endif
+
+  " Required:
+  set runtimepath+=~/.vim/bundle/neobundle.vim/
+endif
+
+" Required:
+call neobundle#begin(expand('~/.vim/bundle/'))
+
+" Let NeoBundle manage NeoBundle
+" Required:
+NeoBundleFetch 'Shougo/neobundle.vim'
+
+source ~/.vim.bundles.vim
+
+call neobundle#end()
+
+" Required:
+filetype plugin indent on
+
+" If there are uninstalled bundles found on startup,
+" this will conveniently prompt you to install them.
+NeoBundleCheck
+
+"-------------------------------------------------------------------------------
+" Basics
+"-------------------------------------------------------------------------------
+
+syntax on
+set background=dark
+
+if filereadable(expand("~/.vim/bundle/vim-colors-solarized/colors/solarized.vim"))
+  let g:solarized_termcolors=256
+  let g:solarized_termtrans=1
+  let g:solarized_contrast="normal"
+  let g:solarized_visibility="normal"
+  color solarized
+endif
+
+" Use <Leader> in global plugin.
+let g:mapleader = ','
+" Use <LocalLeader> in filetype plugin.
+let g:maplocalleader = 'm'
+
+set textwidth=80
 set tabstop=2
 set shiftwidth=2
 set softtabstop=2
@@ -10,31 +62,43 @@ set nobackup
 set nowritebackup
 set noswapfile
 set mouse=a
-
-" List chars
-set listchars=""          " Reset the listchars
-set listchars=tab:\ \     " a tab should display as "  ", trailing whitespace as "."
-set listchars+=trail:.    " show trailing spaces as dots
-set listchars+=extends:>  " The character to show in the last column when wrap is
-                          " off and the line continues beyond the right of the screen
-set listchars+=precedes:< " The character to show in the last column when wrap is
-                          " off and the line continues beyond the right of the screen
-
-" Disable folding
-set nofoldenable
-
-" Automatically read
-set autoread
-
-" Highlight 81st column
-set textwidth=80
-set colorcolumn=+1
+set list
+set listchars=""                " Reset the listchars
+set listchars=tab:\ \           " a tab should display as "  ", trailing whitespace as "."
+set listchars+=trail:.          " show trailing spaces as dots
+set listchars+=extends:>        " The character to show in the last column when wrap is
+                                " off and the line continues beyond the right of the screen
+set listchars+=precedes:<       " The character to show in the last column when wrap is
+                                " off and the line continues beyond the right of the screen
+set autoread                    " Automatically read
+set cursorline                  " Highlight current line
+set backspace=indent,eol,start  " Backspace for dummies
+set linespace=0                 " No extra spaces between rows
+set number                      " Line numbers on
+set showmatch                   " Show matching brackets/parenthesis
+set incsearch                   " Find as you type search
+set hlsearch                    " Highlight search terms
+set winminheight=0              " Windows can be 0 line high
+set ignorecase                  " Case insensitive search
+set smartcase                   " Case sensitive when uc present
+set wildmenu                    " Show list instead of just completing
+set wildmode=list:longest,full  " Command <Tab> completion, list matches, then longest common part, then all.
+set whichwrap=b,s,h,l,<,>,[,]   " Backspace and cursor keys wrap too
+set scrolljump=5                " Lines to scroll when cursor leaves screen
+set scrolloff=3                 " Minimum lines to keep above and below cursor
+set nofoldenable                " Disable auto fold code
+set nojoinspaces                " Prevents inserting two spaces after punctuation on a join (J)
+set splitright                  " Puts new vsplit windows to the right of the current
+set splitbelow                  " Puts new split windows to the bottom of the current
+set pastetoggle=<F12>           " pastetoggle (sane indentation on pastes)
+set colorcolumn=+1              " Highlight 81st column
+" Highlight when CursorMoved.
+set cpoptions-=m
+set matchtime=1
 
 " FileType specific
-"" Java
-autocmd FileType java setlocal expandtab
 
-"" Clojure
+"" {{{ Clojure
 augroup ft_clojure
   "" testing
   au FileType clojure setlocal lispwords+=describe,it,testing,facts,fact,provided
@@ -71,24 +135,8 @@ augroup prismatic
   autocmd BufNewFile,BufReadPost *.cljx setfiletype clojure
 augroup END
 
-"if filereadable($HOME.'/prismatic/config/vim/prismatic.vim')
-"  source $HOME/prismatic/config/vim/prismatic.vim
-"endif
-
-"" cljx
-""au BufNewFile,BufReadPost *.cljx setfiletype clojure
-
 "" EDN
 au BufRead,BufNewFile *.edn setfiletype clojure
-
-"" Twig
-au BufRead,BufNewFile *.twig so ~/.vim/bundle/vim-twig/syntax/twig.vim
-
-"-------------------------------------------------------------------------------
-" Colors
-"-------------------------------------------------------------------------------
-" Clear color on vim-gitgutter gutter
-au VimEnter * highlight clear SignColumn
 
 "-------------------------------------------------------------------------------
 " Abbreviations
@@ -101,13 +149,21 @@ iabbrev lmis ಠ‿ಠ
 "-------------------------------------------------------------------------------
 " Mappings
 "-------------------------------------------------------------------------------
-" Leaders
-let mapleader = "\\"
-let maplocalleader = ","
+"
+" Wrapped lines goes down/up to next row, rather than next line in file.
+noremap j gj
+noremap k gk
 
 " Disable Ex mode
 map Q <Nop>
 
+" Some helpers to edit mode
+" http://vimcasts.org/e/14
+cnoremap %% <C-R>=expand('%:h').'/'<cr>
+map <leader>ew :e %%
+map <leader>es :sp %%
+map <leader>ev :vsp %%
+map <leader>et :tabe %%
 noremap <Leader>dt :tabnew<Enter><Leader>d
 
 " Last tab binding
@@ -128,17 +184,12 @@ nnoremap N Nzzzv
 " Tab close
 nnoremap <Leader>C :tabc<CR>
 
+" Yank from the cursor to the end of the line, to be consistent with C and D.
+nnoremap Y y$
+
 "-------------------------------------------------------------------------------
 " Plugin Settings
 "-------------------------------------------------------------------------------
-" Disable neo* plugins
-UnBundle 'Shougo/neocomplcache'
-UnBundle 'Shougo/neosnippet'
-UnBundle 'mbbill/undotree'
-UnBundle 'arnaud-lb/vim-php-namespace'
-UnBundle 'spf13/PIV'
-UnBundle 'spf13/vim-autoclose'
-UnBundle 'myusuf3/numbers.vim'
 
 " kein/rainbow_parens.vim
 au VimEnter * RainbowParenthesesToggle
@@ -160,37 +211,9 @@ let g:rbpt_colorpairs = [
 " jslint
 let $JS_CMD='node'
 
-" Powerline symbols: ⮂ ⮃ ⮀ ⮁ ⭤
-" Powerline symbols:  ±  ➦ ✘ ⚡ ⚙       
-let g:Powerline_symbols='fancy'
-let g:airline_theme = 'powerlineish'
-let g:airline_enable_branch = 1
-let g:airline_enable_syntastic = 1
-
-" vim-powerline symbols
-"let g:airline_left_sep = '⮀'
-"let g:airline_left_alt_sep = '⮁'
-"let g:airline_right_sep = '⮂'
-"let g:airline_right_alt_sep = '⮃'
-"let g:airline_branch_prefix = '⭠'
-"let g:airline_readonly_symbol = '⭤'
-"let g:airline_linecolumn_prefix = '⭡'
-let g:airline_left_sep = ''
-let g:airline_left_alt_sep = ''
-let g:airline_right_sep = ''
-let g:airline_right_alt_sep = ''
-let g:airline_branch_prefix = ''
-let g:airline_readonly_symbol = ''
-let g:airline_linecolumn_prefix = ''
-
-" Syntastic
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_javascript_jsl_conf = "-conf ~/.jslconf"
-let g:syntastic_mode_map = {
-    \ 'mode': 'active',
-    \ 'active_filetypes': [],
-    \ 'passive_filetypes': ['sass', 'scss', 'html']
-  \}
+" airline
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
 
 " CtrlP
 let g:ctrlp_switch_buffer = 0
@@ -222,20 +245,22 @@ vmap <Leader>a- :Tabularize /=><CR>
 " vim-indent-guides
 let g:indent_guides_enable_on_vim_startup = 0
 
-" spf13-vim
-let g:spf13_no_neosnippet_expand = 1
-
 " vim-gitgutter
 let g:gitgutter_eager = 0
 
 "-------------------------------------------------------------------------------
 " General Settings & Modifications
 "-------------------------------------------------------------------------------
+
+" Use clipboard register.
+if has('unnamedplus')
+  set clipboard& clipboard+=unnamedplus
+else
+  set clipboard& clipboard+=unnamed
+endif
+
 " Disable session dialog
 let g:session_autosave='no'
-
-" Enable filetype plugin
-filetype plugin on
 
 " Tabline modifications
 if has('gui')
@@ -279,3 +304,73 @@ if exists("+showtabline")
   set stal=2
   set tabline=%!MyTabLine()
 endif
+
+"{{{ TAB MGMT
+" Source: https://raw.githubusercontent.com/lucasoman/Conf/master/.vimrc
+" Some useful bits for managing tabs.
+" Also changes format of tab line.
+" Commands and shortcuts:
+" \oc - open dir of current file in new tab
+" H - navigate to tab to the left
+" L - navigate to tab to the right
+" C-l - move current tab left
+" C-h - move current tab right
+" gf - changes default behavior from opening file under cursor in current window to opening in new tab
+nmap <Leader>oc :tabe %:h<CR>
+
+" quicker aliases for navigating tabs
+nmap H gT
+nmap L gt
+" move tab left or right
+nmap <C-l> :call MoveTab(0)<CR>
+nmap <C-h> :call MoveTab(-2)<CR>
+
+" gf should use new tab, not current buffer
+map gf :tabe <cfile><CR>
+
+"tab line
+fun! MyTabLine()
+  let s = ''
+  for i in range(tabpagenr('$'))
+    " select the highlighting
+    if i + 1 == tabpagenr()
+      let s .= '%#TabLineSel#'
+    else
+      let s .= '%#TabLine#'
+    endif
+    " set the tab page number (for mouse clicks)
+    let s .= '%' . (i + 1) . 'T'.(i+1).''
+    " the filename is made by MyTabLabel()
+    let s .= '%{MyTabLabel(' . (i + 1) . ')}  '
+  endfor
+  " after the last tab fill with TabLineFill and reset tab page nr
+  let s .= '%#TabLineFill#%T'
+  return s
+endfunction
+
+fun! MyTabLabel(n)
+  let buflist = tabpagebuflist(a:n)
+  let winnr = tabpagewinnr(a:n)
+  let fullname = bufname(buflist[winnr - 1])
+  " show a/b/c/filename.ext
+  "let fullname = substitute(fullname,"(\w){1}\w*/","\1/","g")
+  " show filename.ext
+  let fullname = substitute(fullname,".*/","","")
+  if getbufvar(buflist[winnr - 1],"&mod")
+    let modified = "+"
+  else
+    let modified = " "
+  endif
+  return modified.fullname
+endfunction
+
+" Use the above tabe naming scheme
+set tabline=%!MyTabLine()
+
+"tab moving
+fun! MoveTab(n)
+  let which = tabpagenr()
+  let which = which + a:n
+  exe "tabm ".which
+endfunction
+"}}}
