@@ -16,6 +16,9 @@ set -g mode-mouse on
 setw -g mouse-select-window on
 setw -g mouse-select-pane on
 
+# Send correct key sequences to emacs
+setw -g xterm-keys on
+
 # This is hilariously absurd.  How many nerds use tmux on OS X every day and
 # it's still fundamentally broken?
 set -g default-command "reattach-to-user-namespace -l zsh"
