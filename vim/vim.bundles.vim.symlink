@@ -20,18 +20,18 @@ NeoBundle 'tpope/vim-speeddating'
 NeoBundle "tpope/vim-rsi"
 NeoBundle 'tpope/vim-markdown'
 NeoBundle 'tpope/vim-rails'
-NeoBundle 'tpope/vim-leiningen'
+" NeoBundle 'tpope/vim-leiningen' " slow startup
 NeoBundle 'tpope/vim-haml'
 NeoBundle 'tpope/vim-cucumber'
 NeoBundle "tpope/vim-projectionist"
 NeoBundle "tpope/vim-dispatch"
 NeoBundle "tpope/vim-fireplace"
 NeoBundle "tpope/vim-classpath"
-NeoBundle "tpope/vim-sexp-mappings-for-regular-people"
 NeoBundle "tpope/vim-tbone"
 NeoBundle 'scrooloose/syntastic'
 NeoBundle 'scrooloose/nerdtree'
 NeoBundle 'scrooloose/nerdcommenter'
+NeoBundle 'Raimondi/delimitMate'
 NeoBundle 'bling/vim-bufferline'
 NeoBundle 'kien/ctrlp.vim'
 NeoBundle 'altercation/vim-colors-solarized'
@@ -49,16 +49,19 @@ NeoBundle 'gorodinskiy/vim-coloresque'
 NeoBundle "guns/vim-sexp"
 NeoBundle "guns/vim-clojure-highlight"
 NeoBundle "guns/vim-clojure-static"
+NeoBundle "tpope/vim-sexp-mappings-for-regular-people"
 NeoBundle 'python.vim'
 NeoBundle 'python_match.vim'
 NeoBundle 'pythoncomplete'
 NeoBundle 'klen/python-mode'
 NeoBundle "kien/rainbow_parentheses.vim"
 NeoBundle 'pangloss/vim-javascript'
+NeoBundle 'mxw/vim-jsx'
 NeoBundle 'fatih/vim-go'
 NeoBundleLazy 'facebook/vim-flow', {
       \ 'autoload': {
       \     'filetypes': 'javascript'
       \ }}
-"NeoBundle 'kana/vim-textobj-user'
-"NeoBundle 'kana/vim-textobj-indent'
+NeoBundle 'mustache/vim-mustache-handlebars'
+" NeoBundle 'kana/vim-textobj-user'
+" NeoBundle 'kana/vim-textobj-indent'

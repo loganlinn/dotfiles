@@ -150,6 +150,15 @@ iabbrev lmis ಠ‿ಠ
 " Mappings
 "-------------------------------------------------------------------------------
 "
+
+" Easier moving in tabs and windows
+map <C-J> <C-W>j
+map <C-K> <C-W>k
+map <C-L> <C-W>l
+map <C-H> <C-W>h
+map <S-L> gt
+map <S-H> gT
+
 " Wrapped lines goes down/up to next row, rather than next line in file.
 noremap j gj
 noremap k gk
@@ -187,9 +196,43 @@ nnoremap <Leader>C :tabc<CR>
 " Yank from the cursor to the end of the line, to be consistent with C and D.
 nnoremap Y y$
 
+" Stupid shift key fixes
+command! -bang -nargs=* -complete=file E e<bang> <args>
+command! -bang -nargs=* -complete=file W w<bang> <args>
+command! -bang -nargs=* -complete=file Wq wq<bang> <args>
+command! -bang -nargs=* -complete=file WQ wq<bang> <args>
+command! -bang Wa wa<bang>
+command! -bang WA wa<bang>
+command! -bang Q q<bang>
+command! -bang QA qa<bang>
+command! -bang Qa qa<bang>
+cmap Tabe tabe
+
+" Shortcuts to change working directory to that of the current file
+cmap cwd lcd %:p:h
+cmap cd. lcd %:p:h
+
+" Visual shifting (does not exit Visual mode)
+vnoremap < <gv
+vnoremap > >gv
+
+" Fix home and end keybindings for screen, particularly on mac
+" - for some reason this fixes the arrow keys too. huh.
+map [F $
+imap [F $
+map [H g0
+imap [H g0
+
+" leader - q closes all buffers in tab
+map <leader>q :tabclose
+
 "-------------------------------------------------------------------------------
 " Plugin Settings
 "-------------------------------------------------------------------------------
+
+" delimitMate
+let delimitMate_quotes = "\" \'"
+let delimitMate_smart_quotes = 0
 
 " kein/rainbow_parens.vim
 au VimEnter * RainbowParenthesesToggle
@@ -217,9 +260,11 @@ let g:airline#extensions#tabline#enabled = 1
 
 " CtrlP
 let g:ctrlp_switch_buffer = 0
+let g:ctrlp_working_path_mode = 'r'
+
 let g:ctrlp_user_command = {
     \ 'types': {
-      \ 1: ['.git', 'cd %s && git ls-files'],
+      \ 1: ['.git', 'cd %s && git ls-files . --cached --exclude-standard --others'],
       \ 2: ['.hg', 'hg --cwd %s locate -I .'],
       \ },
     \ 'fallback': 'find %s -type f'
@@ -247,6 +292,9 @@ let g:indent_guides_enable_on_vim_startup = 0
 
 " vim-gitgutter
 let g:gitgutter_eager = 0
+
+" vim-jsx
+let g:jsx_ext_required = 0
 
 "-------------------------------------------------------------------------------
 " General Settings & Modifications
@@ -304,73 +352,3 @@ if exists("+showtabline")
   set stal=2
   set tabline=%!MyTabLine()
 endif
-
-"{{{ TAB MGMT
-" Source: https://raw.githubusercontent.com/lucasoman/Conf/master/.vimrc
-" Some useful bits for managing tabs.
-" Also changes format of tab line.
-" Commands and shortcuts:
-" \oc - open dir of current file in new tab
-" H - navigate to tab to the left
-" L - navigate to tab to the right
-" C-l - move current tab left
-" C-h - move current tab right
-" gf - changes default behavior from opening file under cursor in current window to opening in new tab
-nmap <Leader>oc :tabe %:h<CR>
-
-" quicker aliases for navigating tabs
-nmap H gT
-nmap L gt
-" move tab left or right
-nmap <C-l> :call MoveTab(0)<CR>
-nmap <C-h> :call MoveTab(-2)<CR>
-
-" gf should use new tab, not current buffer
-map gf :tabe <cfile><CR>
-
-"tab line
-fun! MyTabLine()
-  let s = ''
-  for i in range(tabpagenr('$'))
-    " select the highlighting
-    if i + 1 == tabpagenr()
-      let s .= '%#TabLineSel#'
-    else
-      let s .= '%#TabLine#'
-    endif
-    " set the tab page number (for mouse clicks)
-    let s .= '%' . (i + 1) . 'T'.(i+1).''
-    " the filename is made by MyTabLabel()
-    let s .= '%{MyTabLabel(' . (i + 1) . ')}  '
-  endfor
-  " after the last tab fill with TabLineFill and reset tab page nr
-  let s .= '%#TabLineFill#%T'
-  return s
-endfunction
-
-fun! MyTabLabel(n)
-  let buflist = tabpagebuflist(a:n)
-  let winnr = tabpagewinnr(a:n)
-  let fullname = bufname(buflist[winnr - 1])
-  " show a/b/c/filename.ext
-  "let fullname = substitute(fullname,"(\w){1}\w*/","\1/","g")
-  " show filename.ext
-  let fullname = substitute(fullname,".*/","","")
-  if getbufvar(buflist[winnr - 1],"&mod")
-    let modified = "+"
-  else
-    let modified = " "
-  endif
-  return modified.fullname
-endfunction
-
-" Use the above tabe naming scheme
-set tabline=%!MyTabLine()
-
-"tab moving
-fun! MoveTab(n)
-  let which = tabpagenr()
-  let which = which + a:n
-  exe "tabm ".which
-endfunction
-"}}}
