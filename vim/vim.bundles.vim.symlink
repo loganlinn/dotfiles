@@ -58,10 +58,10 @@ NeoBundle "kien/rainbow_parentheses.vim"
 NeoBundle 'pangloss/vim-javascript'
 NeoBundle 'mxw/vim-jsx'
 NeoBundle 'fatih/vim-go'
-NeoBundleLazy 'facebook/vim-flow', {
-      \ 'autoload': {
-      \     'filetypes': 'javascript'
-      \ }}
+" NeoBundleLazy 'facebook/vim-flow', {
+"       \ 'autoload': {
+"       \     'filetypes': 'javascript'
+"       \ }}
 NeoBundle 'mustache/vim-mustache-handlebars'
 " NeoBundle 'kana/vim-textobj-user'
 " NeoBundle 'kana/vim-textobj-indent'
