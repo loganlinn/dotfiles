@@ -12,9 +12,8 @@ set -sg repeat-time 600
 set -g quiet on
 
 # Mouse
-set -g mode-mouse on
-setw -g mouse-select-window on
-setw -g mouse-select-pane on
+set -g mouse-utf8 on
+set -g mouse on
 
 # Send correct key sequences to emacs
 setw -g xterm-keys on
@@ -118,4 +117,3 @@ bind y run "tmux save-buffer - | reattach-to-user-namespace pbcopy"
 bind \; last-window
 bind -r ] next-window
 bind -r [ previous-window
-
