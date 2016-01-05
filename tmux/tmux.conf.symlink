@@ -4,22 +4,29 @@ unbind C-b
 bind C-f send-prefix
 unbind C-s
 
-# Relax!
 set -sg escape-time 0
-set -sg repeat-time 600
 
-# Shut up
-set -g quiet on
+# Mouse (tmux >= 2.1)
+set -g -q mouse on
+bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'select-pane -t=; copy-mode -e; send-keys -M'"
+bind -n WheelDownPane select-pane -t= \; send-keys -M
+bind -t vi-copy WheelUpPane halfpage-up
+bind -t vi-copy WheelDownPane halfpage-down
 
-# Mouse
-set -g mouse-utf8 on
-set -g mouse on
+# PageUp (tmux >= 2.1)
+bind-key -T root PPage if-shell -F "#{alternate_on}" "send-keys PPage" "copy-mode -e; send-keys PPage"
+bind-key -t vi-copy PPage page-up
+bind-key -t vi-copy NPage page-down
+
+# Window Style (highlights active window)
+set-window-option -g window-style 'bg=colour0'
+set-window-option -g window-active-style 'bg=colour8'
+set-window-option -g pane-active-border-style ''
 
 # Send correct key sequences to emacs
 setw -g xterm-keys on
 
-# This is hilariously absurd.  How many nerds use tmux on OS X every day and
-# it's still fundamentally broken?
+# Copy-Paste Sanity
 set -g default-command "reattach-to-user-namespace -l zsh"
 
 # Less stretching to get to the first item.
