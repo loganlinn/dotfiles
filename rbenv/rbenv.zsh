@@ -1,4 +1,4 @@
 if which rbenv &>/dev/null
 then
-	eval "$($HOME/.rbenv/bin/rbenv init -)"
+	eval "$(rbenv init -)"
 fi
