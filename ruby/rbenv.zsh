@@ -1,20 +1,5 @@
-# rehash shims
-if which rbenv &>/dev/null
+# init according to man page
+if (( $+commands[rbenv] ))
 then
-	rbenv rehash 2>/dev/null
-
-	# shell thing
-	rbenv() {
-	  command="$1"
-	  if [ "$#" -gt 0 ]; then
-		shift
-	  fi
-
-	  case "$command" in
-	  shell)
-		eval `rbenv "sh-$command" "$@"`;;
-	  *)
-		command rbenv "$command" "$@";;
-	  esac
-	}
+  eval "$(rbenv init -)"
 fi
