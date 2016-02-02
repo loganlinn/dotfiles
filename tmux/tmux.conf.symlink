@@ -105,7 +105,7 @@ set -g visual-activity off
 setw -g automatic-rename on
 
 # Better name management
-bind c new-window \; command-prompt "rename-window '%%'"
+bind c new-window \; command-prompt -p "project:" "rename-window '%1' ; send-keys -R 'c %1 ; clear' C-m"
 bind C new-window
 bind , command-prompt "rename-window '%%'"
 
