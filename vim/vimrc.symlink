@@ -137,6 +137,9 @@ autocmd BufNewFile,BufReadPost *.cljx setfiletype clojure
 au BufRead,BufNewFile *.edn setfiletype clojure
 au BufRead,BufNewFile *.cljc setfiletype clojure
 
+
+au BufRead,BufNewFile *.avdl setlocal filetype=avro-idl
+
 "-------------------------------------------------------------------------------
 " Abbreviations
 "-------------------------------------------------------------------------------
