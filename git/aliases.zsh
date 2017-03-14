@@ -9,6 +9,7 @@ fi
 # The rest of my fun git aliases
 alias gl='git pull --prune'
 alias glo='gl && git pull origin'
+alias gfo='git fetch origin'
 alias glr='git pull --rebase'
 alias glg="git log --graph --pretty=format:'%Cred%h%Creset %Cblue%an%Creset: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
 alias gp='git push -u origin HEAD'
