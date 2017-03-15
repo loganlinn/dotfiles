@@ -1,4 +1,10 @@
-alias docker-prune='docker rm $(docker ps -a -f status=exited -f status=created -q) && docker rmi $(docker images -f dangling=true -q)'
+alias d='docker $*'
+alias d-c='docker-compose $*'
+
+function docker-prune() {
+  docker ps -a -f status=exited -f status=created -q | xargs --no-run-if-empty docker em
+  docker images -f dangling=true -q | xargs --no-run-if-empty docker rmi
+}
 
 function dockerenv () {
   local args=${@:-default}
