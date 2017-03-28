@@ -18,6 +18,8 @@ values."
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     html
+     ruby
      javascript
      python
      ;; ----------------------------------------------------------------
@@ -29,6 +31,7 @@ values."
      better-defaults
      emacs-lisp
      git
+     github
      markdown
      ;; (org :variables
      ;;      org-enable-github-support t
@@ -211,7 +214,7 @@ values."
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers 'relative'
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    ;; (default nil)
    dotspacemacs-smartparens-strict-mode t
@@ -245,6 +248,8 @@ user code here.  The exception is org related code, which should be placed in
   (unless window-system
     (global-set-key (kbd "<mouse-4>") 'scroll-down-line)
     (global-set-key (kbd "<mouse-5>") 'scroll-up-line))
+
+  (setq create-lockfiles nil)
   )
 
 (defun dotspacemacs/user-config ()
