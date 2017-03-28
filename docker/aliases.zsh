@@ -1,4 +1,5 @@
 alias d='docker $*'
+alias d-m='docker-machine $*'
 alias d-c='docker-compose $*'
 
 function docker-prune() {
