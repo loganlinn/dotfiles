@@ -17,17 +17,17 @@ NeoBundle 'tpope/vim-unimpaired'
 NeoBundle 'tpope/vim-commentary'
 NeoBundle 'tpope/vim-abolish'
 NeoBundle 'tpope/vim-speeddating'
-NeoBundle "tpope/vim-rsi"
+NeoBundle 'tpope/vim-rsi'
 NeoBundle 'tpope/vim-markdown'
 NeoBundle 'tpope/vim-rails'
 " NeoBundle 'tpope/vim-leiningen' " slow startup
 NeoBundle 'tpope/vim-haml'
 NeoBundle 'tpope/vim-cucumber'
-NeoBundle "tpope/vim-projectionist"
-NeoBundle "tpope/vim-dispatch"
-NeoBundle "tpope/vim-fireplace"
-NeoBundle "tpope/vim-classpath"
-NeoBundle "tpope/vim-tbone"
+NeoBundle 'tpope/vim-projectionist'
+NeoBundle 'tpope/vim-dispatch'
+NeoBundle 'tpope/vim-fireplace'
+NeoBundle 'tpope/vim-classpath'
+NeoBundle 'tpope/vim-tbone'
 NeoBundle 'scrooloose/syntastic'
 NeoBundle 'scrooloose/nerdtree'
 NeoBundle 'scrooloose/nerdcommenter'
@@ -46,15 +46,15 @@ if executable('ctags')
 endif
 NeoBundle 'othree/html5.vim'
 NeoBundle 'gorodinskiy/vim-coloresque'
-NeoBundle "guns/vim-sexp"
-NeoBundle "guns/vim-clojure-highlight"
-NeoBundle "guns/vim-clojure-static"
-NeoBundle "tpope/vim-sexp-mappings-for-regular-people"
+NeoBundle 'guns/vim-sexp'
+NeoBundle 'guns/vim-clojure-highlight'
+NeoBundle 'guns/vim-clojure-static'
+NeoBundle 'tpope/vim-sexp-mappings-for-regular-people'
 NeoBundle 'python.vim'
 NeoBundle 'python_match.vim'
 NeoBundle 'pythoncomplete'
 " NeoBundle 'klen/python-mode'
-NeoBundle "kien/rainbow_parentheses.vim"
+NeoBundle 'kien/rainbow_parentheses.vim'
 NeoBundle 'pangloss/vim-javascript'
 NeoBundle 'mxw/vim-jsx'
 NeoBundle 'fatih/vim-go'
@@ -69,3 +69,5 @@ NeoBundle 'leafgarland/typescript-vim'
 NeoBundle 'dln/avro-vim'
 NeoBundle 'rking/ag.vim'
 NeoBundle 'jparise/vim-graphql'
+NeoBundle 'rdolgushin/groovy.vim'
+NeoBundle 'vim-scripts/groovyindent-unix'

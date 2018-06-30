@@ -122,7 +122,7 @@ augroup ft_clojure
   au Filetype clojure nnoremap <localleader>r :call fireplace#eval("(user/reset)")<CR>
 augroup END
 
-augroup prismatic
+augroup clojure_plumbatic
   au FileType clojure setlocal lispwords+=fnk,defnk,for-map,letk
   au FileType clojure setlocal lispwords+=go-loop
   au FileType clojure setlocal lispwords+=this-as
@@ -139,6 +139,8 @@ au BufRead,BufNewFile *.cljc setfiletype clojure
 
 
 au BufRead,BufNewFile *.avdl setlocal filetype=avro-idl
+
+autocmd Filetype groovy setlocal ts=4 sts=4 sw=4
 
 "-------------------------------------------------------------------------------
 " Abbreviations
