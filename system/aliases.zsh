@@ -17,3 +17,12 @@ fi
 alias tmux='TERM=xterm-256color tmux'
 #alias cljsbuild="lein trampoline cljsbuild $@"
 alias g='gradlew'
+
+case "$PLATFORM" in
+  'osx')
+    alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
+    ;;
+esac
+
+# allow aliases to be used with sudo
+alias sudo='sudo '
