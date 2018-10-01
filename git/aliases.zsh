@@ -7,7 +7,7 @@ alias gp='git push -u origin HEAD'
 alias gpf='git force-push'
 alias glrp='glr && gp'
 # Remove `+` and `-` from start of diff lines; just rely upon color.
-alias gd='git diff --color | sed -E "s/^([^-+ ]*)[-+ ]/\\1/" | less -r'
+alias gd='git diff --quiet || git diff --color | sed -E "s/^([^-+ ]*)[-+ ]/\\1/" | less -r'
 alias gdc='git diff --color --cached | sed -E "s/^([^-+ ]*)[-+ ]/\\1/" | less -r'
 alias gc='git commit --verbose --no-verify'
 alias gcf='git commit --fixup --verbose --no-verify'
