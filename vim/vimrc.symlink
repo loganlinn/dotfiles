@@ -53,6 +53,7 @@ let g:mapleader = ','
 let g:maplocalleader = 'm'
 
 set textwidth=80
+set formatoptions=cqj
 set tabstop=2
 set shiftwidth=2
 set softtabstop=2
@@ -97,6 +98,11 @@ set cpoptions-=m
 set matchtime=1
 
 " FileType specific
+
+"" {{{ Python
+augroup ft_python
+  au FileType python setlocal textwidth=120
+augroup END
 
 "" {{{ Clojure
 augroup ft_clojure
