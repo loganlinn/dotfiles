@@ -1,4 +1,0 @@
-#/bin/bash
-ssh logan@newdy.huddler.com 'cd /home/logan/www && rake db:migrate';
-scp logan@newdy.huddler.com:/home/logan/www/v2/system/application/libraries/RawColumns.php $PROJECTS/huddler/v2/system/application/libraries/
-scp logan@newdy.huddler.com:/home/logan/www/v2/system/application/libraries/ObjectTypes.php $PROJECTS/huddler/v2/system/application/libraries/
