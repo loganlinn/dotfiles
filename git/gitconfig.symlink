@@ -1,5 +1,6 @@
 [include]
   path = ~/.gitconfig.local
+  path = .gitconfig.local
 [color]
   diff = auto
   status = auto
@@ -21,7 +22,26 @@
 [pull]
   rebase = true
 [alias]
-  force-push = push --force-with-lease origin
-  switch = "!f() { git checkout $1 2>/dev/null || git checkout -b $1; }; f"
+  force-push = "!f() { git push --force-with-lease ${1:-origin}; }; f"
+  amend-force-push = "!f() { git add . && git amend && git force-push; }; f"
+	switch = !legit switch
+	sync = !legit sync
+	publish = !legit publish
+	unpublish = !legit unpublish
+	undo = !legit undo
+	branches = !legit branches
 [rebase]
   autosquash = true
+[credential]
+  helper = !git-credential-codecommit-osx $@
+  UseHttpPath = true
+[credential "github.com"]
+   helper = osxkeychain
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[user]
+	name = loganlinn
+	email = logan.linn@gmail.com

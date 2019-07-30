@@ -1,14 +1,14 @@
 alias gl='git pull --prune'
 alias glo='gl && git pull origin'
-alias gfo='git fetch origin'
+alias gfo='git fetch --all'
 alias glr='git pull --rebase'
-alias glg="git log --graph --pretty=format:'%Cred%h%Creset %Cblue%an%Creset: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative"
-alias gp='git push -u origin HEAD'
+alias glg="git log --graph --pretty=format:'%Cred%h%Creset %Cblue%an%Creset: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative -32"
+alias gp='git push'
 alias gpf='git force-push'
 alias glrp='glr && gp'
 # Remove `+` and `-` from start of diff lines; just rely upon color.
-alias gd='git diff --quiet || git diff --color | sed -E "s/^([^-+ ]*)[-+ ]/\\1/" | less -r'
-alias gdc='git diff --color --cached | sed -E "s/^([^-+ ]*)[-+ ]/\\1/" | less -r'
+alias gd='git diff --color'
+alias gdc='git diff --color --cached'
 alias gc='git commit --verbose --no-verify'
 alias gcf='git commit --fixup --verbose --no-verify'
 alias gca='git commit --all --verbose --no-verify'
