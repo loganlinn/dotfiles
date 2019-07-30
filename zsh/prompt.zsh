@@ -51,7 +51,15 @@ directory_name(){
   echo "%{$fg_bold[cyan]%}%1/%\/%{$reset_color%}"
 }
 
-export PROMPT=$'\n$(hostname_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
+virtualenv_name() {
+  if ! [[ -z $VIRTUAL_ENV ]]; then
+    echo "\n%{$fg_bold[white]%}($(basename $VIRTUAL_ENV))%{$reset_color%}"
+  fi
+}
+
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+export PROMPT=$'$(virtualenv_name)\n$(hostname_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
+
 set_prompt () {
   prefix='%{'$'\e[1A''%}' # one line up
   suffix='%{'$'\e[1B''%}' # one line down
