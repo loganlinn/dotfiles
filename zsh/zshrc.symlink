@@ -1,24 +1,25 @@
+################################################################################
+# Profile ZSH startup -- do not place anything above this line
+################################################################################
 # zmodload zsh/zprof
-# shortcut to this dotfiles path is $ZSH
+################################################################################
+
 export ZSH=$HOME/.dotfiles
+export PROJECTS=$HOME/code
 
-# your project folder that we can `c [tab]` to
-export PROJECTS=~/code
+################################################################################
+# localrc for secrets and secret things
+################################################################################
 
-# nvm is slow af, use lazy loading from https://github.com/lukechilds/zsh-nvm
-export NVM_LAZY_LOAD=true
-# actually, just disable that shit
-export ZSH_NVM_NO_LOAD=true
-
-# Stash your environment variables in ~/.localrc. This means they'll stay out
-# of your main dotfiles repository (which may be public, like this one), but
-# you'll have access to them in your scripts.
 if [[ -a ~/.localrc ]]
 then
   source ~/.localrc
 fi
 
-# all of our zsh files
+################################################################################
+# load zsh dotfiles
+################################################################################
+
 typeset -U config_files
 config_files=($ZSH/**/*.zsh)
 
@@ -46,12 +47,41 @@ done
 
 unset config_files
 
-# Better history
-# Credits to https://coderwall.com/p/jpj_6q/zsh-better-history-searching-with-arrow-keys
-autoload -U up-line-or-beginning-search
-autoload -U down-line-or-beginning-search
-zle -N up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-bindkey "^[[A" up-line-or-beginning-search # Up
-bindkey "^[[B" down-line-or-beginning-search # Down
+################################################################################
+# fzf
+################################################################################
+if [ -f "/usr/local/opt/fzf/shell/key-bindings.zsh" ]; then
+  source "/usr/local/opt/fzf/shell/key-bindings.zsh"
+fi
+
+################################################################################
+# pyenv
+################################################################################
+
+eval "$(pyenv init -)"
+if which pyenv-virtualenv-init > /dev/null; then
+  eval "$(pyenv virtualenv-init -)"
+fi
+
+
+################################################################################
+# alias hub as git
+################################################################################
+
+eval "$(hub alias -s)"
+
+################################################################################
+# tabtab source for serverless package
+################################################################################
+
+# uninstall by removing these lines or running `tabtab uninstall serverless`
+# [[ -f /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
+# tabtab source for sls package
+# uninstall by removing these lines or running `tabtab uninstall sls`
+# [[ -f /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
+
+################################################################################
+# Profile ZSH startup -- do not place anything below this line
+################################################################################
+
 # zprof
