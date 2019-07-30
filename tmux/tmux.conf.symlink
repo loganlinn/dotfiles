@@ -19,8 +19,9 @@ bind-key -T copy-mode-vi PPage send -X page-up
 bind-key -T copy-mode-vi NPage send -X page-down
 
 # Window Style (highlights active window)
-set-window-option -g window-style 'bg=colour0'
-set-window-option -g window-active-style 'bg=colour8'
+# note: swapped window-active-style and window-style for onedark.vim
+# set-window-option -g window-active-style 'bg=colour0'
+# set-window-option -g window-style 'bg=colour0'
 set-window-option -g pane-active-border-style ''
 
 # Send correct key sequences to emacs
