@@ -21,7 +21,7 @@ function git-clone {
     DIRECTORY="${PROJECTS:-$PWD}/${REPONAME%.git}"
   fi
 
-  git clone --recurse-submodules --jobs 8 -- "$REPO" "$DIRECTORY"
+  hub clone --recurse-submodules --jobs 8 -- "$REPO" "$DIRECTORY"
   cd $DIRECTORY
 }
 
