@@ -23,13 +23,6 @@
   rebase = true
 [alias]
   force-push = "!f() { git push --force-with-lease ${1:-origin}; }; f"
-  amend-force-push = "!f() { git add . && git amend && git force-push; }; f"
-	switch = !legit switch
-	sync = !legit sync
-	publish = !legit publish
-	unpublish = !legit unpublish
-	undo = !legit undo
-	branches = !legit branches
 [rebase]
   autosquash = true
 [credential]
