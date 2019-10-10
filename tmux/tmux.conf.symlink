@@ -4,8 +4,6 @@ unbind C-b
 bind C-f send-prefix
 unbind C-s
 
-set -sg escape-time 0
-
 # Mouse (tmux >= 2.1)
 set -g -q mouse on
 bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'select-pane -t=; copy-mode -e; send-keys -M'"
@@ -27,9 +25,7 @@ set-window-option -g pane-active-border-style ''
 # Send correct key sequences to emacs
 setw -g xterm-keys on
 
-# Copy-Paste Sanity (see https://github.com/ChrisJohnsen/tmux-MacOSX-pasteboard)
-#if 'which -s reattach-to-user-namespace' 'set -g default-command "reattach-to-user-namespace $SHELL -l"'
-set-option -g default-command "reattach-to-user-namespace -l zsh"
+set -g default-command "reattach-to-user-namespace -l zsh"
 
 # Less stretching to get to the first item.
 set -g base-index 1
@@ -40,37 +36,6 @@ bind r source-file ~/.tmux.conf \; display "Reloaded ~/.tmux.conf"
 
 # Renumber the windows
 bind R run "renum_tmux > /dev/null 2>&1"
-
-# Saner splitting.
-bind v split-window -h -c "#{pane_current_path}"
-bind s split-window -v -c "#{pane_current_path}"
-bind S choose-session
-
-# Pane movement
-bind h select-pane -L
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
-
-# DVTM style pane selection
-## bind 1 select-pane -t 1
-## bind 2 select-pane -t 2
-## bind 3 select-pane -t 3
-## bind 4 select-pane -t 4
-## bind 5 select-pane -t 5
-## bind 6 select-pane -t 6
-## bind 7 select-pane -t 7
-## bind 8 select-pane -t 8
-## bind 9 select-pane -t 9
-
-# Pane resizing
-bind -r C-Left  resize-pane -L 10
-bind -r C-Right resize-pane -R 10
-bind -r C-Down  resize-pane -D 10
-bind -r C-Up    resize-pane -U 10
-
-# 256 colors please
-set -g default-terminal "xterm"
 
 # Bad Wolf
 set -g status-fg white
@@ -83,7 +48,7 @@ set -g message-bg colour221
 set -g message-attr bold
 
 # Layouts
-set -g main-pane-width 260
+set -g main-pane-width 128
 bind M select-layout main-vertical
 bind E select-layout even-horizontal
 
@@ -109,7 +74,7 @@ setw -g automatic-rename on
 # Better name management
 bind c new-window \; command-prompt -p "project:" "rename-window '%1' ; send-keys -R 'c %1 ; clear' C-m"
 bind C new-window
-bind , command-prompt "rename-window '%%'"
+bind , rename-window '#{b:pane_current_path}'
 
 # Copy mode
 setw -g mode-keys vi
@@ -127,7 +92,21 @@ unbind-key -T copy-mode-vi C-v ; bind-key -T copy-mode-vi C-v send-keys -X recta
 unbind-key -T copy-mode-vi [   ; bind-key -T copy-mode-vi [ send-keys -X begin-selection
 unbind-key -T copy-mode-vi ]   ; bind-key -T copy-mode-vi ] send-keys -X copy-selection
 
+set -g @open-editor 'C-x'
+
 # Window movement
 bind \; last-window
 bind -r ] next-window
 bind -r [ previous-window
+
+# List of plugins
+# set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'tmux-plugins/tmux-pain-control'
+set -g @plugin 'tmux-plugins/tmux-open'
+set -g @plugin 'tmux-plugins/tmux-copycat'
+
+# Initialize TMUX plugin manager (keep this line at the very bottom of tmux.conf)
+run -b '~/.tmux/plugins/tpm/tpm'
