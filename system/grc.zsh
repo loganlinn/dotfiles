@@ -2,5 +2,5 @@
 
 if [[ "$(uname -s)" == 'Darwin' ]] && $(grc &>/dev/null) && ! $(brew &>/dev/null)
 then
-  source `brew --prefix`/etc/grc.bashrc
+  source `brew --prefix`/etc/grc.zsh
 fi
