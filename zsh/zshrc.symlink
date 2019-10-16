@@ -76,16 +76,6 @@ eval "$(jenv init -)"
 eval "$(hub alias -s)"
 
 ################################################################################
-# tabtab source for serverless package
-################################################################################
-
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-# [[ -f /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-# [[ -f /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/llinn/.nvm/versions/node/v8.9.4/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
-
-################################################################################
 # Profile ZSH startup -- do not place anything below this line
 ################################################################################
 
