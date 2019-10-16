@@ -57,6 +57,18 @@ virtualenv_name() {
   fi
 }
 
+battery_status() {
+  if test ! "$(uname)" = "Darwin"
+  then
+    exit 0
+  fi
+
+  if [[ $(sysctl -n hw.model) == *"Book"* ]]
+  then
+    $ZSH/bin/battery-status
+  fi
+}
+
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 export PROMPT=$'$(virtualenv_name)\n$(hostname_prompt) in $(directory_name) $(git_dirty)$(need_push)\n› '
 

@@ -31,10 +31,10 @@
 [credential "github.com"]
    helper = osxkeychain
 [filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
 [user]
-	name = loganlinn
-	email = logan.linn@gmail.com
+  name = loganlinn
+  email = logan.linn@gmail.com
