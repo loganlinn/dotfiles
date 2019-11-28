@@ -1,0 +1,9 @@
+#!/bin/bash
+
+dir="${PROJECTS:-$HOME}"
+name=$(ls "$dir" | fzf-tmux)
+if [[ -n "$name" ]]; then
+  dir="$dir/$name"
+  tmux rename-window "${name}"
+fi
+tmux send-keys "cd '$dir'" ENTER
