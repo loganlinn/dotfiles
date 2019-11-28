@@ -16,7 +16,7 @@ fi
 #alias genctags='ctags -R --sort=yes --verbose --languages=+PHP,-JavaScript --PHP-kinds=+cf --exclude=@$HOME/.ctags.exclude'
 alias tmux='TERM=xterm-256color tmux'
 #alias cljsbuild="lein trampoline cljsbuild $@"
-alias g='gradlew'
+alias g='/usr/local/bin/gw'
 
 case "$PLATFORM" in
   'osx')
