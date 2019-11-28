@@ -80,3 +80,9 @@ eval "$(hub alias -s)"
 ################################################################################
 
 # zprof
+
+################################################################################
+# party zone (a.k.a where install scripts think they are welcome)
+################################################################################
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/local/bin/mc mc
