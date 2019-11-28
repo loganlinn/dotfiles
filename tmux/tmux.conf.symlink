@@ -71,8 +71,11 @@ set -g visual-activity off
 # Autorename sanely.
 setw -g automatic-rename on
 
-# Better name management
-bind c new-window \; command-prompt -p "project:" "rename-window '%1' ; send-keys -R 'c %1 ; clear' C-m"
+# better name management
+# bind c new-window \; command-prompt -p "project:" "rename-window '%1' ; send-keys -r 'c %1 ; clear' c-m"
+# bind-key C new-window \; send-keys "cd $PROJECTS && cd $(/bin/ls | fzf)" Enter
+unbind c
+bind c new-window -c proj
 bind C new-window
 bind , rename-window '#{b:pane_current_path}'
 
@@ -83,6 +86,7 @@ bind ` copy-mode
 unbind p
 bind p paste-buffer
 bind -T copy-mode Escape send -X cancel
+set -g escape-time 0
 
 bind-key -T edit-mode-vi Up send-keys -X history-up
 bind-key -T edit-mode-vi Down send-keys -X history-down
@@ -100,7 +104,7 @@ bind -r ] next-window
 bind -r [ previous-window
 
 # List of plugins
-# set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/sensible'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
 set -g @plugin 'tmux-plugins/tmux-continuum'
