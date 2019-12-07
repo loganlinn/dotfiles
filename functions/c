@@ -17,8 +17,35 @@
 # autocomplete both on $PROJECTS, and also assume you want to autocomplete on
 # your Go projects in $GOPATH/src.
 
-if [ ! -z "$1" ] && [ -s "$GOPATH/src/github.com/$1" ]; then
-  cd "$GOPATH/src/github.com/$1"
+
+# if project not specified, prompt for it (in a fuzzy fashion)
+if [ "$#" -eq "0" ] || [ ! -d "$PROJECTS/$1" ]; then
+  preview_cmd="git --git-dir=$PROJECTS/{}/.git status"
+  choice=$(gls -c --color=never "$PROJECTS" | fzf-tmux --query="$1" --preview "$preview_cmd")
 else
-  cd "$PROJECTS/$1"
+  choice="$1"
 fi
+
+
+if [ -d "$PROJECTS/$choice" ]; then
+
+  cd "$PROJECTS/$choice"
+
+  if [ -n "$TMUX_RENAME_WINDOW" ]; then
+    tmux rename-window "$choice"
+  fi
+
+  # [python]
+  # if no venv is activated and there's a pyenv version with matching
+  # name, activate it automatically
+  if [ -z "$VIRTUAL_ENV" ] && [ -d "$HOME/.pyenv/versions/$choice" ]; then
+    pyenv activate "$choice"
+  fi
+
+else
+
+  cd "$PROJECTS"
+
+fi
+
+
