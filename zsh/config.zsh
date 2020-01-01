@@ -26,7 +26,36 @@ setopt EXTENDED_HISTORY # add timestamps to history
 setopt PROMPT_SUBST
 setopt CORRECT
 setopt COMPLETE_IN_WORD
+
+# IGNORE_EOF like in bash <https://www.zsh.org/mla/users/2001/msg00240.html>
 setopt IGNORE_EOF
+IGNOREEOF=1
+
+_bash-ctrl-d() {
+  if [[ $CURSOR == 0 && -z $BUFFER ]]; then
+    [[ -z $IGNOREEOF || $IGNOREEOF == 0 ]] && exit
+
+    [[ $LASTWIDGET == _bash-ctrl-d ]] \
+      && (( --__BASH_IGNORE_EOF == 0 )) \
+      && exit
+
+    : ${__BASH_IGNORE_EOF=$IGNOREEOF}
+
+    echo
+    if [[ $__BASH_IGNORE_EOF -eq 1 ]]; then
+      echo 'Press ^D to confirm "exit"'
+    else
+      echo 'Use "exit" to leave the shell.'
+    fi
+
+    zle send-break
+  else
+    zle delete-char-or-list
+  fi
+}
+
+zle -N _bash-ctrl-d
+bindkey "^D" _bash-ctrl-d
 
 setopt APPEND_HISTORY # adds history
 setopt INC_APPEND_HISTORY SHARE_HISTORY  # adds history incrementally and share it across sessions
