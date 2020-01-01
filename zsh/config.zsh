@@ -27,26 +27,23 @@ setopt PROMPT_SUBST
 setopt CORRECT
 setopt COMPLETE_IN_WORD
 
-# IGNORE_EOF like in bash <https://www.zsh.org/mla/users/2001/msg00240.html>
+# IGNORE_EOF like in bash <https://superuser.com/questions/1243138/why-does-ignoreeof-not-work-in-zsh/1309966>
 setopt IGNORE_EOF
-IGNOREEOF=1
+IGNOREEOF=3
 
 _bash-ctrl-d() {
   if [[ $CURSOR == 0 && -z $BUFFER ]]; then
     [[ -z $IGNOREEOF || $IGNOREEOF == 0 ]] && exit
 
-    [[ $LASTWIDGET == _bash-ctrl-d ]] \
-      && (( --__BASH_IGNORE_EOF == 0 )) \
-      && exit
-
-    : ${__BASH_IGNORE_EOF=$IGNOREEOF}
+    if [[ $LASTWIDGET == _bash-ctrl-d ]]; then
+      (( --__BASH_IGNORE_EOF <= 0 )) && exit
+    else
+      (( __BASH_IGNORE_EOF = IGNOREEOF-1 ))
+    fi
 
     echo
-    if [[ $__BASH_IGNORE_EOF -eq 1 ]]; then
-      echo 'Press ^D to confirm "exit"'
-    else
-      echo 'Use "exit" to leave the shell.'
-    fi
+    echo "Press ^D again or use "exit" to leave shell ($(( $IGNOREEOF - $__BASH_IGNORE_EOF ))/$(( $IGNOREEOF - 1 )))"
+    echo
 
     zle send-break
   else
