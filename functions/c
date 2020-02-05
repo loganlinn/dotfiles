@@ -18,10 +18,18 @@
 # your Go projects in $GOPATH/src.
 
 
+if [[ "$1" == "/" ]]; then
+  cd "$PROJECTS"
+  return
+fi
+
 # if project not specified, prompt for it (in a fuzzy fashion)
 if [ "$#" -eq "0" ] || [ ! -d "$PROJECTS/$1" ]; then
   preview_cmd="git --git-dir=$PROJECTS/{}/.git status 2>/dev/null || tree --dirsfirst -FL 1"
   choice=$(ls -c --color=never "$PROJECTS" | fzf-tmux --query="$1" --preview "$preview_cmd")
+  if [ $? -ne 0 ]; then
+    return
+  fi
 else
   choice="$1"
 fi
@@ -31,15 +39,13 @@ if [ -d "$PROJECTS/$choice" ]; then
 
   cd "$PROJECTS/$choice"
 
-  if [ -n "$TMUX_RENAME_WINDOW" ]; then
-    tmux rename-window "$choice"
-  fi
+  tmux rename-window "$choice"
 
   # [python]
   # if no venv is activated and there's a pyenv version with matching
   # name, activate it automatically
-  if [ -z "$VIRTUAL_ENV" ] && [ -d "$HOME/.pyenv/versions/$choice" ]; then
-    pyenv activate "$choice"
+  if [ -z "$VIRTUAL_ENV" ]; then
+    pyenv activate "$choice" 2>/dev/null
   fi
 
 else
