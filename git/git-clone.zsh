@@ -22,7 +22,13 @@ function git-clone {
   fi
 
   hub clone --recurse-submodules --jobs 8 -- "$REPO" "$DIRECTORY"
-  cd $DIRECTORY
+  cd "$DIRECTORY"
+
+  # needs to remember the current window when clone starts
+  # if [ -n "$TMUX" ]; then
+  #   tmux rename-window "$(basename DIRECTORY)"
+  # fi
 }
 
 alias gclone="git-clone"
+
