@@ -5,7 +5,7 @@
 set -eu
 
 source "$(dirname "$0")/common.sh"
-cd "$DOTFILES_ROOT"
+cd "$DOTFILES"
 
 setup_gitconfig () {
   if ! [ -f git/gitconfig.symlink ]
@@ -110,7 +110,7 @@ install_dotfiles () {
 
   local overwrite_all=false backup_all=false skip_all=false
 
-  for src in $(find -H "$DOTFILES_ROOT" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
+  for src in $(find -H "$DOTFILES" -maxdepth 2 -name '*.symlink' -not -path '*.git*')
   do
     dst="$HOME/.$(basename "${src%.*}")"
     link_file "$src" "$dst"
@@ -120,22 +120,11 @@ install_dotfiles () {
 ################################################################################
 echo ''
 
-# TODO there's probably a more semantic way to do this
-pid_file="$HOME/.dotfiles-bootstrap.pid"
-if [[ -f "$pid_file ]]; then
-  fail "$pid_file exists.t"
-else
-  echo "$$" > "$pid_file"
-fi
-
-# TODO cleanup this debug
-user "pid_file=$pid_file\npid=$(cat $pid_file)"
-
+chsh -s /usr/bin/zsh
+sudo chmod -R 755 $DOTFILES/functions
 setup_gitconfig
 install_dotfiles
-$DOTFILES_ROOT/install
-
-[ "$(cat $pid_file)" != "$$" ] && rm "$pid_file" || fail "failed to cleanup $pid_file"
+$DOTFILES/script/install
 
 success "done!"
 echo ''

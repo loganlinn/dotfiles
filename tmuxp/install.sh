@@ -1,3 +1,3 @@
 #!/bin/sh
 echo "› installing tmuxp"
-pip install --user tmuxp
+python3 -m pip install --user tmuxp

@@ -37,6 +37,7 @@ sudo apt-get install -qq \
   dnsutils \
   docker.io \
   fakeroot-ng \
+  fzf \
   gdb \
   git \
   git-crypt \
@@ -138,19 +139,6 @@ if ! [ -x "$(command -v terraform)" ]; then
   rm -f terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 fi
 
-# install protobuf
-if ! [ -x "$(command -v protoc)" ]; then
-  export PROTOBUF_VERSION="3.8.0"
-  mkdir -p protobuf_install 
-  pushd protobuf_install
-  wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
-  unzip protoc-${PROTOBUF_VERSION}-linux-x86_64.zip
-  mv bin/protoc /usr/local/bin
-  mv include/* /usr/local/include/
-  popd
-  rm -rf protobuf_install
-fi
-
 # install hub
 if ! [ -x "$(command -v hub)" ]; then
   echo " ==> Installing hub .."
@@ -161,41 +149,6 @@ if ! [ -x "$(command -v hub)" ]; then
   cp hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin
   rm -rf hub-linux-amd64-${HUB_VERSION}
   rm -f hub-linux-amd64-${HUB_VERSION}.tgz*
-fi
-
-if [ ! -d "${HOME}/.fzf" ]; then
-  echo " ==> Installing fzf"
-  git clone https://github.com/junegunn/fzf "${HOME}/.fzf"
-  pushd "${HOME}/.fzf"
-  git remote set-url origin git@github.com:junegunn/fzf.git 
-  ${HOME}/.fzf/install --bin --64 --no-bash --no-zsh --no-fish
-  popd
-fi
-
-echo "==> Setting shell to zsh..."
-chsh -s /usr/bin/zsh
-
-echo "==> Creating dev directories"
-mkdir -p /root/code
-
-if [ ! -d /root/code/dotfiles ]; then
-  echo "==> Setting up dotfiles"
-  # the reason we dont't copy the files individually is, to easily push changes
-  # if needed
-  cd "/root/code"
-  git clone --recursive https://github.com/loganlinn/dotfiles.git
-
-  cd "/root/code/dotfiles"
-  git remote set-url origin git@github.com:loganlinn/dotfiles.git
-
-  ln -sfn $(pwd)/vimrc "${HOME}/.vimrc"
-  ln -sfn $(pwd)/zshrc "${HOME}/.zshrc"
-  ln -sfn $(pwd)/tmuxconf "${HOME}/.tmux.conf"
-  ln -sfn $(pwd)/tigrc "${HOME}/.tigrc"
-  ln -sfn $(pwd)/git-prompt.sh "${HOME}/.git-prompt.sh"
-  ln -sfn $(pwd)/gitconfig "${HOME}/.gitconfig"
-  ln -sfn $(pwd)/agignore "${HOME}/.agignore"
-  ln -sfn $(pwd)/sshconfig "${HOME}/.ssh/config"
 fi
 
 

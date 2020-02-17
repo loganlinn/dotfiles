@@ -58,31 +58,36 @@ fi
 # pyenv
 ################################################################################
 
-eval "$(pyenv init -)"
-if which pyenv-virtualenv-init > /dev/null; then
-  eval "$(pyenv virtualenv-init -)"
+if (( $+commands[pyenv] )); then
+  eval "$(pyenv init -)"
+  if (( $+commands[pyenv-virtualenv-init] )); then
+    eval "$(pyenv virtualenv-init -)"
+  fi
 fi
 
 ################################################################################
 # jenv
 ################################################################################
 
-eval "$(jenv init -)"
+if (( $+commands[jenv] )); then
+  eval "$(jenv init -)"
+fi
 
 ################################################################################
-# alias hub as git
+# hub
 ################################################################################
 
-eval "$(hub alias -s)"
+if (( $+commands[hub] )); then
+  eval "$(hub alias -s)"
+fi
+
+################################################################################
+# completions
+################################################################################
+autoload -U +X bashcompinit && bashcompinit || true
+complete -o nospace -C /usr/local/bin/mc mc || true
 
 ################################################################################
 # Profile ZSH startup -- do not place anything below this line
 ################################################################################
-
 # zprof
-
-################################################################################
-# party zone (a.k.a where install scripts think they are welcome)
-################################################################################
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /usr/local/bin/mc mc
