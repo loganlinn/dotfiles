@@ -2,9 +2,18 @@
 #
 # Run all dotfiles installers.
 
-set -e
+set -eu
 
-cd "$(dirname $0)"/..
+source "$(dirname "$0")/common.sh"
+cd "$DOTFILES_ROOT"
+
+exec_installers() {
+    while read installer; do
+        info "running $installer"
+        sh -c "${installer}"
+    done
+}
 
 # find the installers and run them iteratively
-find . -name install.sh | while read installer ; do sh -c "${installer}" ; done
+find . -name install.sh | exec_installers
+find . -name "install.$PLATFORM.sh" | exec_installers

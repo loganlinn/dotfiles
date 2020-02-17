@@ -2,30 +2,10 @@
 #
 # bootstrap installs things.
 
-cd "$(dirname "$0")/.."
-DOTFILES_ROOT=$(pwd -P)
+set -eu
 
-set -e
-
-echo ''
-
-info () {
-  printf "\r  [ \033[00;34m..\033[0m ] $1\n"
-}
-
-user () {
-  printf "\r  [ \033[0;33m??\033[0m ] $1\n"
-}
-
-success () {
-  printf "\r\033[2K  [ \033[00;32mOK\033[0m ] $1\n"
-}
-
-fail () {
-  printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
-  echo ''
-  exit
-}
+source "$(dirname "$0")/common.sh"
+cd "$DOTFILES_ROOT"
 
 setup_gitconfig () {
   if ! [ -f git/gitconfig.symlink ]
@@ -33,7 +13,7 @@ setup_gitconfig () {
     info 'setup gitconfig'
 
     git_credential='cache'
-    if [ "$(uname -s)" == "Darwin" ]
+    if [ "$PLATFORM" == "osx" ]
     then
       git_credential='osxkeychain'
     fi
@@ -137,20 +117,25 @@ install_dotfiles () {
   done
 }
 
-setup_gitconfig
-install_dotfiles
+################################################################################
+echo ''
 
-# If we're on a Mac, let's install and setup homebrew.
-if [ "$(uname -s)" == "Darwin" ]
-then
-  info "installing dependencies"
-  if source bin/dot | while read -r data; do info "$data"; done
-  then
-    success "dependencies installed"
-  else
-    fail "error installing dependencies"
-  fi
+# TODO there's probably a more semantic way to do this
+pid_file="$HOME/.dotfiles-bootstrap.pid"
+if [[ -f "$pid_file ]]; then
+  fail "$pid_file exists.t"
+else
+  echo "$$" > "$pid_file"
 fi
 
+# TODO cleanup this debug
+user "pid_file=$pid_file\npid=$(cat $pid_file)"
+
+setup_gitconfig
+install_dotfiles
+$DOTFILES_ROOT/install
+
+[ "$(cat $pid_file)" != "$$" ] && rm "$pid_file" || fail "failed to cleanup $pid_file"
+
+success "done!"
 echo ''
-echo '  All installed!'
