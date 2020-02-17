@@ -115,13 +115,16 @@ install_dotfiles () {
     dst="$HOME/.$(basename "${src%.*}")"
     link_file "$src" "$dst"
   done
+  
+  # prevent compaudit warnings
+  chmod g-w "$DOTFILES/functions/*"
+  chown "$(whoami)" "$DOTFILES/functions/*"
 }
 
 ################################################################################
 echo ''
 
 chsh -s /usr/bin/zsh
-sudo chmod -R 755 $DOTFILES/functions
 setup_gitconfig
 install_dotfiles
 $DOTFILES/script/install
