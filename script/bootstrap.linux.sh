@@ -50,6 +50,7 @@ sudo apt-get install -qq \
   ipcalc \
   jq \
   less \
+  libbz2-dev \
   libclang-dev \
   liblzma-dev \
   libpq-dev \
