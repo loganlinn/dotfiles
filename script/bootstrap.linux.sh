@@ -52,15 +52,20 @@ sudo apt-get install -qq \
   less \
   libbz2-dev \
   libclang-dev \
+  libncurses5-dev \
+  libncursesw5-dev \
   liblzma-dev \
   libpq-dev \
   libsnappy-dev \
   libprotoc-dev \
+  libreadline-dev   
+  libffi-dev \
   libsqlite3-dev \
   libssl-dev \
   libvirt-clients \
   libvirt-daemon-system \
   lldb \
+  llvm \
   locales \
   man \
   mosh \
@@ -75,6 +80,7 @@ sudo apt-get install -qq \
   python \
   python3 \
   python3-flake8 \
+  python-openssl \
   python3-pip \
   python3-setuptools \
   python3-venv \
@@ -90,15 +96,18 @@ sudo apt-get install -qq \
   stow \
   sudo \
   tig \
+  tk-dev \
   tmate \
   tmux \
   tree \
   unzip \
   wget \
+  xz-utils \
   zgen \
   zip \
   zlib1g-dev \
   vim-gtk3 \
+  zlib1g-dev \
   zsh \
   --no-install-recommends \
 
