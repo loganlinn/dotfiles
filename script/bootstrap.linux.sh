@@ -53,6 +53,7 @@ sudo apt-get install -qq \
   libclang-dev \
   liblzma-dev \
   libpq-dev \
+  libsnappy-dev \
   libprotoc-dev \
   libsqlite3-dev \
   libssl-dev \
