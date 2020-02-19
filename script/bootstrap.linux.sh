@@ -102,6 +102,7 @@ sudo apt-get install -qq \
   tree \
   unzip \
   wget \
+  xdg-utils \
   xz-utils \
   zgen \
   zip \
