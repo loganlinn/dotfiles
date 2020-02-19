@@ -117,8 +117,8 @@ install_dotfiles () {
   done
   
   # prevent compaudit warnings
-  chmod g-w "$DOTFILES/functions/*"
-  chown "$(whoami)" "$DOTFILES/functions/*"
+  chmod -R g-w "$DOTFILES/functions"
+  chown -R "$(whoami)" "$DOTFILES/functions"
 }
 
 ################################################################################
@@ -127,7 +127,11 @@ echo ''
 chsh -s /usr/bin/zsh
 setup_gitconfig
 install_dotfiles
-$DOTFILES/script/install
+sh -c "$DOTFILES/script/install"
 
-success "done!"
-echo ''
+platform_script="$DOTFILES/script/bootstrap.$PLATFORM.sh"
+if [[ -x "$platform_script" ]]; then
+  info "running $platform_script"
+  "$platform_script" || fail "errored $platform_script"
+  success "ran $platform_script"
+fi

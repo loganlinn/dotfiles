@@ -1,13 +1,14 @@
 #!/bin/bash
-
 set -eu
+
+source "$(dirname "$0")/common.sh"
 
 export DEBIAN_FRONTEND=noninteractive
 
 UPGRADE_PACKAGES=${1:-none}
 
 if [ "${UPGRADE_PACKAGES}" != "none" ]; then
-  echo "==> Updating and upgrading packages ..."
+  info "Updating and upgrading packages"
 
   # Add third party repositories
   sudo add-apt-repository ppa:keithw/mosh-dev -y
@@ -24,7 +25,7 @@ if [ "${UPGRADE_PACKAGES}" != "none" ]; then
   sudo apt-get upgrade -y
 fi
 
-sudo apt-get install -qq \
+sudo apt-get install -y -qq \
   apache2-utils \
   apt-transport-https \
   build-essential \
@@ -37,7 +38,6 @@ sudo apt-get install -qq \
   dnsutils \
   docker.io \
   fakeroot-ng \
-  fzf \
   gdb \
   git \
   git-crypt \
@@ -58,7 +58,7 @@ sudo apt-get install -qq \
   libpq-dev \
   libsnappy-dev \
   libprotoc-dev \
-  libreadline-dev   
+  libreadline-dev \
   libffi-dev \
   libsqlite3-dev \
   libssl-dev \
@@ -115,8 +115,9 @@ sudo apt-get install -qq \
 rm -rf /var/lib/apt/lists/*
 
 # install Go
-if ! [ -x "$(command -v go)" ]; then
-  export GO_VERSION="1.13"
+if ! command_exists go; then
+  GO_VERSION="1.13"
+  info "installing golang ($GO_VERSION)"
   wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" 
   tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz" 
   rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
@@ -124,16 +125,18 @@ if ! [ -x "$(command -v go)" ]; then
 fi
 
 # install 1password
-if ! [ -x "$(command -v op)" ]; then
-  export OP_VERSION="v0.5.6-003"
+if ! command_exists op; then
+  OP_VERSION="v0.5.6-003"
+  info "installing op ($OP_VERSION)"
   curl -sS -o 1password.zip https://cache.agilebits.com/dist/1P/op/pkg/${OP_VERSION}/op_linux_amd64_${OP_VERSION}.zip
   unzip 1password.zip op -d /usr/local/bin
   rm -f 1password.zip
 fi
 
 # install doctl
-if ! [ -x "$(command -v doctl)" ]; then
-  export DOCTL_VERSION="1.20.1"
+if ! command_exists doctl; then
+  DOCTL_VERSION="1.20.1"
+  info "installing doctl ($DOCTL_VERSION)"
   wget https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz
   tar xf doctl-${DOCTL_VERSION}-linux-amd64.tar.gz 
   chmod +x doctl 
@@ -142,8 +145,9 @@ if ! [ -x "$(command -v doctl)" ]; then
 fi
 
 # install terraform
-if ! [ -x "$(command -v terraform)" ]; then
-  export TERRAFORM_VERSION="0.12.9"
+if ! command_exists terraform; then
+  TERRAFORM_VERSION="0.12.9"
+  info "installing terraform ($TERRAFORM_VERSION)"
   wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip 
   unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip 
   chmod +x terraform
@@ -152,9 +156,9 @@ if ! [ -x "$(command -v terraform)" ]; then
 fi
 
 # install hub
-if ! [ -x "$(command -v hub)" ]; then
-  echo " ==> Installing hub .."
-  export HUB_VERSION="2.12.3"
+if ! command_exists hub; then
+  HUB_VERSION="2.12.3"
+  info "installing hub ($HUB_VERSION)"
   wget https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
   tar xf hub-linux-amd64-${HUB_VERSION}.tgz
   chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
@@ -163,8 +167,15 @@ if ! [ -x "$(command -v hub)" ]; then
   rm -f hub-linux-amd64-${HUB_VERSION}.tgz*
 fi
 
+if ! command_exists fd; then
+  FD_VERSION="7.4.0"
+  info "installing fd ($FD_VERSION)"
+  wget https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/fd_${FD_VERSION}_amd64.deb
+  dpkg -i fd_${FD_VERSION}_amd64.deb
+  rm -f fd_${FD_VERSION}_amd64.deb
+fi
 
-echo "==> Creating pull-secret.sh script"
+info "Creating pull-secret.sh script"
 mkdir -p ~/secrets
 cat > ~/secrets/pull-secrets.sh <<'EOF'
 #!/bin/bash
@@ -186,14 +197,7 @@ chmod 0600 ~/.ssh/github_rsa
 
 ln -sfn $(pwd)/zsh_private ~/.zsh_private
 ln -sfn $(pwd)/zsh_history ~/.zsh_history
-
-echo "Done!"
 EOF
 chmod +x ~/secrets/pull-secrets.sh
 
-
-# Set correct timezone
 timedatectl set-timezone America/Los_Angeles
-
-echo ""
-echo "==> Done!"

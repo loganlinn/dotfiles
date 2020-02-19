@@ -6,6 +6,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH="/snap/bin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
 
 export MANPATH="/usr/local/man:$MANPATH"
 export MANPATH="/usr/local/mysql/man:$MANPATH"

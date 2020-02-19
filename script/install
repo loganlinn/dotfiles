@@ -7,11 +7,12 @@ set -eu
 source "$(dirname "$0")/common.sh"
 cd "$DOTFILES"
 
-for installer in $(find . -name install.sh); do
-    if [[ -x "$installer" ]]; then
-        info "running $installer"        
-        sh -c "${installer}"
-    else
-        warning "$installer is not executable"
-    fi
+for installer in */install.sh; do
+  if [[ -x "$installer" ]]; then
+    info "installing $(basename "$(dirname "$installer")")"
+    sh -c "$installer" || fail "errored $(realpath "$installer")"
+    success "ran $(realpath "$installer")"
+  else
+    warning "skipped $installer (reason: not executable)"
+  fi
 done

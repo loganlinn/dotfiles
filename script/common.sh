@@ -4,7 +4,7 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-export DOTFILES="$(pwd -P)"
+DOTFILES="$(pwd -P)"
 
 # Only use colors if connected to a terminal
 if [ -t 1 ]; then
@@ -28,22 +28,24 @@ command_exists() {
 }
 
 info () {
-  printf "\r  [ ${BLUE}..${RESET} ] %s\n" "$@"
+  echo -e "\r  [ ${BLUE}..${RESET} ] $*\n"
 }
 
 user () {
-  printf "\r  [ ${YELLOW}??${RESET} ] %s\n" "$@"
+  echo -e "\r  [ ${YELLOW}??${RESET} ] $*\n"
 }
 
 success () {
-  printf "\r  [ ${GREEN}OK${RESET} ] %s\n" "$@"
+  echo -e "\r  [ ${GREEN}OK${RESET} ] $*\n"
 }
 
 warning () {
-  printf "\r  [ ${YELLOW}!!${RESET} ] %s\n" "$@"
+  echo -e "\r  [ ${YELLOW}!!${RESET} ] $*\n"
 }
 
 fail () {
-  printf "\r  [${RED}FAIL${RESET}] %s\n" "$@"
+  echo -e "\r  [${RED}FAIL${RESET}] $*\n"
   exit 1
 }
+
+export DOTFILES
