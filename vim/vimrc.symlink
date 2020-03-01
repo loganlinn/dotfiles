@@ -33,6 +33,13 @@ filetype plugin indent on
 NeoBundleCheck
 
 "-------------------------------------------------------------------------------
+" Load dotfiles
+"-------------------------------------------------------------------------------
+for s:fpath in split(globpath($ZSH, 'vim/*.vim'), '\n')
+  exe 'source' s:fpath
+endfor
+
+"-------------------------------------------------------------------------------
 " Basics
 "-------------------------------------------------------------------------------
 
@@ -240,6 +247,10 @@ map <leader>q :tabclose
 " Plugin Settings
 "-------------------------------------------------------------------------------
 
+" Black (https://github.com/psf/black/blob/38385727/README.md)
+autocmd BufWritePre *.py execute ':Black'
+" nnoremap <F9> :Black<CR>
+
 " NERDTree
 "   show NERDTree if vim started without arguments
 autocmd StdinReadPre * let s:std_in=1
@@ -369,3 +380,26 @@ if exists("+showtabline")
   set stal=2
   set tabline=%!MyTabLine()
 endif
+
+
+" ignore stuff for nerd tree
+let NERDTreeIgnore=[]
+call add(NERDTreeIgnore, '^tmp/')
+call add(NERDTreeIgnore, '^dist/')
+call add(NERDTreeIgnore, '^target/')
+call add(NERDTreeIgnore, '^node_modules')
+call add(NERDTreeIgnore, '^__pycache__')
+call add(NERDTreeIgnore, '^bower_components')
+call add(NERDTreeIgnore, '^flow-typed')
+call add(NERDTreeIgnore, '\.pyc')
+call add(NERDTreeIgnore, '\~$')
+call add(NERDTreeIgnore, '\.swo$')
+call add(NERDTreeIgnore, '\.beam$')
+call add(NERDTreeIgnore, '\.swp$')
+call add(NERDTreeIgnore, '\.git$')
+call add(NERDTreeIgnore, '\.hg')
+call add(NERDTreeIgnore, '\.svn')
+call add(NERDTreeIgnore, '\.bzr')
+call add(NERDTreeIgnore, '\.so')
+call add(NERDTreeIgnore, '\.o')
+
