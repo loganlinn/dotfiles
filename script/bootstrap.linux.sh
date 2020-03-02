@@ -7,20 +7,12 @@ export DEBIAN_FRONTEND=noninteractive
 
 UPGRADE_PACKAGES=${1:-none}
 
+# Add third party repositories
+sudo add-apt-repository ppa:keithw/mosh-dev -y
+sudo add-apt-repository ppa:jonathonf/vim -y
+
 if [ "${UPGRADE_PACKAGES}" != "none" ]; then
   info "Updating and upgrading packages"
-
-  # Add third party repositories
-  sudo add-apt-repository ppa:keithw/mosh-dev -y
-  sudo add-apt-repository ppa:jonathonf/vim -y
-
-  CLOUD_SDK_SOURCE="/etc/apt/sources.list.d/google-cloud-sdk.list"
-  CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
-  if [ ! -f "${CLOUD_SDK_SOURCE}" ]; then
-    echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a ${CLOUD_SDK_SOURCE}
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-  fi
-
   sudo apt-get update
   sudo apt-get upgrade -y
 fi
@@ -37,16 +29,14 @@ sudo apt-get install -y -qq \
   direnv \
   dnsutils \
   docker.io \
+  emacs \
   fakeroot-ng \
   gdb \
   git \
   git-crypt \
   gnupg \
   gnupg2 \
-  google-cloud-sdk \
-  google-cloud-sdk-app-engine-go \
   htop \
-  hugo \
   ipcalc \
   jq \
   less \
@@ -76,8 +66,6 @@ sudo apt-get install -y -qq \
   netcat-openbsd \
   openssh-server \
   pkg-config \
-  protobuf-compiler \
-  pwgen \
   python \
   python3 \
   python3-flake8 \
@@ -102,6 +90,7 @@ sudo apt-get install -y -qq \
   tmux \
   tree \
   unzip \
+  urlview \
   wget \
   xdg-utils \
   xz-utils \
@@ -132,7 +121,7 @@ fi
 
 # install 1password
 if ! command_exists op; then
-  declare OP_VERSION="v0.5.6-003"
+  declare OP_VERSION="v0.9.2"
   info "installing op ($OP_VERSION)"
   curl -sS -o 1password.zip "https://cache.agilebits.com/dist/1P/op/pkg/${OP_VERSION}/op_linux_amd64_${OP_VERSION}.zip"
   unzip 1password.zip op -d /usr/local/bin
@@ -191,30 +180,5 @@ if ! command_exists fd; then
   dpkg -i fd_${FD_VERSION}_amd64.deb
   rm -f fd_${FD_VERSION}_amd64.deb
 fi
-
-info "Creating pull-secret.sh script"
-mkdir -p ~/secrets
-cat > ~/secrets/pull-secrets.sh <<'EOF'
-#!/bin/bash
-
-set -eu
-
-echo "Authenticating with 1Password"
-export OP_SESSION_my=$(op signin https://my.1password.com logan.linn@gmail.com --output=raw)
-
-echo "Pulling secrets"
-
-op get document 'github_rsa' > github_rsa
-op get document 'zsh_private' > zsh_private
-op get document 'zsh_history' > zsh_history
-
-rm -f ~/.ssh/github_rsa
-ln -sfn $(pwd)/github_rsa ~/.ssh/github_rsa
-chmod 0600 ~/.ssh/github_rsa
-
-ln -sfn $(pwd)/zsh_private ~/.zsh_private
-ln -sfn $(pwd)/zsh_history ~/.zsh_history
-EOF
-chmod +x ~/secrets/pull-secrets.sh
 
 timedatectl set-timezone America/Los_Angeles
