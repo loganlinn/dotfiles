@@ -1,3 +1,8 @@
+if [[ "$(uname -s)" == "Darwin" ]]
+then
+  return
+fi
+
 typeset _agent_forwarding _ssh_env_cache
 
 function _start_agent() {
