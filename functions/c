@@ -20,7 +20,7 @@
 
 # if project not specified, prompt for it (in a fuzzy fashion)
 if [ "$#" -eq "0" ] || [ ! -d "$PROJECTS/$1" ]; then
-  preview_cmd="git --git-dir=$PROJECTS/{}/.git status"
+  preview_cmd="git --git-dir=$PROJECTS/{}/.git status 2>/dev/null || tree --dirsfirst -FL 1"
   choice=$(ls -c --color=never "$PROJECTS" | fzf-tmux --query="$1" --preview "$preview_cmd")
 else
   choice="$1"
