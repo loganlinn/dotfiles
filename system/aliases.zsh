@@ -13,11 +13,6 @@ else
   alias ll="ls -l"
 fi
 
-#alias genctags='ctags -R --sort=yes --verbose --languages=+PHP,-JavaScript --PHP-kinds=+cf --exclude=@$HOME/.ctags.exclude'
-alias tmux='TERM=xterm-256color tmux'
-#alias cljsbuild="lein trampoline cljsbuild $@"
-alias g='/usr/local/bin/gw'
-
 case "$PLATFORM" in
   'osx')
     alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
@@ -26,3 +21,10 @@ esac
 
 # allow aliases to be used with sudo
 alias sudo='sudo '
+
+# Remove the hosts that I don't want to keep around- in this case, only
+# keep the first host. Like a boss.
+alias hosts="head -2 ~/.ssh/known_hosts | tail -1 > ~/.ssh/known_hosts"
+
+# Pipe my public key to my clipboard. Fuck you, pay me.
+alias pubkey="more ~/.ssh/id_rsa.pub | pbcopy | echo '=> Public key copied to pasteboard.'"
