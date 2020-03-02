@@ -59,15 +59,15 @@ set -g status-interval 5
 
 set -g status-left '#[fg=colour16,bg=colour254,bold] #S #[fg=colour254,bg=colour234,nobold]'
 set -g status-right '#[fg=colour245] %R  %d %b #[fg=colour254,bg=colour234,nobold]#[fg=colour16,bg=colour254,bold] #h '
-set -g window-status-format "#[fg=white,bg=colour234] #I #W "
+set -g window-status-format "#[fg=white,bg=colour234] #I #{=-22:window_name} "
 set -g window-status-current-format "#[fg=colour234,bg=colour39] #[fg=colour16,bg=colour39,noreverse,bold]#I  #W #[fg=colour39,bg=colour234,nobold]"
 
 # Activity
 setw -g monitor-activity on
 set -g visual-activity off
 
-# Autorename sanely.
 setw -g automatic-rename on
+setw -g automatic-rename-format '#(basename #{pane_current_path})'
 
 # better name management
 # bind c new-window \; command-prompt -p "project:" "rename-window '%1' ; send-keys -r 'c %1 ; clear' c-m"
@@ -75,7 +75,7 @@ setw -g automatic-rename on
 unbind c
 bind c new-window -c proj
 bind C new-window
-bind , rename-window '#{b:pane_current_path}'
+bind , command-prompt -I "#W" "rename-window '%%'"
 
 # Copy mode
 setw -g mode-keys vi
