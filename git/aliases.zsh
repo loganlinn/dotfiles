@@ -27,7 +27,7 @@ alias gsw="git stash show -p"
 
 gb() {
   local branches branch
-  branches=$(git branch) &&
+  branches=$(git branch --sort=-committerdate) &&
   branch=$(echo "$branches" | fzf-tmux -d 15 +m) &&
   git checkout $(echo "$branch" | sed "s/.* //")
 }
