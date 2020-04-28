@@ -56,6 +56,7 @@ set -g window-status-current-format "#[fg=colour234,bg=colour39] #[fg=colour1
 setw -g monitor-activity on
 set -g visual-activity off
 
+setw -g renumber-windows on
 setw -g automatic-rename on
 setw -g automatic-rename-format '#(basename #{pane_current_path})'
 

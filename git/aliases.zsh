@@ -25,9 +25,9 @@ alias gsu="git stash -u"
 alias gsp="git stash pop"
 alias gsw="git stash show -p"
 
-gb() {
-  local branches branch
-  branches=$(git branch --sort=-committerdate) &&
-  branch=$(echo "$branches" | fzf-tmux -d 15 +m) &&
-  git checkout $(echo "$branch" | sed "s/.* //")
-}
+# gb() {
+#   local branches branch
+#   branches=$(git branch --sort=-committerdate) &&
+#   branch=$(echo "$branches" | fzf-tmux -d 15 +m) &&
+#   git checkout $(echo "$branch" | sed "s/.* //")
+# }

@@ -12,3 +12,5 @@ esac
 if [[ "$TERM" == "xterm" ]]; then
 	export TERM='xterm-256color'
 fi
+
+export SHELL="$(command -v zsh)"

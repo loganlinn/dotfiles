@@ -35,7 +35,7 @@ NeoBundleCheck
 "-------------------------------------------------------------------------------
 " Load dotfiles
 "-------------------------------------------------------------------------------
-for s:fpath in split(globpath($ZSH, 'vim/*.vim'), '\n')
+for s:fpath in split(globpath($DOTFILES, 'vim/*.vim'), '\n')
   exe 'source' s:fpath
 endfor
 
