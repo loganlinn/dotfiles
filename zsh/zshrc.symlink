@@ -1,95 +1,90 @@
-#!/usr/bin/env zsh
-
 # zmodload zsh/zprof
-
 ################################################################################
-# environment variables
+# zshrc
 ################################################################################
 
-export DOTFILES=$HOME/.dotfiles
-export PROJECTS=$HOME/code
+export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
+export PROJECTS=${PROJECTS:-"$HOME/code"}
 
+export PATH="/usr/local/bin:$PATH"
+export PATH="/usr/local/sbin:$PATH"
 export PATH="$HOME/bin:$PATH"
 export PATH="$DOTFILES/bin:$PATH"
 
-export EDITOR='vim'
+export EDITOR=vim
 
-case "$(uname -s)" in
-  'Linux')
-    export PLATFORM='linux'
-    ;;
-  'Darwin')
-    export PLATFORM='osx'
-    ;;
-esac
+export ANTIGEN="$HOME/antigen"
+export ADOTDIR="$HOME/.antigen"
+export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
+export ZSH_CUSTOM="$DOTFILES"
 
-export SHELL="$(command -v zsh)"
+[[ -d "$ANTIGEN" ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
+[[ -d "$ZSH" ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 
-
-################################################################################
-# autoload
-################################################################################
-
-autoload -U compinit && compinit
-autoload -U bashcompinit && bashcompinit
-autoload -U $DOTFILES/functions/*(:t) # TODO look into zplug lazy (https://github.com/zplug/zplug/wiki/Configurations#lazy-tag)
-################################################################################
-# zplug
-################################################################################
-
-if [[ ! -d ~/.zplug ]]; then
-  git clone https://github.com/zplug/zplug ~/.zplug
-  source ~/.zplug/init.zsh && zplug update --self
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-source ~/.zplug/init.zsh
+source $ANTIGEN/antigen.zsh
 
-zplug "mafredri/zsh-async", from:github
-zplug "loganlinn/5b506c9c708859ad99a766842dbce9a8", from:gist
-zplug "loganlinn/6203339d487e41a651e877ad14aeaa62", from:gist
-zplug "plugins/aws", from:oh-my-zsh
-zplug "plugins/docker", from:oh-my-zsh
-zplug "plugins/dotenv", from:oh-my-zsh
-zplug "plugins/fzf", from:oh-my-zsh
-zplug "plugins/git", from:oh-my-zsh
-zplug "plugins/github", from:oh-my-zsh
-zplug "plugins/gpg-agent", from:oh-my-zsh
-zplug "plugins/jenv", from:oh-my-zsh
-zplug "plugins/keychain", from:oh-my-zsh
-zplug "plugins/kubectl", from:oh-my-zsh
-zplug "plugins/osx", from:oh-my-zsh
-zplug "plugins/pip", from:oh-my-zsh
-zplug "plugins/pyenv", from:oh-my-zsh
-zplug "plugins/rust", from:oh-my-zsh
-zplug "plugins/safe-paste", from:oh-my-zsh
-zplug "plugins/terraform", from:oh-my-zsh
-zplug "plugins/urltools", from:oh-my-zsh
-zplug "plugins/vi-mode", from:oh-my-zsh
-zplug "plugins/web-search", from:oh-my-zsh
-zplug "plugins/zsh_reload", from:oh-my-zsh
-zplug "sirhc/okta.plugin.zsh"
-zplug "sirhc/op.plugin.zsh"
-zplug "wfxr/forgit"
-zplug "zsh-users/zsh-completions"
-zplug "zsh-users/zsh-syntax-highlighting"
-zplug "zsh-users/zsh-history-substring-search"
+antigen use oh-my-zsh
+antigen bundle aws
+antigen bundle command-not-found
+antigen bundle docker
+antigen bundle dotenv
+antigen bundle fzf
+antigen bundle git
+antigen bundle github
+antigen bundle gpg-agent
+antigen bundle gradle
+# antigen bundle jenv
+# antigen bundle keychain # error: command not found
+# antigen bundle kubectl
+antigen bundle lein
+# antigen bundle osx
+antigen bundle pip
+antigen bundle pyenv
+antigen bundle rust
+antigen bundle safe-paste
+antigen bundle terraform
+antigen bundle urltools
+antigen bundle vi-mode
+antigen bundle wd
+antigen bundle web-search
+antigen bundle z
+antigen bundle zsh_reload
+antigen bundle "$DOTFILES/plugins/projects"
+antigen bundle "$DOTFILES/plugins/common-aliases"
+antigen bundle "$DOTFILES/plugins/pyenv-act"
 
-zplug 'reconquest/shdoc', as:command
-zplug "mrowa44/emojify", as:command
+antigen bundle zsh-users/zsh-completions
+antigen bundle zsh-users/zsh-syntax-highlighting
+antigen bundle zsh-users/zsh-history-substring-search
 
-zplug "sindresorhus/pure", use:pure.zsh, from:github, as:theme
+antigen bundle sirhc/okta.plugin.zsh
+antigen bundle sirhc/op.plugin.zsh
+antigen bundle wfxr/forgit
 
-# Install packages that have not been installed yet
-if ! zplug check --verbose; then
-  printf "Install? [y/N]: "
-  if read -q; then
-    echo; zplug install
-  else
-    echo
+antigen theme romkatv/powerlevel10k
+
+antigen apply
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+################################################################################
+# tools
+#################################################################################
+
+if (( $+commands[pyenv] )); then
+  eval "$(pyenv init -)"
+  if (( $+commands[pyenv-virtualenv-init] )); then
+    eval "$(pyenv virtualenv-init -)"
   fi
 fi
-
-zplug load
 
 ################################################################################
 # aliases
@@ -100,11 +95,20 @@ alias -s {yml,yaml}=$EDITOR
 alias -s {zip,whl}=unzip
 
 alias g='$(brew --prefix)/bin/gw' # && compdef g='gradle'
-alias k='kubectl'
-alias l='ls -lh'
 alias sudo='sudo ' # allow aliases to be used with sudo
-alias zshconfig="$EDITOR ~/.zshrc"
-alias zshdir="$EDITOR $ZSH"
+
+# clear zshrc alias from common-aliases plugin
+# (( $+aliases[zshrc] )) && unalias zshrc
+
+# @description edit zshrc and reload
+function zshrc() {
+  $EDITOR ${ZDOTDIR:-$HOME}/.zshrc
+  if (( $? != 0 )); then
+    return
+  fi
+  (( $+commands[src] )) || source "$ZSH/plugins/zsh_reload/zsh_reload.plugin.zsh"
+  src
+}
 
 #--------------------------------------------------------------------------------
 # anaconda
@@ -131,7 +135,7 @@ conda-shell() {
 # git
 #--------------------------------------------------------------------------------
 
-alias gl='git pull --prune'
+# alias gl='git pull --prune'
 alias glr='git pull --rebase'
 alias gp='git push -u'
 alias glrp='glr && gp'
@@ -140,11 +144,12 @@ alias gs='git status -sb'
 alias gw="git show"
 alias gsp="git stash pop"
 alias gsw="git stash show -p"
+alias gcob="git checkout -b"
 
 # @description checkout branch if given, otherwise choose interactively from recent branches
 # @arg $1 string branch
 # @arg $@ any git-checkout args
-function gcob() {
+function gco() {
   if [ $# -eq 0 ]; then
     local branches branch
     branches="$(git branch --sort=-committerdate)" &&
@@ -180,4 +185,10 @@ if [[ -a ~/.localrc ]]; then
   source ~/.localrc
 fi
 
+################################################################################
+# /zshrc
+################################################################################
 # zprof
+#--------------------------------------------------------------------------------
+# 
+#--------------------------------------------------------------------------------

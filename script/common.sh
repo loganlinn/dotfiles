@@ -2,6 +2,15 @@
 
 set -eu
 
+case "$(uname -s)" in
+  'Linux')
+    export PLATFORM='linux'
+    ;;
+  'Darwin')
+    export PLATFORM='osx'
+    ;;
+esac
+
 cd "$(dirname "$0")/.."
 
 DOTFILES="$(pwd -P)"
