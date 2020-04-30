@@ -1,42 +1,52 @@
-[include]
-  path = ~/.gitconfig.local
-  path = .gitconfig.local
+[user]
+  name = loganlinn
+  email = logan.linn@gmail.com
+
+[core]
+  editor = vim
+  excludesfile = ~/.gitignore
+
+; ; see https://github.com/dandavison/delta
+; pager = delta --plus-color="#012800" --minus-color="#340001"
+
+;[interactive]
+;  diffFilter = delta --color-only
+
+[credential "github.com"]
+  helper = osxkeychain
+
 [color]
   diff = auto
   status = auto
   branch = auto
   ui = true
-[core]
-  excludesfile = ~/.gitignore
-  editor = vim
+
 [apply]
   whitespace = nowarn
-[mergetool]
-  keepBackup = false
-[difftool]
-  prompt = false
+
 [help]
   autocorrect = 1
+
 [push]
   default = current
+
 [pull]
   rebase = true
-[alias]
-  force-push = "!f() { git push --force-with-lease ${1:-origin}; }; f"
+
 [rebase]
   autosquash = true
-[credential]
-  helper = !git-credential-codecommit-osx $@
-  UseHttpPath = true
-[credential "github.com"]
-   helper = osxkeychain
+
 [filter "lfs"]
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
   process = git-lfs filter-process
   required = true
-[user]
-  name = loganlinn
-  email = logan.linn@gmail.com
+
+; auto-rewrite to use ssh urls
 [url "git@github.com:"]
-	insteadOf = https://github.com/
+  insteadOf = https://github.com/
+
+[include]
+  path = ~/.gitconfig.local
+  path = .gitconfig.local
+

@@ -1,0 +1,9 @@
+#compdef _act act
+
+_act_virtualenv_list() {
+  pyenv virtualenv --complete
+}
+
+_act() {
+  compadd $(_act_virtualenv_list)
+}

@@ -1,3 +1,5 @@
+alias deact="pyenv deactivate"
+
 # @description activates a pyenv-managed virtualenv based on args, pwd, or fzf choice
 act() {
   local env="$1"
@@ -24,8 +26,13 @@ act() {
   return 1
 }
 
+# _act_virtualenv_list() {
+#   pyenv virtualenv --complete
+# }
 
-# @description deactivates
-deact() {
-  pyenv deactivate
-}
+# _act() {
+#   compadd $(_act_virtualenv_list)
+# }
+
+
+# compdef _act act

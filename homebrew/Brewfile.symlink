@@ -2,48 +2,67 @@ tap "homebrew/bundle"
 tap "homebrew/cask"
 tap "homebrew/core"
 tap "homebrew/services"
+
+# gnu
 brew "coreutils"
 brew "gawk"
+brew "glib"
 brew "gnu-indent"
 brew "gnu-sed"
 brew "gnu-tar"
 brew "gnupg"
 brew "gnutls"
 brew "grep"
+brew "make"
+brew "netcat"
 brew "readline"
-brew "sqlite"
-brew "asciinema"
-brew "aws-okta"
-brew "bat"
-brew "colordiff"
+brew "wget"
+
+# essentials
+brew "zsh"
+brew "openssl"
 brew "emacs"
-brew "fd"
-brew "fzf"
-brew "gdub"
+brew "vim"
+
+# git
 brew "gist"
 brew "git"
-brew "glib"
-brew "gradle"
-brew "gradle-completion"
-brew "httpie"
 brew "hub"
-brew "jenv"
-brew "jq"
-brew "kubernetes-cli"
-brew "make"
-brew "maven"
-brew "netcat"
-brew "node"
-brew "openssl"
 brew "pre-commit"
-brew "pyenv"
-brew "pyenv-virtualenv"
-brew "pyenv-which-ext"
-brew "reattach-to-user-namespace"
-brew "terraform"
+
+# productivity
+brew "bat"
+brew "fd"
+brew "fzf"
+brew "httpie"
+brew "jq"
 brew "the_silver_searcher"
 brew "tmux"
 brew "tree"
-brew "vim"
-brew "wget"
-brew "zsh"
+
+# lang/java
+brew "jenv"
+brew "gdub"
+brew "gradle"
+brew "gradle-completion"
+brew "maven"
+
+# lang/python
+brew "pyenv"
+brew "pyenv-virtualenv"
+brew "pyenv-which-ext"
+
+# lang/misc
+brew "terraform"
+brew "node"
+
+# macos
+brew "reattach-to-user-namespace"
+
+# misc
+cask "1password"
+cask "1password-cli"
+brew "aws-okta"
+brew "kubernetes-cli"
+brew "sqlite"
+

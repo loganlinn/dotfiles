@@ -28,13 +28,14 @@ if exists("g:load_black")
 endif
 
 let g:load_black = "py1.0"
-if !exists("g:black_virtualenv")
-  if has("nvim")
-    let g:black_virtualenv = "~/.local/share/nvim/black"
-  else
-    let g:black_virtualenv = "~/.vim/black"
-  endif
-endif
+let g:black_virtualenv = "~/.vim/black"
+" if !exists("g:black_virtualenv")
+"   if has("nvim")
+"     let g:black_virtualenv = "~/.local/share/nvim/black"
+"   else
+"     let g:black_virtualenv = "~/.vim/black"
+"   endif
+" endif
 if !exists("g:black_fast")
   let g:black_fast = 0
 endif

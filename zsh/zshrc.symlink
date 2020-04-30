@@ -54,14 +54,15 @@ antigen bundle urltools
 antigen bundle vi-mode
 antigen bundle wd
 antigen bundle web-search
-antigen bundle z
 antigen bundle zsh_reload
 
-antigen bundle "$DOTFILES/plugins/common-aliases"
+antigen bundle "$DOTFILES/plugins/aliases"
 antigen bundle "$DOTFILES/plugins/exit"
 antigen bundle "$DOTFILES/plugins/extract"
+antigen bundle "$DOTFILES/plugins/gitignore"
 antigen bundle "$DOTFILES/plugins/projects"
 antigen bundle "$DOTFILES/plugins/pyenv-act"
+antigen bundle agkozak/zsh-z
 antigen bundle reconquest/shdoc
 antigen bundle sirhc/okta.plugin.zsh
 antigen bundle sirhc/op.plugin.zsh
@@ -93,8 +94,6 @@ fi
 #################################################################################
 
 # suffixes
-alias -s {yml,yaml}=$EDITOR
-alias -s {zip,whl}=unzip
 
 alias g='$(brew --prefix)/bin/gw' # && compdef g='gradle'
 alias sudo='sudo ' # allow aliases to be used with sudo

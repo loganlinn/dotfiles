@@ -248,7 +248,7 @@ map <leader>q :tabclose
 "-------------------------------------------------------------------------------
 
 " Black (https://github.com/psf/black/blob/38385727/README.md)
-autocmd BufWritePre *.py execute ':Black'
+" autocmd BufWritePre *.py execute ':Black'
 " nnoremap <F9> :Black<CR>
 
 " NERDTree
