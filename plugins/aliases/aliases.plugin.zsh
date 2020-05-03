@@ -75,6 +75,7 @@ if is-at-least 4.2.0; then
   alias -s chm=xchm
   alias -s djvu=djview
   alias -s json="python -m json.tool"
+  alias -s md=bat
 
   # list whats inside packed file
   alias -s zip="unzip -l"
@@ -138,6 +139,7 @@ alias glr='git pull --rebase'
 alias gp='git push -u'
 alias glrp='glr && gp'
 alias gd='git diff --color'
+alias gdc='gd --cached'
 alias gs='git status -sb'
 alias gw="git show"
 alias gsp="git stash pop"

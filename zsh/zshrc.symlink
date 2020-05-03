@@ -1,7 +1,17 @@
+#################################################################################
+# .zshrc
+#################################################################################
+
 # zmodload zsh/zprof
-################################################################################
-# zshrc
-################################################################################
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+#################################################################################
 
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 export PROJECTS=${PROJECTS:-"$HOME/code"}
@@ -15,26 +25,26 @@ export EDITOR=vim
 
 export ANTIGEN="$HOME/antigen"
 export ADOTDIR="$HOME/.antigen"
+export ANTIGEN_LOG="$HOME/antigen.log"
 export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
 export ZSH_CUSTOM="$DOTFILES"
 
+export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+
+#################################################################################
+# install
 [[ -d "$ANTIGEN" ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
 [[ -d "$ZSH" ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
+#################################################################################
+#
 source $ANTIGEN/antigen.zsh
 
 antigen use oh-my-zsh
-# antigen bundle jenv
+
 # antigen bundle keychain # error: command not found
-# antigen bundle kubectl
-# antigen bundle osx
+antigen bundle kubectl
+# antigen bundle osx # error
 antigen bundle aws
 antigen bundle command-not-found
 antigen bundle docker
@@ -44,9 +54,11 @@ antigen bundle git
 antigen bundle github
 antigen bundle gpg-agent
 antigen bundle gradle
+antigen bundle jenv
 antigen bundle lein
 antigen bundle pip
 antigen bundle pyenv
+antigen bundle rbenv
 antigen bundle rust
 antigen bundle safe-paste
 antigen bundle terraform
@@ -57,6 +69,7 @@ antigen bundle web-search
 antigen bundle zsh_reload
 
 antigen bundle "$DOTFILES/plugins/aliases"
+antigen bundle "$DOTFILES/plugins/antigen-autoupdate"
 antigen bundle "$DOTFILES/plugins/exit"
 antigen bundle "$DOTFILES/plugins/extract"
 antigen bundle "$DOTFILES/plugins/gitignore"
@@ -75,121 +88,10 @@ antigen theme romkatv/powerlevel10k
 
 antigen apply
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-################################################################################
-# tools
-#################################################################################
-
-if (( $+commands[pyenv] )); then
-  eval "$(pyenv init -)"
-  if (( $+commands[pyenv-virtualenv-init] )); then
-    eval "$(pyenv virtualenv-init -)"
-  fi
-fi
-
-################################################################################
-# aliases
-#################################################################################
-
-# suffixes
-
-alias g='$(brew --prefix)/bin/gw' # && compdef g='gradle'
-alias sudo='sudo ' # allow aliases to be used with sudo
-
-# clear zshrc alias from common-aliases plugin
-# (( $+aliases[zshrc] )) && unalias zshrc
-
-# @description edit zshrc and reload
-function zshrc() {
-  $EDITOR ${ZDOTDIR:-$HOME}/.zshrc
-  if (( $? != 0 )); then
-    return
-  fi
-  (( $+commands[src] )) || source "$ZSH/plugins/zsh_reload/zsh_reload.plugin.zsh"
-  src
-}
-
-#--------------------------------------------------------------------------------
-# anaconda
-#--------------------------------------------------------------------------------
-
-# @decription setup current shell to use anaconda
-conda-shell() {
-  __conda_home="$HOME/.pyenv/versions/miniconda3-4.3.30"
-  __conda_setup="$("$__conda_home/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
-  if [ $? -eq 0 ]; then
-      eval "$__conda_setup"
-  else
-      if [ -f "$__conda_home/etc/profile.d/conda.sh" ]; then
-          source "$__conda_home/etc/profile.d/conda.sh"
-      else
-          export PATH="$__conda_home/bin:$PATH"
-      fi
-  fi
-  unset __conda_setup
-  unset __conda_home
-}
-
-#--------------------------------------------------------------------------------
-# git
-#--------------------------------------------------------------------------------
-
-# alias gl='git pull --prune'
-alias glr='git pull --rebase'
-alias gp='git push -u'
-alias glrp='glr && gp'
-alias gd='git diff --color'
-alias gs='git status -sb'
-alias gw="git show"
-alias gsp="git stash pop"
-alias gsw="git stash show -p"
-alias gcob="git checkout -b"
-
-# @description checkout branch if given, otherwise choose interactively from recent branches
-# @arg $1 string branch
-# @arg $@ any git-checkout args
-function gco() {
-  if [ $# -eq 0 ]; then
-    local branches branch
-    branches="$(git branch --sort=-committerdate)" &&
-      branch="$(echo "$branches" | fzf-tmux -d 15 +m)"
-    if [ $? -eq 0 ]; then
-      git checkout "$(echo "$branch" | sed "s/.* //")"
-    fi
-  else
-    git checkout -B "$@"
-  fi
-}
-
-#--------------------------------------------------------------------------------
-# tmux
-#--------------------------------------------------------------------------------
-
-# direnv & tmux: wrap tmux to avoid issues with environment loading
-# (source: https://git.io/Jfmfu)
-if (( $+commands[direnv] )); then
-  alias tmux='direnv exec / tmux'
-fi
-
-# @description attaches or creates tmux session; detaches other clients.
-function tma() {
-  tmux new-session -ADs "${1:-main}"
-}
-
-################################################################################
-# localrc
-################################################################################
+source ~/.p10k.zsh 2>/dev/null || true
 
 if [[ -a ~/.localrc ]]; then
   source ~/.localrc
 fi
 
-################################################################################
-# /zshrc
-################################################################################
 # zprof
-#--------------------------------------------------------------------------------
-# 
-#--------------------------------------------------------------------------------
