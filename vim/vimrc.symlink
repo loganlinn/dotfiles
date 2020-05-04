@@ -252,6 +252,8 @@ map <leader>q :tabclose
 " nnoremap <F9> :Black<CR>
 
 " NERDTree
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
 "   show NERDTree if vim started without arguments
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
