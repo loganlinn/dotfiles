@@ -1,17 +1,11 @@
-#################################################################################
+################################################################################
 # .zshrc
-#################################################################################
-
+################################################################################
 # zmodload zsh/zprof
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
-#################################################################################
+#===============================================================================
+# prepare
+#===============================================================================
 
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 export PROJECTS=${PROJECTS:-"$HOME/code"}
@@ -25,36 +19,39 @@ export EDITOR=vim
 
 export ANTIGEN="$HOME/antigen"
 export ADOTDIR="$HOME/.antigen"
-export ANTIGEN_LOG="$HOME/antigen.log"
+
 export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
 export ZSH_CUSTOM="$DOTFILES"
 
 export PYENV_VIRTUALENV_DISABLE_PROMPT=1
 
-#################################################################################
-# install
+#===============================================================================
+# bootstrap
+#===============================================================================
+
 [[ -d "$ANTIGEN" ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
 [[ -d "$ZSH" ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 
-#################################################################################
-#
+#===============================================================================
+# load
+#===============================================================================
+
 source $ANTIGEN/antigen.zsh
 
 antigen use oh-my-zsh
 
-# antigen bundle keychain # error: command not found
-antigen bundle kubectl
-# antigen bundle osx # error
 antigen bundle aws
 antigen bundle command-not-found
 antigen bundle docker
 antigen bundle dotenv
+antigen bundle extract
 antigen bundle fzf
 antigen bundle git
 antigen bundle github
 antigen bundle gpg-agent
 antigen bundle gradle
 antigen bundle jenv
+antigen bundle kubectl
 antigen bundle lein
 antigen bundle pip
 antigen bundle pyenv
@@ -68,30 +65,28 @@ antigen bundle wd
 antigen bundle web-search
 antigen bundle zsh_reload
 
-antigen bundle "$DOTFILES/plugins/aliases"
-antigen bundle "$DOTFILES/plugins/antigen-autoupdate"
-antigen bundle "$DOTFILES/plugins/exit"
-antigen bundle "$DOTFILES/plugins/extract"
-antigen bundle "$DOTFILES/plugins/gitignore"
-antigen bundle "$DOTFILES/plugins/projects"
-antigen bundle "$DOTFILES/plugins/pyenv-act"
-antigen bundle agkozak/zsh-z
+antigen bundle clvv/fasd
 antigen bundle reconquest/shdoc
 antigen bundle sirhc/okta.plugin.zsh
 antigen bundle sirhc/op.plugin.zsh
 antigen bundle wfxr/forgit
+antigen bundle zsh-users/zaw
+antigen bundle zsh-users/zsh-apple-touchbar
 antigen bundle zsh-users/zsh-completions
 antigen bundle zsh-users/zsh-history-substring-search
 antigen bundle zsh-users/zsh-syntax-highlighting
+
+for plugin ($DOTFILES/plugins/*(/)); do
+  antigen bundle "$plugin"
+done
 
 antigen theme romkatv/powerlevel10k
 
 antigen apply
 
-source ~/.p10k.zsh 2>/dev/null || true
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+[[ -f ~/.localrc ]]  && source ~/.localrc
 
-if [[ -a ~/.localrc ]]; then
-  source ~/.localrc
-fi
+eval "$(fasd --init auto)"
 
 # zprof
