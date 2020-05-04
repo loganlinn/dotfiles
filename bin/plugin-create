@@ -93,7 +93,7 @@ for arg in "${include[@]}"; do
     wget --quiet --directory-prefix "$PLUGIN_DIR" -- "$arg" >&2 || die "$arg: failed to download"
   elif [[ -d "$ZSH/plugins/$arg" ]]; then
     status "copying" "$ZSH/plugins/$arg"
-    cp -r "$ZSH/plugins/$arg" "$arg"
+    cp -r "$ZSH/plugins/$arg" "$PLUGIN_DIR"
   fi
 done
 
