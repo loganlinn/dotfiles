@@ -9,7 +9,7 @@ act() {
     return 0
   fi
 
-  if [[ -z "$VIRTUAL_ENV" ]]; then
+  if [[ -z "${VIRTUAL_ENV:-}" ]]; then
     project=$(basename $(git rev-parse --show-toplevel 2>/dev/null || pwd))
     if [[ -d "$PYENV_ROOT/versions/$project" ]]; then
       pyenv activate "$project"

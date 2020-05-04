@@ -2,6 +2,7 @@
 # system
 ################################################################################
 alias sudo='sudo ' # allow aliases to be used with sudo
+alias :q="exit"
 
 ################################################################################
 # filesystem
@@ -89,21 +90,22 @@ fi
 # zsh
 ################################################################################
 
-# @description edit zshrc and reload
+# @description edit zshrc and prompt reload session
 function zshrc() {
-  # edit zshrc + this file
-  vim -o ${ZDOTDIR:-$HOME}/.zshrc "$functions_source[zshrc]"
+  # start vim w/ NERDTree opened, but not focused
+  vim -f -o "${ZDOTDIR:-$HOME}/.zshrc" "$functions_source[zshrc]" -c "NERDTreeCWD" -c "wincmd l"
   if (( $? != 0 )); then
     return
   fi
 
-
-  # reload
-  if (( ! $+commands[src] )); then
-    source "$ZSH/plugins/zsh_reload/zsh_reload.plugin.zsh"
+  # reload if zsh_reload plugin is installed
+  if (( $+commands[src] )); then
+    read -n1 "?Reload zsh session? [Yn] "
+    if [[ ${REPLY:-y} =~ ^[Yy]$ ]]; then
+      echo "${fg[cyan]}Reloading zsh session...${reset_color}"
+      src
+    fi
   fi
-  echo "${fg[cyan]}Reloading zsh session...${reset_color}"
-  src
 }
 
 # Make zsh know about hosts already accessed by SSH
