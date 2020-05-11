@@ -117,8 +117,12 @@ zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f
 
 # @decription setup current shell to use anaconda
 conda-shell() {
-  __conda_home="$HOME/.pyenv/versions/miniconda3-4.3.30"
+  __pyenv_version=$(pyenv whence conda)
+  __conda_home="$HOME/.pyenv/versions/$__pyenv_version"
   __conda_setup="$("$__conda_home/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
+
+  pyenv shell "$__pyenv_version"
+
   if [ $? -eq 0 ]; then
       eval "$__conda_setup"
   else
@@ -130,6 +134,7 @@ conda-shell() {
   fi
   unset __conda_setup
   unset __conda_home
+  unset __pyenv_version
 }
 
 ################################################################################

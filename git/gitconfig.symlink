@@ -6,12 +6,6 @@
   editor = vim
   excludesfile = ~/.gitignore
 
-; ; see https://github.com/dandavison/delta
-; pager = delta --plus-color="#012800" --minus-color="#340001"
-
-;[interactive]
-;  diffFilter = delta --color-only
-
 [credential "github.com"]
   helper = osxkeychain
 
@@ -42,7 +36,7 @@
   process = git-lfs filter-process
   required = true
 
-; auto-rewrite to use ssh urls
+# auto-rewrite to use ssh urls
 [url "git@github.com:"]
   insteadOf = https://github.com/
 
@@ -50,3 +44,18 @@
   path = ~/.gitconfig.local
   path = .gitconfig.local
 
+[alias]
+  # https://git.io/JfW3J >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  uncommit = reset --mixed HEAD~
+  unstage = reset -q HEAD --
+  discard = checkout --
+  lasttag = describe --tags --abbrev=0
+  fixup = !sh -c 'REV=$(git rev-parse $1) && git commit --fixup $@ && git rebase -i --autosquash $REV^' -
+  fixit = "!f() { git commit --fixup=$1; GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash $1~1; }; f"
+  ffix = !HASH=`git log --pretty=oneline | head -n 100 | fzf` && git fixit `echo ${HASH} | awk '{ print $1 }'`
+  ag = grep -Ii
+  fco = "!git short-recent | fzf --print0 | xargs -0 -t git checkout"
+  fl = log -u
+  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate --numstat
+  ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate
+  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
