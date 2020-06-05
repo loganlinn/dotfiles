@@ -1,17 +1,27 @@
 ################################################################################
+# meta
+################################################################################
+here=$0:A
+alias aliases="$EDITOR $here && source $HERE"
+
+################################################################################
 # system
 ################################################################################
 alias sudo='sudo ' # allow aliases to be used with sudo
 alias :q="exit"
+
+case "$(uname -s)" in
+  'Darwin')
+    alias zzz="pmset"
+    ;;
+esac
 
 ################################################################################
 # filesystem
 ################################################################################
 alias l='ls -lFh'     #size,show type,human readable
 alias la='ls -lAFh'   #long list,show almost all,show type,human readable
-alias lr='ls -tRFh'   #sorted by date,recursive,show type,human readable
 alias lt='ls -ltFh'   #long list,sorted by date,show type,human readable
-alias ll='ls -l'      #long list
 alias ldot='ls -ld .*'
 alias lS='ls -1FSsh'
 alias lart='ls -1Fcart'
@@ -24,7 +34,7 @@ alias t='tail -f'
 alias g='$(brew --prefix)/bin/gw' # && compdef g='gradle'
 
 # Command line head / tail shortcuts
-alias -g H='| head'
+alias -g H='--help'
 alias -g T='| tail'
 alias -g G='| grep'
 alias -g L="| less"
@@ -89,6 +99,7 @@ fi
 ################################################################################
 # zsh
 ################################################################################
+
 
 # @description edit zshrc and prompt reload session
 function zshrc() {
@@ -169,9 +180,9 @@ function gco() {
   fi
 }
 
-#--------------------------------------------------------------------------------
+################################################################################
 # tmux
-#--------------------------------------------------------------------------------
+################################################################################
 
 # direnv & tmux: wrap tmux to avoid issues with environment loading
 # (source: https://git.io/Jfmfu)
@@ -182,4 +193,18 @@ fi
 # @description attaches or creates tmux session; detaches other clients.
 function tma() {
   tmux new-session -ADs "${1:-main}"
+}
+
+################################################################################
+# aws-okta
+################################################################################
+
+function aws-env() {
+  emulate -L zsh
+  set +e
+  local profile="$1"
+  if [[ -z "$profile" ]]; then
+    profile="$(aws-okta list | fzf --tac | cut -f1)"
+  fi
+  eval "$(aws-okta env "$profile")"
 }
