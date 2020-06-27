@@ -203,3 +203,10 @@ function aws-env() {
   fi
   eval "$(aws-okta env "$profile")"
 }
+
+################################################################################
+# applications
+################################################################################
+if (( ! $+commands[typora] )); then
+  alias typora="open -a typora"
+fi
