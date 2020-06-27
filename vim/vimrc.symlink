@@ -1,18 +1,15 @@
 "-------------------------------------------------------------------------------
 " NeoBundle
 "-------------------------------------------------------------------------------
-
 " Note: Skip initialization for vim-tiny or vim-small.
-if !1 | finish | endif
+if 0 | endif
 
-if has('vim_starting')
-  if &compatible
-    set nocompatible               " Be iMproved
-  endif
-
-  " Required:
-  set runtimepath+=~/.vim/bundle/neobundle.vim/
+if &compatible
+  set nocompatible               " Be iMproved
 endif
+
+" Required:
+set runtimepath+=~/.vim/bundle/neobundle.vim/
 
 " Required:
 call neobundle#begin(expand('~/.vim/bundle/'))
@@ -21,7 +18,12 @@ call neobundle#begin(expand('~/.vim/bundle/'))
 " Required:
 NeoBundleFetch 'Shougo/neobundle.vim'
 
+" My Bundles here:
+" Refer to |:NeoBundle-examples|.
 source ~/.vim.bundles.vim
+for s:fpath in split(globpath($DOTFILES, 'vim/*.vim'), '\n')
+  exe 'source' s:fpath
+endfor
 
 call neobundle#end()
 
@@ -31,18 +33,9 @@ filetype plugin indent on
 " If there are uninstalled bundles found on startup,
 " this will conveniently prompt you to install them.
 NeoBundleCheck
-
-"-------------------------------------------------------------------------------
-" Load dotfiles
-"-------------------------------------------------------------------------------
-for s:fpath in split(globpath($DOTFILES, 'vim/*.vim'), '\n')
-  exe 'source' s:fpath
-endfor
-
 "-------------------------------------------------------------------------------
 " Basics
 "-------------------------------------------------------------------------------
-
 syntax on
 set background=dark
 
@@ -133,26 +126,30 @@ augroup ft_clojure
   au Filetype clojure nnoremap <localleader>er :Require<CR>
   au Filetype clojure nnoremap <localleader>eR :Require!<CR>
   au Filetype clojure nnoremap <localleader>r :call fireplace#eval("(user/reset)")<CR>
+
+  let g:clojure_syntax_keywords = {
+      \ 'clojureMacro': ["defproject", "defcustom", "defstate"],
+      \ 'clojureFunc': ["string/join", "string/replace"]
+      \ }
+
+  let g:clojure_align_subforms = 1
+  let g:clojure_align_multiline_strings = 1
 augroup END
 
 augroup clojure_plumbatic
   au FileType clojure setlocal lispwords+=fnk,defnk,for-map,letk
   au FileType clojure setlocal lispwords+=go-loop
   au FileType clojure setlocal lispwords+=this-as
-
-  let g:clojure_align_subforms = 1
-  let g:clojure_align_multiline_strings = 1
-  let g:clojure_special_indent_words = 'deftype,defrecord,defprotocol,reify,proxy,extend-type,extend-protocol,letfn,implement,specify,specify!,' .
-        \ 'defcomponent,defcomponentk,defcomponentmethod,defmixin'
 augroup END
 
 autocmd BufNewFile,BufReadPost *.cljx setfiletype clojure
 au BufRead,BufNewFile *.edn setfiletype clojure
 au BufRead,BufNewFile *.cljc setfiletype clojure
 
-
+"" Avro
 au BufRead,BufNewFile *.avdl setlocal filetype=avro-idl
 
+"" Groovy
 autocmd Filetype groovy setlocal ts=4 sts=4 sw=4
 
 "-------------------------------------------------------------------------------
