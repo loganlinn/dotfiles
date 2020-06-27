@@ -67,6 +67,8 @@ antigen bundle web-search
 antigen bundle zsh_reload
 
 antigen bundle clvv/fasd
+antigen bundle loganlinn/zzz.plugin.zsh
+antigen bundle mchav/with
 antigen bundle pierpo/fzf-docker
 antigen bundle reconquest/shdoc
 antigen bundle sirhc/okta.plugin.zsh
@@ -74,6 +76,7 @@ antigen bundle sirhc/op.plugin.zsh
 antigen bundle wfxr/forgit
 antigen bundle zsh-users/zaw
 antigen bundle zsh-users/zsh-apple-touchbar
+antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-completions
 antigen bundle zsh-users/zsh-history-substring-search
 antigen bundle zsh-users/zsh-syntax-highlighting
