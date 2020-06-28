@@ -1,51 +1,117 @@
-"-------------------------------------------------------------------------------
-" NeoBundle
-"-------------------------------------------------------------------------------
-" Note: Skip initialization for vim-tiny or vim-small.
-if 0 | endif
+let s:settings = {}
+let s:settings.dein_dir = expand('~/.cache/dein')
+let s:settings.dein_repo_dir = s:settings.dein_dir . '/repos/github.com/Shougo/dein.vim'
 
+"-------------------------------------------------------------------------------
+" Plugin Manager
+"-------------------------------------------------------------------------------
+
+" Bootstrap:
+if &runtimepath !~# '/dein.vim'
+	if !isdirectory(s:settings.dein_repo_dir)
+    execute '!git clone --depth 1 https://github.com/Shougo/dein.vim ' . s:settings.dein_repo_dir 
+  endif
+  execute 'set rtp^=' . fnamemodify(s:settings.dein_repo_dir, ':p')
+endif
+
+" Dein:
 if &compatible
   set nocompatible               " Be iMproved
 endif
 
-" Required:
-set runtimepath+=~/.vim/bundle/neobundle.vim/
+set runtimepath+=~/.cache/dein/repos/github.com/Shougo/dein.vim
 
-" Required:
-call neobundle#begin(expand('~/.vim/bundle/'))
+if dein#load_state(s:settings.dein_dir)
+  call dein#begin(s:settings.dein_dir)
+  call dein#add(s:settings.dein_repo_dir)
 
-" Let NeoBundle manage NeoBundle
-" Required:
-NeoBundleFetch 'Shougo/neobundle.vim'
+  " Libraries:
+  call dein#add('google/vim-maktaba')
+  " call dein#add('tomtom/tlib_vim')
+  call dein#add('google/vim-glaive')
 
-" My Bundles here:
-" Refer to |:NeoBundle-examples|.
-source ~/.vim.bundles.vim
-for s:fpath in split(globpath($DOTFILES, 'vim/*.vim'), '\n')
-  exe 'source' s:fpath
-endfor
+  " Basics:
+  call dein#add('tpope/vim-abolish')
+  call dein#add('tpope/vim-endwise')
+  call dein#add('tpope/vim-eunuch')
+  call dein#add('tpope/vim-ragtag')
+  call dein#add('tpope/vim-repeat')
+  call dein#add('tpope/vim-surround')
 
-call neobundle#end()
+  " TpopeFanboySection:
+  call dein#add('tpope/vim-classpath')
+  call dein#add('tpope/vim-commentary')
+  call dein#add('tpope/vim-cucumber')
+  call dein#add('tpope/vim-dispatch')
+  call dein#add('tpope/vim-fireplace')
+  call dein#add('tpope/vim-fugitive')
+  call dein#add('tpope/vim-haml')
+  call dein#add('tpope/vim-markdown')
+  call dein#add('tpope/vim-projectionist')
+  call dein#add('tpope/vim-rails')
+  call dein#add('tpope/vim-rhubarb')
+  call dein#add('tpope/vim-rsi')
+  call dein#add('tpope/vim-salve')
+  call dein#add('tpope/vim-sensible')
+  call dein#add('tpope/vim-sexp-mappings-for-regular-people')
+  call dein#add('tpope/vim-speeddating')
+  call dein#add('tpope/vim-tbone')
+  call dein#add('tpope/vim-unimpaired')
 
-" Required:
+  " UI:
+  call dein#add('airblade/vim-gitgutter')
+  call dein#add('arcticicestudio/nord-vim')
+  call dein#add('bling/vim-bufferline')
+  call dein#add('godlygeek/tabular')
+  call dein#add('kien/ctrlp.vim')
+  call dein#add('kien/rainbow_parentheses.vim')
+  call dein#add('preservim/nerdtree')
+  call dein#add('Raimondi/delimitMate')
+  call dein#add('scrooloose/nerdcommenter')
+  call dein#add('tmux-plugins/vim-tmux')
+  call dein#add('tmux-plugins/vim-tmux-focus-events')
+  call dein#add('vim-airline/vim-airline')
+  call dein#add('vim-airline/vim-airline')
+  call dein#add('vim-syntastic/syntastic')
+  call dein#add('wsdjeg/dein-ui.vim')
+
+  " System:
+  call dein#add('Chun-Yang/vim-action-ag')
+  call dein#add('rking/ag.vim')
+  call dein#add('bazelbuild/vim-bazel')
+  " call dein#add('google/vim-codefmt')
+  call dein#add('direnv/direnv.vim')
+  call dein#add('junegunn/fzf')
+  call dein#add('justinmk/vim-sneak')
+  call dein#add('mattn/gist-vim')
+
+  " Files:
+  call dein#add('dln/avro-vim')
+  call dein#add('fatih/vim-go')
+  call dein#add('guns/vim-clojure-highlight')
+  call dein#add('guns/vim-clojure-static')
+  call dein#add('guns/vim-sexp')
+  call dein#add('guns/vim-slamhound')
+  call dein#add('itspriddle/vim-shellcheck')
+  call dein#add('leafgarland/typescript-vim')
+  call dein#add('mxw/vim-jsx')
+  call dein#add('pangloss/vim-javascript')
+
+  call dein#end()
+  call dein#save_state()
+endif
+
 filetype plugin indent on
 
-" If there are uninstalled bundles found on startup,
-" this will conveniently prompt you to install them.
-NeoBundleCheck
+syntax enable
+
+" if dein#check_install()
+"   call dein#install()
+" endif
 "-------------------------------------------------------------------------------
 " Basics
 "-------------------------------------------------------------------------------
-syntax on
 set background=dark
-
-if filereadable(expand("~/.vim/bundle/vim-colors-solarized/colors/solarized.vim"))
-  let g:solarized_termcolors=256
-  let g:solarized_termtrans=1
-  let g:solarized_contrast="normal"
-  let g:solarized_visibility="normal"
-  color solarized
-endif
 
 " Use <Leader> in global plugin.
 let g:mapleader = ','
@@ -251,9 +317,25 @@ map <leader>q :tabclose
 " NERDTree
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
-"   show NERDTree if vim started without arguments
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+let NERDTreeIgnore=[]
+call add(NERDTreeIgnore, '^tmp/')
+call add(NERDTreeIgnore, '^dist/')
+call add(NERDTreeIgnore, '^target/')
+call add(NERDTreeIgnore, '^node_modules')
+call add(NERDTreeIgnore, '^__pycache__')
+call add(NERDTreeIgnore, '^bower_components')
+call add(NERDTreeIgnore, '^flow-typed')
+call add(NERDTreeIgnore, '\.pyc')
+call add(NERDTreeIgnore, '\~$')
+call add(NERDTreeIgnore, '\.swo$')
+call add(NERDTreeIgnore, '\.beam$')
+call add(NERDTreeIgnore, '\.swp$')
+call add(NERDTreeIgnore, '\.git$')
+call add(NERDTreeIgnore, '\.hg')
+call add(NERDTreeIgnore, '\.svn')
+call add(NERDTreeIgnore, '\.bzr')
+call add(NERDTreeIgnore, '\.so')
+call add(NERDTreeIgnore, '\.o')
 map <leader>t :NERDTreeFind<CR>
 map <leader>T :NERDTreeClose<CR>
 
@@ -266,20 +348,6 @@ au VimEnter * RainbowParenthesesToggle
 au Syntax * RainbowParenthesesLoadRound
 au Syntax * RainbowParenthesesLoadSquare
 au Syntax * RainbowParenthesesLoadBraces
-"  Parentheses colours using Solarized"
-let g:rbpt_colorpairs = [
-  \ [ '13', '#6c71c4'],
-  \ [ '5',  '#d33682'],
-  \ [ '1',  '#dc322f'],
-  \ [ '9',  '#cb4b16'],
-  \ [ '3',  '#b58900'],
-  \ [ '2',  '#859900'],
-  \ [ '6',  '#2aa198'],
-  \ [ '4',  '#268bd2'],
-  \ ]
-
-" jslint
-let $JS_CMD='node'
 
 " airline
 let g:airline_powerline_fonts = 1
@@ -288,7 +356,6 @@ let g:airline#extensions#tabline#enabled = 1
 " CtrlP
 let g:ctrlp_switch_buffer = 0
 let g:ctrlp_working_path_mode = 'r'
-
 let g:ctrlp_user_command = {
     \ 'types': {
       \ 1: ['.git', 'cd %s && git ls-files . --cached --exclude-standard --others'],
@@ -296,7 +363,6 @@ let g:ctrlp_user_command = {
       \ },
     \ 'fallback': 'find %s -type f'
   \ }
-
  let g:ctrlp_custom_ignore = {
        \ 'file': '\.exe$\|\.so$\|\.dll$\|\.pyc$',
        \ 'dir': '\.git$\|\.hg$\|\.svn$\|\.repl'
@@ -341,64 +407,3 @@ let g:session_autosave='no'
 if has('gui')
   set guioptions-=e
 endif
-if exists("+showtabline")
-  function! MyTabLine()
-    let s = ''
-    let t = tabpagenr()
-    let i = 1
-    while i <= tabpagenr('$')
-      let buflist = tabpagebuflist(i)
-      let winnr = tabpagewinnr(i)
-      let s .= '%' . i . 'T'
-      let s .= (i == t ? '%1*' : '%2*')
-      let s .= ' '
-      let s .= i . ':'
-      let s .= winnr . '/' . tabpagewinnr(i,'$')
-      let s .= ' %*'
-      let s .= (i == t ? '%#TabLineSel#' : '%#TabLine#')
-      let bufnr = buflist[winnr - 1]
-      let file = bufname(bufnr)
-      let buftype = getbufvar(bufnr, 'buftype')
-      if buftype == 'nofile'
-        if file =~ '\/.'
-          let file = substitute(file, '.*\/\ze.', '', '')
-        endif
-      else
-        let file = fnamemodify(file, ':p:t')
-      endif
-      if file == ''
-        let file = '[No Name]'
-      endif
-      let s .= file
-      let i = i + 1
-    endwhile
-    let s .= '%T%#TabLineFill#%='
-    let s .= (tabpagenr('$') > 1 ? '%999XX' : 'X')
-    return s
-  endfunction
-  set stal=2
-  set tabline=%!MyTabLine()
-endif
-
-
-" ignore stuff for nerd tree
-let NERDTreeIgnore=[]
-call add(NERDTreeIgnore, '^tmp/')
-call add(NERDTreeIgnore, '^dist/')
-call add(NERDTreeIgnore, '^target/')
-call add(NERDTreeIgnore, '^node_modules')
-call add(NERDTreeIgnore, '^__pycache__')
-call add(NERDTreeIgnore, '^bower_components')
-call add(NERDTreeIgnore, '^flow-typed')
-call add(NERDTreeIgnore, '\.pyc')
-call add(NERDTreeIgnore, '\~$')
-call add(NERDTreeIgnore, '\.swo$')
-call add(NERDTreeIgnore, '\.beam$')
-call add(NERDTreeIgnore, '\.swp$')
-call add(NERDTreeIgnore, '\.git$')
-call add(NERDTreeIgnore, '\.hg')
-call add(NERDTreeIgnore, '\.svn')
-call add(NERDTreeIgnore, '\.bzr')
-call add(NERDTreeIgnore, '\.so')
-call add(NERDTreeIgnore, '\.o')
-
