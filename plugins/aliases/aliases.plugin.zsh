@@ -21,6 +21,7 @@ alias ldot='ls -ld .*'
 alias lS='ls -1FSsh'
 alias lart='ls -1Fcart'
 alias lrt='ls -1Fcrt'
+alias ltree='tree -a'
 
 alias grep='grep --color'
 alias sgrep='grep -R -n -H -C 5 --exclude-dir={.git,.svn,CVS} '
@@ -90,6 +91,13 @@ if is-at-least 4.2.0; then
   alias -s tar.gz="echo "
   alias -s ace="unace l"
 fi
+
+# @doc Bulk search & replace with ag (the_silver_searcher)
+function agr {
+	ag -0 -l "$1" | AGR_FROM="$1" AGR_TO="$2" xargs -0 perl -pi -e 's/$ENV{AGR_FROM}/$ENV{AGR_TO}/g'
+} 
+
+alias agh="ag --hidden"
 
 ################################################################################
 # zsh
@@ -203,6 +211,24 @@ function aws-env() {
   fi
   eval "$(aws-okta env "$profile")"
 }
+
+################################################################################
+# bazel
+################################################################################
+
+alias bzb="bazel build"
+alias bzt="bazel test"
+alias bzr="bazel run"
+alias bzq="bazel query"
+alias bzba="bazel build //..."
+alias bzta="bazel test //..."
+alias bfmt="buildifier -lint=warn -r ."
+
+################################################################################
+# docker
+################################################################################
+
+alias d-c="docker-compose"
 
 ################################################################################
 # applications

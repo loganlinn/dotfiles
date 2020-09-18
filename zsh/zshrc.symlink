@@ -9,6 +9,7 @@ export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH="$HOME/bin:$PATH"
 export PATH="$DOTFILES/bin:$PATH"
+export PATH="$HOME/go/bin:$PATH"
 
 export EDITOR=vim
 
@@ -30,7 +31,6 @@ antigen bundle command-not-found
 antigen bundle direnv
 antigen bundle docker
 antigen bundle doctl
-antigen bundle dotenv
 antigen bundle extract
 antigen bundle fzf
 antigen bundle git
@@ -75,11 +75,27 @@ antigen theme romkatv/powerlevel10k
 
 antigen apply
 
-[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+# conditional source helper
+function __load() {
+  for f in "$@"; do
+    [[ -f "$f" ]] && source "$f"
+  done
+}
 
-eval "$(fasd --init auto)"
 
-[[ -f ~/.localrc ]]  && source ~/.localrc
+__load ~/.p10k.zsh
+__load ~/.config/broot/launcher/bash/br
+
+if (( $+commands[fasd] )); then
+  eval "$(fasd --init auto)"
+fi
+
+
+# last but not least
+__load ~/.localrc
+
+# cleanup
+unfunction __load
 #------------------------------------------------------------------------------
 # end
 #------------------------------------------------------------------------------

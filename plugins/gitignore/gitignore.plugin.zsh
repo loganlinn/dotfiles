@@ -1,5 +1,5 @@
 function gitignore.io() {
-  curl -sLw n https://www.gitignore.io/api/$@
+  http GET "https://www.gitignore.io/api/$@" --follow --body
 }
 
 _gitignoreio_get_command_list() {
