@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 
 source "$(dirname "$0")/common.sh"
 
@@ -105,8 +105,9 @@ sudo apt-get install -y -qq \
 rm -rf /var/lib/apt/lists/*
 
 # install Go
+PATH=$PATH:/usr/local/go/bin
 if ! command_exists go; then
-  declare GO_VERSION="1.13"
+  declare GO_VERSION="1.14"
   info "installing golang ($GO_VERSION)"
   wget "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" 
   tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz" 
@@ -115,7 +116,7 @@ fi
 
 # install nodejs
 if ! command_exists node; then
-  curl -sL https://deb.nodesource.com/setup_13.x | bash -
+  curl -sL https://deb.nodesource.com/setup_14.x | bash -
   apt-get install -y nodejs
 fi
 
