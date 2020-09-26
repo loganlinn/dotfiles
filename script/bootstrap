@@ -124,7 +124,8 @@ install_dotfiles () {
 ################################################################################
 echo ''
 
-chsh -s /usr/bin/zsh
+chsh -s $(which zsh)
+
 setup_gitconfig
 install_dotfiles
 sh -c "$DOTFILES/script/install"

@@ -1,7 +1,20 @@
 # zmodload zsh/zprof
+
 #------------------------------------------------------------------------------
-# start
+# begin
 #------------------------------------------------------------------------------
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+#------------------------------------------------------------------------------
+# variables
+#------------------------------------------------------------------------------
+
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 export PROJECTS=${PROJECTS:-"$HOME/code"}
 
@@ -19,13 +32,21 @@ export ADOTDIR="$HOME/.antigen"
 export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
 export ZSH_CUSTOM="$DOTFILES"
 
-# bootstrap depdencies
+#------------------------------------------------------------------------------
+# bootstrap
+#------------------------------------------------------------------------------
+
 [[ -d "$ANTIGEN" ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
 [[ -d "$ZSH" ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 
 source $ANTIGEN/antigen.zsh
 
+#------------------------------------------------------------------------------
+# plugins
+#------------------------------------------------------------------------------
+
 antigen use oh-my-zsh
+
 antigen bundle aws
 antigen bundle command-not-found
 antigen bundle direnv
@@ -37,12 +58,12 @@ antigen bundle git
 antigen bundle github
 antigen bundle gpg-agent
 antigen bundle gradle
-antigen bundle jenv
+[[ -d ~/.jenv ]] && antigen bundle jenv
 antigen bundle kubectl
 antigen bundle lein
 antigen bundle pip
 antigen bundle pyenv
-antigen bundle rbenv
+[[ -d ~/.rbenv ]] && antigen bundle rbenv
 antigen bundle rust
 antigen bundle safe-paste
 antigen bundle terraform
@@ -52,51 +73,42 @@ antigen bundle wd
 antigen bundle web-search
 antigen bundle zsh_reload
 
-antigen bundle loganlinn/zzz.plugin.zsh
-antigen bundle clvv/fasd
-antigen bundle mchav/with
-antigen bundle pierpo/fzf-docker
-antigen bundle reconquest/shdoc
-antigen bundle sirhc/okta.plugin.zsh
-antigen bundle sirhc/op.plugin.zsh
-antigen bundle wfxr/forgit
 antigen bundle zsh-users/zaw
-antigen bundle zsh-users/zsh-apple-touchbar
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-completions
 antigen bundle zsh-users/zsh-history-substring-search
 antigen bundle zsh-users/zsh-syntax-highlighting
 
+antigen bundle loganlinn/zzz.plugin.zsh
+#antigen bundle clvv/fasd
+#antigen bundle mchav/with
+#antigen bundle pierpo/fzf-docker
+#antigen bundle reconquest/shdoc
+#antigen bundle sirhc/okta.plugin.zsh
+antigen bundle sirhc/op.plugin.zsh
+#antigen bundle wfxr/forgit
+
 for plugin ($DOTFILES/plugins/*(/)); do
   antigen bundle "$plugin"
 done
 
-antigen theme romkatv/powerlevel10k
+antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
 
 antigen apply
 
 # conditional source helper
 function __load() {
-  for f in "$@"; do
-    [[ -f "$f" ]] && source "$f"
-  done
+  for f in "$@"; do [[ -f "$f" ]] && source "$f"; done
 }
 
-
-__load ~/.p10k.zsh
+__load ~/.p10k.zsh && typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 __load ~/.config/broot/launcher/bash/br
-
-if (( $+commands[fasd] )); then
-  eval "$(fasd --init auto)"
-fi
-
-
-# last but not least
 __load ~/.localrc
 
-# cleanup
 unfunction __load
+
 #------------------------------------------------------------------------------
 # end
 #------------------------------------------------------------------------------
+
 # zprof

@@ -58,6 +58,6 @@ function cclone {
     directory="${PROJECTS:-$(pwd)}/${repository:t:r}"
   fi
 
-  hub clone --recurse-submodules -- "$repository" "$directory"
+  gh repo clone "$repository" "$directory" -- --recursive
   cd "$directory"
 }
