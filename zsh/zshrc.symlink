@@ -14,25 +14,24 @@ fi
 #------------------------------------------------------------------------------
 # variables
 #------------------------------------------------------------------------------
+export EDITOR=vim
 
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 export PROJECTS=${PROJECTS:-"$HOME/code"}
 
-export PATH="/usr/local/bin:$PATH"
-export PATH="/usr/local/sbin:$PATH"
-export PATH="$HOME/bin:$PATH"
-export PATH="$DOTFILES/bin:$PATH"
-export PATH="$HOME/go/bin:$PATH"
-
-export EDITOR=vim
-
 export ANTIGEN="$HOME/antigen"
 export ADOTDIR="$HOME/.antigen"
-
 export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
 export ZSH_CUSTOM="$DOTFILES"
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
+
+path=(/usr/local/{bin,sbin} $HOME/bin $DOTFILES/bin $HOME/go/bin $path)
+
+# prefer gnu tools
+if (( $+commands[brew] )); then
+  path=($(brew --prefix)/opt/{coreutils,gawk,gnu-indent,gnu-sed,gnu-tar,grep,make}/libexec/gnubin $path)
+fi
 
 #------------------------------------------------------------------------------
 # bootstrap
