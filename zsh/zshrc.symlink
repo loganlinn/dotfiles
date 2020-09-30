@@ -31,6 +31,8 @@ export ADOTDIR="$HOME/.antigen"
 
 export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
 export ZSH_CUSTOM="$DOTFILES"
+export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
 #------------------------------------------------------------------------------
 # bootstrap
@@ -84,9 +86,9 @@ antigen bundle loganlinn/zzz.plugin.zsh
 #antigen bundle mchav/with
 #antigen bundle pierpo/fzf-docker
 #antigen bundle reconquest/shdoc
-#antigen bundle sirhc/okta.plugin.zsh
+antigen bundle sirhc/okta.plugin.zsh
 antigen bundle sirhc/op.plugin.zsh
-#antigen bundle wfxr/forgit
+antigen bundle wfxr/forgit
 
 for plugin ($DOTFILES/plugins/*(/)); do
   antigen bundle "$plugin"
