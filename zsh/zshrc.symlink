@@ -81,9 +81,9 @@ antigen bundle zsh-users/zsh-history-substring-search
 antigen bundle zsh-users/zsh-syntax-highlighting
 
 antigen bundle loganlinn/zzz.plugin.zsh
-#antigen bundle clvv/fasd
-#antigen bundle mchav/with
-#antigen bundle pierpo/fzf-docker
+antigen bundle clvv/fasd
+antigen bundle mchav/with
+antigen bundle pierpo/fzf-docker
 #antigen bundle reconquest/shdoc
 antigen bundle sirhc/okta.plugin.zsh
 antigen bundle sirhc/op.plugin.zsh
