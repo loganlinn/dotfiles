@@ -19,10 +19,10 @@ export EDITOR=vim
 export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 export PROJECTS=${PROJECTS:-"$HOME/code"}
 
-export ANTIGEN="$HOME/antigen"
-export ADOTDIR="$HOME/.antigen"
-export ZSH="$ADOTDIR/bundles/robbyrussell/oh-my-zsh"
-export ZSH_CUSTOM="$DOTFILES"
+export ANTIGEN=$HOME/antigen
+export ADOTDIR=$HOME/.antigen
+export ZSH=$ADOTDIR/bundles/robbyrussell/oh-my-zsh
+export ZSH_CUSTOM=$DOTFILES
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
@@ -30,15 +30,17 @@ path=(/usr/local/{bin,sbin} $HOME/bin $DOTFILES/bin $HOME/go/bin $path)
 
 # prefer gnu tools
 if (( $+commands[brew] )); then
-  path=($(brew --prefix)/opt/{coreutils,gawk,gnu-indent,gnu-sed,gnu-tar,grep,make}/libexec/gnubin $path)
+  path=($(brew --prefix)/opt/{{coreutils,gawk,gnu-indent,gnu-sed,gnu-tar,grep,make}/libexec/gnubin,curl/bin} $path)
 fi
+
+fpath=($DOTFILES/functions $fpath)
 
 #------------------------------------------------------------------------------
 # bootstrap
 #------------------------------------------------------------------------------
 
-[[ -d "$ANTIGEN" ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
-[[ -d "$ZSH" ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
+[[ -d $ANTIGEN ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
+[[ -d $ZSH ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 
 source $ANTIGEN/antigen.zsh
 
@@ -63,7 +65,7 @@ antigen bundle gradle
 antigen bundle kubectl
 antigen bundle lein
 antigen bundle pip
-antigen bundle pyenv
+[[ -d ~/.pyenv ]] && antigen bundle pyenv
 [[ -d ~/.rbenv ]] && antigen bundle rbenv
 antigen bundle rust
 antigen bundle safe-paste
