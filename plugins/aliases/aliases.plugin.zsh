@@ -126,30 +126,10 @@ function zshrc() {
 zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
 
 ################################################################################
-# anaconda
+# emacs
 ################################################################################
 
-# @decription setup current shell to use anaconda
-conda-shell() {
-  __pyenv_version=$(pyenv whence conda)
-  __conda_home="$HOME/.pyenv/versions/$__pyenv_version"
-  __conda_setup="$("$__conda_home/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
-
-  pyenv shell "$__pyenv_version"
-
-  if [ $? -eq 0 ]; then
-      eval "$__conda_setup"
-  else
-      if [ -f "$__conda_home/etc/profile.d/conda.sh" ]; then
-          source "$__conda_home/etc/profile.d/conda.sh"
-      else
-          export PATH="$__conda_home/bin:$PATH"
-      fi
-  fi
-  unset __conda_setup
-  unset __conda_home
-  unset __pyenv_version
-}
+alias emacs='emacs -nw'
 
 ################################################################################
 # git
@@ -199,6 +179,32 @@ function tma() {
 }
 
 ################################################################################
+# anaconda
+################################################################################
+
+# @decription setup current shell to use anaconda
+conda-shell() {
+  __pyenv_version=$(pyenv whence conda)
+  __conda_home="$HOME/.pyenv/versions/$__pyenv_version"
+  __conda_setup="$("$__conda_home/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
+
+  pyenv shell "$__pyenv_version"
+
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$__conda_home/etc/profile.d/conda.sh" ]; then
+          source "$__conda_home/etc/profile.d/conda.sh"
+      else
+          export PATH="$__conda_home/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  unset __conda_home
+  unset __pyenv_version
+}
+
+################################################################################
 # aws-okta
 ################################################################################
 
@@ -210,6 +216,16 @@ function aws-env() {
     profile="$(aws-okta list | fzf --tac | cut -f1)"
   fi
   eval "$(aws-okta env "$profile")"
+}
+
+function aws-login() {
+  emulate -L zsh
+  set +e
+  local profile="$1"
+  if [[ -z "$profile" ]]; then
+    profile="$(aws-okta list | fzf --tac | cut -f1)"
+  fi
+  eval "$(aws-okta login "$profile")"
 }
 
 ################################################################################
