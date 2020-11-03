@@ -1,2 +1,0 @@
-#!/bin/bash -eou pipefail
-pbpaste | black - | pbcopy

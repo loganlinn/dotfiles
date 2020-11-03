@@ -1,0 +1,3 @@
+DOTFILES_DIRS="$HOME/.dotfiles"
+COPY_ALWAYS="ssh/id_* netrc"
+EXCLUDES="Makefile README* LICENSE libexec"

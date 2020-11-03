@@ -1,4 +1,15 @@
-host github.com
+Host *.llinn.dev
+    IdentityFile ~/.ssh/llinn.dev/2020-02-15
+
+Host github.com
   HostName github.com
   IdentityFile ~/.ssh/github_rsa
   User git
+
+Host *
+    User logan
+    UseRoaming no
+    AddKeysToAgent yes
+    UseKeychain yes
+    IdentityFile ~/.ssh/id_rsa
+
