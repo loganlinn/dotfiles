@@ -1,4 +1,4 @@
-command -v gco
+unalias gco
 
 # @name gco
 # @description checkout branch if given, otherwise choose interactively from recent branches
