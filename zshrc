@@ -18,7 +18,7 @@ export PROJECTS=${PROJECTS:-"$HOME/code"}
 export ANTIGEN=$HOME/antigen
 export ADOTDIR=$HOME/.antigen
 export ZSH=$ADOTDIR/bundles/robbyrussell/oh-my-zsh
-export ZSH_CUSTOM=$HOME/.zsh-custom
+export ZSH_CUSTOM=$HOME/.zsh
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 

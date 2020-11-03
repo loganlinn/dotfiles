@@ -27,23 +27,6 @@ alias lS='ls -1FSsh'
 alias lart='ls -1Fcart'
 alias lrt='ls -1Fcrt'
 
-# @name fo
-# @brief Open the selected file with the default editor or default application
-function fo() {
-  IFS=$'\n' out=("$(fzf-tmux --query="$1" --exit-0 --expect=ctrl-o,ctrl-e)")
-  key=$(head -1 <<< "$out")
-  file=$(head -2 <<< "$out" | tail -1)
-  if [ -n "$file" ]; then
-    [ "$key" = ctrl-o ] && open "$file" || ${EDITOR:-vim} "$file"
-  fi
-}
-
-alias grep='grep --color'
-alias sgrep='grep -R -n -H -C 5 --exclude-dir={.git,.svn,CVS} '
-
-alias t='tail -f'
-alias g='$(brew --prefix)/bin/gw' # && compdef g='gradle'
-
 # Command line head / tail shortcuts
 alias -g H='--help'
 alias -g T='| tail'
@@ -103,16 +86,6 @@ if is-at-least 4.2.0; then
   alias -s ace="unace l"
 fi
 
-# @doc Bulk search & replace with ag (the_silver_searcher)
-function agr {
-	ag -0 -l "$1" | AGR_FROM="$1" AGR_TO="$2" xargs -0 perl -pi -e 's/$ENV{AGR_FROM}/$ENV{AGR_TO}/g'
-} 
-
-alias agh="ag --hidden"
-
-# Make zsh know about hosts already accessed by SSH
-zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
-
 ################################################################################
 # git
 ################################################################################
@@ -128,22 +101,6 @@ alias gsp="git stash pop"
 alias gsw="git stash show -p"
 alias gcob="git checkout -b"
 
-# @description checkout branch if given, otherwise choose interactively from recent branches
-# @arg $1 string branch
-# @arg $@ any git-checkout args
-function gco() {
-  if [ $# -eq 0 ]; then
-    local branches branch
-    branches="$(git branch --sort=-committerdate)" &&
-      branch="$(echo "$branches" | fzf-tmux -d 15 +m)"
-    if [ $? -eq 0 ]; then
-      git checkout "$(echo "$branch" | sed "s/.* //")"
-    fi
-  else
-    git checkout -B "$@"
-  fi
-}
-
 ################################################################################
 # tmux
 ################################################################################
@@ -153,58 +110,6 @@ function gco() {
 if (( $+commands[direnv] )); then
   alias tmux='direnv exec / tmux'
 fi
-
-# @description attaches or creates tmux session; detaches other clients.
-function tma() {
-  tmux new-session -ADs "${1:-main}"
-}
-
-################################################################################
-# anaconda
-################################################################################
-
-# @decription setup current shell to use anaconda
-conda-shell() {
-  __pyenv_version=$(pyenv whence conda)
-  __conda_home="$HOME/.pyenv/versions/$__pyenv_version"
-  __conda_setup="$("$__conda_home/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
-
-  pyenv shell "$__pyenv_version"
-
-  if [ $? -eq 0 ]; then
-      eval "$__conda_setup"
-  else
-      if [ -f "$__conda_home/etc/profile.d/conda.sh" ]; then
-          source "$__conda_home/etc/profile.d/conda.sh"
-      else
-          export PATH="$__conda_home/bin:$PATH"
-      fi
-  fi
-  unset __conda_setup
-  unset __conda_home
-  unset __pyenv_version
-}
-
-################################################################################
-# aws-okta
-################################################################################
-
-function aws-profile
-function aws-env() {
-  local profile="$1"
-  if [[ -z "$profile" ]]; then
-    profile="$(aws-okta list | fzf --tac | cut -f1)"
-  fi
-  eval "$(aws-okta env "$profile")"
-}
-
-function aws-login() {
-  local profile="$1"
-  if [[ -z "$profile" ]]; then
-    profile="$(aws-okta list | fzf --tac | cut -f1)"
-  fi
-  eval "$(aws-okta login "$profile")"
-}
 
 ################################################################################
 # bazel
@@ -217,12 +122,6 @@ alias bzq="bazel query"
 alias bzba="bazel build //..."
 alias bzta="bazel test //..."
 alias bfmt="buildifier -lint=warn -r ."
-
-################################################################################
-# docker
-################################################################################
-
-alias d-c="docker-compose"
 
 ################################################################################
 # applications
