@@ -49,8 +49,8 @@ values."
           org-projectile-file "notes.org"
           jiralib-url "https://optimizely.atlassian.net:443")
      (plantuml :variables
-               plantuml-jar-path "~/.dotfiles/libexec/plantuml.jar"
-               org-plantuml-jar-path "~/.dotfiles/libexec/plantuml.jar")
+               plantuml-jar-path "~/.dotfiles/share/java/plantuml.jar"
+               org-plantuml-jar-path "~/.dotfiles/share/java/plantuml.jar")
      ruby
      (shell :variables
             shell-default-height 30

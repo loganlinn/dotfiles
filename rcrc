@@ -1,3 +1,4 @@
 DOTFILES_DIRS="$HOME/.dotfiles"
 COPY_ALWAYS="ssh/id_* netrc"
-EXCLUDES="Makefile README* LICENSE libexec"
+SYMLINK_DIRS="bin lib share"
+EXCLUDES="README* LICENSE"

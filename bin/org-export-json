@@ -1,0 +1,3 @@
+#!/bin/sh
+
+emacs --no-site-file --no-init-file -batch -l "$HOME/.dotfiles/lib/org-export-json.el" -f cli-org-export-json "$@"
