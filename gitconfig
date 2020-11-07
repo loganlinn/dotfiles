@@ -1,35 +1,35 @@
+[include]
+  path = ~/.gitconfig.local
+  path = .gitconfig.local
+[core]
+  excludesfile = ~/.gitignore
+  autocrlf = input
 [user]
   name = loganlinn
-  email = logan.linn@gmail.com
-
-[core]
-  editor = vim
-  excludesfile = ~/.gitignore
-
+  email = logan@loganlinn.com
+[init]
+  defaultBranch = main
+  templatedir = ~/.git_template
 [credential "github.com"]
   helper = osxkeychain
-
 [color]
-  diff = auto
-  status = auto
-  branch = auto
-  ui = true
+  ui = auto
 
 [diff]
   wsErrorHighlight = all
-
+  colorMoved = zebra
 [apply]
   whitespace = nowarn
-
 [help]
   autocorrect = 1
-
+[fetch]
+  prune = true
 [push]
   default = current
-
 [pull]
   rebase = true
-
+[merge]
+  ff = only
 [rebase]
   autosquash = true
 
@@ -43,11 +43,15 @@
 [url "git@github.com:"]
   insteadOf = https://github.com/
 
-[include]
-  path = ~/.gitconfig.local
-  path = .gitconfig.local
-
 [alias]
+  aa = add --all
+  ap = add --patch
+  branches = for-each-ref --sort=-committerdate --format=\"%(color:blue)%(authordate:relative)\t%(color:red)%(authorname)\t%(color:white)%(color:bold)%(refname:short)\" refs/remotes
+  ci = commit -v
+  co = checkout
+  pf = push --force-with-lease
+  st = status
+  stash-search = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
   # https://git.io/JfW3J >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   uncommit = reset --mixed HEAD~
   unstage = reset -q HEAD --
@@ -62,4 +66,3 @@
   ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate --numstat
   ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate
   #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-  stash-search = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"

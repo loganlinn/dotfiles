@@ -1,4 +1,4 @@
-DOTFILES_DIRS="$HOME/.dotfiles"
-COPY_ALWAYS="ssh/id_* netrc"
+DOTFILES_DIRS="$HOME/.dotfiles-local $HOME/.dotfiles"
+COPY_ALWAYS=git_template/HEAD
 SYMLINK_DIRS="bin lib share"
 EXCLUDES="README* LICENSE"
