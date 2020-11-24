@@ -3,13 +3,14 @@ Host *.llinn.dev
 
 Host github.com
   HostName github.com
-  IdentityFile ~/.ssh/github_rsa
+  # IdentityFile ~/.ssh/github_rsa
   User git
 
 Host *
-    User logan
-    UseRoaming no
     AddKeysToAgent yes
-    UseKeychain yes
     IdentityFile ~/.ssh/id_rsa
+    ServerAliveInterval 120
+    UseKeychain yes
+    UseRoaming no
+    User logan
 
