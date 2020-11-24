@@ -1,3 +1,6 @@
 #!/bin/sh
+# @file org-export-json
+# @brief exports org file as JSON data
+# @arg $1 string Input file path
 
 emacs --no-site-file --no-init-file -batch -l "$HOME/.dotfiles/lib/org-export-json.el" -f cli-org-export-json "$@"
