@@ -32,9 +32,9 @@ values."
    dotspacemacs-configuration-layers
    '(
      asciidoc
-     auto-completion
+     (auto-completion :disabled-for org markdown)
      better-defaults
-     clojure
+     (clojure :variables enable-fancify-symbols t)
      java
      go
      elm
@@ -45,12 +45,10 @@ values."
      markdown
      (org :variables
           org-enable-github-support t
-          org-enable-jira-support t
-          org-projectile-file "notes.org"
-          jiralib-url "https://optimizely.atlassian.net:443")
+          org-projectile-file "notes.org")
      (plantuml :variables
-               plantuml-jar-path "~/.dotfiles/share/java/plantuml.jar"
-               org-plantuml-jar-path "~/.dotfiles/share/java/plantuml.jar")
+               plantuml-jar-path "~/.share/java/plantuml.jar"
+               org-plantuml-jar-path "~/.share/java/plantuml.jar")
      ruby
      (shell :variables
             shell-default-height 30
