@@ -1,5 +1,5 @@
-# give us access to ^Q
-stty -ixon
+# Allow mapping Ctrl+S and Ctrl+Q shortcuts
+[[ -r ${TTY:-} && -w ${TTY:-} && $+commands[stty] == 1 ]] && stty -ixon <$TTY >$TTY
 
 # vi mode
 bindkey -v
