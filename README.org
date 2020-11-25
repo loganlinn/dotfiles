@@ -1,123 +1,16 @@
 * Requirements
 ** zsh
-** rcm
+** [[https://github.com/thoughtbot/rcm][rcm]]
    
-* Fonts
-** [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/JetBrainsMono][JetBrains Mono]]
+* Editors
+*** [[https://github.com/syl20bnr/spacemacs][Spacemacs]]
+*** [[https://neovim.io/][neovim]] + [[https://github.com/SpaceVim/SpaceVim][SpaceVim]]
 
-* Tools
-*** [[https://github.com/syl20bnr/spacemacs][spacemacs]]
+* Fonts
+*** [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/JetBrainsMono][JetBrains Mono (Nerd Font)]]
   
 * macOS
 ** [[https://brew.sh/][Homebrew]]
-*** Packages
-    #+begin_src shell
-      brew leaves
-    #+end_src
-
-    #+RESULTS:
-    | adr-tools                           |
-    | asciinema                           |
-    | optimizely/automation/auto          |
-    | automake                            |
-    | bash                                |
-    | bat                                 |
-    | bazel                               |
-    | bison                               |
-    | clementtsang/bottom/bottom          |
-    | broot                               |
-    | bufbuild/buf/buf                    |
-    | capnp                               |
-    | clojure                             |
-    | cmake                               |
-    | colordiff                           |
-    | curl                                |
-    | diffoscope                          |
-    | direnv                              |
-    | dive                                |
-    | doctl                               |
-    | moncho/dry/dry                      |
-    | elinks                              |
-    | emacs                               |
-    | d12frosted/emacs-plus/emacs-plus@27 |
-    | fd                                  |
-    | fpp                                 |
-    | fzf                                 |
-    | gawk                                |
-    | gdub                                |
-    | gh                                  |
-    | gist                                |
-    | git                                 |
-    | git-delta                           |
-    | git-lfs                             |
-    | global                              |
-    | gnu-indent                          |
-    | gnu-sed                             |
-    | gnupg                               |
-    | goreleaser/tap/goreleaser           |
-    | gradle                              |
-    | gradle-completion                   |
-    | graphviz                            |
-    | grep                                |
-    | grip                                |
-    | grpcurl                             |
-    | httpie                              |
-    | hub                                 |
-    | hugo                                |
-    | bazelbuild/tap/ibazel               |
-    | imagemagick@6                       |
-    | ipython                             |
-    | jenv                                |
-    | kafkacat                            |
-    | holgerbrandl/tap/kscript            |
-    | kubernetes-cli                      |
-    | lua@5.1                             |
-    | lynx                                |
-    | make                                |
-    | maven                               |
-    | micronaut                           |
-    | minio                               |
-    | mosh                                |
-    | ncdu                                |
-    | neofetch                            |
-    | neovim                              |
-    | netcat                              |
-    | pack                                |
-    | pandoc                              |
-    | parquet-tools                       |
-    | pinentry-mac                        |
-    | pipenv                              |
-    | postgresql                          |
-    | postgresql@11                       |
-    | pre-commit                          |
-    | pup                                 |
-    | pyenv-virtualenv                    |
-    | pyenv-which-ext                     |
-    | qmk/qmk/qmk                         |
-    | rbenv                               |
-    | rclone                              |
-    | rcm                                 |
-    | reattach-to-user-namespace          |
-    | redis                               |
-    | sc-im                               |
-    | shellcheck                          |
-    | koekeishiya/formulae/skhd           |
-    | snapcraft                           |
-    | snzip                               |
-    | ssh-copy-id                         |
-    | terraform                           |
-    | texinfo                             |
-    | the_silver_searcher                 |
-    | thrift                              |
-    | tmux                                |
-    | tree                                |
-    | urlview                             |
-    | vim                                 |
-    | wget                                |
-    | xonsh                               |
-    | yarn                                |
-    | ykman                               |
-    | yq                                  |
-    | zola                                |
-    | zsh                                 |
-   
+*** [[file:Brewfile][Brewfile]] via [[https://github.com/Homebrew/homebrew-bundle][brew bundle]]
+** iTerm2
+*** Theme: https://github.com/arcticicestudio/nord-iterm2
