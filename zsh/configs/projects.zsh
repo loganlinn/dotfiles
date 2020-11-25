@@ -1,9 +1,9 @@
 #!/bin/zsh
 
-export PROJECTS=${PROJECTS:-"$HOME/code"}
+PROJECTS="${PROJECTS:-"$HOME/code"}"
 
 # @description lets you quickly jump into a project directory.
-function c() {
+function c () {
   if [[ "$1" == "/" ]]; then
     cd "$PROJECTS"
     return

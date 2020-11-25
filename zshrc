@@ -13,7 +13,6 @@ fi
 #------------------------------------------------------------------------------
 
 export EDITOR=nvim
-export DOTFILES=${DOTFILES:-"$HOME/.dotfiles"}
 export PROJECTS=${PROJECTS:-"$HOME/code"}
 export ANTIGEN=$HOME/antigen
 export ADOTDIR=$HOME/.antigen

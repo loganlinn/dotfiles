@@ -1,4 +1,4 @@
-DOTFILES_DIRS="$HOME/.dotfiles"
+DOTFILES_DIRS="$HOME/.rcfiles"
 COPY_ALWAYS=git_template/HEAD
 SYMLINK_DIRS="bin lib org share zsh"
 EXCLUDES="README* LICENSE"
