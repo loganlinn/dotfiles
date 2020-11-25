@@ -48,10 +48,6 @@ alias help='man'
 alias p='ps -f'
 alias sortnr='sort -n -r'
 
-mkcd () {
-  mkdir -p -- "$@" && eval cd -- "\"\$$#\""
-}
-
 # zsh is able to auto-do some kungfoo
 # depends on the SUFFIX :)
 autoload -Uz is-at-least
