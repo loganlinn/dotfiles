@@ -1,0 +1,62 @@
+[options]
+    colorscheme = "nord"
+    colorscheme_bg = "dark"
+    enable_guicolors = true
+    statusline_separator = "arrow"
+    statusline_iseparator = "arrow"
+    buffer_index_type = 4
+    windows_index_type = 3
+    enable_tabline_filetype_icon = true
+    enable_statusline_mode = false
+    statusline_unicode_symbols = false
+    vimcompatible = true
+    automatic_update = false
+
+[[custom_plugins]]
+repo = "arcticicestudio/nord-vim"
+
+[[layers]]
+name = 'autocomplete'
+auto_completion_return_key_behavior = "complete"
+auto_completion_tab_key_behavior = "smart"
+
+[[layers]]
+name = 'shell'
+default_position = 'top'
+default_height = 30
+
+[[layers]]
+name = "fzf"
+
+[[layers]]
+name = "git"
+
+[[layers]]
+name = "lang#clojure"
+
+[[layers]]
+name = "lang#go"
+
+[[layers]]
+name = "lang#html"
+
+[[layers]]
+name = "lang#javascript"
+
+[[layers]]
+name = "lang#markdown"
+
+[[layers]]
+name = "lang#python"
+
+[[layers]]
+name = "lang#rust"
+
+[[layers]]
+name = "lang#sh"
+
+[[layers]]
+name = "lang#toml"
+
+[[layers]]
+name = "lang#typescript"
