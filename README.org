@@ -20,7 +20,7 @@ Install [[https://brew.sh/][Homebrew]]:
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 #+end_src
 
-Install formulae from [[file:Brewfile][Brewfile]] using [[https://github.com/Homebrew/homebrew-bundle][~brew bundle~]]:
+Install formulae from [[file:Brewfile][Brewfile]]:
 
 #+begin_src sh
   brew install mas
