@@ -8,8 +8,7 @@ Required:
 
 #+begin_src sh
   git clone git@github.com:loganlinn/rcfiles.git ~/.rcfiles
-  rcup -d ~/.rcfiles rcrc
-  rcup -d ~/.rcfiles
+  env RCRC=~/.rcfiles/rcrc rcup
 #+end_src
 
 * Setup Guide
