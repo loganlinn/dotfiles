@@ -58,6 +58,6 @@ function cclone {
     directory="${PROJECTS:-$(pwd)}/${repository:t:r}"
   fi
 
-  gh repo clone "$repository" "$directory" -- --recursive
+  git clone --recurse-submodules --shallow-submodules -- "$repository" "$directory" &&
   cd "$directory"
 }
