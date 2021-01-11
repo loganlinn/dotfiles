@@ -35,7 +35,8 @@ antigen bundles <<EOBUNDLES
     pierpo/fzf-docker
     pip
     safe-paste
-    sirhc/okta.plugin.zs
+    sirhc/okta.plugin.zsh
+    sirhc/op.plugin.zsh
     terraform
     urltools
     vi-mode
