@@ -1,16 +1,60 @@
-* Requirements
-** zsh
-** [[https://github.com/thoughtbot/rcm][rcm]]
-   
-* Editors
-*** [[https://github.com/syl20bnr/spacemacs][Spacemacs]]
-*** [[https://neovim.io/][neovim]] + [[https://github.com/SpaceVim/SpaceVim][SpaceVim]]
+#+TITLE: dotfiles
 
-* Fonts
-*** [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/JetBrainsMono][JetBrains Mono (Nerd Font)]]
-  
-* macOS
-** [[https://brew.sh/][Homebrew]]
-*** [[file:Brewfile][Brewfile]] via [[https://github.com/Homebrew/homebrew-bundle][brew bundle]]
-** iTerm2
-*** Theme: https://github.com/arcticicestudio/nord-iterm2
+* Install
+
+Required:
+- zsh
+- [[https://github.com/thoughtbot/rcm][rcm]]
+
+#+begin_src sh
+  git clone git@github.com:loganlinn/rcfiles.git ~/.rcfiles
+  rcup -d ~/.rcfiles rcrc
+  rcup -d ~/.rcfiles
+#+end_src
+
+* Setup Guide
+
+** macOS
+Install [[https://brew.sh/][Homebrew]]:
+
+#+begin_src sh
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#+end_src
+
+Install formulae from [[file:Brewfile][Brewfile]] using [[https://github.com/Homebrew/homebrew-bundle][~brew bundle~]]:
+
+#+begin_src sh
+  brew install mas
+  brew bundle install --file=~/.rcfiles/Brewfile
+#+end_src
+
+** Terminal Emulators
+
+- [[https://github.com/alacritty/alacritty/releases/latest][alacritty/alacritty]] + [[https://github.com/arcticicestudio/nord-alacritty/releases/latest][arcticicestudio/nord-alacritty]]
+- [[https://iterm2.com/downloads.html][iTerm2]] + [[https://github.com/arcticicestudio/nord-iterm2/releases/latest][arcticicestudio/nord-iterm2]].
+
+** Editor
+
+Install [[https://github.com/syl20bnr/spacemacs][spacemacs]]:
+
+#+begin_src sh
+  git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+#+end_src
+
+** Fonts
+
+Use [[https://github.com/ryanoasis/nerd-fonts][Nerd Fonts]].
+
+[[https://www.jetbrains.com/lp/mono/][JetBrains Mono]]:
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Bold-Italic/complete/JetBrains%20Mono%20Bold%20Italic%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Bold/complete/JetBrains%20Mono%20Bold%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/ExtraBold-Italic/complete/JetBrains%20Mono%20ExtraBold%20Italic%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/ExtraBold/complete/JetBrains%20Mono%20ExtraBold%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Italic/complete/JetBrains%20Mono%20Italic%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Medium-Italic/complete/JetBrains%20Mono%20Medium%20Italic%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Medium/complete/JetBrains%20Mono%20Medium%20Nerd%20Font%20Complete.ttf
+- https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Regular/complete/JetBrains%20Mono%20Regular%20Nerd%20Font%20Complete.ttf
+ 
+* Acknowledgements
+
+This dotfile repository was inspired by [[https://github.com/thoughtbot/dotfiles][thoughtbot/dotfiles]].
