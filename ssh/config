@@ -1,16 +1,11 @@
-Host *.llinn.dev
-    IdentityFile ~/.ssh/llinn.dev/2020-02-15
+Include ~/.ssh/config.local
 
 Host github.com
   HostName github.com
-  # IdentityFile ~/.ssh/github_rsa
   User git
 
 Host *
     AddKeysToAgent yes
-    IdentityFile ~/.ssh/id_rsa
     ServerAliveInterval 120
     UseKeychain yes
     UseRoaming no
-    User logan
-
