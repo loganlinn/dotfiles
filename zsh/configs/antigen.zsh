@@ -15,6 +15,7 @@ source $ANTIGEN/antigen.zsh
 antigen use oh-my-zsh
 antigen bundles <<EOBUNDLES
     aws
+    cargo
     clvv/fasd
     colored-man-pages
     command-not-found
@@ -24,8 +25,10 @@ antigen bundles <<EOBUNDLES
     emacs
     extract
     fzf
+    genpass
     git
     github
+    gitignore
     gpg-agent
     gradle
     kubectl
@@ -42,6 +45,7 @@ antigen bundles <<EOBUNDLES
     vi-mode
     web-search
     wfxr/forgit
+    zsh-interactive-cd
     zsh-users/zaw
     zsh-users/zsh-autosuggestions 
     zsh-users/zsh-completions 
