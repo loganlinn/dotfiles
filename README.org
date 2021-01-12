@@ -20,17 +20,22 @@ Install [[https://brew.sh/][Homebrew]]:
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 #+end_src
 
-Install formulae from [[file:Brewfile][Brewfile]]:
+Install formulae from [[file:Brewfile][~/.Brewfile]]:
 
 #+begin_src sh
-  brew install mas
-  brew bundle install --file=~/.rcfiles/Brewfile
+  brew bundle install --global
+#+end_src
+
+Install [[https://github.com/pyenv/pyenv][pyenv]]:
+
+#+begin_src sh
+  curl --proto '=https' --tlsv1.2 -s -s -l https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 #+end_src
 
 ** Terminal Emulators
 
-- [[https://github.com/alacritty/alacritty/releases/latest][alacritty/alacritty]] + [[https://github.com/arcticicestudio/nord-alacritty/releases/latest][arcticicestudio/nord-alacritty]]
-- [[https://iterm2.com/downloads.html][iTerm2]] + [[https://github.com/arcticicestudio/nord-iterm2/releases/latest][arcticicestudio/nord-iterm2]].
+ - [[https://github.com/alacritty/alacritty/releases/latest][alacritty/alacritty]] + [[https://github.com/arcticicestudio/nord-alacritty/releases/latest][arcticicestudio/nord-alacritty]]
+ - [[https://iterm2.com/downloads.html][iTerm2]] + [[https://github.com/arcticicestudio/nord-iterm2/releases/latest][arcticicestudio/nord-iterm2]]
 
 ** Editor
 
