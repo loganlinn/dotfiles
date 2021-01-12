@@ -14,6 +14,7 @@
 
 [[custom_plugins]]
 repo = "arcticicestudio/nord-vim"
+merged = false
 
 [[layers]]
 name = 'autocomplete'
