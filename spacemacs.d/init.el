@@ -47,8 +47,8 @@ values."
           org-enable-github-support t
           org-projectile-file "notes.org")
      (plantuml :variables
-               plantuml-jar-path "~/.share/java/plantuml.jar"
-               org-plantuml-jar-path "~/.share/java/plantuml.jar")
+               plantuml-jar-path "~/.local/share/plantuml/plantuml.jar"
+               org-plantuml-jar-path "~/.local/share/plantuml/plantuml.jar")
      ruby
      (shell :variables
             shell-default-height 30
