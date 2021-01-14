@@ -1,4 +1,5 @@
 DOTFILES_DIRS="$HOME/.rcfiles"
-COPY_ALWAYS=git_template/HEAD
-SYMLINK_DIRS="bin lib org share zsh"
+COPY_ALWAYS="git_template/HEAD ssh/id_*"
+SYMLINK_DIRS="bin lib org zsh"
 EXCLUDES="README* LICENSE Brewfile"
+UNDOTTED="Library"
