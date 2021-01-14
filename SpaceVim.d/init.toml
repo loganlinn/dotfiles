@@ -1,19 +1,28 @@
 [options]
-    colorscheme = "nord"
-    colorscheme_bg = "dark"
-    enable_guicolors = true
-    statusline_separator = "arrow"
-    statusline_iseparator = "arrow"
-    buffer_index_type = 4
-    windows_index_type = 3
-    enable_tabline_filetype_icon = true
-    enable_statusline_mode = false
-    statusline_unicode_symbols = false
-    vimcompatible = true
-    automatic_update = false
+auto_disable_touchpad = 1
+automatic_update = false
+buffer_index_type = 4
+colorscheme = "nord"
+colorscheme_bg = "dark"
+enable_guicolors = true
+enable_statusline_mode = false
+enable_tabline_filetype_icon = true
+enable_vimfiler_gitstatus = true
+filemanager = "defx"
+filetree_direction = "left"
+guifont = "JetBrainsMono Nerd Font Mono:h11"
+statusline_iseparator = "bar"
+statusline_separator = "arrow"
+statusline_unicode_symbols = true
+vimcompatible = true
+windows_index_type = 3
 
 [[custom_plugins]]
 repo = "arcticicestudio/nord-vim"
+merged = false
+
+[[custom_plugins]]
+repo = "vito-c/jq.vim"
 merged = false
 
 [[layers]]
@@ -25,6 +34,9 @@ auto_completion_tab_key_behavior = "smart"
 name = 'shell'
 default_position = 'top'
 default_height = 30
+
+[[layers]]
+name = "tmux"
 
 [[layers]]
 name = "fzf"
