@@ -5,10 +5,11 @@ buffer_index_type = 4
 colorscheme = "nord"
 colorscheme_bg = "dark"
 enable_guicolors = true
+enable_neomake = true
 enable_statusline_mode = false
 enable_tabline_filetype_icon = true
 enable_vimfiler_gitstatus = true
-filemanager = "defx"
+# filemanager = "defx"
 filetree_direction = "left"
 guifont = "JetBrainsMono Nerd Font Mono:h11"
 statusline_iseparator = "bar"
@@ -29,6 +30,9 @@ merged = false
 name = 'autocomplete'
 auto_completion_return_key_behavior = "complete"
 auto_completion_tab_key_behavior = "smart"
+
+[[layers]]
+name = "checkers"
 
 [[layers]]
 name = 'shell'
