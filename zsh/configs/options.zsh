@@ -7,3 +7,7 @@ setopt extendedglob
 
 # Allow [ or ] whereever you want
 unsetopt nomatch
+
+# Do not exit shell when Ctrl-D pressed
+set -o ignore_eof
+
