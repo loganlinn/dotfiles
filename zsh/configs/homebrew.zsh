@@ -1,2 +1,2 @@
 export HOMEBREW_NO_ANALYTICS=1
-export HOMEBREW_BUNDLE_FILE=$HOME/.rcfiles/Brewfile
+export HOMEBREW_BUNDLE_FILE=$HOME/.Brewfile

@@ -7,6 +7,7 @@ tap "homebrew/services"
 tap "bazelbuild/tap"
 tap "d12frosted/emacs-plus"
 tap "github/gh"
+tap "AlexanderWillner/tap"
 
 brew "bash"
 brew "bat"
@@ -42,11 +43,14 @@ brew "readline"
 brew "reattach-to-user-namespace"
 brew "ssh-copy-id", link: true
 brew "the_silver_searcher"
+brew "things.sh"
 brew "tmux"
 brew "tree"
 brew "vim"
 brew "wget"
 brew "zsh"
+
+mas "Things", id: 904280696
  
 # brew "adr-tools"
 # brew "sqlite"
