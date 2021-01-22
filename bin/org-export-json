@@ -2,5 +2,4 @@
 # @file org-export-json
 # @brief exports org file as JSON data
 # @arg $1 string Input file path
-LIB="$(dirname "$(readlink -f "$0")")/../lib"
-emacs --no-site-file --no-init-file -batch -l "$LIB/org-export-json.el" -f cli-org-export-json "$1"
+emacs --no-site-file --no-init-file -batch -l "$HOME/.spacemacs.d/org-export-json.el" -f cli-org-export-json "$1"
