@@ -1,3 +1,7 @@
+if (( $+commands[aws] )); then
+  alias aws='docker run --rm -it -v ~/.aws:/root/.aws -v $(pwd):/aws amazon/aws-cli'
+fi
+
 function aws-env() {
   local profile="$1"
   if [[ -z "$profile" ]]; then
