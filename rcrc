@@ -1,5 +1,6 @@
-DOTFILES_DIRS="$HOME/.rcfiles"
 COPY_ALWAYS="git_template/HEAD ssh/id_*"
-SYMLINK_DIRS="bin lib org zsh"
-EXCLUDES="README* LICENSE Brewfile"
-UNDOTTED="Library"
+DOTFILES_DIRS="$HOME/.rcfiles"
+EXCLUDES="README* LICENSE Makefile"
+SYMLINK_DIRS="zsh"
+TAGS=$(uname -s)
+UNDOTTED="bin org Library"
