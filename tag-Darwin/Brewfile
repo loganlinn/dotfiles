@@ -41,6 +41,7 @@ brew "pinentry-mac"
 brew "rcm"
 brew "readline"
 brew "reattach-to-user-namespace"
+brew "sops"
 brew "ssh-copy-id", link: true
 brew "the_silver_searcher"
 brew "things.sh"
