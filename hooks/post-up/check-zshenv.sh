@@ -1,12 +1,8 @@
-#!/bin/sh
-
-if [ -f "$HOME/.git_template/HEAD" ] && \
-  [ "$(cat "$HOME/.git_template/HEAD")" = "ref: refs/heads/main" ]; then
-  echo "Removing ~/.git_template/HEAD in favor of defaultBranch" >&2
-  rm -f ~/.git_template/HEAD
-fi
+#!/usr/bin/env sh
 
 # detect old OS X broken /etc/zshenv and suggest rename
+# credit: https://github.com/thoughtbot/dotfiles/blob/2a59c1890f81bffc1db79cae4482ce2b706b0f79/hooks/post-up
+
 if grep -qw path_helper /etc/zshenv 2>/dev/null; then
   dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 
@@ -15,8 +11,6 @@ Warning: \`/etc/zshenv' configuration file on your system may cause unexpected
 PATH changes on subsequent invocations of the zsh shell. The solution is to
 rename the file to \`zprofile':
   sudo mv /etc/{zshenv,zprofile}
-
 (called from ${dir}/post-up:${LINENO})
-
 MSG
 fi
