@@ -2,3 +2,6 @@
 	path = emacs.d
 	url = https://github.com/syl20bnr/spacemacs
 	shallow = true
+[submodule "vim"]
+	path = vim
+	url = git@github.com:SpaceVim/SpaceVim.git
