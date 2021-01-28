@@ -1,93 +1,103 @@
-tap "homebrew/bundle"
-tap "homebrew/cask"
-tap "homebrew/cask-fonts"
-tap "homebrew/core"
-tap "homebrew/services"
+tap 'homebrew/core'
+tap 'homebrew/bundle'
+tap 'homebrew/services'
+tap 'homebrew/cask'
 
-tap "bazelbuild/tap"
-tap "d12frosted/emacs-plus"
-tap "github/gh"
-tap "AlexanderWillner/tap"
+tap 'bazelbuild/tap'
+tap 'd12frosted/emacs-plus'
+tap 'github/gh'
+tap 'homebrew/cask-fonts'
 
-brew "bash"
-brew "bat"
-brew "bazel"
-brew "clang-format"
-brew "clojure"
-brew "coreutils"
-brew "ctags"
-brew "curl"
-brew "direnv"
-brew "emacs-plus@27", args: ["with-spacemacs-icon"]
-brew "fd"
-brew "findutils"
-brew "fzf"
-brew "gawk"
-brew "gh"
-brew "git"
-brew "git-delta"
-brew "gnu-indent"
-brew "gnu-sed"
-brew "gnu-tar"
-brew "gnupg"
-brew "gnutls"
-brew "go"
-brew "grep"
-brew "httpie"
-brew "jenv"
-brew "jq"
-brew "make"
-brew "neovim"
-brew "pinentry-mac"
-brew "rcm"
-brew "readline"
-brew "reattach-to-user-namespace"
-brew "sops"
-brew "ssh-copy-id", link: true
-brew "the_silver_searcher"
-brew "things.sh"
-brew "tmux"
-brew "tree"
-brew "vim"
-brew "wget"
-brew "zsh"
+brew 'bash'
+brew 'bat'
+brew 'bazel'
+brew 'clang-format'
+brew 'clojure'
+brew 'coreutils'
+brew 'ctags'
+brew 'curl'
+brew 'direnv'
+brew 'emacs-plus@27', args: ['with-spacemacs-icon']
+brew 'fd'
+brew 'findutils'
+brew 'fzf'
+brew 'gawk'
+brew 'gh'
+brew 'git'
+brew 'git-delta'
+brew 'gnu-indent'
+brew 'gnu-sed'
+brew 'gnu-tar'
+brew 'gnupg'
+brew 'gnutls'
+brew 'go'
+brew 'grep'
+brew 'httpie'
+brew 'jenv'
+brew 'jq'
+brew 'mas'
+brew 'make'
+brew 'neovim'
+brew 'pinentry-mac'
+brew 'rcm'
+brew 'readline'
+brew 'reattach-to-user-namespace'
+brew 'shellcheck'
+brew 'sops'
+brew 'ssh-copy-id', link: true
+brew 'the_silver_searcher'
+brew 'tmux'
+brew 'tree'
+brew 'vim'
+brew 'wget'
+brew 'zsh'
 
-mas "Things", id: 904280696
+# Fonts
+#cask 'font-jetbrains-mono-nerd-font'
+cask 'font-fira-code-nerd-font'
+cask 'font-hack-nerd-font'
+cask 'font-sauce-code-pro-nerd-font'
+
+# Applications
+#cask '1password'
+#cask '1password-cli'
+#cask 'discord'
+#cask 'docker'
+tap 'AlexanderWillner/tap'
+brew 'things.sh'
+mas 'Things', id: 904280696
  
-# brew "adr-tools"
-# brew "sqlite"
-# brew "asciinema"
-# brew "bison"
-# brew "broot"
-# brew "doctl"
-# brew "gdub"
-# brew "gradle"
-# brew "gradle-completion"
-# brew "grpcurl"
-# brew "kafkacat"
-# brew "kotlin"
-# brew "kubernetes-cli"
-# brew "maven"
-# brew "node"
-# brew "pandoc"
-# brew "pre-commit"
-# brew "pyenv"
-# brew "pyenv-which-ext"
-# brew "ruby-build"
-# brew "rbenv"
-# brew "sc-im"
-# brew "shellcheck"
-# brew "terraform"
-# brew "yarn"
-# brew "ykpers"
-# brew "ykman"
-# brew "yq"
+# brew 'sqlite'
+# brew 'asciinema'
+# brew 'bison'
+# brew 'broot'
+# brew 'doctl'
+# brew 'gdub'
+# brew 'gradle'
+# brew 'gradle-completion'
+# brew 'grpcurl'
+# brew 'kafkacat'
+# brew 'kotlin'
+# brew 'kubernetes-cli'
+# brew 'maven'
+# brew 'pandoc'
+# brew 'pre-commit'
+# brew 'pyenv'
+# brew 'pyenv-which-ext'
+# brew 'ruby-build'
+# brew 'rbenv'
+# brew 'sc-im'
+# brew 'terraform'
+# brew 'yarn'
+# brew 'ykpers'
+# brew 'ykman'
+# brew 'yq'
  
-# tap "clementtsang/bottom"
-# brew "clementtsang/bottom/bottom"
+# tap 'clementtsang/bottom'
+# brew 'clementtsang/bottom/bottom'
  
-# tap "moncho/dry"
-# brew "moncho/dry/dry"
+# tap 'moncho/dry'
+# brew 'moncho/dry/dry'
  
-# tap "qmk/qmk"
-# brew "qmk/qmk/qmk"
+# tap 'qmk/qmk'
+# brew 'qmk/qmk/qmk'
