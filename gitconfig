@@ -1,35 +1,41 @@
-[include]
-  path = ~/.gitconfig.local
-  path = .gitconfig.local
 [core]
   excludesfile = ~/.gitignore
   autocrlf = input
+	pager = delta
+
 [user]
   name = loganlinn
   email = logan@loganlinn.com
+
 [init]
   defaultBranch = main
   templatedir = ~/.git_template
-[credential "github.com"]
-  helper = osxkeychain
+
 [color]
   ui = auto
 
 [diff]
   wsErrorHighlight = all
   colorMoved = zebra
+
 [apply]
   whitespace = nowarn
+
 [help]
   autocorrect = 1
+
 [fetch]
   prune = true
+
 [push]
   default = current
+
 [pull]
   rebase = true
+
 [merge]
   ff = only
+
 [rebase]
   autosquash = true
 
@@ -52,7 +58,7 @@
   pf = push --force-with-lease
   st = status
   stash-search = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
-  # https://git.io/JfW3J >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# credit: https://git.io/JfW3J {{
   uncommit = reset --mixed HEAD~
   unstage = reset -q HEAD --
   discard = checkout --
@@ -65,4 +71,11 @@
   fl = log -u
   ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate --numstat
   ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate
-  #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# }}
+
+[include]
+  path = .gitconfig.darwin
+  path = .gitconfig.linux
+
+[include]
+  path = .gitconfig.local
