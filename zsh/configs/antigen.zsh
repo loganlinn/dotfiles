@@ -3,16 +3,14 @@ export ANTIGEN=$HOME/antigen
 export ADOTDIR=$HOME/.antigen
 export ZSH=$ADOTDIR/bundles/robbyrussell/oh-my-zsh
 export ZSH_CUSTOM=$HOME/.zsh
-export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
-# bootstrap
 [[ -d $ANTIGEN ]] || git clone https://github.com/zsh-users/antigen.git "$ANTIGEN"
 [[ -d $ZSH ]]     || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 
 source $ANTIGEN/antigen.zsh
 
 antigen use oh-my-zsh
+
 antigen bundles <<EOBUNDLES
     aws
     cargo
@@ -53,9 +51,23 @@ antigen bundles <<EOBUNDLES
     zsh-users/zsh-syntax-highlighting
     zsh_reload
 EOBUNDLES
-[[ -d ~/.jenv ]] && antigen bundle jenv
+
+[[ -d ~/.jenv ]]  && antigen bundle jenv
 [[ -d ~/.pyenv ]] && antigen bundle pyenv
 [[ -d ~/.rbenv ]] && antigen bundle rbenv
+
 antigen bundle ~/.zsh/plugins/*(/) --no-local-clone
+
 antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
+
 antigen apply
+
+# configure bundles
+
+export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
+export FORGIT_ADD_FZF_OPTS='--ansi'
+
+export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+export ZSH_AUTOSUGGEST_USE_ASYNC=1
+
+
