@@ -11,6 +11,7 @@ source $ANTIGEN/antigen.zsh
 
 antigen use oh-my-zsh
 
+# https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
     aws
     cargo
@@ -29,6 +30,7 @@ antigen bundles <<EOBUNDLES
     gitignore
     gpg-agent
     gradle
+    man
     kubectl
     lein
     loganlinn/zzz.plugin.zsh
@@ -38,6 +40,7 @@ antigen bundles <<EOBUNDLES
     safe-paste
     sirhc/okta.plugin.zsh
     sirhc/op.plugin.zsh
+    ssh-agent
     terraform
     urltools
     vi-mode
@@ -56,7 +59,10 @@ EOBUNDLES
 [[ -d ~/.pyenv ]] && antigen bundle pyenv
 [[ -d ~/.rbenv ]] && antigen bundle rbenv
 
-antigen bundle ~/.zsh/plugins/*(/) --no-local-clone
+for bundle in ~/.zsh/plugins/*(/)
+do
+  antigen bundle "${bundle}" --no-local-clone
+done
 
 antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
 
