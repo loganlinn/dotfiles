@@ -1,11 +1,10 @@
-Include ~/.ssh/config.local
-
 Host github.com
   HostName github.com
   User git
 
 Host *
-    AddKeysToAgent yes
-    ServerAliveInterval 120
-    UseKeychain yes
-    UseRoaming no
+  AddKeysToAgent yes
+  ServerAliveInterval 120
+  UseKeychain yes
+  Include ~/.step/ssh/config
+  Include ~/.ssh/config.local
