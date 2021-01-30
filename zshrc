@@ -38,7 +38,10 @@ _load_settings() {
     fi
   fi
 }
+
 _load_settings "$HOME/.zsh/configs"
+
+[[ -f ~/.zshrc.darwin ]] && source ~/.zshrc.darwin
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
