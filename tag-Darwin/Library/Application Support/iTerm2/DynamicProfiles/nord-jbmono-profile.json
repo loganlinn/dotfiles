@@ -321,6 +321,11 @@
         }
       },
       "Window Type" : 0,
+      "Semantic History" : {
+        "text" : "open \\1",
+        "action" : "raw command",
+        "editor" : "com.microsoft.VSCode"
+      },
       "Background Image Location" : "",
       "Blur" : false,
       "Badge Color" : {
