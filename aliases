@@ -19,13 +19,10 @@ fi
 # filesystem
 ################################################################################
 
-alias l='ls -lFh'     #size,show type,human readable
-alias la='ls -lAFh'   #long list,show almost all,show type,human readable
-alias lt='ls -ltFh'   #long list,sorted by date,show type,human readable
-alias ldot='ls -ld .*'
-alias lS='ls -1FSsh'
-alias lart='ls -1Fcart'
-alias lrt='ls -1Fcrt'
+# check for https://github.com/Peltoche/lsd
+(( $+commands[lsd] )) && alias ls=lsd
+
+alias l='ls -l --almost-all --classify --human-readable'
 
 # Command line head / tail shortcuts
 alias -g H='--help'
