@@ -16,11 +16,18 @@ if (( $+commands[open] && $+commands[xdg-open] )); then
 fi
 
 ################################################################################
-# filesystem
+# replacements
 ################################################################################
 
-# check for https://github.com/Peltoche/lsd
+# https://github.com/Peltoche/lsd
 (( $+commands[lsd] )) && alias ls=lsd
+
+# https://neovim.io/
+(( $+commands[nvim] )) && alias vim=nvim
+
+################################################################################
+# filesystem
+################################################################################
 
 alias l='ls -l --almost-all --classify --human-readable'
 
@@ -90,7 +97,7 @@ fi
 alias glr='git pull --rebase'
 alias gp='git push -u'
 alias glrp='glr && gp'
-# alias gd='git diff --color'
+alias gd='git diff --color'
 alias gdc='gd --cached'
 alias gs='git status -sb'
 alias gw="git show"
@@ -132,6 +139,4 @@ fi
 # extensions
 ################################################################################
 
-if [[ -f ~/.aliases.local ]]; then
-  source ~/.aliases.local
-fi
+[[ -f ~/.aliases.local ]] && source ~/.aliases.local
