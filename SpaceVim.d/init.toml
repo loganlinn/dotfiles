@@ -77,3 +77,6 @@ name = "lang#toml"
 
 [[layers]]
 name = "lang#typescript"
+
+[[layers]]
+name = "lang#janet"
