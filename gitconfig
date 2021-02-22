@@ -58,6 +58,7 @@
   pf = push --force-with-lease
   st = status
   stash-search = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
+  frbi = "!f() { git rebase -i $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; }; f"
 # credit: https://git.io/JfW3J {{
   uncommit = reset --mixed HEAD~
   unstage = reset -q HEAD --
