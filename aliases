@@ -30,6 +30,7 @@ fi
 ################################################################################
 
 alias l='ls -l --almost-all --classify --human-readable'
+alias tree='tree -I node_modules'
 
 # Command line head / tail shortcuts
 alias -g H='--help'
