@@ -1,1 +1,4 @@
 path+=(/Applications/Alacritty.app/Contents/MacOS)
+
+# configure https://github.com/keis/git-fixup
+export GITFIXUPMENU=fzf
