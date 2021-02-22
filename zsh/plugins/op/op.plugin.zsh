@@ -3,9 +3,7 @@
 # This function will run `op signin` as-needed (evals into current shell) then
 # calls through to `op` command.
 function 1ps() {
-  if [[ -z "$OP_SESSION_my" ]]; then
-    eval $(command op signin)
-  fi
+  eval $(command op signin --session "$OP_SESSION_my")
 
   if (( $# )); then
     command op "$@"
