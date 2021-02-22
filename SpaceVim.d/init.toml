@@ -26,6 +26,18 @@ merged = false
 repo = "vito-c/jq.vim"
 merged = false
 
+[[custom_plugins]]
+repo = "guns/vim-sexp"
+merged = false
+
+[[custom_plugins]]
+repo = "tpope/vim-sexp-mappings-for-regular-people"
+merged = false
+
+[[custom_plugins]]
+repo = "Olical/conjure"
+merged = false
+
 [[layers]]
 name = 'autocomplete'
 auto_completion_return_key_behavior = "complete"
