@@ -64,8 +64,6 @@ cask 'font-sauce-code-pro-nerd-font'
 #cask '1password-cli'
 #cask 'discord'
 #cask 'docker'
-tap 'AlexanderWillner/tap'
-brew 'things.sh'
 mas 'Things', id: 904280696
  
 # brew 'sqlite'
