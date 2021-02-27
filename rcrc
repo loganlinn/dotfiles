@@ -1,5 +1,5 @@
 COPY_ALWAYS="git_template/HEAD ssh/id_*"
 EXCLUDES="README* LICENSE Makefile"
-SYMLINK_DIRS="zsh emacs.d vim"
+SYMLINK_DIRS="zsh emacs.d vim raycast"
 TAGS=$(uname --kernel-name | tr '[:upper:]' '[:lower:]')
-UNDOTTED="bin org Library"
+UNDOTTED="bin org raycast Library"
