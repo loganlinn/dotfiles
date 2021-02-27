@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 
-set -eou pipefail
+set -e
+[[ ${TRACE} ]] && set -x
+set -ou pipefail
+
+PROG_NAME=localize.sh
+PROG_VERSION=0.1.0
+PROG_TOOL_DEPS="curl jq mktemp"
+PROG_CONFIG_HOME=${LOCALIZE_CONFIG_HOME:-${XDG_CONFIG_HOME:-${HOME}/.config}/${PROG_NAME}}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # Check if all necessary tools are available.
-for tool in basename cat curl jq mkdir mktemp; do
+for tool in ${PROG_TOOL_DEPS}; do
 	if ! hash "$tool" >/dev/null; then
 		echo >&2 "ERROR: cannot find \"$tool\"; check your PATH."
 		echo >&2 "       You may need to run the following command or similar:"
@@ -14,16 +23,8 @@ done
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-[[ ${TRACE:-} ]] && set -x
-LOCALIZE_SH=$(basename "$0")
-LOCALIZE_SH_VERSION=0.1.0
-LOCALIZE_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}/${LOCALIZE_SH}
-# LOCALIZE_DATA_HOME=${XDG_CONFIG_HOME:-$HOME/.local/share}/${LOCALIZE_SH}
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 E_RED='\033[0;31m'
-# E_GREEN='\033[0;32m'
+E_GREEN='\033[0;32m'
 E_YELLOW='\033[1;33m'
 E_WHITE='\033[1;37m'
 E_BLUE='\033[1;34m'
@@ -31,13 +32,15 @@ E_PURPLE='\033[0;35m'
 E_GREY='\033[1;30m'
 E_NC='\033[0m'
 
-# log level numeric values
 L_FATAL=50
 L_ERROR=40
 L_WARNING=30
 L_INFO=20
 L_DEBUG=10
 L_NOTSET=0
+
+LOG_LEVEL="${LOG_LEVEL:-${DEBUG:+debug}}"
+LOG_LEVEL="${LOG_LEVEL:-info}"
 
 # @arg $1 string|number A name or ordinal for a log level
 # @stdout An ordinal value for specified log level
@@ -56,9 +59,6 @@ l_level() {
 
 	printf %i "${_}"
 }
-
-LOG_LEVEL="${LOG_LEVEL:-${DEBUG:+debug}}"
-LOG_LEVEL="${LOG_LEVEL:-info}"
 
 # @bref Indicates if a message of severity level would be processed
 # @exitcode 0 If specified level is enabled
@@ -79,28 +79,27 @@ l_enabled() {
 
 # @stdout formatted log message when level is enabled
 l_stdout() {
-	local msg=$1
-	local lvl=$2
-	local esc=$3
+	local lvl=$1
+	local msg=$2
+	local esc=${3:-}
 
-	# early return if log level not enabled
 	l_enabled "${lvl}" || return 0
 
 	read -r LINE SUB < <(caller 2 | cut -d ' ' -f 1,2)
 	if l_enabled debug; then
 		echo -ne "${E_GREY}[${SUB} ${LINE}]${E_NC} "
 	fi
-	echo -e "${esc}${lvl^^}${E_NC}: ${msg}${E_NC}"
+	echo -e "${esc}${lvl}${E_NC}: ${msg}${E_NC}"
 }
 
 # @stderr formatted log message when level is enabled
 l_stderr() { l_stdout "${@}" 1>&2; }
-l_debug() { l_stderr "${*}" debug "${E_PURPLE}"; }
-l_info() { l_stderr "${*}" info "${E_BLUE}"; }
-l_warn() { l_stderr "${*}" warn "${E_YELLOW}"; }
-l_error() { l_stderr "${*}" error "${E_RED}"; }
+l_debug() { l_stderr debug "${*}" "${E_PURPLE}"; }
+l_info() { l_stderr info "${*}" "${E_BLUE}"; }
+l_warn() { l_stderr warn "${*}" "${E_YELLOW}"; }
+l_error() { l_stderr error "${*}" "${E_RED}"; }
 l_fatal() {
-	l_stderr "${*}" fatal "${E_RED}"
+	l_stderr fatal "${*}" "${E_RED}"
 	exit 3
 }
 
@@ -165,7 +164,7 @@ count_args() {
 # @stderr Formatted usage message
 l_usage() {
 	count_args 1 "${@}" || return 1
-	echo -e "\n${E_YELLOW}usage:${E_NC} ${*}" 1>&2
+	echo -e "${E_YELLOW}usage:${E_NC} ${*}" 1>&2
 }
 
 # @stderr error message and optional usage
@@ -176,7 +175,7 @@ usage_error() {
 
 	l_error "${error}"
 	if [[ -n ${usage+x} ]]; then
-		l_usage "${usage}"
+		l_usage "${usage}\n"
 	fi
 
 	exit 2
@@ -209,8 +208,8 @@ localize::api() {
 
 	# shellcheck disable=SC2086
 	curl ${LOCALIZE_CURL_OPTS} \
-    --header "Authorization: Bearer ${LOCALIZE_TOKEN?}" \
-    --url "${endpoint}"
+		--header "Authorization: Bearer ${LOCALIZE_TOKEN?}" \
+		--url "${endpoint}"
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -225,12 +224,13 @@ localize::languages() {
 localize::project() {
 	count_args 1 "${@}"
 
-	local cmd=${1-}; shift
+	local cmd=${1-}
+	shift
 
 	case "${cmd}" in
 	view) localize::project::view "$@" ;;
 	list) localize::project::list "$@" ;;
-	*) usage_error "unknown command '${cmd}' for '$LOCALIZE_SH project'" ;;
+	*) usage_error "unknown command '${cmd}' for '$PROG_NAME project'" ;;
 	esac
 }
 
@@ -242,14 +242,14 @@ localize::project::list() {
 }
 
 localize::project::view() {
-  local project_key=${1:-${LOCALIZE_PROJECT_KEY?}}
+	local project_key=${1:-${LOCALIZE_PROJECT_KEY?}}
 
-	localize::api "projects/${project_key}"  | jq '.data'
+	localize::api "projects/${project_key}" | jq '.data'
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-LOCALIZE_EXPORT_USAGE="$LOCALIZE_SH export [-t phrase|glossary] [-f <format>] <language>"
+LOCALIZE_EXPORT_USAGE="$PROG_NAME export [-t phrase|glossary] [-f <format>] <language>"
 
 localize::export() {
 	debug_args "${@}"
@@ -282,72 +282,52 @@ localize::export() {
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-LOCALIZE_PULL_USAGE="$LOCALIZE_SH pull [-l <language> | --language <language> | --all] [--] [<directory>]"
+LOCALIZE_PULL_USAGE="$PROG_NAME pull [<language>... | --all]"
+
+# localize::locale() {
+#   local pattern="${LOCALE_EXPORT_PATH_PATTERN:-./locales/%locale%}"
+#   printf 'locales'
+# }
 
 localize::pull() {
-	debug_args "${@}"
+	local flag_all=
+	local -a languages=()
 
-  local -a languages=()
-	local directory
-	local opt
+	# TODO make configurable
+	local directory=./locales
 
-	directory=./locale
-
-	while (($#)); do
-		opt=$1
-		shift
-		case "${opt}" in
-
+	while test $# -gt 0; do
+		case "$1" in
 		-h | --help)
 			l_usage "${LOCALIZE_PULL_USAGE}"
 			return 0
 			;;
-
-		-l | --language)
-			count_args 1 "${@}" || usage_error "language code required" "${LOCALIZE_PULL_USAGE}"
-			languages+=("$1")
-			shift
+		--all)
+			flag_all=1
 			;;
-
-		-a | --all)
-			readarray -t languages < <(localize::project::view | jq -cr '.project.languages[]')
-			l_debug "all languages: ${languages[*]}"
-			;;
-
-		--)
-			count_args 1 "${@}" || usage_error "missing argument: directory" "${LOCALIZE_PULL_USAGE}"
-			directory=$1
-			shift
-			;;
-
+    --debug)
+      LOG_LEVEL=debug
+      ;;
 		*)
-			case "$#" in
-			0) break ;;
-			1)
-				directory=$1
-				shift
-				break
-				;;
-			*) usage_error "unexpected" "${LOCALIZE_PULL_USAGE}" ;;
-			esac
+			languages+=("$1")
 			;;
-
 		esac
+		shift
 	done
 
-  # TODO dedupe with above or require argument
-  if [[ ${#languages[@]} -eq 0 ]]; then
-    readarray -t languages < <(localize::project::view | jq -cr '.project.languages[]')
-    l_debug "all languages: ${languages[*]}"
-  fi
+	if [[ -n "${flag_all}" ]]; then
+		if ((${#languages})); then
+			usage_error "cannot combine --all with other languages" "${LOCALIZE_PULL_USAGE}"
+		fi
 
-	if ! [[ -d ${directory} ]]; then
-		mkdir -p "${directory}"
-		l_debug "created ${directory}"
+		readarray -t languages < <(localize::project::view | jq -cr '.project.languages[]')
+		l_debug "all languages: ${languages[*]}"
 	fi
 
+	if [[ ${#languages[@]} -eq 0 ]]; then
+		usage_error "no language(s) specified" "${LOCALIZE_PULL_USAGE}"
+	fi
 	for language in ${languages[*]}; do
-		l_info "pulling language: $language"
 		localize::pull::resources "${language}" "${directory}/${language}"
 	done
 }
@@ -356,34 +336,36 @@ localize::pull() {
 localize::pull::resources() {
 	count_args 2 "${@}"
 
-	local project_key=${LOCALIZE_PROJECT_KEY?}
 	local language=$1
 	local target_dir=$2
+	local project_key=${LOCALIZE_PROJECT_KEY?}
 	local resources
 
 	debug_args "${@}"
 
-	# ensure target_dir directory
-	if ! [[ -d ${target_dir} ]]; then
-		mkdir -p "${target_dir}"
-	fi
-
 	# download JSON export
 	resources=$(mktemp -p "${TMPDIR:-/tmp}" "localize-${project_key}-${language}.XXXXXXXX.json")
 	localize::api "projects/${LOCALIZE_PROJECT_KEY?}/resources?language=${language}&format=SIMPLE_JSON" >"${resources}"
-	l_debug "downloaded ${resources}"
+	l_debug "wrote ${resources}"
+
+	# ensure target_dir directory
+	if ! [[ -d ${target_dir} ]]; then
+		mkdir -p "${target_dir}"
+		l_info "${E_GREEN}created${E_NC} ${target_dir}"
+	fi
 
 	# parse "<namespace>:<phrase-key>" from keys,
 	# and output one file per namespace.
-	while IFS=$'\t' read -r namespace out; do
-		echo "$out" >"${target_dir}/${namespace}.json"
-		l_info "wrote ${target_dir}/${namespace}.json"
+	while IFS=$'\t' read -r namespace content; do
+		local namespace_file="${target_dir}/${namespace//\"}.json"
+    jq --null-input --arg content "$content" '$content' --sort-keys >"$namespace_file" 
+		l_info "${E_GREEN}wrote${E_NC} ${namespace_file}"
 	done < <(jq -rc \
 		'to_entries
      | map((.key | split(":")) as [$namespace, $key] | . + {$namespace, $key})
      | group_by(.namespace)[]
      | [ 
-         .[0].namespace, from_entries | tostring
+         .[0].namespace, from_entries | tojson
        ]
      | @tsv
      ' \
@@ -401,7 +383,7 @@ localize::main() {
 
 		-h | --help)
 			shift
-			localize::usage
+			_usage
 			exit 0
 			;;
 
@@ -412,7 +394,7 @@ localize::main() {
 
 		-V | --version)
 			shift
-			printf '%s/%s\n' "${LOCALIZE_SH}" "${LOCALIZE_SH_VERSION}"
+			echo "${PROG_NAME}/${PROG_VERSION}"
 			exit 0
 			;;
 
@@ -438,7 +420,7 @@ localize::main() {
 			shift
 			shift
 			[[ -n "${profile}" ]] || usage_error 'missing profile operand'
-			config="${LOCALIZE_CONFIG_HOME}/${profile}.profile"
+			config="${PROG_CONFIG_HOME}/${profile}.profile"
 			[[ -f "${config}" ]] || usage_error "config profile '${profile}' could not be found"
 			l_debug "loading config profile: ${config}"
 			# shellcheck source=/dev/null
@@ -447,7 +429,7 @@ localize::main() {
 
 		-*)
 			l_error "unknown option '${1}'"
-			localize::usage
+			_usage
 			exit 1
 			;;
 
@@ -464,25 +446,25 @@ localize::main() {
 
 	if [[ -z ${cmd} ]]; then
 		l_error "missing required argument: command"
-		localize::usage
+		_usage
 		exit 1
 	fi
 
 	if ! declare -f "localize::${cmd}" >/dev/null; then
-		l_error "unknown command: $1"
-		localize::usage
+		l_error "unknown command: ${cmd}"
+		_usage
 		exit 1
 	fi
 
 	"localize::${cmd}" "${@}"
 }
 
-localize::usage() {
+_usage() {
 	echo -e "$(
 		cat <<-EOM
 
 			${E_WHITE}USAGE${E_NC}
-			  $LOCALIZE_SH [--version] [--help] [--debug] [--quiet]
+			  $PROG_NAME [--version] [--help] [--debug] [--quiet]
 			              [--profile <name>]
 			              <command> [<args>]
 
