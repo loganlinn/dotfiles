@@ -3,7 +3,7 @@
 	url = https://github.com/syl20bnr/spacemacs
 	shallow = true
 [submodule "vim"]
-	path = vim
+	path = SpaceVim
 	url = git@github.com:SpaceVim/SpaceVim.git
 [submodule "local/src/things.sh"]
 	path = local/src/things.sh
