@@ -175,22 +175,18 @@ usage_error() {
 
 	l_error "${error}"
 	if [[ -n ${usage+x} ]]; then
-		l_usage "${usage}\n"
+		l_usage "${usage}"
 	fi
-
 	exit 2
 }
 
-urlencode() {
-	local LC_ALL=C
-	for ((i = 0; i < ${#1}; i++)); do
-		: "${1:i:1}"
-		case "$_" in
-		[a-zA-Z0-9.~_-]) printf '%s' "$_" ;;
-		*) printf '%%%02X' "'$_" ;;
-		esac
-	done
-	printf '\n'
+create_directory() {
+  local directory=$1
+
+	if ! [[ -d ${directory} ]]; then
+		mkdir -p "${directory}"
+		l_info "${E_GREEN}created${E_NC} ${directory}"
+	fi
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -222,6 +218,8 @@ localize::languages() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 localize::project() {
+  declare usage="$PROG_NAME project [view|list]"
+
 	count_args 1 "${@}"
 
 	local cmd=${1-}
@@ -230,59 +228,66 @@ localize::project() {
 	case "${cmd}" in
 	view) localize::project::view "$@" ;;
 	list) localize::project::list "$@" ;;
+	'') usage_error "missing command for '$PROG_NAME project'" ;;
 	*) usage_error "unknown command '${cmd}' for '$PROG_NAME project'" ;;
 	esac
 }
-
-#localize::project::help() {
-#}
 
 localize::project::list() {
 	localize::api projects | jq '.data'
 }
 
 localize::project::view() {
-	local project_key=${1:-${LOCALIZE_PROJECT_KEY?}}
-
-	localize::api "projects/${project_key}" | jq '.data'
+	localize::api "projects/${LOCALIZE_PROJECT_KEY?}" | jq '.data'
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-LOCALIZE_EXPORT_USAGE="$PROG_NAME export [-t phrase|glossary] [-f <format>] <language>"
-
+# TODO
+# localize::content::import() { ... }
+# localize::content::export() { ... }
 localize::export() {
+  declare usage="$PROG_NAME export [-t|--type phrase|glossary] [-f|--format <format>] <language>"
+
 	debug_args "${@}"
 
-	local resource_type=phrase
-	local format=SIMPLE_JSON
+	local content_type=phrase
+	local format=${LOCALIZE_EXPORT_FORMAT:-SIMPLE_JSON}
+  local language=
 
-	while getopts ":t:f:h" opt; do
-		case ${opt} in
-		t) resource_type=$OPTARG ;;
-		f) format=$OPTARG ;;
-		h)
-			l_usage "${LOCALIZE_EXPORT_USAGE}"
-			return 0
-			;;
-		\?) usage_error "invalid option: -$OPTARG" "${LOCALIZE_EXPORT_USAGE}" ;;
-		esac
-	done
-	shift $((OPTIND - 1))
-
-	count_args 1 "${@}"
-	local language=$1
+	while test $# -gt 0; do
+		case "$1" in
+		-h|--help)
+      l_usage "${usage}"
+      return
+      ;;
+    -t|--type)
+      content_type=${2?type option requires value};
+      shift
+      ;;
+    -f|--format)
+      format=${2?format option requires value};
+      shift
+      ;;
+    *)
+      if [[ -n $language ]]; then
+        l_error "invlaid option: ${1}"
+        l_usage "${usage}"
+      fi
+      language=$1
+    esac
+    shift
+  done
 
 	if [[ -z $language ]]; then
-		usage_error "missing argument: language" "${LOCALIZE_EXPORT_USAGE}"
+		usage_error "missing argument: language" "${usage}"
 	fi
 
-	localize::api "projects/${LOCALIZE_PROJECT_KEY?}/resources?type=${resource_type}&language=${language}&format=${format}"
+	localize::api "projects/${LOCALIZE_PROJECT_KEY?}/resources?type=${content_type}&language=${language}&format=${format}"
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-LOCALIZE_PULL_USAGE="$PROG_NAME pull [<language>... | --all]"
 
 # localize::locale() {
 #   local pattern="${LOCALE_EXPORT_PATH_PATTERN:-./locales/%locale%}"
@@ -290,87 +295,71 @@ LOCALIZE_PULL_USAGE="$PROG_NAME pull [<language>... | --all]"
 # }
 
 localize::pull() {
-	local flag_all=
-	local -a languages=()
+  local usage="$PROG_NAME pull [<language>... | --all]"
 
 	# TODO make configurable
-	local directory=./locales
+	local directory=locales
 
+	local all_flag=
+	local -a languages=()
 	while test $# -gt 0; do
 		case "$1" in
-		-h | --help)
-			l_usage "${LOCALIZE_PULL_USAGE}"
-			return 0
-			;;
-		--all)
-			flag_all=1
-			;;
-    --debug)
-      LOG_LEVEL=debug
-      ;;
-		*)
-			languages+=("$1")
-			;;
+		-h|--help) l_usage "${usage}"; return 0;;
+		--all) all_flag=1 ;;
+    --debug) LOG_LEVEL=debug ;;
+		*) languages+=("$1") ;;
 		esac
 		shift
 	done
 
-	if [[ -n "${flag_all}" ]]; then
-		if ((${#languages})); then
-			usage_error "cannot combine --all with other languages" "${LOCALIZE_PULL_USAGE}"
+	if [[ $all_flag ]]; then
+		if [[ ${#languages[@]} -gt 0 ]]; then
+			usage_error "cannot combine --all with other languages" "${usage}"
 		fi
 
-		readarray -t languages < <(localize::project::view | jq -cr '.project.languages[]')
+		readarray -t languages < <(localize::project::view | jq -cr '.project.languages | sort | .[]')
 		l_debug "all languages: ${languages[*]}"
 	fi
 
 	if [[ ${#languages[@]} -eq 0 ]]; then
-		usage_error "no language(s) specified" "${LOCALIZE_PULL_USAGE}"
+		usage_error "missing language argument" "${usage}"
 	fi
+
 	for language in ${languages[*]}; do
-		localize::pull::resources "${language}" "${directory}/${language}"
+    localize::export --format SIMPLE_JSON --type phrase "${language}" \
+      | postprocess_namespace_split - "${directory}/${language}"
 	done
 }
 
-# @brief Produces JSON file per namespace containing project's current translations for the language
-localize::pull::resources() {
-	count_args 2 "${@}"
+# parse "<namespace>:<phrase-key>" from keys
+postprocess_namespace_split() {
+  count_args 2 "${@}"
 
-	local language=$1
-	local target_dir=$2
-	local project_key=${LOCALIZE_PROJECT_KEY?}
-	local resources
+  local input_path=${1?}
+  local output_dir=${2?}
 
-	debug_args "${@}"
+  create_directory "${output_dir}"
 
-	# download JSON export
-	resources=$(mktemp -p "${TMPDIR:-/tmp}" "localize-${project_key}-${language}.XXXXXXXX.json")
-	localize::api "projects/${LOCALIZE_PROJECT_KEY?}/resources?language=${language}&format=SIMPLE_JSON" >"${resources}"
-	l_debug "wrote ${resources}"
-
-	# ensure target_dir directory
-	if ! [[ -d ${target_dir} ]]; then
-		mkdir -p "${target_dir}"
-		l_info "${E_GREEN}created${E_NC} ${target_dir}"
-	fi
-
-	# parse "<namespace>:<phrase-key>" from keys,
 	# and output one file per namespace.
-	while IFS=$'\t' read -r namespace content; do
-		local namespace_file="${target_dir}/${namespace//\"}.json"
-    jq --null-input --arg content "$content" '$content' --sort-keys >"$namespace_file" 
-		l_info "${E_GREEN}wrote${E_NC} ${namespace_file}"
+	while IFS=$'\t' read -r namespace ns_content; do
+		local ns_file="${output_dir}/${namespace//\"}.json"
+    if [[ -f $ns_file ]]; then
+      l_info "${E_GREEN}update${E_NC} ${ns_file}"
+    else
+      l_info "${E_GREEN}create${E_NC} ${ns_file}"
+    fi
+    l_debug "${ns_content}"
+
+    jq -rS <<< "${ns_content}" >"$ns_file"
 	done < <(jq -rc \
 		'to_entries
      | map((.key | split(":")) as [$namespace, $key] | . + {$namespace, $key})
      | group_by(.namespace)[]
-     | [ 
-         .[0].namespace, from_entries | tojson
-       ]
-     | @tsv
-     ' \
-		"${resources}")
+     | .[0].namespace + "\t" + (from_entries | tojson)
+     ' "${input_path}"
+   )
 }
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
