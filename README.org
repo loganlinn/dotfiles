@@ -25,22 +25,17 @@ The major tools and frameworks used here are:
 Requirements:
 - ~zsh~
 - ~git~
-- ~rcm~
 - ~brew~ (macOS)
+- ~rcm~
 
 #+begin_src sh
-  git clone --recursive git@github.com:loganlinn/rcfiles.git ~/.rcfiles
-  export RCRC=~/.rcfiles/rcrc
+  git clone --recurse-submodules https://github.com/loganlinn/dotfiles.git ~/.dotfiles
   rcup
 #+end_src
 
 macOS:
 #+begin_src sh
   brew bundle install
-#+end_src
-
-#+begin_src sh
-  git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
 #+end_src
 
 ** Fonts

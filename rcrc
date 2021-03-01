@@ -1,5 +1,4 @@
 COPY_ALWAYS="git_template/HEAD ssh/id_*"
-DOTFILES_DIRS="$HOME/.rcfiles"
 EXCLUDES="README* LICENSE Makefile"
 SYMLINK_DIRS="zsh emacs.d vim"
 TAGS=$(uname --kernel-name | tr '[:upper:]' '[:lower:]')
