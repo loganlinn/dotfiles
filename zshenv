@@ -26,5 +26,5 @@ fi
 
 unset _old_path
 
-source "$HOME/.cargo/env"
+[[ ! -f ~/.cargo/env ]] || source ~/.cargo/env
 

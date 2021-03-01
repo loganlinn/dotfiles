@@ -1,4 +1,4 @@
-# zmodload zsh/zprof
+[[ $ZPROF ]] && zmodload zsh/zprof
 
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -49,4 +49,4 @@ _load_settings "$HOME/.zsh/configs"
 
 [[ -f ~/.aliases ]] && source ~/.aliases
 
-# zprof
+[[ $ZPROF ]] && zprof
