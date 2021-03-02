@@ -1,0 +1,26 @@
+# What protocol to use when performing git operations. Supported values: ssh, https
+git_protocol: https
+# What editor gh should run when creating issues, pull requests, etc. If blank, will refer to environment.
+editor:
+# When to interactively prompt. This is a global config that cannot be overridden by hostname. Supported values: enabled, disabled
+prompt: enabled
+# A pager program to send command output to, e.g. "less". Set the value to "cat" to disable the pager.
+pager:
+# Aliases allow you to create nicknames for gh commands
+aliases:
+    v: repo view --web
+    co: pr checkout
+    pv: pr view --web
+    land: pr merge --squash --delete-branch
+
+    # Fuzzy-find a gist with fzf and then view it
+    fzgist: "!GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
+
+    clone: >-
+      ! set -e
+      ; repository=$1 ; shift
+      ; directory=~/code/$(basename "${repository}")
+      ; directory=${directory%.git}
+      ; git_clone="gh repo clone"
+      ; [[ $repository == *gitlab.com* ]] && git_clone="git clone"
+      ; mkdir -p "${directory}" && ${git_clone} "${repository}" "${directory}"
