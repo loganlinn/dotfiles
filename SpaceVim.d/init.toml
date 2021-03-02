@@ -1,6 +1,8 @@
 [options]
 auto_disable_touchpad = 1
 automatic_update = false
+bootstrap_before = "myspacevim#before"
+bootstrap_after = "myspacevim#after"
 buffer_index_type = 4
 colorscheme = "nord"
 colorscheme_bg = "dark"
@@ -36,6 +38,10 @@ merged = false
 
 [[custom_plugins]]
 repo = "Olical/conjure"
+merged = false
+
+[[custom_plugins]]
+repo = "hashivim/vim-terraform"
 merged = false
 
 [[layers]]
