@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e ; [[ $TRACE ]] && set -x
+
+main() {
+  local repository
+  local directory
+
+  if [[ $1 == *://* ]]; then
+    repository=$1
+  else
+    repository=https://github.com/${1}
+  fi
+  shift
+
+  directory="${SRC_HOME:-$HOME/src}/${repository#*://}"; directory=${directory%.git}
+
+  git clone --recurse-submodules "$@" -- "$repository" "$directory"
+}
+
+
+main "${1:-$(</dev/stdin)}" "${@:2}"
