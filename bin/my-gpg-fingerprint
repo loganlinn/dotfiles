@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+gpg --fingerprint "$(git config --get user.email)" | grep pub -A 1 | grep -v pub | cut -d= -f2 | tr -d [[:space:]]
