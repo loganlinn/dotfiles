@@ -8,19 +8,23 @@ prompt: enabled
 pager:
 # Aliases allow you to create nicknames for gh commands
 aliases:
-    v: repo view --web
-    co: pr checkout
-    pv: pr view --web
-    land: pr merge --squash --delete-branch
+  aliases: alias list
+  v: repo view --web
+  co: pr checkout
+  pv: pr view --web
+  land: pr merge --squash --delete-branch
 
-    # Fuzzy-find a gist with fzf and then view it
-    fzgist: "!GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
+  config-edit: >-
+    !$EDITOR ~/.config/gh/config.yml
 
-    clone: >-
-      ! set -e
-      ; repository=$1 ; shift
-      ; directory=~/code/$(basename "${repository}")
-      ; directory=${directory%.git}
-      ; git_clone="gh repo clone"
-      ; [[ $repository == *gitlab.com* ]] && git_clone="git clone"
-      ; mkdir -p "${directory}" && ${git_clone} "${repository}" "${directory}"
+  # Fuzzy-find a gist with fzf and then view it
+  fzgist: "!GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
+
+  clone: >-
+    ! set -e
+    ; repository=$1 ; shift
+    ; directory=~/code/$(basename "${repository}")
+    ; directory=${directory%.git}
+    ; git_clone="gh repo clone"
+    ; [[ $repository == *gitlab.com* ]] && git_clone="git clone"
+    ; mkdir -p "${directory}" && ${git_clone} "${repository}" "${directory}"
