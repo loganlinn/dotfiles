@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+[[ $TRACE ]] && set -x
+
+main() {
+	local repository
+	local directory
+
+	case "$1" in
+	-)
+		repository=$(</dev/stdin)
+		;;
+
+	*://*)
+		repository=$1
+		;;
+
+	*)
+		repository=https://github.com/${1}
+		;;
+	esac
+
+	shift
+
+	directory="${SRC_HOME:-$HOME/src}/${repository#*://}"
+	directory=${directory%.git}
+
+	git clone --recurse-submodules "$@" -- "$repository" "$directory"
+}
+
+main "$@"
