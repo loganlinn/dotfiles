@@ -23,6 +23,7 @@ antigen bundles <<EOBUNDLES
     doctl
     emacs
     extract
+    fasd
     fzf
     genpass
     git

@@ -15,9 +15,12 @@ function 1ps() {
 #
 # This function will run `op get topt` with the supplied arguments and copy
 # the returned Time-based One-Time Password (TOTP) to the paste buffer using
-# the `xclip` command.
+# the `pbcopy` command.
 function 1pt() {
     local totp ret
+
+    eval $(command op signin --session "$OP_SESSION_my")
+
     totp="$(command op get totp "$@")"
     ret=$?
 
@@ -25,7 +28,7 @@ function 1pt() {
         return $ret
     fi
 
-    printf '%s' "$totp" | xclip
+    printf '%s' "$totp" | pbcopy
     return 0
 }
 
