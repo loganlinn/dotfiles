@@ -9,7 +9,6 @@ path=(
   ~/.pyenv/bin
   ~/.cargo/bin
   ~/.krew/bin
-  ~/.arkade/bin
   ~/.bash-my-aws
   ~/go/bin
   $path

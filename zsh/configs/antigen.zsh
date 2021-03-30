@@ -13,6 +13,7 @@ antigen use oh-my-zsh
 
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
+    asdf
     aws
     cargo
     clvv/fasd
