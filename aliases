@@ -29,6 +29,11 @@ fi
 # filesystem
 ################################################################################
 
+# zmv (http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#index-zmv)
+autoload -U zmv
+alias zcp='zmv -C'
+alias zln='zmv -L'
+
 alias l='ls -l --almost-all --classify --human-readable'
 alias tree='tree -I node_modules'
 
