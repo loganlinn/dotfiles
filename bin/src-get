@@ -3,30 +3,51 @@
 set -e
 [[ $TRACE ]] && set -x
 
-main() {
-	local repository
-	local directory
+SRC_HOME=${SRC_HOME:-$HOME/src}
+GIT_PROTOCOL_DEFAULT=https
+GIT_HOSTNAME_DEFAULT=github.com
 
-	case "$1" in
-	-)
-		repository=$(</dev/stdin)
-		;;
+resolve_repo_url() {
+	local ident=$1
 
+	if [[ $ident == - ]]; then
+		ident=$(</dev/stdin)
+	fi
+
+	case "$ident" in
+
+  # https://github.com/loganlinn/dotfiles
 	*://*)
-		repository=$1
+		printf "%s" "$ident"
 		;;
 
+  # github.com/loganlinn/dotfiles
+	*.*/*)
+		printf "%s://%s" "$GIT_PROTOCOL_DEFAULT" "$ident"
+		;;
+
+  # loganlinn/dotfiles
 	*)
-		repository=https://github.com/${1}
+		printf "%s://%s/%s" "$GIT_PROTOCOL_DEFAULT" "$GIT_HOSTNAME_DEFAULT" "$ident"
 		;;
-	esac
 
+	esac
+}
+
+main() {
+	local repo=$1
 	shift
 
-	directory="${SRC_HOME:-$HOME/src}/${repository#*://}"
-	directory=${directory%.git}
+	local url
+	local path
 
-	git clone --recurse-submodules "$@" -- "$repository" "$directory"
+	url=$(resolve_repo_url "$repo")
+
+  # strip protocol and extension
+	path="${url#*://}"
+	path=${path%.git}
+
+	git clone --recurse-submodules "$@" -- "$url" "${SRC_HOME}/${path}"
 }
 
 main "$@"
