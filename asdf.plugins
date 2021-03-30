@@ -1,0 +1,17 @@
+clojure
+elixir
+elm
+fzf
+golang
+java
+lua
+nodejs
+python
+ruby
+rust
+yarn
+zig
+arkade https://github.com/asdf-community/asdf-arkade
+direnv https://github.com/asdf-community/asdf-direnv
+doctl https://github.com/maristgeek/asdf-doctl.git
+
