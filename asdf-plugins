@@ -14,4 +14,4 @@ zig
 arkade https://github.com/asdf-community/asdf-arkade
 direnv https://github.com/asdf-community/asdf-direnv
 doctl https://github.com/maristgeek/asdf-doctl.git
-
+sops https://github.com/feniix/asdf-sops.git
