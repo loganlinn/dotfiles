@@ -1,6 +1,6 @@
 COPY_ALWAYS="git_template/HEAD ssh/id_*"
 
-EXCLUDES="README* LICENSE"
+EXCLUDES="README* LICENSE .envrc"
 
 SYMLINK_DIRS="zsh emacs.d vim raycast"
 
