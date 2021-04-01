@@ -13,6 +13,7 @@
 set -euo pipefail
 
 ASDF_DIR=${ASDF_DIR:-$HOME/.asdf}
+ASDF_PLUGINS_FILE=${ASDF_PLUGINS_FILE:-$HOME/.asdf-plugins}
 
 # @brief adds asdf plugins that are not already registered
 # @description
@@ -45,8 +46,8 @@ function main() {
   asdf update 2>/dev/null
 
 	# initialize plugins
-	if [[ -f ~/.asdf-plugins ]]; then
-		asdf_plugins_init ~/.asdf-plugins
+	if [[ -f $ASDF_PLUGINS_FILE ]]; then
+		asdf_plugins_init "$ASDF_PLUGINS_FILE"
 	fi
 
   # print asdf info
