@@ -37,7 +37,7 @@ function main() {
 	# shellcheck source=/dev/null
 	source "${ASDF_DIR}/asdf.sh"
 
-  echo "asdf update"
+	echo "asdf update"
 	asdf update 2>/dev/null
 
 	# setup tool plugins
@@ -45,13 +45,13 @@ function main() {
 		while read -r plugin; do
 			(
 				echo "asdf plugin add $plugin"
+				# shellcheck disable=SC2086
 				asdf plugin add $plugin
 			)
 		done < <(asdf-missing-plugins "$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME")
 	fi
 
-	# print asdf info
-  echo
+	echo
 	asdf version | info_section "ASDF VERSION"
 	env | grep '^ASDF_' | info_section "ASDF ENVIRONMENT VARIABLES"
 	asdf plugin list --urls | info_section "ASDF PLUGINS"
