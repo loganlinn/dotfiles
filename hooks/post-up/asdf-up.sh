@@ -13,18 +13,6 @@
 set -euo pipefail
 
 ASDF_DIR=${ASDF_DIR:-$HOME/.asdf}
-ASDF_PLUGINS_FILE=${ASDF_PLUGINS_FILE:-$HOME/.asdf-plugins}
-
-# @brief adds asdf plugins that are not already registered
-# @description
-#     - Reads arguments to `asdf plugin-add` from stdin or file argument.
-#     - Ignores lines starting with '#'
-#     - Ignores lines starting with name of plug that is currently installed
-#     - Runs `asdf plugin-add` on the rest
-asdf_plugins_init() {
-	local -r ignore_prefixes=$(printf '# %s' "$(asdf plugin-list)" | xargs echo)
-	sed -e "/^${ignore_prefixes// /\\|}/d" "${1-}" | xargs -r -t -L1 asdf plugin-add
-}
 
 # shellcheck disable=SC2001
 function info_section() {
@@ -33,6 +21,12 @@ function info_section() {
   >&2 echo
   >&2 sed -e "s/^/    /"
   >&2 echo
+}
+
+function asdf-missing-plugins() {
+  cut -d' ' -f1 "${1--}" | sort \
+    | comm -23 - <(asdf plugin-list | sort) \
+    | join -a1 - <(asdf plugin list all)
 }
 
 function main() {
@@ -45,10 +39,11 @@ function main() {
 
   asdf update 2>/dev/null
 
-	# initialize plugins
-	if [[ -f $ASDF_PLUGINS_FILE ]]; then
-		asdf_plugins_init "$ASDF_PLUGINS_FILE"
-	fi
+	# setup tool plugins
+  local -r plugins_to_add=$(asdf-missing-plugins "${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-$HOME/.tool-versions}")
+  if [[ -n $plugins_to_add ]]; then
+    xargs -t -L1 asdf plugin add
+  fi
 
   # print asdf info
   asdf version | info_section "ASDF VERSION"
