@@ -7,3 +7,5 @@ github-cli 1.8.0
 packer 1.7.1
 sops 3.7.0
 terraform 0.14.9
+shfmt 3.2.4
+terraform-docs 0.12.1
