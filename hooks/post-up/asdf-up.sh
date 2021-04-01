@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# @name asdfup
+# @file asdf-up.sh
 # @brief Install and configure asdf version manager
 # @description
 #     This can be used to boostrap asdf on a clean machine.
@@ -13,42 +13,48 @@
 set -euo pipefail
 
 ASDF_DIR=${ASDF_DIR:-$HOME/.asdf}
+ASDF_DEFAULT_TOOL_VERSIONS_FILENAME=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-$HOME/.tool-versions}
 
-# shellcheck disable=SC2001
 function info_section() {
-  local -r heading=$1
-	>&2 echo -e "\033[1m${heading}\033[m"
-  >&2 echo
-  >&2 sed -e "s/^/    /"
-  >&2 echo
+	local -r heading=$1
+	echo >&2 -e "\033[1m${heading}\033[m"
+	echo >&2
+	sed >&2 -e "s/^/    /"
+	echo >&2
 }
 
 function asdf-missing-plugins() {
-  cut -d' ' -f1 "${1--}" | sort \
-    | comm -23 - <(asdf plugin-list | sort) \
-    | join -a1 - <(asdf plugin list all)
+	cut -d' ' -f1 "${1--}" | sort |
+		comm -23 - <(asdf plugin-list | sort) |
+		join -a1 - <(asdf plugin list all)
 }
 
 function main() {
 	if ! [[ -d $ASDF_DIR ]]; then
 		git clone https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
-  fi
+	fi
 
 	# shellcheck source=/dev/null
 	source "${ASDF_DIR}/asdf.sh"
 
-  asdf update 2>/dev/null
+  echo "asdf update"
+	asdf update 2>/dev/null
 
 	# setup tool plugins
-  local -r plugins_to_add=$(asdf-missing-plugins "${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-$HOME/.tool-versions}")
-  if [[ -n $plugins_to_add ]]; then
-    xargs -t -L1 asdf plugin add
-  fi
+	if [[ -f $ASDF_DEFAULT_TOOL_VERSIONS_FILENAME ]]; then
+		while read -r plugin; do
+			(
+				echo "asdf plugin add $plugin"
+				asdf plugin add $plugin
+			)
+		done < <(asdf-missing-plugins "$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME")
+	fi
 
-  # print asdf info
-  asdf version | info_section "ASDF VERSION"
-  env | grep '^ASDF_' | info_section "ASDF ENVIRONMENT VARIABLES"
-  asdf plugin list --urls | info_section "ASDF PLUGINS"
+	# print asdf info
+  echo
+	asdf version | info_section "ASDF VERSION"
+	env | grep '^ASDF_' | info_section "ASDF ENVIRONMENT VARIABLES"
+	asdf plugin list --urls | info_section "ASDF PLUGINS"
 }
 
 main
