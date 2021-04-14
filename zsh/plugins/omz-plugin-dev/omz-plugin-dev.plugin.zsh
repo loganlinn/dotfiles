@@ -44,7 +44,7 @@ function _omz::plugin::edit {
     return 1
   fi
 
-  $EDITOR "${ZSH_CUSTOM}/plugins/${1}/${1}.plugin.zsh"
+  ${EDITOR?} "${ZSH_CUSTOM}/plugins/${1}/${1}.plugin.zsh"
 }
 
 function _omz::plugin::delete {

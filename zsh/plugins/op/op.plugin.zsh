@@ -32,6 +32,14 @@ function 1pt() {
     return 0
 }
 
+function 1p-filter-tag() {
+  jq 'map(select(.overview | .tags // [] | contains($ARGS.positional)))' --args "$@" 
+}
+
+function 1p-dotfiles() {
+  1ps list documents | 1p-filter-tag dotfiles
+}
+
 function _op_users() {
     if ! type jq >/dev/null 2>&1; then
         return 0
