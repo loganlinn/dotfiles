@@ -1,100 +1,111 @@
 [options]
-auto_disable_touchpad = 1
-automatic_update = false
-bootstrap_before = "myspacevim#before"
-bootstrap_after = "myspacevim#after"
-buffer_index_type = 4
-colorscheme = "nord"
-colorscheme_bg = "dark"
-enable_guicolors = true
-enable_neomake = true
-enable_statusline_mode = false
-enable_tabline_filetype_icon = true
-enable_vimfiler_gitstatus = true
+  auto_disable_touchpad = 1
+  automatic_update = false
+  bootstrap_before = "myspacevim#before"
+  bootstrap_after = "myspacevim#after"
+  buffer_index_type = 4
+  colorscheme = "nord"
+  colorscheme_bg = "dark"
+  enable_guicolors = true
+  enable_neomake = true
+  enable_statusline_mode = false
+  enable_tabline_filetype_icon = true
+  enable_vimfiler_gitstatus = true
 # filemanager = "defx"
-filetree_direction = "left"
-guifont = "JetBrainsMono Nerd Font Mono:h11"
-statusline_iseparator = "bar"
-statusline_separator = "arrow"
-statusline_unicode_symbols = true
-vimcompatible = true
-windows_index_type = 3
+  filetree_direction = "left"
+  guifont = "JetBrainsMono Nerd Font Mono:h11"
+  statusline_iseparator = "bar"
+  statusline_separator = "arrow"
+  statusline_unicode_symbols = true
+  vimcompatible = true
+  windows_index_type = 3
+
+[[plugins]]
+  repo = 'autozimu/LanguageClient-neovim'
+  hook_post_update = "call system('bash install.sh')"
 
 [[custom_plugins]]
-repo = "arcticicestudio/nord-vim"
-merged = false
+  repo = "arcticicestudio/nord-vim"
+  merged = false
 
 [[custom_plugins]]
-repo = "vito-c/jq.vim"
-merged = false
+  repo = "vito-c/jq.vim"
+  merged = false
 
 [[custom_plugins]]
-repo = "guns/vim-sexp"
-merged = false
+  repo = "guns/vim-sexp"
+  merged = false
 
 [[custom_plugins]]
-repo = "tpope/vim-sexp-mappings-for-regular-people"
-merged = false
+  repo = "tpope/vim-sexp-mappings-for-regular-people"
+  merged = false
+
+# [[custom_plugins]]
+#   repo = "Olical/conjure"
+#   merged = false
 
 [[custom_plugins]]
-repo = "Olical/conjure"
-merged = false
+  repo = "hashivim/vim-terraform"
+  merged = false
 
 [[custom_plugins]]
-repo = "hashivim/vim-terraform"
-merged = false
+  repo = "itchyny/calendar.vim"
+  merged = false
 
 [[layers]]
-name = 'autocomplete'
-auto_completion_return_key_behavior = "complete"
-auto_completion_tab_key_behavior = "smart"
+  name = 'autocomplete'
+  auto_completion_return_key_behavior = "complete"
+  auto_completion_tab_key_behavior = "smart"
 
 [[layers]]
-name = "checkers"
+  name = "checkers"
 
 [[layers]]
-name = 'shell'
-default_position = 'top'
-default_height = 30
+  name = 'shell'
+  default_position = 'top'
+  default_height = 30
 
 [[layers]]
-name = "tmux"
+  name = "tmux"
 
 [[layers]]
-name = "fzf"
+  name = "fzf"
 
 [[layers]]
-name = "git"
+  name = "git"
 
 [[layers]]
-name = "lang#clojure"
+  name = "lang#clojure"
 
 [[layers]]
-name = "lang#go"
+  name = "lang#go"
 
 [[layers]]
-name = "lang#html"
+  name = "lang#html"
 
 [[layers]]
-name = "lang#javascript"
+  name = "lang#javascript"
 
 [[layers]]
-name = "lang#markdown"
+  name = "lang#markdown"
 
 [[layers]]
-name = "lang#python"
+  name = "lang#python"
 
 [[layers]]
-name = "lang#rust"
+  name = "lang#rust"
 
 [[layers]]
-name = "lang#sh"
+  name = "lang#sh"
 
 [[layers]]
-name = "lang#toml"
+  name = "lang#toml"
 
 [[layers]]
-name = "lang#typescript"
+  name = "lang#typescript"
 
 [[layers]]
-name = "lang#janet"
+  name = "lang#janet"
+
+[[layers]]
+  name = "lang#nix"
