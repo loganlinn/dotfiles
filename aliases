@@ -1,66 +1,50 @@
-################################################################################
-# system
-################################################################################
+#!/bin/false
+# vim: ft=zsh
 
+autoload -Uz is-at-least
+
+# edit + reload this file shellcheck
+alias aliases="${=EDITOR} $(echo $0:A) && source $(echo $0:A)"
+alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
+
+# show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
 alias fpath='echo $FPATH | tr -s ":" "\n"'
-
-# edit this file
-alias aliases="$EDITOR $(echo $0:A) && source $(echo $0:A)"
 
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
 
-if (( $+commands[open] && $+commands[xdg-open] )); then
-	alias open='nohub xdg-open'
-fi
-
-################################################################################
-# replacements
-################################################################################
-
-# https://github.com/Peltoche/lsd
-(( $+commands[lsd] )) && alias ls=lsd
-
-# https://neovim.io/
-(( $+commands[nvim] )) && alias vim=nvim
+alias nixre="darwin-rebuild switch"
+alias nixgc="nix-collect-garbage -d"
+alias nixq="nix-env -qaP"
 
 ################################################################################
 # filesystem
 ################################################################################
 
-# zmv (http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#index-zmv)
+alias l='ls -AFhl'
+alias dud='du -d 1 -h'
+alias duf='du -sh *'
+
+(( $+commands[lsd] )) && \
+  alias ls=lsd
+
+# zmv (docs: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#index-zmv)
+#-------------------------------------------------------------------------------
 autoload -U zmv
 alias zcp='zmv -C'
 alias zln='zmv -L'
 
-alias l='ls -l --almost-all --classify --human-readable'
-alias tree='tree -I node_modules'
-
-# Command line head / tail shortcuts
+# head / tail shortcuts
+#-------------------------------------------------------------------------------
 alias -g H='--help'
 alias -g T='| tail'
 alias -g G='| grep'
 alias -g L="| less"
-alias -g M="| most"
-alias -g LL="2>&1 | less"
-alias -g CA="2>&1 | cat -A"
+alias -g M="| more"
 alias -g NE="2> /dev/null"
 alias -g NUL="> /dev/null 2>&1"
-alias -g P="2>&1| pygmentize -l pytb"
 
-alias dud='du -d 1 -h'
-alias duf='du -sh *'
-
-alias h='history'
-alias hgrep="fc -El 0 | grep"
-alias help='man'
-alias p='ps -f'
-alias sortnr='sort -n -r'
-
-# zsh is able to auto-do some kungfoo
-# depends on the SUFFIX :)
-autoload -Uz is-at-least
 if is-at-least 4.2.0; then
   # open browser on urls
   if [[ -n "$BROWSER" ]]; then
@@ -85,8 +69,9 @@ if is-at-least 4.2.0; then
   alias -s dvi=xdvi
   alias -s chm=xchm
   alias -s djvu=djview
-  alias -s json="python -m json.tool"
+  alias -s json=jq
   alias -s md=bat
+  alias -s org=emacs
 
   # list whats inside packed file
   alias -s zip="unzip -l"
@@ -96,9 +81,19 @@ if is-at-least 4.2.0; then
   alias -s ace="unace l"
 fi
 
+if (( ! $+commands[open] )) && (( $+commands[xdg-open] )); then
+	alias open='nohup xdg-open'
+fi
+
 ################################################################################
-# git
+# tools
 ################################################################################
+
+if [[ -z "$SSH_CLIENT""$SSH_TTY""$SSH_CONNECTION" ]]; then
+  if (( $+commands[nvim] )); then
+    alias vim=nvim
+  fi
+fi
 
 alias glr='git pull --rebase'
 alias gp='git push -u'
@@ -111,19 +106,7 @@ alias gw="git show"
 alias gsw="git stash show -p"
 alias gcob="git checkout -b"
 
-################################################################################
-# tmux
-################################################################################
-
-# direnv & tmux: wrap tmux to avoid issues with environment loading
-# (source: https://git.io/Jfmfu)
-if (( $+commands[direnv] )); then
-  alias tmux='direnv exec / tmux'
-fi
-
-################################################################################
-# bazel
-################################################################################
+(( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
 
 alias bzb="bazel build"
 alias bzt="bazel test"
@@ -133,16 +116,12 @@ alias bzba="bazel build //..."
 alias bzta="bazel test //..."
 alias bfmt="buildifier -lint=warn -r ."
 
+(( ! $+commands[typora] )) && alias typora="open -a typora"
+
 ################################################################################
-# applications
+# locals
 ################################################################################
 
-if (( ! $+commands[typora] )); then
-  alias typora="open -a typora"
+if [ -f ~/.aliases.local ]; then
+  source ~/.aliases.local
 fi
-
-################################################################################
-# extensions
-################################################################################
-
-[[ -f ~/.aliases.local ]] && source ~/.aliases.local

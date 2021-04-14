@@ -4,7 +4,8 @@ antigen use oh-my-zsh
 
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
-    asdf
+    alias-finder
+    ansible
     aws
     cargo
     clvv/fasd
@@ -22,10 +23,10 @@ antigen bundles <<EOBUNDLES
     gitignore
     gpg-agent
     gradle
-    man
     kubectl
     lein
     loganlinn/zzz.plugin.zsh
+    man
     mchav/with
     pierpo/fzf-docker
     pip
@@ -36,6 +37,7 @@ antigen bundles <<EOBUNDLES
     terraform
     urltools
     vi-mode
+    vscode
     web-search
     wfxr/forgit
     zsh-interactive-cd
