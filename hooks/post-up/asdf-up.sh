@@ -15,12 +15,8 @@ set -euo pipefail
 ASDF_DIR=${ASDF_DIR:-$HOME/.asdf}
 ASDF_DEFAULT_TOOL_VERSIONS_FILENAME=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-$HOME/.tool-versions}
 
-function info_section() {
-	local -r heading=$1
-	echo >&2 -e "\033[1m${heading}\033[m"
-	echo >&2
-	sed >&2 -e "s/^/    /"
-	echo >&2
+function print_section() {
+  >&2 printf '\n\033[1m%s\033[m\n\n%s\n' "$1" "$(sed -e "s/^/    /" -)" 
 }
 
 function asdf-missing-plugins() {
@@ -51,10 +47,10 @@ function main() {
 		done < <(asdf-missing-plugins "$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME")
 	fi
 
-	echo
-	asdf version | info_section "ASDF VERSION"
-	env | grep '^ASDF_' | info_section "ASDF ENVIRONMENT VARIABLES"
-	asdf plugin list --urls | info_section "ASDF PLUGINS"
+	asdf version 2>&1 | print_section "ASDF VERSION"
+	env | grep '^ASDF_' | print_section "ASDF ENVIRONMENT VARIABLES"
+	asdf plugin list --urls 2>&1 | print_section "ASDF PLUGINS"
+  asdf current 2>&1 | print_section "ASDF CURRENT"
 }
 
 main
