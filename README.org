@@ -54,4 +54,11 @@ Use [[https://github.com/ryanoasis/nerd-fonts][Nerd Fonts]].
  
 * Acknowledgements
 
-This dotfile repository was inspired by [[https://github.com/thoughtbot/dotfiles][thoughtbot/dotfiles]].
+Other similar open-source projects that have been useful reference at one point or another:
+
+- https://github.com/thoughtbot/dotfiles
+- https://github.com/serialoverflow/dotfiles
+- https://github.com/jason0x43/dotfiles
+- https://git.sr.ht/~sirn/dotfiles
+- https://github.com/stuartsierra/dotfiles
+- https://github.com/raycast/script-commands
