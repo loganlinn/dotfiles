@@ -1,102 +1,119 @@
-tap 'homebrew/core'
-tap 'homebrew/bundle'
-tap 'homebrew/services'
-tap 'homebrew/cask'
-
-tap 'bazelbuild/tap'
-tap 'clementtsang/bottom'
-tap 'd12frosted/emacs-plus'
-tap 'github/gh'
-
-brew 'bash'
-brew 'bat'
-brew 'bazelbuild/ap/bazel'
-brew 'clang-format'
-brew 'clementtsang/bottom/bottom'
-brew 'clojure'
-brew 'coreutils'
-brew 'ctags'
-brew 'curl'
-brew 'direnv'
-brew 'd12frosted/emacs-plus/emacs-plus@27', args: ['with-spacemacs-icon']
-brew 'fd'
-brew 'findutils'
-brew 'fzf'
-brew 'gawk'
-brew 'github/gh/gh'
-brew 'git'
-brew 'git-delta'
-brew 'gnu-indent'
-brew 'gnu-sed'
-brew 'gnu-tar'
-brew 'gnupg'
-brew 'gnutls'
-brew 'go'
-brew 'grep'
-brew 'httpie'
-brew 'jenv'
-brew 'jq'
-brew 'lsd'
-brew 'make'
-brew 'mas'
-brew 'neovim'
-brew 'pinentry-mac'
-brew 'rcm'
-brew 'readline'
-brew 'reattach-to-user-namespace'
-brew 'recutils'
-brew 'shellcheck'
-brew 'sops'
-brew 'ssh-copy-id', link: true
-brew 'the_silver_searcher'
-brew 'tmux'
-brew 'tree'
-brew 'vim'
-brew 'wget'
-brew 'yq'
-brew 'zsh'
-
-# Fonts
-tap 'homebrew/cask-fonts'
-cask 'font-fira-code-nerd-font'
-cask 'font-hack-nerd-font'
-cask 'font-sauce-code-pro-nerd-font'
-
-# Applications
-#cask '1password'
-#cask '1password-cli'
-#cask 'discord'
-#cask 'docker'
-mas 'Things', id: 904280696
- 
-# brew 'sqlite'
-# brew 'asciinema'
-# brew 'bison'
-# brew 'broot'
-# brew 'doctl'
-# brew 'gdub'
-# brew 'gradle'
-# brew 'gradle-completion'
-# brew 'grpcurl'
-# brew 'kafkacat'
-# brew 'kotlin'
-# brew 'kubernetes-cli'
-# brew 'maven'
-# brew 'pandoc'
-# brew 'pre-commit'
-# brew 'pyenv'
-# brew 'pyenv-which-ext'
-# brew 'ruby-build'
-# brew 'rbenv'
-# brew 'sc-im'
-# brew 'terraform'
-# brew 'yarn'
-# brew 'ykpers'
-# brew 'ykman'
- 
- 
-# tap 'moncho/dry'
-# brew 'moncho/dry/dry'
- 
-# tap 'qmk/qmk'
-# brew 'qmk/qmk/qmk'
+tap "achannarasappa/tap"
+tap "alexanderwillner/tap"
+tap "bazelbuild/tap"
+tap "clementtsang/bottom"
+tap "cloudflare/cloudflare"
+tap "d12frosted/emacs-plus"
+tap "fluxcd/tap"
+tap "github/gh"
+tap "hashicorp/tap"
+tap "homebrew/bundle"
+tap "homebrew/cask"
+tap "homebrew/cask-fonts"
+tap "homebrew/core"
+tap "homebrew/services"
+tap "moncho/dry"
+tap "osx-cross/arm"
+tap "osx-cross/avr"
+tap "qmk/qmk"
+tap "rs/tap"
+brew "readline"
+brew "ansible"
+brew "bash"
+brew "bat"
+brew "bazel"
+brew "glib"
+brew "cairo"
+brew "clang-format"
+brew "rlwrap"
+brew "clojure"
+brew "coreutils"
+brew "ctags"
+brew "openldap"
+brew "curl"
+brew "exiftool"
+brew "fd"
+brew "findutils"
+brew "fluxctl"
+brew "fzf"
+brew "gawk"
+brew "gdk-pixbuf"
+brew "gh"
+brew "git"
+brew "git-delta"
+brew "git-fixup"
+brew "gnu-indent"
+brew "gnu-sed"
+brew "gnu-tar"
+brew "unbound"
+brew "gnutls"
+brew "pinentry"
+brew "gnupg"
+brew "go"
+brew "gobject-introspection"
+brew "grep"
+brew "harfbuzz"
+brew "httpie"
+brew "imagemagick"
+brew "janet"
+brew "jenv"
+brew "jq"
+brew "krb5"
+brew "pango"
+brew "librsvg"
+brew "lsd"
+brew "make"
+brew "mas"
+brew "neovim"
+brew "nmap"
+brew "node"
+brew "parallel"
+brew "poppler"
+brew "pdfgrep"
+brew "pinentry-mac"
+brew "postgresql"
+brew "pre-commit"
+brew "rcm"
+brew "reattach-to-user-namespace"
+brew "recutils"
+brew "shellcheck"
+brew "shellharden"
+brew "ssh-copy-id"
+brew "step"
+brew "terraform"
+brew "terragrunt"
+brew "tflint"
+brew "the_silver_searcher"
+brew "tmux"
+brew "tree"
+brew "vim"
+brew "wget"
+brew "whalebrew"
+brew "yarn"
+brew "ykman"
+brew "yq"
+brew "zsh"
+brew "achannarasappa/tap/ticker"
+brew "alexanderwillner/tap/things.sh"
+brew "clementtsang/bottom/bottom"
+brew "cloudflare/cloudflare/cloudflared"
+brew "d12frosted/emacs-plus/emacs-plus@27", args: ["with-spacemacs-icon"]
+brew "fluxcd/tap/flux"
+brew "hashicorp/tap/packer"
+brew "hashicorp/tap/terraform-ls"
+brew "moncho/dry/dry"
+brew "qmk/qmk/qmk"
+brew "rs/tap/curlie"
+cask "font-fira-code-nerd-font"
+cask "font-hack-nerd-font"
+cask "font-sauce-code-pro-nerd-font"
+mas "Developer", id: 640199958
+mas "feedly", id: 865500966
+mas "GarageBand", id: 682658836
+mas "iMovie", id: 408981434
+mas "Keynote", id: 409183694
+mas "Numbers", id: 409203825
+mas "Pages", id: 409201541
+mas "Slack", id: 803453959
+mas "Things", id: 904280696
+mas "Twitter", id: 1482454543
