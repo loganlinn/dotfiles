@@ -21,8 +21,8 @@ function print_section() {
 
 function asdf-missing-plugins() {
 	cut -d' ' -f1 "${1--}" | sort |
-		comm -23 - <(asdf plugin-list | sort) |
-		join -a1 - <(asdf plugin list all)
+		comm -23 - <(asdf plugin list 2>/dev/null | sort) |
+		join -a1 - <(asdf plugin list all 2>/dev/null)
 }
 
 function main() {

@@ -7,6 +7,7 @@ dust 0.5.4
 fd 8.2.1
 fzf 0.26.0
 github-cli 1.8.1
+java adoptopenjdk-11.0.10+9
 packer 1.7.1
 shfmt 3.2.4
 sops 3.7.0
