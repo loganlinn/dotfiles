@@ -1,4 +1,7 @@
-[[ $ZPROF ]] && zmodload zsh/zprof
+# User profile for interactive zsh(1) shells.
+
+# zmodload zsh/zprof
+# export ANTIGEN_LOG=/tmp/antigen.log
 
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -41,12 +44,12 @@ _load_settings() {
 
 _load_settings "$HOME/.zsh/configs"
 
-[[ -f ~/.zshrc.darwin ]] && source ~/.zshrc.darwin
+case $(uname -s) in
+Darwin) [[ -f ~/.zshrc.darwin ]] && . ~/.zshrc.darwin ;;
+Linux)  [[ -f ~/.zshrc.linux  ]] && . ~/.zshrc.linux  ;;
+esac
+[[ -f ~/.zshrc.local  ]] && . ~/.zshrc.local
+[[ -f ~/.localrc      ]] && . ~/.localrc
+[[ -f ~/.aliases      ]] && . ~/.aliases
 
-[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
-
-[[ -f ~/.localrc ]] && source ~/.localrc
-
-[[ -f ~/.aliases ]] && source ~/.aliases
-
-[[ $ZPROF ]] && zprof
+# zprof
