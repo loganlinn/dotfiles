@@ -6,7 +6,7 @@ doctl 1.58.0
 dust 0.5.4
 fd 8.2.1
 fzf 0.26.0
-github-cli 1.8.1
+github-cli 1.11.0
 java adoptopenjdk-11.0.10+9
 packer 1.7.1
 shfmt 3.2.4
@@ -14,5 +14,5 @@ sops 3.7.0
 terraform 0.14.10
 terraform-docs 0.12.1
 terraformer 0.8.12
-zig 0.7.1
 waypoint 0.3.0
+zig 0.7.1
