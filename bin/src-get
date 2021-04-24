@@ -1,53 +1,65 @@
 #!/usr/bin/env bash
 
-set -e
 [[ $TRACE ]] && set -x
+set -eo pipefail
+
+require() { hash "$@" || exit 127; }
+
+require git
 
 SRC_HOME=${SRC_HOME:-$HOME/src}
 GIT_PROTOCOL_DEFAULT=https
 GIT_HOSTNAME_DEFAULT=github.com
+GIT_CLONE_OPTS=(
+  --recurse-submodules 
+)
 
 resolve_repo_url() {
-	local ident=$1
+	local input=$1
 
-	if [[ $ident == - ]]; then
-		ident=$(</dev/stdin)
+	if [[ $input == - ]]; then
+		input=$(</dev/stdin)
 	fi
 
-	case "$ident" in
+	case "$input" in
 
   # https://github.com/loganlinn/dotfiles
 	*://*)
-		printf "%s" "$ident"
+		printf "%s" "$input"
 		;;
 
   # github.com/loganlinn/dotfiles
 	*.*/*)
-		printf "%s://%s" "$GIT_PROTOCOL_DEFAULT" "$ident"
+		printf "%s://%s" "$GIT_PROTOCOL_DEFAULT" "$input"
 		;;
 
   # loganlinn/dotfiles
-	*)
-		printf "%s://%s/%s" "$GIT_PROTOCOL_DEFAULT" "$GIT_HOSTNAME_DEFAULT" "$ident"
+	*/*)
+		printf "%s://%s/%s" "$GIT_PROTOCOL_DEFAULT" "$GIT_HOSTNAME_DEFAULT" "$input"
 		;;
+
+  # loganlinn
+  *)
+    input=$(gh repo list "$input" | fzf | cut -f1)
+		printf "%s://%s/%s" "$GIT_PROTOCOL_DEFAULT" "$GIT_HOSTNAME_DEFAULT" "$input"
+    ;;
 
 	esac
 }
 
 main() {
-	local repo=$1
-	shift
+  local url
+  local path
 
-	local url
-	local path
+  for repo; do
+    url=$(resolve_repo_url "$repo")
 
-	url=$(resolve_repo_url "$repo")
+    # strip protocol and extension
+    path=$SRC_HOME/${url#*://}
+    path=${path%%.git}
 
-  # strip protocol and extension
-	path="${url#*://}"
-	path=${path%.git}
-
-	git clone --recurse-submodules "$@" -- "$url" "${SRC_HOME}/${path}"
+    git clone "${GIT_CLONE_OPTS[@]}" -- "$url" "$path"
+  done
 }
 
 main "$@"
