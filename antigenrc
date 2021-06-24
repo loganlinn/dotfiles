@@ -4,48 +4,25 @@ antigen use oh-my-zsh
 
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
-    alias-finder
-    ansible
-    aws
-    cargo
-    clvv/fasd
     colored-man-pages
-    command-not-found
-    docker
-    doctl
-    emacs
-    extract
     fasd
     fzf
     genpass
     git
-    github
     gitignore
     gpg-agent
-    gradle
-    kubectl
-    lein
     loganlinn/zzz.plugin.zsh
-    man
-    mchav/with
-    pierpo/fzf-docker
-    pip
-    safe-paste
-    sirhc/okta.plugin.zsh
     sirhc/op.plugin.zsh
     ssh-agent
     terraform
     urltools
     vi-mode
-    vscode
     web-search
     wfxr/forgit
     zsh-interactive-cd
-    zsh-users/zaw
     zsh-users/zsh-autosuggestions 
     zsh-users/zsh-completions 
     zsh-users/zsh-history-substring-search 
-    zsh-users/zsh-syntax-highlighting
     zsh_reload
 EOBUNDLES
 
@@ -58,7 +35,7 @@ do
   antigen bundle "${bundle}" --no-local-clone
 done
 
-antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
+# antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
 
 antigen apply
 

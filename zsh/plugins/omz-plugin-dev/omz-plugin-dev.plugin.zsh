@@ -4,8 +4,9 @@
 
 function _omz::plugin::create {
   local plugin=$1
+  local plugin_file="${ZSH_CUSTOM?}/plugins/${plugin}/${plugin}.plugin.zsh"
 
-  if [[ -z ${plugin+x} ]]; then
+  if [[ -z ${plugin-} ]]; then
     echo >&2 "Usage: omz plugin create <plugin>"
     return 1
   fi
@@ -15,16 +16,12 @@ function _omz::plugin::create {
     return 1
   fi
 
-  local plugin_dir="${ZSH_CUSTOM?}/plugins/${plugin}"
-  mkdir -p "$plugin_dir"
-
-  # If command is being piped, redirect into plugin script
-  if [[ ! -t 1 ]]; then
-    exec > "$plugin_dir/${plugin}.plugin.zsh"
-  else
-    touch "$plugin_dir/${plugin}.plugin.zsh"
-    _omz::log info "created $plugin_dir/${plugin}.plugin.zsh"
+  mkdir -p "$(dirname "$plugin_file")"
+  touch "$plugin_file"
+  if [[ $* == *"--edit"* ]]; then
+    _omz::plugin::edit "$plugin"
   fi
+  printf '%s' "$plugin_file"
 }
 
 function _omz::plugin::edit {
