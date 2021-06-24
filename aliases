@@ -10,6 +10,7 @@ alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
 # show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
 alias fpath='echo $FPATH | tr -s ":" "\n"'
+alias paths='which -a'
 
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
@@ -26,24 +27,15 @@ alias l='ls -AFhl'
 alias dud='du -d 1 -h'
 alias duf='du -sh *'
 
-(( $+commands[lsd] )) && \
+if (( $+commands[lsd] )); then
   alias ls=lsd
+fi
 
 # zmv (docs: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#index-zmv)
 #-------------------------------------------------------------------------------
 autoload -U zmv
 alias zcp='zmv -C'
 alias zln='zmv -L'
-
-# head / tail shortcuts
-#-------------------------------------------------------------------------------
-alias -g H='--help'
-alias -g T='| tail'
-alias -g G='| grep'
-alias -g L="| less"
-alias -g M="| more"
-alias -g NE="2> /dev/null"
-alias -g NUL="> /dev/null 2>&1"
 
 if is-at-least 4.2.0; then
   # open browser on urls
@@ -108,15 +100,19 @@ alias gcob="git checkout -b"
 
 (( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
 
-alias bzb="bazel build"
-alias bzt="bazel test"
-alias bzr="bazel run"
-alias bzq="bazel query"
-alias bzba="bazel build //..."
-alias bzta="bazel test //..."
-alias bfmt="buildifier -lint=warn -r ."
+alias drun="docker run --rm -it"
+
+# alias bzb="bazel build"
+# alias bzt="bazel test"
+# alias bzr="bazel run"
+# alias bzq="bazel query"
+# alias bzba="bazel build //..."
+# alias bzta="bazel test //..."
+# alias bfmt="buildifier -lint=warn -r ."
 
 (( ! $+commands[typora] )) && alias typora="open -a typora"
+
+alias 1ps:do-api-token='1ps get item f6mb6bqqjzf5jhrm4hds34uqlu --fields password'
 
 ################################################################################
 # locals
