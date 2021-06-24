@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+#
+# hclfmt - Rewrites HCL file to a canonical format.
+#
+
+set -eo pipefail
+
+err() {
+	printf 'error: %s\n' "$*" >&2
+}
+
+info() {
+	printf 'info[%d]: %s\n' "$SECONDS" "$*" >&2
+}
+
+show_help() {
+	cat - <<EOF
+usage: hclfmt [PATH]...
+EOF
+}
+
+function fileset() {
+	local path
+
+	for path; do
+		if [[ -d "$path" ]]; then
+			local file
+
+			for file in "$path"/*; do
+				printf '%s\n' "$file"
+			done
+
+		elif [[ -f "$path" ]]; then
+			printf '%s\n' "$path"
+		else
+			err "file or directory expected: $path"
+			echo
+			show_help
+			return 1
+		fi
+	done
+}
+
+function main() {
+	local file tmp
+
+  for file in $(fileset "$@"); do
+    tmp=$(mktemp)
+
+    terraform fmt - <"$file" >"$tmp"
+
+    if cmp --quiet "$file" "$tmp"; then
+      rm "$tmp"
+      info "skipped $file"
+    else
+      mv "$tmp" "$file"
+      info "updated $file"
+    fi
+  done
+
+	info "done."
+}
+
+if [[ $* == *"-h"* || $* == *"--help"* ]]; then
+	show_help
+	exit 0
+fi
+
+main "$@"

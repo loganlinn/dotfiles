@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# xdiff - side-by-side merge of stdin and stdout of a command's execution
+#
+
+set -eo pipefail
+
+TMP=$(mktemp)
+trap 'rm -f $TMP' EXIT
+
+sdiff -t -w 80 "$TMP" <(tee "$TMP" | exec "$@")

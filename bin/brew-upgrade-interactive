@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+
+set -e
+
+printf "Listing outdated casks and formulae...\n"
+
+brew outdated | fzf -m -n 1 --tac --header='Select formulae to upgrade with tab' | xargs brew upgrade
+
+read -q "?run 'brew cleanup'? (y/n) " && brew cleanup
