@@ -2,11 +2,21 @@
 env:
   TERM: xterm-256color
 
+selection:
+  semantic_escape_chars: ",│`|:\"' ()[]{}<>"
+  save_to_clipboard: true
+
 window:
-  decorations: buttonless
+  # decorations: buttonless
+  decorations: none
+  dimensions:
+    columns: 120
+    lines: 80
   padding:
-    x: 6
-    y: 6
+    x: 10
+    y: 2
+  dynamic_padding: false
+  startup_mode: Maximized
 
 dpi:
   x: 128.0
@@ -37,14 +47,12 @@ debug.render_timer: false
 
 # Copyright (c) 2017-present Arctic Ice Studio <development@arcticicestudio.com>
 # Copyright (c) 2017-present Sven Greb <code@svengreb.de>
-
 # Project:    Nord Alacritty
 # Version:    0.1.0
 # Repository: https://github.com/arcticicestudio/nord-alacritty
 # License:    MIT
 # References:
 #   https://github.com/alacritty/alacritty
-
 colors:
   primary:
     background: '#2e3440'
