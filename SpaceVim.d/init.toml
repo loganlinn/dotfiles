@@ -12,6 +12,7 @@
   enable_tabline_filetype_icon = true
   enable_vimfiler_gitstatus = true
 # filemanager = "defx"
+  filemanager = "nerdtree"
   filetree_direction = "left"
   guifont = "JetBrainsMono Nerd Font Mono:h11"
   statusline_iseparator = "bar"
@@ -75,10 +76,17 @@
   name = "git"
 
 [[layers]]
+  name = "shell"
+  default_position = "float"
+
+[[layers]]
   name = "lang#clojure"
 
 [[layers]]
   name = "lang#go"
+
+[[layers]]
+  name = "lang#sh"
 
 [[layers]]
   name = "lang#html"
