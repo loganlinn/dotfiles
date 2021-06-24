@@ -5,6 +5,4 @@ Host github.com
 Host *
   AddKeysToAgent yes
   ServerAliveInterval 120
-  # UseKeychain yes
-  Include ~/.step/ssh/config
   Include ~/.ssh/config.local
