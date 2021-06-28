@@ -87,6 +87,10 @@ if [[ -z "$SSH_CLIENT""$SSH_TTY""$SSH_CONNECTION" ]]; then
   fi
 fi
 
+
+alias asdf-plugin='asdf plugin list all | fzf -m | xargs asdf plugin add' # TODO exclude plugins currently installed plugins from list
+
+alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs open'
 alias glr='git pull --rebase'
 alias gp='git push -u'
 alias glrp='glr && gp'
