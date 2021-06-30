@@ -2,8 +2,5 @@
 
 set -eo pipefail
 
-docker context ls |
-  fzf +s --header-lines=1 |
-  awk '{ print $1 }' |
-  xargs docker context use
-
+choice=$(docker context ls | fzf +s --header-lines=1 | awk '{ print $1 }')
+docker context use "${choice}"
