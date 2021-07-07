@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
+
 [[ -n ${TRACE+x} ]] && set -x
-
-log() { printf >&2 '%s\n' "$*"; }
-
-SRC_HOME=${SRC_HOME:-$HOME/src}
-GIT_PROTOCOL_DEFAULT=https
-GIT_HOSTNAME_DEFAULT=github.com
 
 src-url() {
 	local input=$1
@@ -21,35 +16,33 @@ src-url() {
 		printf "%s" "$input"
 		;;
 	*.*/*) # i.e. github.com/loganlinn/dotfiles
-		printf "%s://%s" "$GIT_PROTOCOL_DEFAULT" "$input"
+		printf "https://%s" "$input"
 		;;
 	*/*) # i.e. loganlinn/dotfiles
-		printf "%s://%s/%s" "$GIT_PROTOCOL_DEFAULT" "$GIT_HOSTNAME_DEFAULT" "$input"
+		printf "https://github.com/%s" "$input"
 		;;
 	*) # i.e. loganlinn
 		input=$(gh repo list "$input" | fzf | cut -f1)
-		printf "%s://%s/%s" "$GIT_PROTOCOL_DEFAULT" "$GIT_HOSTNAME_DEFAULT" "$input"
+		printf "https://github.com/%s" "$input"
 		;;
 	esac
-}
-
-src-clone() {
-	log "git clone $*"
-	git clone --recurse-submodules -- "$url" "$path"
 }
 
 src-get() {
 	local url
 	local path
 
-	for repo; do
-		url=$(src-url "$repo")
+	for arg; do
+		url=$(src-url "$arg")
 
-		# strip protocol and extension
-		path=$SRC_HOME/${url#*://}
+		path=${SRC_DIR:-$HOME/src}/${url#*://}
 		path=${path%%.git}
 
-		[[ -d $path ]] || src-clone "$url" "$path" >&2
+		if [[ -d $path ]]; then
+			git -C "$path" fetch --all >&2
+		else
+			git clone "$url" "$path" >&2
+		fi
 
 		printf '%s\n' "$path"
 	done
