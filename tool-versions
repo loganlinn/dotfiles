@@ -12,6 +12,7 @@ fzf 0.26.0
 github-cli 1.11.0
 golang 1.15.12
 helm 3.6.1
+helmfile 0.139.9
 java adoptopenjdk-11.0.10+9
 kapp 0.36.0
 kbld 0.30.0
