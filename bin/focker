@@ -4,83 +4,57 @@ set -eo pipefail
 
 [[ -z $TRACE ]] || set -x
 
-printf '\n'
-
-BOLD="$(tput bold 2>/dev/null || printf '')"
-GREY="$(tput setaf 0 2>/dev/null || printf '')"
-UNDERLINE="$(tput smul 2>/dev/null || printf '')"
-RED="$(tput setaf 1 2>/dev/null || printf '')"
-GREEN="$(tput setaf 2 2>/dev/null || printf '')"
-YELLOW="$(tput setaf 3 2>/dev/null || printf '')"
-BLUE="$(tput setaf 4 2>/dev/null || printf '')"
-MAGENTA="$(tput setaf 5 2>/dev/null || printf '')"
-NO_COLOR="$(tput sgr0 2>/dev/null || printf '')"
-
-info() {
-	printf '%s\n' "${BOLD}${GREY}>${NO_COLOR} $*"
-}
-
-warn() {
-	printf '%s\n' "${YELLOW}! $*${NO_COLOR}"
-}
-
-error() {
-	printf '%s\n' "${RED}x $*${NO_COLOR}" >&2
-}
-
-completed() {
-	printf '%s\n' "${GREEN}✓${NO_COLOR} $*"
-}
-
-__focker_fzf() {
-	fzf --select-1 --header-lines=1 --nth=1 "$@" | awk '{ print $1 }'
-}
-
 focker-service() {
-
-	case $1 in
+	local op=$1
+	shift
+	case $op in
 	ps | logs | inspect | rm | rollback | scale | update)
 		local query=
-		if [[ -n $2 ]] && [[ $2 != "-"* ]]; then
+		if ! [[ $1 = "-"* ]]; then
 			query=$1
 			shift
 		fi
-		docker service "$1" "$(docker service ls | __focker_fzf --nth=2 --query="$query" --select-1 --header-lines=1 --prompt="service: ")" "${@:2}"
+		local -r service=$(docker service ls | fzf --nth=2 --query="$query" --select-1 --header-lines=1 --prompt="service: " | awk '{ print $2 }')
+		docker service "$op" "$service" "$@"
 		;;
 	*)
-		focker service "$@"
+		docker service "$op" "$@"
 		;;
 	esac
 }
 
 focker-stack() {
-	case $1 in
+	local op=$1
+	shift
+	case $op in
 	ps | rm | services)
 		local query=
-		if [[ -n $2 ]] && [[ $2 != "-"* ]]; then
-			query=$2
+		if ! [[ $1 = "-"* ]]; then
+			query=$1
 			shift
 		fi
-		docker stack "$1" "$(docker stack ls | __focker_fzf --nth=1 --query="$query" --select-1 --header-lines=1 --prompt="stack: ")" "${@:2}"
+		local -r stack=$(docker stack ls | fzf --nth=1 --query="$query" --select-1 --header-lines=1 --prompt="stack: " | awk '{ print $1 }')
+		docker stack "$op" "$stack" "$@"
 		;;
 	*)
-		docker stack "$@"
+		docker stack "$op" "$@"
 		;;
 	esac
 }
 
 focker() {
-	DOCKER_CONTEXT="$(docker context ls | __focker_fzf --nth=1 --query="${DOCKER_CONTEXT-}" --select-1 --header-lines=1 --prompt="context: ")"
+	DOCKER_CONTEXT="$(docker context ls | fzf --nth=1 --query="${DOCKER_CONTEXT-}" --select-1 --header-lines=1 --prompt="context: " | awk '{ print $1 }')"
 
 	export DOCKER_CONTEXT
 
 	case $1 in
-	sv* | service)
+	sv | svc | service)
 		focker-service "${@:2}"
 		;;
-	stack)
+	st | stack)
 		focker-stack "${@:2}"
 		;;
+		# TODO x | exec)
 	*)
 		docker "$@"
 		;;
