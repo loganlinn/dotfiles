@@ -4,13 +4,13 @@
 autoload -Uz is-at-least
 
 # edit + reload this file shellcheck
-alias aliases="${=EDITOR} $(echo $0:A) && source $(echo $0:A)"
+alias aliases="${=EDITOR} $(echo $0:A) && src || source $(echo $0:A)"
 alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
 
 # show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
 alias fpath='echo $FPATH | tr -s ":" "\n"'
-alias paths='which -a'
+alias which='which -a'
 
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
