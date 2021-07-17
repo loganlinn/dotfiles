@@ -9,8 +9,9 @@ dust 0.5.4
 eksctl 0.52.0
 fd 8.2.1
 fzf 0.26.0
-github-cli 1.11.0
+github-cli 1.12.1
 golang 1.15.12
+gomplate v3.9.0
 helm 3.6.1
 helmfile 0.139.9
 java adoptopenjdk-11.0.10+9
@@ -34,5 +35,6 @@ terraformer 0.8.12
 variant 0.37.1
 vendir 0.19.0
 waypoint 0.3.2
+yq 4.0.0
 ytt 0.33.0
 zig 0.7.1
