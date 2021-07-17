@@ -12,6 +12,7 @@ antigen bundles <<EOBUNDLES
     git
     gitignore
     gpg-agent
+    johanhaleby/kubetail
     loganlinn/zzz.plugin.zsh
     sirhc/op.plugin.zsh
     ssh-agent
