@@ -1,8 +1,11 @@
+#!/usr/bin/env zsh
+
 # load our own completion functions
 fpath=(~/.zsh/{completion,functions} /usr/local/share/zsh/site-functions $fpath)
 
 # completion; use cache if updated within 24h
 autoload -Uz compinit
+
 if [[ -n $HOME/.zcompdump(#qN.mh+24) ]]; then
   compinit -d $HOME/.zcompdump;
 else
@@ -12,3 +15,7 @@ fi;
 # disable zsh bundled function mtools command mcd
 # which causes a conflict.
 compdef -d mcd
+
+if (( $+commands[kitty] )); then
+  kitty + complete setup zsh | source /dev/stdin
+fi
