@@ -1,16 +1,30 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
-    hooks:
-    - id: check-yaml
-    - id: detect-private-key
-    - id: detect-aws-credentials
-    - id: check-executables-have-shebangs
-    - id: file-contents-sorter
-      files: 'tool-versions'
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+  - id: check-yaml
+  - id: detect-private-key
+  - id: detect-aws-credentials
+  - id: check-executables-have-shebangs
+  - id: file-contents-sorter
+    files: 'tool-versions'
 
-- repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 2.1.5
+- repo: local
   hooks:
     - id: shellcheck
+      name: shellcheck
+      language: system
+      entry: shellcheck
+      types_or: [sh, bash, dash, ksh, csh]
+
     - id: shfmt
+      name: shfmt
+      language: system
+      entry: shfmt
+      types: [sh, bash]
+
+    - id: shellharden
+      name: shellharden
+      language: system
+      entry: shellharden
+      types: [shell]
