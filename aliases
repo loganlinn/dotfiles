@@ -10,7 +10,7 @@ alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
 # show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
 alias fpath='echo $FPATH | tr -s ":" "\n"'
-alias which='which -a'
+alias witch='which -a'
 
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
@@ -37,44 +37,40 @@ autoload -U zmv
 alias zcp='zmv -C'
 alias zln='zmv -L'
 
+if (( ! $+commands[open] )) && (( $+commands[xdg-open] )); then
+	alias open='nohup xdg-open'
+fi
+
+# Suffix Aliases
 if is-at-least 4.2.0; then
-  # open browser on urls
-  if [[ -n "$BROWSER" ]]; then
-    _browser_fts=(htm html de org net com at cx nl se dk)
-    for ft in $_browser_fts; do alias -s $ft=$BROWSER; done
-  fi
-
-  _editor_fts=(cpp cxx cc c hh h inl asc txt TXT tex toml yaml yml)
-  for ft in $_editor_fts; do alias -s $ft=$EDITOR; done
-
-  if [[ -n "$XIVIEWER" ]]; then
-    _image_fts=(jpg jpeg png gif mng tiff tif xpm)
-    for ft in $_image_fts; do alias -s $ft=$XIVIEWER; done
-  fi
-
-  _media_fts=(ape avi flv m4a mkv mov mp3 mpeg mpg ogg ogm rm wav webm)
-  for ft in $_media_fts; do alias -s $ft=mplayer; done
-
-  # read documents
-  alias -s pdf=acroread
-  alias -s ps=gv
-  alias -s dvi=xdvi
-  alias -s chm=xchm
-  alias -s djvu=djview
+  alias -s config=bat
   alias -s json=jq
-  alias -s md=bat
+  alias -s md=glow
   alias -s org=emacs
+  alias -s plist="plutil -p"
+  alias -s properties=bat
+  alias -s toml=bat
+  alias -s txt=bat
+  alias -s yaml=bat
+  alias -s yml=bat
 
-  # list whats inside packed file
+  # media viewied with (xdg-)open
+  for ft in htm html jpg jpeg png gif mng pdf tiff tif xpm; do
+    alias -s $ft=open
+  done
+
+  # archives
   alias -s zip="unzip -l"
   alias -s rar="unrar l"
   alias -s tar="tar tf"
   alias -s tar.gz="echo "
   alias -s ace="unace l"
-fi
 
-if (( ! $+commands[open] )) && (( $+commands[xdg-open] )); then
-	alias open='nohup xdg-open'
+  if (( $+command[mplayer] )); then
+    for ft in ape avi flv m4a mkv mov mp3 mpeg mpg ogg ogm rm wav webm; do
+      alias -s $ft=mplayer
+    done
+  fi
 fi
 
 ################################################################################
@@ -86,7 +82,6 @@ if [[ -z "$SSH_CLIENT""$SSH_TTY""$SSH_CONNECTION" ]]; then
     alias vim=nvim
   fi
 fi
-
 
 alias asdf-plugin='asdf plugin list all | fzf -m | xargs asdf plugin add' # TODO exclude plugins currently installed plugins from list
 
@@ -115,13 +110,3 @@ alias drun="docker run --rm -it"
 # alias bfmt="buildifier -lint=warn -r ."
 
 (( ! $+commands[typora] )) && alias typora="open -a typora"
-
-alias 1ps:do-api-token='1ps get item f6mb6bqqjzf5jhrm4hds34uqlu --fields password'
-
-################################################################################
-# locals
-################################################################################
-
-if [ -f ~/.aliases.local ]; then
-  source ~/.aliases.local
-fi
