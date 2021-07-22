@@ -3,7 +3,6 @@
 format = """
 $username\
 $hostname\
-$shlvl\
 $directory\
 $git_branch\
 $git_commit\
@@ -34,6 +33,7 @@ $cmd_duration\
 $line_break\
 $jobs\
 $battery\
+$shlvl\
 $time\
 $status\
 $shell\
@@ -137,7 +137,9 @@ symbol = "\ue737 "
 format = "\\[[$symbol($version)]($style)\\]"
 
 [shlvl]
+disabled = false
 symbol = "\uf120 "
+threshold = 3
 
 [swift]
 symbol = "ﯣ "
