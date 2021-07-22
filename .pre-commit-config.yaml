@@ -19,9 +19,13 @@ repos:
 
     - id: shfmt
       name: shfmt
-      language: system
+      minimum_pre_commit_version: 2.4.0
+      language: golang
+      additional_dependencies: [mvdan.cc/sh/v3/cmd/shfmt@v3.2.2]
       entry: shfmt
-      types: [sh, bash]
+      args: [-w]
+      types: [shell]
+      exclude: zsh/configs-post/completion.zsh
 
     - id: shellharden
       name: shellharden
