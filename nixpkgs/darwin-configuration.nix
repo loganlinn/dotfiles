@@ -39,16 +39,16 @@
   environment.systemPackages = with pkgs; [
     bat
     cmake
-    ctags
     coreutils
+    ctags
     curl
-    # direnv
     entr
     fd
     fzf
     gettext
     git
     glab
+    glow
     gnupg
     gnuplot
     gnused
@@ -66,7 +66,7 @@
     shellharden
     shfmt
     silver-searcher
-    # spacevim
+    stow
     tmux
     tree
     vim
