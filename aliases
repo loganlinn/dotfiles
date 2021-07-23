@@ -109,4 +109,19 @@ alias drun="docker run --rm -it"
 # alias bzta="bazel test //..."
 # alias bfmt="buildifier -lint=warn -r ."
 
+alias tf=terraform
+alias k=kubectl
+alias kusers='k config get-users'
+alias kd='k describe'
+alias kdoc='k describe'
+alias kpf='k port-forward'
+alias kinfo='k cluster-info'
+alias kar='k api-resources --cached'
+alias kav='k api-versions'
+alias kcfg='k config view --raw'
+alias kctxs='k config get-contexts'
+alias kk=kustomize
+alias kctx=kubectx
+alias kns=kubens
+
 (( ! $+commands[typora] )) && alias typora="open -a typora"
