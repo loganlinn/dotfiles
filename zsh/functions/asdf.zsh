@@ -17,6 +17,9 @@ asdf-upgrade() {
 	local current_version current_version_scope
 	read -r current_version current_version_scope < <(asdf current "$tool" 2>/dev/null | awk '{ print $2, $3 }')
 
+	# nothing to do in edge case where version didnt change
+	[[ $version != $current_version ]] || return 0
+
 	if [[ $current_version_scope == ~/"$tool_versions_filename" ]]; then
 		if read -q "?asdf global $tool $version? (y/n) "; then
 			asdf global "$tool" "$version"
