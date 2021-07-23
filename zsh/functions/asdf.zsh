@@ -1,26 +1,41 @@
 #!/usr/bin/env zsh
 
 asdf-upgrade() {
-  local tool=$1
-  local vnext=$2
-  local vprev vfile
+	local tool=$1
+	local version=$2
 
-  [[ -n $tool ]] || tool=$(asdf list 2>/dev/null | grep -v '^[ ]' | fzf) || return $?
-  [[ -n $vnext ]] || vnext=$(asdf latest "$tool") || return $?
-  read -r vprev vsource < <(asdf current "$tool" 2>/dev/null | awk '{ print $2, $3 }')
+	[[ -n $tool ]] || tool=$(asdf list 2>/dev/null | grep -v '^[ ]' | fzf) || return $?
+	printf 'upgrading %s\n...' "$tool"
+	[[ -n $version ]] || version=$(asdf list all "$tool" | fzf --header="$tool versions" --prompt='version to install: ' --tac --no-sort) || return $?
 
-  echo "-> asdf install $tool $vnext"
-  asdf install "$tool" "$vnext" || return $?
+	# Perform install
+	printf '-> asdf install %s %s\n' "$tool" "$version"
+	asdf install "$tool" "$version" || return $?
 
-	if [[ $vsrc == ~/"${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-.tool-versions}" ]]; then
-		read -q "?asdf global $tool $vnext? (y/n) " && asdf global "$tool" "$vnext"
-  elif [[ $vsrc == *"environment variable" ]]; then
-		read -q "?asdf shell $tool $vnext? (y/n) " && asdf shell "$tool" "$vnext"
-  else
-		read -q "?asdf local $tool $vnext? (y/n) " && asdf local "$tool" "$vnext"
-  fi
+	# Update tool-versions
+	local tool_versions_filename=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-.tool-versions}
+	local current_version current_version_scope
+	read -r current_version current_version_scope < <(asdf current "$tool" 2>/dev/null | awk '{ print $2, $3 }')
 
-  [[ -z $vprev ]] ||
-    read -q "?asdf uninstall $tool $vprev? (y/n) " &&
-    asdf uninstall "$tool" "$vprev"
+	if [[ $current_version_scope == ~/"$tool_versions_filename" ]]; then
+		if read -q "?asdf global $tool $version? (y/n) "; then
+			asdf global "$tool" "$version"
+		fi
+	elif [[ $current_version_scope == *"environment variable" ]]; then
+		if read -q "?asdf shell $tool $version? (y/n) "; then
+			asdf shell "$tool" "$version"
+		fi
+	else
+		if read -q "?asdf local $tool $version? (y/n) "; then
+			asdf local "$tool" "$version"
+		fi
+	fi
+	echo
+
+	if [[ -n $current_version ]]; then
+		if read -q "?asdf uninstall $tool $current_version? (y/n) "; then
+			asdf uninstall "$tool" "$current_version"
+		fi
+	fi
+	echo
 }
