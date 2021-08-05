@@ -93,8 +93,8 @@
         252
       ],
       "mode": [
-        5,
-        10
+        12,
+        120
       ]
     },
     {
@@ -164,51 +164,51 @@
     ],
     "K05": [
       "F5",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K06": [
       "F6",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K07": [
       "F7",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K08": [
       "F8",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K09": [
       "F9",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K0A": [
       "F10",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K0B": [
       "F11",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K0C": [
       "F12",
-      "ROLL_OVER",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE",
+      "NONE"
     ],
     "K0D": [
       "DEL",
@@ -219,8 +219,8 @@
     "K0E": [
       "HOME",
       "PLAY_PAUSE",
-      "ROLL_OVER",
-      "ROLL_OVER"
+      "NONE",
+      "NONE"
     ],
     "K10": [
       "TICK",
@@ -314,7 +314,7 @@
     ],
     "K20": [
       "TAB",
-      "PRINT_SCREEN",
+      "ROLL_OVER",
       "ROLL_OVER",
       "ROLL_OVER"
     ],
