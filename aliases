@@ -10,7 +10,9 @@ alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
 # show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
 alias fpath='echo $FPATH | tr -s ":" "\n"'
-alias witch='which -a'
+
+alias wa='which -a'
+alias wich=which
 
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
@@ -83,8 +85,6 @@ if [[ -z "$SSH_CLIENT""$SSH_TTY""$SSH_CONNECTION" ]]; then
   fi
 fi
 
-alias asdf-plugin='asdf plugin list all | fzf -m | xargs asdf plugin add' # TODO exclude plugins currently installed plugins from list
-
 alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs open'
 alias glr='git pull --rebase'
 alias gp='git push -u'
@@ -96,6 +96,8 @@ alias gw="git show"
 # alias gsp="git stash pop"
 alias gsw="git stash show -p"
 alias gcob="git checkout -b"
+alias gcop="git checkout -p"
+alias gist="gh gist"
 
 (( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
 
@@ -109,13 +111,15 @@ alias drun="docker run --rm -it"
 # alias bzta="bazel test //..."
 # alias bfmt="buildifier -lint=warn -r ."
 
-alias tf=terraform
+alias tf=terragrunt
 alias k=kubectl
 alias kctx=kubectx
 alias kns=kubens
+alias krew='k krew'
 alias kusers='k config get-users'
-alias kd='k describe'
+alias kdesc='k describe'
 alias kdoc='k describe'
+alias kgen='k create --dry-run=client -o yaml'
 alias kpf='k port-forward'
 alias kinfo='k cluster-info'
 alias kar='k api-resources --cached'
@@ -124,10 +128,5 @@ alias kcfg='k config view --raw'
 alias kctxs='k config get-contexts'
 alias kk=kustomize
 alias kkb='kk build'
-alias kfmt='kk cfg fmt'
-alias kgrep='kk cfg grep'
-alias kcat='kk cfg cat'
-alias ktree='kk cfg tree'
-alias kkrun='kk fn run'
 
 (( ! $+commands[typora] )) && alias typora="open -a typora"
