@@ -12,13 +12,13 @@ antigen bundles <<EOBUNDLES
     git
     gitignore
     gpg-agent
+    jeffreytse/zsh-vi-mode
     johanhaleby/kubetail
     loganlinn/zzz.plugin.zsh
     sirhc/op.plugin.zsh
     ssh-agent
     terraform
     urltools
-    vi-mode
     web-search
     wfxr/forgit
     zsh-interactive-cd
@@ -51,3 +51,5 @@ export ZSH_AUTOSUGGEST_USE_ASYNC=1
 export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
 export FORGIT_ADD_FZF_OPTS='--ansi'
 
+# jeffreytse/zsh-vi-mode
+ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
