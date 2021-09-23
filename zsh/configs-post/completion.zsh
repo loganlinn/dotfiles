@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 # load our own completion functions
-fpath=(~/.zsh/{completion,functions} /usr/local/share/zsh/site-functions $fpath)
+fpath=(~/.zsh/{completion,functions} ~/.asdf/completions /usr/local/share/zsh/site-functions $fpath)
 
 setopt extendedglob local_options
 
@@ -30,3 +30,5 @@ fi
 if (( $+commands[kitty] )); then
   kitty + complete setup zsh | source /dev/stdin
 fi
+
+# autoload -Uz compinit && compinit

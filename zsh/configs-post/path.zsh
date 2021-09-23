@@ -19,8 +19,3 @@ path=(
 )
 
 path+=(/usr/local/{s,}bin)
-
-fpath=(
-  ~/.asdf/completions
-  $fpath
-)
