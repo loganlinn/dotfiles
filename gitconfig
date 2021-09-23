@@ -46,8 +46,8 @@
   required = true
 
 # auto-rewrite to use ssh urls
-[url "git@github.com:"]
-  insteadOf = https://github.com/
+# [url "git@github.com:"]
+#   insteadOf = https://github.com/
 
 [alias]
   aliases = config --get-regexp alias
