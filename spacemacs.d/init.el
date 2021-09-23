@@ -34,7 +34,8 @@ values."
      asciidoc
      (auto-completion :disabled-for org markdown)
      better-defaults
-     (clojure :variables enable-fancify-symbols t)
+     (clojure :variables
+              enable-fancify-symbols t)
      java
      go
      elm
@@ -45,6 +46,9 @@ values."
      markdown
      (org :variables
           org-enable-github-support t
+          org-enable-hugo-support t
+          org-enable-roam-support t
+          org-enable-valign t
           org-projectile-file "notes.org")
      (plantuml :variables
                plantuml-jar-path "~/.local/share/plantuml/plantuml.jar"
@@ -54,22 +58,22 @@ values."
             shell-default-height 30
             shell-default-position 'bottom)
      sql
-     yaml
-     )
+     (version-control :variables
+                      version-control-diff-tool 'diff-hl
+                      version-control-global-margin t)
+     yaml)
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages
-   '(
-     editorconfig
+   '(editorconfig
      bazel-mode
      jq-mode
      nord-theme
      org-cliplink
      ox-clip
-     protobuf-mode
-     )
+     protobuf-mode)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -328,6 +332,7 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (setq ns-use-srgb-colorspace nil)
   (setq evil-want-fine-undo t)
+  (setq vc-follow-symlinks t) ;; automatically follow symlink to version-controlled file (ex. this file)
   (with-eval-after-load 'org-agenda
     (require 'org-projectile)
     (push (org-projectile:todo-files) org-agenda-files))
@@ -380,7 +385,7 @@ This function is called at the very end of Spacemacs initialization."
  '(evil-want-Y-yank-to-eol nil)
  '(fringe-mode 0 nil (fringe))
  '(package-selected-packages
-   '(tern nodejs-repl livid-mode skewer-mode js2-refactor js2-mode js-doc import-js grizzl helm-gtags ggtags dap-mode lsp-treemacs bui lsp-mode dash-functional counsel-gtags counsel swiper ivy add-node-modules-path sql-indent org-cliplink nord-theme rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby bazel-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode helm-css-scss haml-mode go-guru go-eldoc emmet-mode elm-mode reformatter company-web web-completion-data company-go go-mode company-emacs-eclim eclim adoc-mode markup-faces xterm-color unfill shell-pop ox-gfm mwim multi-term helm-company helm-c-yasnippet fuzzy eshell-z eshell-prompt-extras esh-help company-statistics company clojure-snippets auto-yasnippet ac-ispell auto-complete org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download htmlize gnuplot yaml-mode iedit anzu evil clj-refactor inflections seq queue spinner undo-tree gnu-elpa-keyring-update multiple-cursors paredit yasnippet cider sesman parseedn parseclj clojure-mode cider-eval-sexp-fu a powerline smartparens hydra lv parent-mode projectile pkg-info epl flx highlight goto-chg f dash s bind-map bind-key packed helm avy helm-core popup async mmm-mode markdown-toc markdown-mode gh-md ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint indent-guide hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))
+   '(valign org-roam magit-section emacsql-sqlite emacsql sql-indent org-cliplink nord-theme rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby bazel-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode helm-css-scss haml-mode go-guru go-eldoc emmet-mode elm-mode reformatter company-web web-completion-data company-go go-mode company-emacs-eclim eclim adoc-mode markup-faces xterm-color unfill shell-pop ox-gfm mwim multi-term helm-company helm-c-yasnippet fuzzy eshell-z eshell-prompt-extras esh-help company-statistics company clojure-snippets auto-yasnippet ac-ispell auto-complete org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download htmlize gnuplot yaml-mode iedit anzu evil clj-refactor inflections seq queue spinner undo-tree gnu-elpa-keyring-update multiple-cursors paredit yasnippet cider sesman parseedn parseclj clojure-mode cider-eval-sexp-fu a powerline smartparens hydra lv parent-mode projectile pkg-info epl flx highlight goto-chg f dash s bind-map bind-key packed helm avy helm-core popup async mmm-mode markdown-toc markdown-mode gh-md ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint indent-guide hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))
  '(show-paren-mode t)
  '(tool-bar-mode nil))
 (custom-set-faces
