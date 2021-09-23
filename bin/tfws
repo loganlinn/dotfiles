@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+[[ -z $TRACE ]] || set -x
+
+main() {
+	local query=${1-}
+	local dir=${2-${TF_DIR-}}
+	local workspace
+
+	workspace=$(terraform workspace list "$dir" | cut -c3- | fzf --header="WORKSPACE" --query="$query" || true)
+
+	if [[ -z $workspace ]]; then
+		echo "Empty workspace selection. Abort."
+		return 1
+	fi
+
+	terraform workspace select "$workspace" || terraform workspace new "$workspace"
+}
+
+main "$@"
