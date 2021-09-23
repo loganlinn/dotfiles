@@ -1,4 +1,7 @@
 path+=(/Applications/Alacritty.app/Contents/MacOS)
+fpath+=(/Applications/Alacritty.app/Contents/Resources/completions)
+
+path+=(/Applications/Kui.app/Contents/{MacOS,Resources})
 
 # configure https://github.com/keis/git-fixup
 export GITFIXUPMENU=fzf
