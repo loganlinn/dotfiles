@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-set -eu pipefail
-
-[[ "${TRACE:-}" ]] && set -x
-
 TPM_ROOT=${TPM_ROOT:-$HOME/.tmux/plugins/tpm}
 
-[[ -d $TPM_ROOT ]] || git clone git@github.com:tmux-plugins/tpm.git "${TPM_ROOT}"
+if ! [[ -d $TPM_ROOT ]]; then 
+  git clone https://github.com/tmux-plugins/tpm.git "${TPM_ROOT}"
+fi
 
-"${TPM_ROOT}/bin/install_plugins" > /dev/null
+exec "${TPM_ROOT}/bin/install_plugins"
