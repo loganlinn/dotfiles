@@ -1,77 +1,88 @@
 [core]
-  excludesfile = ~/.gitignore
-  autocrlf = input
+	excludesfile = ~/.gitignore
+	autocrlf = input
 	pager = delta
 
 [user]
-  name = loganlinn
-  email = logan@loganlinn.com
+	name = loganlinn
+	email = logan@loganlinn.com
 
 [init]
-  defaultBranch = main
-  templatedir = ~/.git_template
+	defaultBranch = main
+	templatedir = ~/.git_template
 
 [color]
-  ui = auto
+	ui = auto
+
+# i.e. cargo install git-delta
+[pager]
+    diff = delta
+    log = delta
+    reflog = delta
+    show = delta
+
+[interactive]
+	diffFilter = delta --color-only --features=interactive
 
 [diff]
-  wsErrorHighlight = all
-  colorMoved = zebra
+	wsErrorHighlight = all
+	colorMoved = zebra
 
 [apply]
-  whitespace = nowarn
+	whitespace = nowarn
 
 [help]
-  autocorrect = 1
+	autocorrect = 1
 
 [fetch]
-  prune = true
+	prune = true
 
 [push]
-  default = current
+	default = current
 
 [pull]
-  rebase = true
+	rebase = true
 
 [merge]
-  ff = only
+	ff = only
 
 [rebase]
-  autosquash = true
+	autosquash = true
 
 [filter "lfs"]
-  clean = git-lfs clean -- %f
-  smudge = git-lfs smudge -- %f
-  process = git-lfs filter-process
-  required = true
-
-# auto-rewrite to use ssh urls
-# [url "git@github.com:"]
-#   insteadOf = https://github.com/
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
 
 [alias]
-  aliases = config --get-regexp alias
-  branches = for-each-ref --sort=-committerdate --format=\"%(color:blue)%(authordate:relative)\t%(color:red)%(authorname)\t%(color:white)%(color:bold)%(refname:short)\" refs/remotes
-  stash-grep = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
-  uncommit = reset --mixed HEAD~
-  unstage = reset -q HEAD --
-  discard = checkout --
-  lasttag = describe --tags --abbrev=0
-  fixup = !sh -c 'REV=$(git rev-parse $1) && git commit --fixup $@ && git rebase -i --autosquash $REV^' -
-  fixit = "!f() { git commit --fixup=$1; GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash $1~1; }; f"
-  ffix = !HASH=`git log --pretty=oneline | head -n 100 | fzf` && git fixit `echo ${HASH} | awk '{ print $1 }'`
-  frbi = "!f() { git rebase -i $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; }; f"
-  ag = grep -Ii
-  fco = "!git short-recent | fzf --print0 | xargs -0 -t git checkout"
-  fl = log -u
-  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate --numstat
-  ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate
+	aliases = config --get-regexp alias
+	branches = for-each-ref --sort=-committerdate --format=\"%(color:blue)%(authordate:relative)\t%(color:red)%(authorname)\t%(color:white)%(color:bold)%(refname:short)\" refs/remotes
+	stash-grep = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
+	uncommit = reset --mixed HEAD~
+	unstage = reset -q HEAD --
+	discard = checkout --
+	lasttag = describe --tags --abbrev=0
+	fixup = !sh -c 'REV=$(git rev-parse $1) && git commit --fixup $@ && git rebase -i --autosquash $REV^' -
+	fixit = "!f() { git commit --fixup=$1; GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash $1~1; }; f"
+	ffix = !HASH=`git log --pretty=oneline | head -n 100 | fzf` && git fixit `echo ${HASH} | awk '{ print $1 }'`
+	frbi = "!f() { git rebase -i $(git log --pretty=oneline --color=always | fzf --ansi | cut -d ' ' -f1)^ ; }; f"
+	ag = grep -Ii
+	fco = "!git short-recent | fzf --print0 | xargs -0 -t git checkout"
+	fl = log -u
+	ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate --numstat
+	ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]%Creset" --decorate
+
+[credential "https://github.com"]
+	helper = !gh auth git-credential
 
 [include]
-  path = .gitconfig.darwin
+	path = .gitconfig.darwin
 
 [include]
-  path = .gitconfig.linux
+	path = .gitconfig.linux
 
 [include]
-  path = .gitconfig.local
+	path = .gitconfig.local
+
+# vim: syntax=gitconfig cc=80 tw=79 ts=4 sw=4 sts=4 noet sr
