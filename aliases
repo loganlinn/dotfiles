@@ -1,5 +1,5 @@
 #!/bin/false
-# vim: ft=zsh
+# vim: ft=zsh ts=2 sw=2 sts=2 et ai
 
 autoload -Uz is-at-least
 
@@ -39,8 +39,10 @@ autoload -U zmv
 alias zcp='zmv -C'
 alias zln='zmv -L'
 
-if (( ! $+commands[open] )) && (( $+commands[xdg-open] )); then
-	alias open='nohup xdg-open'
+if ! (( $+commands[open] )) && (( $+commands[xdg-open] )); then
+  function open () {
+    nohup xdg-open "$*" > /dev/null 2>&1
+  }
 fi
 
 # Suffix Aliases
@@ -130,3 +132,4 @@ alias kk=kustomize
 alias kkb='kk build'
 
 (( ! $+commands[typora] )) && alias typora="open -a typora"
+alias codium="flatpak run com.vscodium.codium --no-sandbox "
