@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+set -e
+
+[[ -z ${TRACE:-} ]] || set -x
+
+usage() {
+	cat >&2 - <<EOF
+USAGE:
+    $(basename "$0") [FLAGS] FILE...
+
+FLAGS:
+    -h, --help    Prints help information
+EOF
+}
+
+error() {
+	printf >&2 '%s: %b\n' "$(basename "$0")" "$1"
+	printf >&2 "Try '%s --help' for more information\\n" "$(basename "$0")"
+	exit 1
+}
+
+main() {
+	local scripts=()
+
+	[[ $# -gt 0 ]] || error "missing file operand"
+
+	for arg; do
+		case "$arg" in
+		-h | --help)
+			usage
+			exit 0
+			;;
+		-*)
+			error "invalid option -- '$arg'"
+			exit 1
+			;;
+		*)
+			scripts+=("$arg")
+			;;
+		esac
+	done
+
+	if [[ -z $EDITOR ]]; then
+		echo "warn: EDITOR is not set" >&2
+		EDITOR=vim
+	fi
+
+	local script
+	for script in "${scripts[@]}"; do
+		mkdir -p "$(dirname -- "$script")"
+
+		if ! [[ -f $script ]]; then
+			case "$(basename "$1")" in
+
+			*.*)
+				echo '#!/usr/bin/env '"${1##*.}"
+				echo
+				;;
+			*)
+				echo '#!/usr/bin/env bash'
+				echo
+				echo 'set -e'
+				echo
+				;;
+
+			esac >>"$script"
+		fi
+
+		chmod +x "$script"
+
+		"${EDITOR?}" -- "$script"
+	done
+}
+
+main "$@"
