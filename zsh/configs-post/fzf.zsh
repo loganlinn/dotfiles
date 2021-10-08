@@ -47,3 +47,11 @@ fzf-history-widget-accept() {
 zle -N fzf-history-widget-accept
 bindkey '^X^R' fzf-history-widget-accept
 bindkey "ç" fzf-cd-widget
+
+# -----------------------------------------------------------------------------
+#   fzf.plugin.zsh configuration
+# -----------------------------------------------------------------------------
+# help plugin find fzf installed using asdf
+if [[ -z $FZF_BASE ]]; then
+  export FZF_BASE=$(asdf where fzf 2>/dev/null || true)
+fi
