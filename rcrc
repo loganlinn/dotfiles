@@ -6,4 +6,4 @@ SYMLINK_DIRS="zsh emacs.d vim raycast"
 
 TAGS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
-UNDOTTED="bin org raycast Library"
+UNDOTTED="bin org raycast Library Makefile"
