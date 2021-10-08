@@ -25,7 +25,7 @@ function asdf-missing-plugins() {
 		join -a1 - <(asdf plugin list all 2>/dev/null)
 }
 
-function main() {
+function asdf-up() {
 	if ! [[ -d $ASDF_DIR ]]; then
 		git clone https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
 	fi
@@ -53,4 +53,4 @@ function main() {
   asdf current 2>&1 | print_section "ASDF CURRENT"
 }
 
-main
+asdf-up
