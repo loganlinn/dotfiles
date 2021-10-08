@@ -1,26 +1,31 @@
-MAKEFILE_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-KERNEL_NAME := $(shell sh -c 'uname -s 2>/dev/null')
-APT_COMMAND  ?= $(shell command -v apt 2>/dev/null)
-BREW_COMMAND ?= $(shell command -v brew 2>/dev/null)
-
 SHELL := bash
-MAKEFLAGS += --warn-undefined-variables
-MAKEFLAGS += --no-builtin-rules
-
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
 .DELETE_ON_ERROR:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
 
-default: help
+APT_COMMAND  ?= $(shell command -v apt 2>/dev/null)
+BREW_COMMAND ?= $(shell command -v brew 2>/dev/null)
+ASDF_DIR     ?= $(HOME)/.asdf
 
-.PHONY: install
-install:
+kernel_name   := $(shell uname -s)
+makefile_path := $(realpath $(lastword $(MAKEFILE_LIST)))
+makefile_dir  := $(dir $(MAKEFILE_PATH))
+
+.DEFAULT_GOAL := help
 
 .PHONY: help
-help: info
+help: showenv
 
-.PHONY: info
-info: print-SHELL print-MAKEFILE_DIR print-KERNEL_NAME print-APT_COMMAND print-BREW_COMMAND
+.PHONY: install
+install: asdf
 
-print-% : ; @echo $*=$($*)
+.PHONY: asdf
+asdf: $(HOME)/.asdf/asdf.sh
+	[ -d $(ASDF_DIR) ] || git clone https://github.com/asdf-vm/asdf.git $(ASDF_DIR)
 
+.PHONY: showenv
+showenv: showenv/SHELL showenv/makefile_path showenv/kernel_name showenv/APT_COMMAND showenv/BREW_COMMAND
+
+showenv/% : ; @echo $*=$($*)
