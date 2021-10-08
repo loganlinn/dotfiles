@@ -1,8 +1,0 @@
-Host github.com
-  HostName github.com
-  User git
-
-Host *
-  AddKeysToAgent yes
-  ServerAliveInterval 120
-  Include ~/.ssh/config.local
