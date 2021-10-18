@@ -31,7 +31,6 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(javascript
-     asciidoc
      (auto-completion :disabled-for org markdown)
      better-defaults
      (clojure :variables
@@ -67,6 +66,7 @@ values."
             shell-default-height 30
             shell-default-position 'bottom)
      sql
+     (treemacs :variables treemacs-use-git-mode 'deferred)
      (version-control :variables
                       version-control-diff-tool 'diff-hl
                       version-control-global-margin t)
@@ -77,7 +77,6 @@ values."
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages
    '(editorconfig
-     bazel-mode
      jq-mode
      nord-theme
      org-cliplink
@@ -138,7 +137,7 @@ values."
    ;; directory. A string value must be a path to an image format supported
    ;; by your Emacs build.
    ;; If the value is nil then no banner is displayed. (default 'official)
-   dotspacemacs-startup-banner 'official
+   dotspacemacs-startup-banner 'random
    ;; List of items to show in startup buffer or an association list of
    ;; the form `(list-type . list-size)`. If nil then it is disabled.
    ;; Possible values for list-type are:
@@ -294,7 +293,7 @@ values."
    dotspacemacs-folding-method 'evil
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    ;; (default nil)
-   dotspacemacs-smartparens-strict-mode nil
+   dotspacemacs-smartparens-strict-mode t
    ;; If non-nil pressing the closing parenthesis `)' key in insert mode passes
    ;; over any automatically added closing parenthesis, bracket, quote, etc…
    ;; This can be temporary disabled by pressing `C-q' before `)'. (default nil)
@@ -339,12 +338,21 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  (setq ns-use-srgb-colorspace nil)
+  (setq ns-use-srgb-colorspace nil) ;; needed?
   (setq evil-want-fine-undo t)
   (setq vc-follow-symlinks t) ;; automatically follow symlink to version-controlled file (ex. this file)
+  (setq confirm-kill-emacs t)
+
+  ;; Make Spacemacs use helm-project-do-ag directly when pressing SPC / without preselecting the symbol under the cursor.
+  (evil-leader/set-key "/" 'spacemacs/helm-project-do-ag)
+  (setq helm-ag-base-command "rg --vimgrep --no-heading --line-number --smart-case")
+
+  (global-set-key (kbd "C-x p i") 'org-cliplink)
+  
   (with-eval-after-load 'org-agenda
     (require 'org-projectile)
     (push (org-projectile:todo-files) org-agenda-files))
+
   (with-eval-after-load 'org
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -362,7 +370,7 @@ you should place your code here."
        (sql . t)
        (sqlite . t)
        )))
-  (global-set-key (kbd "C-x p i") 'org-cliplink))
+  )
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
