@@ -47,7 +47,6 @@
     fzf
     gettext
     git
-    glab
     glow
     gnupg
     gnuplot
@@ -71,7 +70,6 @@
     tree
     vim
     wget
-    yq
 
     darwin-zsh-completions
   ];
