@@ -1,0 +1,110 @@
+ ;; forked from https://github.com/seancorfield/dot-clojure
+{:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
+
+ :aliases
+ {:test {:extra-paths ["test" "src/test/clojure"]
+         :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
+
+  ;; `$ clj -X:test:runner`
+  :runner {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.0" :git/sha "48c3c67"}}
+           :exec-fn cognitect.test-runner.api/test
+           :exec-args {:dirs ["test" "src/test/clojure"]}}
+
+  :eastwood {:extra-deps {jonase/eastwood {:mvn/version "RELEASE"}}
+             :main-opts ["-m" "eastwood.lint" "{:source-paths,[\"src\"],:test-paths,[\"test\"]}"]}
+
+  ;; https://github.com/athos/clj-check
+  :check {:extra-deps {io.github.athos/clj-check {:git/tag "0.1.0" :git/sha "0ca84df"}}
+          :main-opts ["-m" "clj-check.check"]}
+
+  ;; https://github.com/hugoduncan/criterium
+  ;; ```
+  ;; => (require '[criterium.core :refer [bench]])
+  ;; => (bench (your-expression))
+  ;; ```
+  :bench {:extra-deps {criterium/criterium {:mvn/version "RELEASE"}}}
+
+  ;; https://github.com/liquidz/antq
+  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}
+             :main-opts ["-m" "antq.core"]}
+
+  ;; https://github.com/rm-hull/nvd-clojure
+  ;; `$ clojure -M:nvd "" "$(clojure -Spath -A:any:aliases)"`
+  :nvd {:extra-deps {nvd-clojure/nvd-clojure {:mvn/version "RELEASE"}}
+        :main-opts ["-m" "nvd.task.check"]}
+
+  ;; start Figwheel and/or Rebel Readline, with a socket REPL:
+  ;;   `$ clj -M:portal:dev/repl` OR `$ clojure -M:rebel:portal:dev/repl`
+  ;;   `$ clojure -M:rebel:dev/repl`
+  ;;   `$ clojure -M:fig:build:dev/repl`
+  :dev/repl {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
+             :main-opts ["-e" "(load-file,(str,(System/getProperty,\"user.home\"),\"/.clojure/dev.clj\"))"]}
+
+
+  ;; start a Socket REPL on port 50505 (not needed if you use the :dev/repl alias):
+  :socket {:jvm-opts ["-Dclojure.server.repl={:address,\"0.0.0.0\",:port,50505,:accept,clojure.core.server/repl}"]}
+
+  ;; https://github.com/bhauman/rebel-readline
+  :rebel {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
+          :main-opts ["-m" "rebel-readline.main"]}
+
+  ;; https://github.com/jimpil/jedi-time
+  :jedi-time {:extra-deps {jedi-time/jedi-time {:mvn/version "0.2.1"}}}
+
+  ;; https://github.com/stuarthalloway/reflector
+  :reflect {:extra-deps {io.github.stuarthalloway/reflector
+                         {:git/url "https://github.com/stuarthalloway/reflector" 
+                          :sha "93a0c19b4526c1180959e940202928d35e5c3cef"}}}
+
+  ;; https://github.com/djblue/portal
+  :portal {:extra-deps {djblue/portal {:mvn/version "RELEASE"}}}
+
+  ;; pull in specific versions of Clojure:
+  :1.0 {:override-deps {org.clojure/clojure {:mvn/version "1.0.0"}}}
+  :1.1 {:override-deps {org.clojure/clojure {:mvn/version "1.1.0"}}}
+  :1.2 {:override-deps {org.clojure/clojure {:mvn/version "1.2.1"}}}
+  :1.3 {:override-deps {org.clojure/clojure {:mvn/version "1.3.0"}}}
+  :1.4 {:override-deps {org.clojure/clojure {:mvn/version "1.4.0"}}}
+  :1.5 {:override-deps {org.clojure/clojure {:mvn/version "1.5.1"}}}
+  :1.6 {:override-deps {org.clojure/clojure {:mvn/version "1.6.0"}}}
+  :1.7 {:override-deps {org.clojure/clojure {:mvn/version "1.7.0"}}}
+  :1.8 {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
+  :1.9 {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
+  ;; latest 1.10 is 1.10.3 but you can ask for earlier versions:
+  :1.10 {:override-deps {org.clojure/clojure {:mvn/version "1.10.3"}}}
+  :1.10.0 {:override-deps {org.clojure/clojure {:mvn/version "1.10.0"}}}
+  :1.10.1 {:override-deps {org.clojure/clojure {:mvn/version "1.10.1"}}}
+  :1.10.2 {:override-deps {org.clojure/clojure {:mvn/version "1.10.2"}}}
+  ;; 1.11 Alpha 2 is out!
+  :1.11 {:override-deps {org.clojure/clojure {:mvn/version "1.11.0-alpha2"}}}
+
+  #_#_
+  :add-libs ; to get access to clojure.tools.deps.alpha.repl/add-libs
+  ;; IMPORTANT NOTE: this is the new add-lib3 branch but is still a work
+  ;; in progress and likely to break/change as the core team's work
+  ;; continues on integrating some add-lib-like functionality officially
+  ;; into either t.d.a or perhaps Clojure itself; in addition, the default
+  ;; install of the Clojure CLI includes a :deps alias to the version of
+  ;; t.d.a that is included in the install, so I renamed :deps to :add-lib!
+  ;; CAVEAT: since this is a git dependency, it doesn't bring in any of
+  ;; the compiled Java code so S3 Maven repos are not accessible via this
+  ;; alias (which the released t.d.a provides).
+  ;; - now you can add new deps to a running REPL:
+  ;; (require '[clojure.tools.deps.alpha.repl :refer [add-libs]])
+  ;; (add-libs '{some/library {:mvn/version "RELEASE"}})
+  ;; - and you can git deps too; here's how to get the master version of a lib:
+  ;; (require '[clojure.tools.gitlibs :as gitlibs])
+  ;; (defn load-master [lib]
+  ;;   (let [git (str "https://github.com/" lib ".git")]
+  ;;    (add-libs {lib {:git/url git :sha (gitlibs/resolve git "master")}})))
+  ;; - e.g., using the GitHub path (not the usual Maven group/artifact):
+  ;; (load-master 'clojure/tools.trace)
+  {:extra-deps {org.clojure/tools.deps.alpha ; add-lib3 branch
+                {:git/url "https://github.com/clojure/tools.deps.alpha"
+                 :sha "83a477b305839c697666401508c395cfed29506a"}}
+   ;; this ensures we have a DynamicClassLoader, which is needed for
+   ;; add-libs to work, if we're starting other processes via aliases
+   ;; such as a socket REPL or Cognitect's REBL etc
+   :main-opts ["-e" "(->>(Thread/currentThread)(.getContextClassLoader)(clojure.lang.DynamicClassLoader.)(.setContextClassLoader,(Thread/currentThread)))"]}
+ }
+}
