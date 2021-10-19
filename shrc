@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ -z "${ENV-}" ]; then
+	#shellcheck source=/dev/null
+	. "$HOME/.profile" >/dev/null
+fi
+
+alias ll='ls -l'
+alias cp='cp -i'
+alias mv='mv -i'
+alias j='jobs'
+
+if [ -r "$HOME/.shrc.local" ]; then
+	#shellcheck source=/dev/null
+	. "$HOME/.shrc.local"
+fi

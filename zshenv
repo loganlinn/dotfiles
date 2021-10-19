@@ -1,3 +1,10 @@
+if [ -z "$ENV" ] && [ -n "$PATH" ]; then
+  case $- in
+    *l*) ;;
+    *) . ~/.profile >/dev/null ;;
+  esac
+fi
+
 # see: https://wiki.archlinux.org/index.php/XDG_Base_Directory
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME"/.config}
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME"/.cache}
