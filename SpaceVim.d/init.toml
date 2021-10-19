@@ -117,3 +117,6 @@
 
 [[layers]]
   name = "lang#nix"
+
+[[layers]]
+  name = 'lang#xml'
