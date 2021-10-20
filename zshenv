@@ -1,7 +1,7 @@
 if [ -z "$ENV" ] && [ -n "$PATH" ]; then
   case $- in
     *l*) ;;
-    *) . ~/.profile >/dev/null ;;
+    *) if [ -f ~/.profile ]; then . ~/.profile >/dev/null; fi ;;
   esac
 fi
 
