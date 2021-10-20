@@ -30,7 +30,6 @@ sops 3.7.1
 starship 0.55.0
 terraform 1.0.5
 terraform-docs 0.12.1
-terraformer 0.8.12
 terragrunt 0.31.1
 variant 0.37.1
 watchexec 1.15.3
