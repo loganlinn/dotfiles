@@ -25,7 +25,6 @@ antigen bundles <<EOBUNDLES
     zsh-users/zsh-autosuggestions 
     zsh-users/zsh-completions 
     zsh-users/zsh-history-substring-search 
-    zsh_reload
 EOBUNDLES
 
 [[ -d ~/.jenv ]]  && antigen bundle jenv
