@@ -1,9 +1,13 @@
 COPY_ALWAYS="git_template/HEAD ssh/id_*"
 
-EXCLUDES="README* LICENSE THANKS .envrc"
+EXCLUDES="README* LICENSE THANKS install.sh .envrc"
 
 SYMLINK_DIRS="zsh emacs.d vim raycast"
 
 TAGS=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+if [ -f /etc/os-release ]; then
+  TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"
+fi
 
 UNDOTTED="bin org raycast Library Makefile"
