@@ -1,8 +1,6 @@
 #!/bin/false
 # vim: set ft=zsh ts=2 sw=2 sts=2 et ai
 
-autoload -Uz is-at-least
-
 # edit + reload this file shellcheck
 alias aliases="${=EDITOR} $(echo $0:A) && src || source $(echo $0:A)"
 alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
@@ -10,16 +8,11 @@ alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
 # show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
 alias fpath='echo $FPATH | tr -s ":" "\n"'
-
 alias wa='which -a'
 alias wich=which
 
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
-
-alias nixre="darwin-rebuild switch"
-alias nixgc="nix-collect-garbage -d"
-alias nixq="nix-env -qaP"
 
 ################################################################################
 # filesystem
@@ -39,14 +32,8 @@ autoload -U zmv
 alias zcp='zmv -C'
 alias zln='zmv -L'
 
-if ! (( $+commands[open] )) && (( $+commands[xdg-open] )); then
-  function open () {
-    nohup xdg-open "$*" > /dev/null 2>&1
-  }
-fi
-
 # Suffix Aliases
-if is-at-least 4.2.0; then
+if autoload -Uz is-at-least 2>/dev/null && is-at-least 4.2.0; then
   alias -s config=bat
   alias -s json=jq
   alias -s md=glow
@@ -78,16 +65,54 @@ if is-at-least 4.2.0; then
 fi
 
 ################################################################################
+# nix
+################################################################################
+
+alias nixre="darwin-rebuild switch"
+alias nixgc="nix-collect-garbage -d"
+alias nixq="nix-env -qaP"
+
+################################################################################
 # tools
 ################################################################################
 
-if [[ -z "$SSH_CLIENT""$SSH_TTY""$SSH_CONNECTION" ]]; then
-  if (( $+commands[nvim] )); then
-    alias vim=nvim
-  fi
+# open (yeah, yeah, its not an alias)
+if ! (( $+commands[open] )) && (( $+commands[xdg-open] )); then
+  function open () {
+    nohup xdg-open "$*" 2>&1 >/dev/null 
+  }
 fi
 
+# pbcopy + pbpaste for non-darwins
+if ! (( $+commands[pbcopy] )) && (( $+commands[xclip] )); then
+	# NOTE: these require X11 session (forwarding)
+  alias pbcopy='xclip -selection clipboard'
+  alias pbpaste='xclip -selection clipboard -o'
+fi
+
+_remote_pbcopy() {
+	local begin end args=()
+	if [[ $OSTYPE != darwin* ]]; then
+		# The base64 must be a single line.
+		args+=(--wrap=0)
+	fi
+	# OSC 52 operates the clipboard, c is for copy.
+	begin='\e]52;c;'
+	end='\a'
+	if [[ -n $TMUX ]]; then
+		# Inside tmux, we must escape the construct.
+		begin="\ePtmux;\e${begin}"
+		end="${end}\e\\"
+	fi
+	print -n $begin
+	base64 $args /dev/stdin
+	print -n $end
+}
+
+# open git origin in browser
 alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs open'
+
+## git
 alias glr='git pull --rebase'
 alias gp='git push -u'
 alias glrp='glr && gp'
@@ -95,16 +120,16 @@ alias gd='git diff --color'
 alias gdc='gd --cached'
 alias gs='git status -sb'
 alias gw="git show"
-# alias gsp="git stash pop"
 alias gsw="git stash show -p"
 alias gcob="git checkout -b"
 alias gcop="git checkout -p"
-alias gist="gh gist"
+(( $+commands[gh] )) && alias gist="gh gist"
 
 (( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
 
 alias drun="docker run --rm -it"
 
+## bazel
 # alias bzb="bazel build"
 # alias bzt="bazel test"
 # alias bzr="bazel run"
@@ -113,7 +138,7 @@ alias drun="docker run --rm -it"
 # alias bzta="bazel test //..."
 # alias bfmt="buildifier -lint=warn -r ."
 
-alias tf=terragrunt
+## kube
 alias k=kubectl
 alias kctx=kubectx
 alias kns=kubens
@@ -132,4 +157,6 @@ alias kk=kustomize
 alias kkb='kk build'
 
 (( ! $+commands[typora] )) && alias typora="open -a typora"
+
 alias codium="flatpak run com.vscodium.codium --no-sandbox "
+
