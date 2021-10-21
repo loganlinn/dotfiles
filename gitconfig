@@ -48,6 +48,7 @@
 
 [rebase]
 	autosquash = true
+	autosstash = true
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
