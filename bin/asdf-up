@@ -8,49 +8,60 @@
 #     Designed to be used as pre/post-up hook for [rcm](https://github.com/thoughtbot/rcm).
 # @see https://asdf-vm.com
 
-[[ ${TRACE-} ]] && set -x
-
 set -euo pipefail
 
-ASDF_DIR=${ASDF_DIR:-$HOME/.asdf}
-ASDF_DEFAULT_TOOL_VERSIONS_FILENAME=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-$HOME/.tool-versions}
+[[ ${TRACE-} ]] && set -x
 
-function print_section() {
-  >&2 printf '\n\033[1m%s\033[m\n\n%s\n' "$1" "$(sed -e "s/^/    /" -)" 
+ASDF_DIR=${ASDF_DIR:-$HOME/.asdf}
+
+function_exists() {
+    declare -f -F "$1" > /dev/null
+    return $?
 }
 
-function asdf-missing-plugins() {
-	cut -d' ' -f1 "${1--}" | sort |
-		comm -23 - <(asdf plugin list 2>/dev/null | sort) |
-		join -a1 - <(asdf plugin list all 2>/dev/null)
+msg() {
+  printf "%s\n" "$@" >&2
+}
+
+function asdf-init() {
+  if ! function_exists asdf; then
+    if ! [[ -d $ASDF_DIR ]]; then
+      msg "fetching asdf..."
+      git clone https://github.com/asdf-vm/asdf "$ASDF_DIR"
+    fi
+
+    msg "Loading asdf..."
+    # shellcheck source=/dev/null
+    source "$ASDF_DIR/asdf.sh"
+  fi
+
+  if [[ -z ${ASDF_UP_SKIP_UPDATE-} ]]; then
+    asdf update 2>/dev/null
+  fi
+}
+
+function asdf-plugin-list-needed() {
+  local file=${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-$HOME/.tool-versions}
+
+  [[ -f $file ]] || return 0
+
+  # strip comments
+  sed '/^[#;]/d' <"$file" | cut -d' ' -f1 | sort -s |
+    comm -23 - <(asdf plugin list 2>/dev/null | sort -s) |
+    join -a1 - <(asdf plugin list all 2>/dev/null | sed -e 's/initializing plugin repository\.\.\.\s+//g' | cut -d' ' -f1 | sort -s) |
+    awk NF # filter blank lines
 }
 
 function asdf-up() {
-	if ! [[ -d $ASDF_DIR ]]; then
-		git clone https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
-	fi
+  asdf-init
 
-	# shellcheck source=/dev/null
-	source "${ASDF_DIR}/asdf.sh"
+  msg "Checking for missing plugins..."
+  local plugins_needed
+  plugins_needed=$(asdf-plugin-list-needed)
+  [[ -z $plugins_needed ]] || msg "Adding tool plugins: $plugins_needed"
+  xargs -r asdf plugin add <<<"$plugins_needed"
 
-	echo "asdf update"
-	asdf update 2>/dev/null
-
-	# setup tool plugins
-	if [[ -f $ASDF_DEFAULT_TOOL_VERSIONS_FILENAME ]]; then
-		while read -r plugin; do
-			(
-				echo "asdf plugin add $plugin"
-				# shellcheck disable=SC2086
-				asdf plugin add $plugin
-			)
-		done < <(asdf-missing-plugins "$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME")
-	fi
-
-	asdf version 2>&1 | print_section "ASDF VERSION"
-	env | grep '^ASDF_' | print_section "ASDF ENVIRONMENT VARIABLES"
-	asdf plugin list --urls 2>&1 | print_section "ASDF PLUGINS"
-  asdf current 2>&1 | print_section "ASDF CURRENT"
+  msg "done."
 }
 
 asdf-up
