@@ -1,6 +1,7 @@
 Include ~/.ssh/config.local
 
 Host *
-	User logan
-	ForwardAgent yes
+  User logan
+  ForwardAgent yes
+  ForwardX11 yes
 

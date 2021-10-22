@@ -1,9 +1,11 @@
 #!/bin/false
 # vim: set ft=zsh ts=2 sw=2 sts=2 et ai
 
+alias dotfiles-up='git -C ~/.dotfiles pull && rcup -v'
+
 # edit + reload this file shellcheck
 alias aliases="${=EDITOR} $(echo $0:A) && src || source $(echo $0:A)"
-alias zshrc="${=EDITOR} ~/.zshrc && source ~/.zshrc"
+alias zshrc="${=EDITOR} ~/.zshrc && zsh --noexec ~/.zshrc && source ~/.zshrc"
 
 # show me the path
 alias path='echo $PATH | tr -s ":" "\n"'
@@ -28,9 +30,10 @@ fi
 
 # zmv (docs: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#index-zmv)
 #-------------------------------------------------------------------------------
-autoload -U zmv
-alias zcp='zmv -C'
-alias zln='zmv -L'
+if autoload -U zmv; then
+  alias zcp='zmv -C'
+  alias zln='zmv -L'
+fi
 
 # Suffix Aliases
 if autoload -Uz is-at-least 2>/dev/null && is-at-least 4.2.0; then
@@ -46,9 +49,7 @@ if autoload -Uz is-at-least 2>/dev/null && is-at-least 4.2.0; then
   alias -s yml=bat
 
   # media viewied with (xdg-)open
-  for ft in htm html jpg jpeg png gif mng pdf tiff tif xpm; do
-    alias -s $ft=open
-  done
+  alias -s (app dmg gif htm html jpg jpeg png gif mng pdf tiff tif ttf xls xlsx xpm)=open
 
   # archives
   alias -s zip="unzip -l"
