@@ -1,6 +1,7 @@
 # zmodload zsh/zprof
 
 () { local x; for x; do [[ ! -f $x ]] || [[ $x = *".zwc" ]] || source "$x"; done } \
+  ~/.shrc \
   ~/.zsh/functions/* \
 	~/.zsh/configs{-pre,,-post}/**/*(N-.) \
   ~/.zshrc."${(L)OSTYPE//[0-9\.]/}" \
@@ -8,6 +9,6 @@
   ~/.aliases \
   ~/.aliases.local
 
-eval "$(starship init zsh)"
+(( $+commands[starship] )) && eval "$(starship init zsh)"
 
 # zprof
