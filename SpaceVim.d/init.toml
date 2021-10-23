@@ -39,6 +39,10 @@
   merged = false
 
 [[custom_plugins]]
+  repo = "z0mbix/vim-shfmt"
+  merged = false
+
+[[custom_plugins]]
   repo = "guns/vim-sexp"
   merged = false
 
