@@ -5,27 +5,65 @@ SHELL := bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 
-APT_COMMAND  ?= $(shell command -v apt 2>/dev/null)
-BREW_COMMAND ?= $(shell command -v brew 2>/dev/null)
-ASDF_DIR     ?= $(HOME)/.asdf
-
-kernel_name   := $(shell uname -s)
 makefile_path := $(realpath $(lastword $(MAKEFILE_LIST)))
 makefile_dir  := $(dir $(MAKEFILE_PATH))
 
-.DEFAULT_GOAL := help
+apt    := $(shell command -v apt 2>/dev/null)
+brew   := $(shell command -v brew 2>/dev/null)
+rustup := $(shell command -v rustup 2>/dev/null)
 
-.PHONY: help
-help: showenv
+install: install-rcm install-rustup install-pre-commit
 
-.PHONY: install
-install: asdf
+#######################
 
-.PHONY: asdf
-asdf: $(HOME)/.asdf/asdf.sh
-	[ -d $(ASDF_DIR) ] || git clone https://github.com/asdf-vm/asdf.git $(ASDF_DIR)
+ifneq (,$(shell command -v pre-commit 2>/dev/null))
+install-pre-commit:
+	@echo "  ==> detected pre-commit"
+else
+install-pre-commit:
+	@echo "  ==> install pre-commit"
+	python3 -m pip install --upgrade pip
+	python3 -m pip install --upgrade pre-commit
+endif
 
-.PHONY: showenv
-showenv: showenv/SHELL showenv/makefile_path showenv/kernel_name showenv/APT_COMMAND showenv/BREW_COMMAND
+#######################
 
-showenv/% : ; @echo $*=$($*)
+install-zsh:
+ifneq (,$(shell command -v zsh 2>/dev/null))
+	@echo "  ==> detected zsh"
+else
+	@echo "  ==> install zsh"
+ifneq (,$(apt))
+	$(apt) install -y zsh
+else ifneq (,$(brew))
+	$(brew) install zsh
+endif
+endif
+
+#######################
+
+install-rcm:
+ifneq (,$(shell command -v rcup 2>/dev/null))
+	@echo "  ==> detected rcm"
+else
+	@echo "  ==> install rcm"
+ifneq (,$(apt))
+	$(apt) install -y rcm
+else ifneq (,$(brew))
+	$(brew) install rcm
+endif
+endif
+
+#######################
+
+install-rustup:
+ifeq (,$(rustup))
+	@echo "  ==> install rustup"
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+else
+	@echo "  ==> detected rustup"
+endif
+
+#######################
+
+pr-% : ; @echo $*=$($*)
