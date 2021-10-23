@@ -25,6 +25,19 @@ alias md='mkdir -p'
 alias j='jobs'
 alias gs='git status'
 
+# source parts
+if [ -d "$0".d ]; then
+  for _p in "$0".d/*; do
+    if [ -f "$_p" ]; then
+      if ! . "$_p"; then
+        printf "%s: source '%s' error: non-zero return status\n" "$0" "$_p" >&2
+      else
+        printf "%s: '%s' sourced\n" "$0" "$_p" >&2
+      fi
+    fi
+  done
+fi
+
 #shellcheck source=/dev/null
 [ ! -r "$HOME/.shrc.local" ] || . "$HOME/.shrc.local"
 
