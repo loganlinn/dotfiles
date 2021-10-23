@@ -30,6 +30,10 @@
   merged = false
 
 [[custom_plugins]]
+  repo = "fladson/vim-kitty"
+  merged = false
+
+[[custom_plugins]]
   repo = "vito-c/jq.vim"
   merged = false
 
@@ -92,6 +96,9 @@
   name = "lang#html"
 
 [[layers]]
+  name = 'lang#xml'
+
+[[layers]]
   name = "lang#javascript"
 
 [[layers]]
@@ -109,14 +116,11 @@
 [[layers]]
   name = "lang#toml"
 
-[[layers]]
-  name = "lang#typescript"
+# [[layers]]
+#   name = "lang#typescript"
 
-[[layers]]
-  name = "lang#janet"
+# [[layers]]
+#   name = "lang#janet"
 
 [[layers]]
   name = "lang#nix"
-
-[[layers]]
-  name = 'lang#xml'
