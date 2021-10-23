@@ -83,7 +83,8 @@ This function should only modify configuration layer settings."
      nord-theme
      org-cliplink
      ox-clip
-     protobuf-mode)
+     protobuf-mode
+     shfmt)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
@@ -590,6 +591,8 @@ you should place your code here."
        (sql . t)
        (sqlite . t)
        )))
+	(with-eval-after-load 'shell
+			(add-hook 'sh-mode-hook 'shfmt-on-save-mode))
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
