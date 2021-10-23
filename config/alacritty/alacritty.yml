@@ -1,4 +1,5 @@
 # Configuration for Alacritty, the GPU enhanced terminal emulator
+
 env:
   TERM: xterm-256color
 
@@ -34,7 +35,7 @@ font:
   italic:
     family: JetBrainsMono Nerd Font
     style: Italic
-  size: 13.0
+  size: 10.0
   offset:
     x: 0
     y: 0
@@ -101,6 +102,7 @@ colors:
     magenta: '#8c738c'
     cyan: '#6d96a5'
     white: '#aeb3bb'
+# }}
 
 # Visual Bell
 #
@@ -257,3 +259,5 @@ selection:
 #  program: /bin/bash
 #  args:
 #    - --login
+
+# vim:set nofoldenable foldmethod=marker:
