@@ -35,6 +35,9 @@ if autoload -U zmv; then
   alias zln='zmv -L'
 fi
 
+# If bat is not present, fallback to cat. 
+(( $+commands[bat] )) || alias bat=cat
+
 # Suffix Aliases
 if autoload -Uz is-at-least 2>/dev/null && is-at-least 4.2.0; then
   alias -s config=bat
@@ -49,7 +52,7 @@ if autoload -Uz is-at-least 2>/dev/null && is-at-least 4.2.0; then
   alias -s yml=bat
 
   # media viewied with (xdg-)open
-  alias -s (app dmg gif htm html jpg jpeg png gif mng pdf tiff tif ttf xls xlsx xpm)=open
+  alias -s {app, dmg, gif, htm, html, jpg, jpeg, png, gif, mng, pdf, tiff, tif, ttf, xls, xlsx, xpm}=open
 
   # archives
   alias -s zip="unzip -l"
@@ -76,6 +79,8 @@ alias nixq="nix-env -qaP"
 ################################################################################
 # tools
 ################################################################################
+
+(( $+commands[nvim] )) && alias vim=nvim
 
 # open (yeah, yeah, its not an alias)
 if ! (( $+commands[open] )) && (( $+commands[xdg-open] )); then
@@ -161,3 +166,5 @@ alias kkb='kk build'
 
 alias codium="flatpak run com.vscodium.codium --no-sandbox "
 
+alias reboot-to-bios="sudo systemctl reboot --firmware-setup"
+alias kitten="kitty +kitten"
