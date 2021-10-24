@@ -562,7 +562,6 @@ you should place your code here."
   (setq ns-use-srgb-colorspace nil) ;; needed?
   (setq evil-want-fine-undo t)
   (setq vc-follow-symlinks t) ;; automatically follow symlink to version-controlled file (ex. this file)
-  (setq confirm-kill-emacs t)
 
   ;; Make Spacemacs use helm-project-do-ag directly when pressing SPC / without preselecting the symbol under the cursor.
   (evil-leader/set-key "/" 'spacemacs/helm-project-do-ag)
