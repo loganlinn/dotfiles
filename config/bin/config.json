@@ -17,6 +17,14 @@
             "url": "https://github.com/marcosnils/bin",
             "provider": "github"
         },
+        "/home/logan/.local/bin/cue": {
+            "path": "/home/logan/.local/bin/cue",
+            "remote_name": "cue",
+            "version": "v0.4.0",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://github.com./cuelang/cue",
+            "provider": "github"
+        },
         "/home/logan/.local/bin/doctl": {
             "path": "/home/logan/.local/bin/doctl",
             "remote_name": "doctl",
