@@ -80,8 +80,8 @@ asdf:  ## Installs asdf version manager
 	asdf update
 
 # https://github.com/marcosnils/bin/releases/download/v0.9.1/bin_0.9.1_Linux_x86_64
-BIN_TAG  = $(call github-repo-release-latest-tag,marcosnils/bin)
-BIN_URL  = https://github.com/marcosnils/bin/releases/download/$(BIN_TAG)/bin_$(BIN_TAG:v%=%)_$(ostype)_$(cputype)$(ext)
+BIN_TAG ?= $(call github-repo-release-latest-tag,marcosnils/bin)
+BIN_URL := https://github.com/marcosnils/bin/releases/download/$(BIN_TAG)/bin_$(BIN_TAG:v%=%)_$(ostype)_$(cputype)$(ext)
 BIN_BIN := local/bin/bin
 
 $(BIN_BIN): # Installs bin tool
@@ -89,7 +89,7 @@ $(BIN_BIN): # Installs bin tool
 	$(Q)$(call download-file,$(BIN_URL),$@)
 	$(Q)chmod +x $@
 
-LEIN_TAG := stable
+LEIN_TAG ?= stable
 LEIN_URL := https://raw.githubusercontent.com/technomancy/leiningen/$(LEIN_TAG)/bin/lein
 LEIN_BIN := local/bin/lein
 
