@@ -1,3 +1,0 @@
-[submodule "local/src/things.sh"]
-	path = local/src/things.sh
-	url = https://github.com/AlexanderWillner/things.sh.git
