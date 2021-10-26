@@ -49,29 +49,30 @@ arch    := $(cputype:-=_)-$(shell printf %s "$(ostype)" | tr '[:upper:]' '[:lowe
 ext     := $(if $(findstring windows,$(ostype)),.exe,)
 #: }}
 
-PACKAGES := bash zsh curl rcm
-COMMANDS := apt brew bash zsh rcup curl asdf bin rustup tmux fzf fd vim emacs emacs broot
+ASDF_DIR ?= $(HOME)/.asdf
+
+PACKAGES := bash zsh curl rcm tmux
+COMMANDS := apt brew bash zsh rcup curl asdf bin rustup tmux fzf fd vim emacs emacs broot tree rg
 DOWNLOADS = $(LEIN_BIN) $(BIN_BIN)
 
 .PHONY: all
-all: info $(DOWNLOADS)
+all: info install
 
 .PHONY: info
 info: $(addprefix show-command-,$(sort $(COMMANDS)))
 
 .PHONY: install
-install:
+install: $(DOWNLOADS)
 	rcup -v
 
+.PHONY: packages
+packages: $(PACKAGES)
+
 .PHONY: rustup
-rustup:  # Installs rustup tool
-	@$(call label,rustup): $(if $(rustup),detected,missing)
-ifeq (,$(rustup))
+rustup: show-command-rustup # Installs rustup tool
+ifeq (,$(call find-command,rustup))
 	$(Q)curl --proto '=https' --tlsv1.2 -ssf https://sh.rustup.rs | sh
 endif
-
-ASDF_DIR ?= $(HOME)/.asdf
-ASDF_SH   = $(ASDF_DIR)/asdf.sh
 
 .PHONY: asdf
 asdf:  ## Installs asdf version manager
@@ -97,9 +98,6 @@ $(LEIN_BIN): ## Installs Leiningen tool
 	$(Q)mkdir -p $(@D)
 	$(Q)$(call download-file,$(LEIN_URL),$@)
 	$(Q)chmod +x $@
-
-.PHONY: packages
-packages: $(PACKAGES)
 
 .PHONY: $(PACKAGES)
 $(PACKAGES):
