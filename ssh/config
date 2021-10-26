@@ -1,7 +1,15 @@
 Include ~/.ssh/config.local
 
+Host fractal.lan
+	HostName 192.168.86.32
+
+Host framework.lan
+	HostName 192.168.86.26
+
+Host pangaea.lan
+	HostName 192.168.86.29
+
 Host *
   User logan
   ForwardAgent yes
-  ForwardX11 yes
 
