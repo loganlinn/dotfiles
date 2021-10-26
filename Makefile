@@ -32,7 +32,7 @@ ok    = $(COLOR_BOLD)$(COLOR_GREEN)$(or $1,OK)$(COLOR_RESET)
 label = $(COLOR_BOLD)$(COLOR_MAGENTA)$1$(COLOR_RESET)
 fatal = @(echo >&2 "$(COLOR_BOLD)$(COLOR_FATAL)$1$(COLOR_RESET)"; exit 1)
 
-print-labeled = echo >&2 "$(call label,$1): $2"
+print-labeled = echo >&2 "$(call label,$1) $2"
 find-command  = $(shell command -v $1 2>/dev/null)
 show-command  = printf '%-16s%s\n' "$1" "$(call find-command,$1)" | tr ' ' .;
 file-exists   = $(wildcard $1)
@@ -76,13 +76,13 @@ ASDF_SH   = $(ASDF_DIR)/asdf.sh
 .PHONY: asdf
 asdf:  ## Installs asdf version manager
 	$(Q)git -C $(ASDF_DIR) rev-parse 2>/dev/null || git clone https://github.com/asdf-vm/asdf.git $(ASDF_DIR)
-	source $(ASDF_DIR)/asdf.sh
-	asdf update
+	$(Q)source $(ASDF_DIR)/asdf.sh
+	$(Q)asdf update
 
 # https://github.com/marcosnils/bin/releases/download/v0.9.1/bin_0.9.1_Linux_x86_64
 BIN_TAG ?= $(call github-repo-release-latest-tag,marcosnils/bin)
 BIN_URL := https://github.com/marcosnils/bin/releases/download/$(BIN_TAG)/bin_$(BIN_TAG:v%=%)_$(ostype)_$(cputype)$(ext)
-BIN_BIN := local/bin/bin
+BIN_BIN := $(HOME)/.local/bin/bin
 
 $(BIN_BIN): # Installs bin tool
 	$(Q)mkdir -p $(@D)
@@ -103,11 +103,11 @@ packages: $(PACKAGES)
 
 .PHONY: $(PACKAGES)
 $(PACKAGES):
-	@$(call print-labeled,install,$*)
-ifneq (,$(apt))
-	$(Q)$(apt) install -y $@
-else ifneq (,$(brew))
-	$(Q)$(brew) install $@
+	@$(call print-labeled,installing package,$@)
+ifneq (,$(call find-command,apt))
+	$(Q)apt install -y $@
+else ifneq (,$(call find-command,brew))
+	$(Q)brew install $@
 else
 	@$(call fatal,Unable to detect package manager to install $@)
 endif
@@ -117,6 +117,6 @@ show-variable-% Svar-% : ; @echo -e "$(COLOR_BOLD)$(COLOR_BLUE)$*$(COLOR_RESET)=
 
 .PHONY: help
 help: ## Show this help
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / \
+	$(Q)awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / \
 		{printf "\033[38;2;98;209;150m%-20s\033[0m %s\n", $$1, $$2}' \
 		$(MAKEFILE_LIST)
