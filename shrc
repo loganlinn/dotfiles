@@ -3,6 +3,10 @@
 #shellcheck source=/dev/null
 [ -n "$ENV" ] || . "$HOME/.profile" >/dev/null
 
+case "$TERM" in
+	xterm-kitty) alias ssh='kitty +kitten ssh'
+esac
+
 alias -- -='cd -'
 alias 1='cd -'
 alias 2='cd -2'
