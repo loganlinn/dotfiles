@@ -1,0 +1,61 @@
+{
+    "default_path": "/home/logan/.local/bin",
+    "bins": {
+        "/home/logan/.local/bin/bat": {
+            "path": "/home/logan/.local/bin/bat",
+            "remote_name": "bat",
+            "version": "v0.18.3",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://github.com/sharkdp/bat",
+            "provider": "github"
+        },
+        "/home/logan/.local/bin/bin_i386": {
+            "path": "/home/logan/.local/bin/bin_i386",
+            "remote_name": "bin_i386",
+            "version": "v0.8.0",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://github.com/marcosnils/bin",
+            "provider": "github"
+        },
+        "/home/logan/.local/bin/doctl": {
+            "path": "/home/logan/.local/bin/doctl",
+            "remote_name": "doctl",
+            "version": "v1.65.0",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://github.com/digitalocean/doctl",
+            "provider": "github"
+        },
+        "/home/logan/.local/bin/mdcat": {
+            "path": "/home/logan/.local/bin/mdcat",
+            "remote_name": "mdcat",
+            "version": "mdcat-0.23.2",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://github.com/lunaryorn/mdcat",
+            "provider": "github"
+        },
+        "/home/logan/.local/bin/pandoc": {
+            "path": "/home/logan/.local/bin/pandoc",
+            "remote_name": "pandoc",
+            "version": "2.15",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://github.com/jgm/pandoc",
+            "provider": "github"
+        },
+        "/home/logan/.local/bin/terraform": {
+            "path": "/home/logan/.local/bin/terraform",
+            "remote_name": "terraform",
+            "version": "1.0.9",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://releases.hashicorp.com/terraform",
+            "provider": "hashicorp"
+        },
+        "/home/logan/.local/bin/terraform-ls": {
+            "path": "/home/logan/.local/bin/terraform-ls",
+            "remote_name": "terraform-ls",
+            "version": "0.23.0",
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "url": "https://releases.hashicorp.com/terraform-ls",
+            "provider": "hashicorp"
+        }
+    }
+}
