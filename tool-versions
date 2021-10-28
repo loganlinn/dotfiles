@@ -35,3 +35,4 @@ terraform 1.0.5
 watchexec 1.15.3
 
 bat 0.18.3
+hugo 0.88.1
