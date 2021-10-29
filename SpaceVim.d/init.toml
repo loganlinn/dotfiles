@@ -12,6 +12,7 @@
   enable_statusline_mode = false
   enable_tabline_filetype_icon = true
   enable_vimfiler_gitstatus = true
+  disabled_plugins = ['markdown-preview.nvim', 'vim-import-js']
   filemanager = "nerdtree"
   filetree_direction = "left"
   #guifont = "JetBrainsMono Nerd Font Mono:h11"
@@ -52,6 +53,11 @@
 
 [[custom_plugins]]
   repo = "tpope/vim-sexp-mappings-for-regular-people"
+  merged = false
+
+[[custom_plugins]]
+  repo = "soywod/himalaya"
+  rtp = "vim"
   merged = false
 
 # [[custom_plugins]]
