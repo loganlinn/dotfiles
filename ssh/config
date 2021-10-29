@@ -1,13 +1,16 @@
 Include ~/.ssh/config.local
 
-Host fractal.lan
+Host fractal.lan desktop
 	HostName 192.168.86.32
 
-Host framework.lan
+Host framework.lan laptop
 	HostName 192.168.86.26
 
-Host pangaea.lan
+Host pangaea.lan macbook
 	HostName 192.168.86.29
+
+Host rpi400.lan
+	HostName 192.168.86.33
 
 Host *
   User logan
