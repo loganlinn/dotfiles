@@ -1,8 +1,6 @@
 #!/bin/false
 # vim: set ft=zsh ts=2 sw=2 sts=2 et ai
 
-alias dotfiles-up='git -C ~/.dotfiles pull && rcup -v'
-
 # edit + reload this file shellcheck
 alias aliases="${=EDITOR} $(echo $0:A) && src || source $(echo $0:A)"
 alias zshrc="${=EDITOR} ~/.zshrc && zsh --noexec ~/.zshrc && source ~/.zshrc"
@@ -115,8 +113,6 @@ _remote_pbcopy() {
 	print -n $end
 }
 
-# open git origin in browser
-alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs open'
 
 ## git
 alias glr='git pull --rebase'
@@ -129,7 +125,21 @@ alias gw="git show"
 alias gsw="git stash show -p"
 alias gcob="git checkout -b"
 alias gcop="git checkout -p"
-(( $+commands[gh] )) && alias gist="gh gist"
+alias gist="gh gist"
+
+# open git origin in browser
+alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs xdg-open'
+
+# dotfile-bound git
+alias dotgit='git -C ~/.dotfiles'
+alias dotgs='dotgit status -sb'
+alias dotgw='dotgit show'
+alias dotgd='dotgit diff'
+alias dotgp='dotgit push'
+alias dotgl='dotgit pull'
+alias dotgb='dotgit branch'
+alias dotgco='dotgit checkout'
+alias dotup='dotgit pull && rcup -v'
 
 (( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
 
