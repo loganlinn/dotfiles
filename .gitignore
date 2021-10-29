@@ -3,4 +3,6 @@ vim/vim.symlink/.netrwhist
 *.zsh.zwc
 
 antigen-shapshot
+*.bak
+*~
 
