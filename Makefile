@@ -44,7 +44,7 @@ islinux = $(filter Linux,$(ostype))
 ismacos = $(filter Darwin,$(ostype))
 
 ostype  := $(shell uname -s)
-cputype := $(if $(ismacos),$($(shell uname -m):i386=x86_64),$(shell uname -m)) # Darwin `uname -m` lies
+cputype := $(if $(ismacos),$(shell uname -m | sed 's/i386/x86_64/'),$(shell uname -m)) # Darwin `uname -m` lies
 arch    := $(cputype:-=_)-$(shell printf %s "$(ostype)" | tr '[:upper:]' '[:lower:]')
 ext     := $(if $(findstring windows,$(ostype)),.exe,)
 #: }}
@@ -83,7 +83,7 @@ asdf:  ## Installs asdf version manager
 # https://github.com/marcosnils/bin/releases/download/v0.9.1/bin_0.9.1_Linux_x86_64
 BIN_TAG ?= $(call github-repo-release-latest-tag,marcosnils/bin)
 BIN_URL := https://github.com/marcosnils/bin/releases/download/$(BIN_TAG)/bin_$(BIN_TAG:v%=%)_$(ostype)_$(cputype)$(ext)
-BIN_BIN := $(HOME)/.local/bin/bin
+BIN_BIN := local/bin/bin
 
 $(BIN_BIN): # Installs bin tool
 	$(Q)mkdir -p $(@D)

@@ -6,3 +6,4 @@ antigen-shapshot
 *.bak
 *~
 
+local/bin/bin
