@@ -57,8 +57,10 @@
 
 [[custom_plugins]]
   repo = "soywod/himalaya"
-  rtp = "vim"
+  rtp = "email-manager/vim"
   merged = false
+  on_cmd = "Himalaya"
+
 
 # [[custom_plugins]]
 #   repo = "Olical/conjure"
