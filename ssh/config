@@ -9,7 +9,7 @@ Host framework.lan laptop
 Host pangaea.lan macbook
 	HostName 192.168.86.29
 
-Host rpi400.lan
+Host rpi.lan
 	HostName 192.168.86.33
 
 Host *
