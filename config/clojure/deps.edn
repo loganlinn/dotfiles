@@ -514,11 +514,6 @@
    :main-opts  ["-m" "cljs.main"]}
 
   :inspect/portal-node
-  {:extra-deps {djblue/portal             {:mvn/version "0.14.0"}
-                org.clojure/clojurescript {:mvn/version "1.10.844"}}
-   :main-opts  ["-m" "cljs.main" "-re" "node"]}
-
-
   ;; REBL Data browser
   ;; https://github.com/practicalli/clojure-deps-edn#cognitect-rebl
   ;; http://practicalli.github.io/clojure/alternative-tools/clojure-tools/cognitect-rebl.html
@@ -526,6 +521,10 @@
   ;; Requires Cognitect dev-tools https://cognitect.com/dev-tools/index.html
   ;; :inspect/rebl-java8   (Oracle JDK 8 only)
   ;; :inspect/rebl         (Any JDK 11 distribution - tested with OpenJDK)
+
+  {:extra-deps {djblue/portal             {:mvn/version "0.14.0"}
+                org.clojure/clojurescript {:mvn/version "1.10.844"}}
+   :main-opts  ["-m" "cljs.main" "-re" "node"]}
 
   :inspect/rebl
   {:extra-deps {com.cognitect/rebl          {:mvn/version "0.9.241"}
@@ -1114,16 +1113,8 @@
              ;; clojars.org mirror - publicly accessible
              ;; "jcenter" {:url "https://jcenter.bintray.com"}
 
-             ;; Maven Central Google Cloud Storage mirrors
-             ;; Americas
-             ;; "google-maven-central" {:url "https://maven-central.storage-download.googleapis.com/maven2/"}
-             ;; Asia
-             ;; "google-maven-central" {:url "https://maven-central-asia.storage-download.googleapis.com/maven2/"}
-             ;; Europe
-             ;; "google-maven-central" {:url "https://maven-central-eu.storage-download.googleapis.com/maven2/"}
+             ;; cognitect dev-tools (https://cognitect.com/dev-tools/view-creds.html)
+             "cognitect-dev-tools" {:url "https://dev-tools.cognitect.com/maven/releases/"}
 
-             ;; "clojars-china-mirror" {:url "https://mirrors.tuna.tsinghua.edu.cn/clojars/"}
-
-             ;; Example of local Artifactory repository configuration
-             ;; {"business-area" {:url "https://artifacts.internal-server.com:443/artifactory/business-area-maven-local"}
+             ;; "patch-opz" {:url "https://pkgs.dev.azure.com/patch-opz/Patch/_packaging/custom-maven/maven/v1"}
              }}

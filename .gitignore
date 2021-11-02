@@ -5,5 +5,5 @@ vim/vim.symlink/.netrwhist
 antigen-shapshot
 *.bak
 *~
-
+**/.cpcache/**
 local/bin/bin
