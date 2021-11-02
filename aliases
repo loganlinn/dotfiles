@@ -141,6 +141,8 @@ alias dotgb='dotgit branch'
 alias dotgco='dotgit checkout'
 alias dotup='dotgit pull && rcup -v'
 
+alias dotsh='env -C ~/.dotfiles ${=SHELL}'
+
 (( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
 
 alias drun="docker run --rm -it"
