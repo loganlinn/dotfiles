@@ -61,6 +61,9 @@
   merged = false
   on_cmd = "Himalaya"
 
+[[custom_plugins]]
+  repo = "mboughaba/i3config.vim"
+  merged = false
 
 # [[custom_plugins]]
 #   repo = "Olical/conjure"
