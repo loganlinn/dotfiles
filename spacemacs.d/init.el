@@ -33,10 +33,36 @@ This function should only modify configuration layer settings."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(javascript
-     (auto-completion :disabled-for org markdown)
+
+     (auto-completion :disabled-for org markdown
+                      :variables
+                      auto-completion-enable-help-tooltip t
+                      auto-completion-enable-snippets-in-popup t
+                      auto-completion-enable-sort-by-usage t
+                      auto-completion-idle-delay 0.0
+                      auto-completion-complete-with-key-sequence "fd")
+
      better-defaults
+
      (clojure :variables
-              enable-fancify-symbols t)
+              ;; clojure-backend 'cider               ;; use cider and disable lsp
+              ;; clojure-enable-linters 'clj-kondo    ;; clj-kondo included in lsp
+              cider-overlays-use-font-lock t
+              cider-pprint-fn 'fipp                   ;; fast pretty printing
+              cider-repl-buffer-size-limit 100        ;; limit lines shown in REPL buffer
+              cider-repl-display-help-banner nil      ;; disable help banner
+              cider-result-overlay-position 'at-point ;; results shown right after expression
+              clojure-align-forms-automatically t
+              clojure-indent-style 'align-arguments
+              clojure-toplevel-inside-comment-form t  ;; evaluate expressions in comment as top level
+              enable-fancify-symbols t
+              )
+
+     ;; SPC a L displays key and command history in a separate buffer
+     command-log
+
+     csv
+
      java
      go
      elm
