@@ -2,7 +2,7 @@
 # vim: set ft=zsh ts=2 sw=2 sts=2 et ai
 
 # edit + reload this file shellcheck
-alias aliases="${=EDITOR} $(echo $0:A) && src || source $(echo $0:A)"
+alias aliases="${=EDITOR} $(echo $0:A) && zsh --noexec $(echo $0:A) && source $(echo $0:A)"
 alias zshrc="${=EDITOR} ~/.zshrc && zsh --noexec ~/.zshrc && source ~/.zshrc"
 
 # show me the path
@@ -180,3 +180,4 @@ alias codium="flatpak run com.vscodium.codium --no-sandbox "
 
 alias reboot-to-bios="sudo systemctl reboot --firmware-setup"
 alias kitten="kitty +kitten"
+alias i3-restart="i3-msg restart"
