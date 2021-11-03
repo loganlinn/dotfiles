@@ -1,6 +1,6 @@
 COPY_ALWAYS="git_template/HEAD ssh/id_* local/share/fonts/* local/bin/bin"
 
-EXCLUDES="README* LICENSE THANKS install.sh .envrc .sops.yaml"
+EXCLUDES="README* LICENSE THANKS setup.*sh"
 
 SYMLINK_DIRS="zsh emacs.d vim raycast"
 
@@ -9,4 +9,4 @@ if [ -f /etc/os-release ]; then
   TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"
 fi
 
-UNDOTTED="bin org raycast Library Makefile"
+UNDOTTED="bin raycast Library Makefile"
