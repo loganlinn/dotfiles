@@ -27,9 +27,8 @@ antigen bundles <<EOBUNDLES
     zsh-users/zsh-history-substring-search 
 EOBUNDLES
 
-[[ -d ~/.jenv ]]  && antigen bundle jenv
-[[ -d ~/.pyenv ]] && antigen bundle pyenv
-[[ -d ~/.rbenv ]] && antigen bundle rbenv
+! [[ -d ~/.jenv ]] || antigen bundle jenv
+! [[ -d ~/.pyenv ]] || antigen bundle pyenv
 
 for bundle in ${ZSH_CUSTOM?}/plugins/*(/)
 do
