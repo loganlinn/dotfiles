@@ -14,6 +14,8 @@ alias wich=which
 # allow aliases to be used with sudo
 alias sudo='sudo ' 
 
+alias reboot-to-bios="sudo systemctl reboot --firmware-setup"
+
 ################################################################################
 # filesystem
 ################################################################################
@@ -174,10 +176,5 @@ alias kctxs='k config get-contexts'
 alias kk=kustomize
 alias kkb='kk build'
 
-(( ! $+commands[typora] )) && alias typora="open -a typora"
-
-alias codium="flatpak run com.vscodium.codium --no-sandbox "
-
-alias reboot-to-bios="sudo systemctl reboot --firmware-setup"
+## kitty
 alias kitten="kitty +kitten"
-alias i3-restart="i3-msg restart"
