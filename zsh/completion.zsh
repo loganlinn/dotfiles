@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 
+
 # load our own completion functions
 fpath=(~/.zsh/{completion,functions} ~/.asdf/completions /usr/local/share/zsh/site-functions $fpath)
 
@@ -31,4 +32,4 @@ if (( $+commands[kitty] )); then
   kitty + complete setup zsh | source /dev/stdin
 fi
 
-# autoload -Uz compinit && compinit
+compdef _rg hg
