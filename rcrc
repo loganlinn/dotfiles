@@ -4,9 +4,13 @@ EXCLUDES="README* LICENSE THANKS setup.*sh Makefile *.mk"
 
 SYMLINK_DIRS="zsh"
 
-TAGS=$(uname -s | tr '[:upper:]' '[:lower:]')
-if [ -f /etc/os-release ]; then
-  TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"
-fi
+# i.e. tag-darwin, tag-linux
+TAGS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+
+# i.e. tag-pop, tag-ubuntu, tag-debian
+if [ -f /etc/os-release ]; then TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"; fi
+
+# i.e. tag-x11
+TAGS="$TAGS $XDG_SESSION_TYPE"
 
 UNDOTTED="bin raycast Library Makefile"
