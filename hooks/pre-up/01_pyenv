@@ -15,25 +15,9 @@ colorize() {
 	fi
 }
 
-# Checks for `.pyenv` file, and suggests to remove it for installing
-if [ -d "${PYENV_ROOT}" ]; then
-	{
-		echo
-		colorize 1 "WARNING"
-		echo ": Can not proceed with installation. Kindly remove the '${PYENV_ROOT}' directory first."
-		echo
-	} >&2
-	exit 1
-fi
-
 checkout() {
 	[ -d "$2" ] || git clone --depth 1 "$1" "$2" || { echo "Failed to git clone $1" >&2; exit 1; }
 }
-
-if ! command -v git 1>/dev/null 2>&1; then
-	echo "pyenv: Git is not installed, can't continue." >&2
-	exit 1
-fi
 
 checkout "https://github.com/pyenv/pyenv.git" "${PYENV_ROOT}"
 checkout "https://github.com/pyenv/pyenv-doctor.git" "${PYENV_ROOT}/plugins/pyenv-doctor"
