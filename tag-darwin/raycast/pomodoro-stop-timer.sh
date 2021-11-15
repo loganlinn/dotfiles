@@ -1,0 +1,1 @@
+/Users/logan/.dotfiles/raycast/pomodoro-stop-timer.sh
