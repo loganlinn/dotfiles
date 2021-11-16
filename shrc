@@ -1,11 +1,10 @@
 #!/bin/sh
+# vim:foldmethod=marker
+# shellcheck source=/dev/null
 
-#shellcheck source=/dev/null
-[ -n "$ENV" ] || . "$HOME/.profile" >/dev/null
-
-case "$TERM" in
-	xterm-kitty) alias ssh='kitty +kitten ssh'
-esac
+#: ~/.profile {{{
+if [ -z "$ENV" ]; then . "$HOME/.profile" >/dev/null; fi
+#: }}}
 
 alias -- -='cd -'
 alias 1='cd -'
@@ -26,25 +25,77 @@ alias la='ls -lAh'
 alias cp='cp -i'
 alias mv='mv -i'
 alias md='mkdir -p'
-alias j='jobs'
-alias gs='git status'
 
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
+alias j='jobs'
+
+alias sudo='sudo ' # allow aliases to be used with sudo
+
+alias glr='git pull --rebase'
+alias gp='git push -u'
+alias glrp='glr && gp'
+alias gd='git diff --color'
+alias gdc='gd --cached'
+alias gs='git status -sb'
+alias gw='git show'
+alias gsw='git stash show -p'
+alias gcob='git checkout -b'
+alias gcop='git checkout -p'
+alias gist='gh gist'
+alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs xdg-open'
+
+alias k=kubectl
+alias kctx=kubectx
+alias kns=kubens
+alias krew='k krew'
+alias kusers='k config get-users'
+alias kdesc='k describe'
+alias kdoc='k describe'
+alias kgen='k create --dry-run=client -o yaml'
+alias kpf='k port-forward'
+alias kinfo='k cluster-info'
+alias kar='k api-resources --cached'
+alias kav='k api-versions'
+alias kcfg='k config view --raw'
+alias kctxs='k config get-contexts'
+alias kk=kustomize
+alias kkb='kk build'
+
+alias dotgit='git -C ~/.dotfiles'
+alias dotgs='dotgit status -sb'
+alias dotgw='dotgit show'
+alias dotgd='dotgit diff'
+alias dotgp='dotgit push'
+alias dotgl='dotgit pull'
+alias dotgb='dotgit branch'
+alias dotgco='dotgit checkout'
+alias dotup='dotgit pull && rcup -v'
+alias dotsh='env -C ~/.dotfiles ${=SHELL}'
+
+case "$TERM" in
+xterm-kitty)
+  alias ssh='kitty +kitten ssh'
+  alias kitten='kitty +kitten'
+  ;;
+esac
+
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-# source parts
-if [ -d "$0".d ]; then
-  for _p in "$0".d/*; do
-    if [ -f "$_p" ]; then
-      if ! . "$_p"; then
-        printf "%s: source '%s' error: non-zero return status\n" "$0" "$_p" >&2
-      # else; printf "%s: '%s' sourced\n" "$0" "$_p" >&2
-      fi
-    fi
-  done
+if command -v direnv >/dev/null; then
+  alias tmux='direnv exec / tmux'
 fi
 
-#shellcheck source=/dev/null
-[ ! -r "$HOME/.shrc.local" ] || . "$HOME/.shrc.local"
+#: ~/shrc.d/ {{{
+if [ -d "$ENV".d ]; then
+  for _p in "$ENV".d/*; do
+    if [ -r "$_p" ]; then
+      . "$_p" || printf "%s: source '%s' error: non-zero return status\n" "$ENV" "$_p" >&2
+    fi
+  done
+  unset _p
+fi
+#: }}}
+
+#: ~/shrc.local {{{
+if [ -r "$ENV.local" ]; then . "$ENV.local"; fi
+#: }}}
 

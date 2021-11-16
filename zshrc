@@ -3,9 +3,7 @@
 # Load files
 () {
 	while (( $# > 0 )); do
-    if [[ -f $1 ]] && ! [[ $1 = *".zwc" ]]; then
-      source "$1"
-    fi
+    ! [[ -f $1 ]] || [[ $1 = *".zwc" ]] || . "$1"
     shift
   done
 } ~/.shrc \

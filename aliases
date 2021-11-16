@@ -11,22 +11,10 @@ alias fpath='echo $FPATH | tr -s ":" "\n"'
 alias wa='which -a'
 alias wich=which
 
-# allow aliases to be used with sudo
-alias sudo='sudo ' 
-
-alias reboot-to-bios="sudo systemctl reboot --firmware-setup"
 
 ################################################################################
 # filesystem
 ################################################################################
-
-alias l='ls -AFhl'
-alias dud='du -d 1 -h'
-alias duf='du -sh *'
-
-if (( $+commands[lsd] )); then
-  alias ls=lsd
-fi
 
 # zmv (docs: http://zsh.sourceforge.net/Doc/Release/User-Contributions.html#index-zmv)
 #-------------------------------------------------------------------------------
@@ -72,22 +60,17 @@ fi
 # nix
 ################################################################################
 
-alias nixre="darwin-rebuild switch"
 alias nixgc="nix-collect-garbage -d"
 alias nixq="nix-env -qaP"
+alias nixre="darwin-rebuild switch"
 
 ################################################################################
 # tools
 ################################################################################
 
-(( $+commands[nvim] )) && alias vim=nvim
-
-# open (yeah, yeah, its not an alias)
-if ! (( $+commands[open] )) && (( $+commands[xdg-open] )); then
-  function open () {
-    nohup xdg-open "$*" 2>&1 >/dev/null 
-  }
-fi
+# function open () {
+#   nohup xdg-open "$*" 2>&1 >/dev/null 
+# }
 
 # pbcopy + pbpaste for non-darwins
 if ! (( $+commands[pbcopy] )) && (( $+commands[xclip] )); then
@@ -96,85 +79,21 @@ if ! (( $+commands[pbcopy] )) && (( $+commands[xclip] )); then
   alias pbpaste='xclip -selection clipboard -o'
 fi
 
-_remote_pbcopy() {
-	local begin end args=()
-	if [[ $OSTYPE != darwin* ]]; then
-		# The base64 must be a single line.
-		args+=(--wrap=0)
-	fi
-	# OSC 52 operates the clipboard, c is for copy.
-	begin='\e]52;c;'
-	end='\a'
-	if [[ -n $TMUX ]]; then
-		# Inside tmux, we must escape the construct.
-		begin="\ePtmux;\e${begin}"
-		end="${end}\e\\"
-	fi
-	print -n $begin
-	base64 $args /dev/stdin
-	print -n $end
-}
-
-
-## git
-alias glr='git pull --rebase'
-alias gp='git push -u'
-alias glrp='glr && gp'
-alias gd='git diff --color'
-alias gdc='gd --cached'
-alias gs='git status -sb'
-alias gw="git show"
-alias gsw="git stash show -p"
-alias gcob="git checkout -b"
-alias gcop="git checkout -p"
-alias gist="gh gist"
-
-# open git origin in browser
-alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs xdg-open'
-
-# dotfile-bound git
-alias dotgit='git -C ~/.dotfiles'
-alias dotgs='dotgit status -sb'
-alias dotgw='dotgit show'
-alias dotgd='dotgit diff'
-alias dotgp='dotgit push'
-alias dotgl='dotgit pull'
-alias dotgb='dotgit branch'
-alias dotgco='dotgit checkout'
-alias dotup='dotgit pull && rcup -v'
-
-alias dotsh='env -C ~/.dotfiles ${=SHELL}'
-
-(( $+commands[direnv] )) && alias tmux='direnv exec / tmux'
-
-alias drun="docker run --rm -it"
-
-## bazel
-# alias bzb="bazel build"
-# alias bzt="bazel test"
-# alias bzr="bazel run"
-# alias bzq="bazel query"
-# alias bzba="bazel build //..."
-# alias bzta="bazel test //..."
-# alias bfmt="buildifier -lint=warn -r ."
-
-## kube
-alias k=kubectl
-alias kctx=kubectx
-alias kns=kubens
-alias krew='k krew'
-alias kusers='k config get-users'
-alias kdesc='k describe'
-alias kdoc='k describe'
-alias kgen='k create --dry-run=client -o yaml'
-alias kpf='k port-forward'
-alias kinfo='k cluster-info'
-alias kar='k api-resources --cached'
-alias kav='k api-versions'
-alias kcfg='k config view --raw'
-alias kctxs='k config get-contexts'
-alias kk=kustomize
-alias kkb='kk build'
-
-## kitty
-alias kitten="kitty +kitten"
+# rpbcopy() {
+# 	local begin end args=()
+# 	if [[ $OSTYPE != darwin* ]]; then
+# 		# The base64 must be a single line.
+# 		args+=(--wrap=0)
+# 	fi
+# 	# OSC 52 operates the clipboard, c is for copy.
+# 	begin='\e]52;c;'
+# 	end='\a'
+# 	if [[ -n $TMUX ]]; then
+# 		# Inside tmux, we must escape the construct.
+# 		begin="\ePtmux;\e${begin}"
+# 		end="${end}\e\\"
+# 	fi
+# 	print -n $begin
+# 	base64 $args /dev/stdin
+# 	print -n $end
+# }
