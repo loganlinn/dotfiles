@@ -4,6 +4,7 @@ antigen use oh-my-zsh
 
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
+    Aloxaf/fzf-tab
     colored-man-pages
     clvv/fasd
     fasd
