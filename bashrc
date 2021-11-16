@@ -11,7 +11,8 @@ esac
 
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
 
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
+# shellcheck source=/dev/null
+[ -f "$XDG_CONFIG_HOME"/fzf/fzf.bash ] && . "$XDG_CONFIG_HOME"/fzf/fzf.bash
 
 [ -f ~/.bashrc.local ] && . ~/.bashrc.local
 

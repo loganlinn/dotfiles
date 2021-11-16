@@ -5,8 +5,8 @@ antigen use oh-my-zsh
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
     Aloxaf/fzf-tab
-    colored-man-pages
     clvv/fasd
+    colored-man-pages
     fasd
     fzf
     genpass
@@ -16,6 +16,7 @@ antigen bundles <<EOBUNDLES
     jeffreytse/zsh-vi-mode
     johanhaleby/kubetail
     loganlinn/zzz.plugin.zsh
+    pyenv
     sirhc/op.plugin.zsh
     ssh-agent
     terraform
@@ -28,17 +29,11 @@ antigen bundles <<EOBUNDLES
     zsh-users/zsh-history-substring-search 
 EOBUNDLES
 
-! [[ -d ~/.jenv ]] || antigen bundle jenv
-! [[ -d ~/.pyenv ]] || antigen bundle pyenv
+[[ -d ~/.jenv ]] && antigen bundle jenv
 
-for bundle in ${ZSH_CUSTOM?}/plugins/*(/)
-do
-  antigen bundle "${bundle}" --no-local-clone
-done
+antigen bundle --no-local-clone "$ZSH_CUSTOM"/plugins/*(/)
 
 # antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
-
-antigen apply
 
 ###############################################################################
 
@@ -51,4 +46,19 @@ export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
 export FORGIT_ADD_FZF_OPTS='--ansi'
 
 # jeffreytse/zsh-vi-mode
-ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
+function zvm_config() {
+	ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
+	ZVM_VI_INSERT_ESCAPE_BINDKEY=fd
+}
+function zvm_after_init() {
+	# zvm overwrites fzf-history-widget bindkey
+	if [[ -f $XDG_CONFIG_HOME/fzf/fzf.zsh ]]; then
+		. "$XDG_CONFIG_HOME"/fzf/fzf.zsh
+	elif [[ -f ~/fzf.zsh ]]; then
+		. ~/fzf.zsh
+	fi
+}
+
+###############################################################################
+
+antigen apply
