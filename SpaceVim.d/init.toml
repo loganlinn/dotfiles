@@ -1,22 +1,23 @@
 [options]
+  ale_linters = ['clojure' ['clj-kondo']]
   auto_disable_touchpad = 1
   automatic_update = false
-  bootstrap_before = "myspacevim#before"
   bootstrap_after = "myspacevim#after"
+  bootstrap_before = "myspacevim#before"
   buffer_index_type = 4
   colorscheme = "nord"
   colorscheme_bg = "dark"
-  # disabled_plugins = []
+  disabled_plugins = ['markdown-preview.nvim', 'vim-import-js']
+  enable_ale = true
   enable_guicolors = true
-  enable_neomake = true
+  enable_neomake = false
   enable_statusline_mode = false
   enable_tabline_filetype_icon = true
   enable_vimfiler_gitstatus = true
-  disabled_plugins = ['markdown-preview.nvim', 'vim-import-js']
   filemanager = "nerdtree"
   filetree_direction = "left"
-  #guifont = "JetBrainsMono Nerd Font Mono:h11"
   hosts_url = "https://gist.githubusercontent.com/loganlinn/81e8448cc8c244c796e0e5ce16ab07a7/raw/4a7081fa5978f1e3285ae9c036b33aa86200fde2/hosts"
+  lint_on_the_fly = true
   statusline_iseparator = "bar"
   statusline_separator = "arrow"
   statusline_unicode_symbols = true
@@ -65,9 +66,9 @@
   repo = "mboughaba/i3config.vim"
   merged = false
 
-# [[custom_plugins]]
-#   repo = "Olical/conjure"
-#   merged = false
+[[custom_plugins]]
+  repo = "Olical/conjure"
+  merged = false
 
 [[custom_plugins]]
   repo = "hashivim/vim-terraform"
@@ -86,6 +87,9 @@
   name = "checkers"
 
 [[layers]]
+  name = "format"
+
+[[layers]]
   name = 'shell'
   default_position = 'top'
   default_height = 30
@@ -100,8 +104,15 @@
   name = "git"
 
 [[layers]]
+  name = 'github'
+
+[[layers]]
   name = "shell"
   default_position = "float"
+
+[[layers]]
+	name = "VersionControl"
+	enable-gtm-status = true
 
 [[layers]]
   name = "lang#clojure"

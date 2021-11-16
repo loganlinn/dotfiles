@@ -4,6 +4,10 @@ function! myspacevim#before() abort
   let g:terraform_align=1
   let g:terraform_fmt_on_save=1
 
+  " https://github.com/SpaceVim/SpaceVim/issues/1714
+  " Default to static completion for SQL
+  let g:omni_sql_default_compl_type = 'syntax'
+
 endfunction
 
 function! myspacevim#after() abort
