@@ -1,10 +1,7 @@
-#!/bin/sh
-# vim:foldmethod=marker
-# shellcheck source=/dev/null
+# ~/.shrc: user-specific run commands for the Bourne shell (sh(1))
+# and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
 
-#: ~/.profile {{{
-if [ -z "$ENV" ]; then . "$HOME/.profile" >/dev/null; fi
-#: }}}
+[ -n "$ENV" ] || . "$HOME"/.profile
 
 alias -- -='cd -'
 alias 1='cd -'
@@ -30,6 +27,10 @@ alias j='jobs'
 
 alias sudo='sudo ' # allow aliases to be used with sudo
 
+# paths a la printenv(1)
+alias printpath='echo $PATH | tr -s ":" "\n"'
+alias printfpath='echo $FPATH | tr -s ":" "\n"'
+
 alias glr='git pull --rebase'
 alias gp='git push -u'
 alias glrp='glr && gp'
@@ -42,6 +43,10 @@ alias gcob='git checkout -b'
 alias gcop='git checkout -p'
 alias gist='gh gist'
 alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs xdg-open'
+
+alias nixgc="nix-collect-garbage -d"
+alias nixq="nix-env -qaP"
+alias nixre="darwin-rebuild switch"
 
 alias k=kubectl
 alias kctx=kubectx
@@ -61,41 +66,18 @@ alias kk=kustomize
 alias kkb='kk build'
 
 alias dotgit='git -C ~/.dotfiles'
-alias dotgs='dotgit status -sb'
-alias dotgw='dotgit show'
-alias dotgd='dotgit diff'
-alias dotgp='dotgit push'
-alias dotgl='dotgit pull'
-alias dotgb='dotgit branch'
-alias dotgco='dotgit checkout'
-alias dotup='dotgit pull && rcup -v'
 alias dotsh='env -C ~/.dotfiles ${=SHELL}'
 
 case "$TERM" in
 xterm-kitty)
   alias ssh='kitty +kitten ssh'
   alias kitten='kitty +kitten'
+  alias icat='kitty +kitten icat'
   ;;
 esac
 
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-if command -v direnv >/dev/null; then
+if hash direnv 2>/dev/null; then
   alias tmux='direnv exec / tmux'
 fi
-
-#: ~/shrc.d/ {{{
-if [ -d "$ENV".d ]; then
-  for _p in "$ENV".d/*; do
-    if [ -r "$_p" ]; then
-      . "$_p" || printf "%s: source '%s' error: non-zero return status\n" "$ENV" "$_p" >&2
-    fi
-  done
-  unset _p
-fi
-#: }}}
-
-#: ~/shrc.local {{{
-if [ -r "$ENV.local" ]; then . "$ENV.local"; fi
-#: }}}
-

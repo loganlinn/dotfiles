@@ -1,33 +1,30 @@
-#
-#                     oooo                           
-#                     `888                           
-#   oooooooo  .oooo.o  888 .oo.   oooo d8b  .ooooo.  
-#  d'""7d8P  d88(  "8  888P"Y88b  `888""8P d88' `"Y8 
-#    .d8P'   `"Y88b.   888   888   888     888       
-#  .d8P'  .P o.  )88b  888   888   888     888   .o8 
-# d8888888P  8""888P' o888o o888o d888b    `Y8bod8P' 
-#
+# ~/.zshrc: user-specifc .zshrc file for zsh(1).
 
 # zmodload zsh/zprof
 
-# Load files
-# ------------
+[ -z "$PS1" ] && return
+
+. ~/.shrc
 
 () {
-	while (( $# > 0 )); do
-    [[ -f $1 && $1 != *".zwc" ]] && . "$1"
-    shift
+  for i; do
+    if [[ -f $i && $i != *".zwc" ]]; then
+      . "$i"
+    fi
   done
-} ~/.shrc \
-  ~/.zsh/functions/* \
+  unset i
+} ~/.zsh/functions/* \
 	~/.zsh/configs{-pre,,-post}/**/*(N-.) \
 	~/.zsh/completion.zsh \
-  ~/.zshrc.{${(L)OSTYPE//[0-9\.]/},local} \
-  ~/.aliases{,.local}
+  ~/.zshrc.local
 
-# Setup prompt
-# ------------
+if autoload -U zmv; then
+  alias zcp='zmv -C'
+  alias zln='zmv -L'
+fi
 
-(( $+commands[starship] )) &&  eval "$(starship init zsh)"
+if (( $+commands[starship] )); then
+  eval "$(starship init zsh)"
+fi
 
 # zprof

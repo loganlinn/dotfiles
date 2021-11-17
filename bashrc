@@ -1,18 +1,16 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
-#shellcheck disable=SC1090
+# ~/.bashrc: user-specifc .bashrc file for bash(1).
 
-# If not running interactively, don't do anything
-case $- in
-*i*) ;;
-*) return ;;
-esac
+[ -z "$PS1" ] && return
 
-[ -f ~/.shrc ] && . ~/.shrc
+. ~/.shrc
 
-[ -f ~/.bash_aliases ] && . ~/.bash_aliases
+[ -e "$XDG_CONFIG_HOME"/fzf/fzf.bash ] &&
+  . "$XDG_CONFIG_HOME"/fzf/fzf.bash
 
-# shellcheck source=/dev/null
-[ -f "$XDG_CONFIG_HOME"/fzf/fzf.bash ] && . "$XDG_CONFIG_HOME"/fzf/fzf.bash
+[ -e ~/.bashrc.local ] &&
+  . ~/.bashrc.local
 
-[ -f ~/.bashrc.local ] && . ~/.bashrc.local
+if hash starship 2>/dev/null; then
+  eval "$(starship init bash)"
+fi
 

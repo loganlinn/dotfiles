@@ -1,16 +1,13 @@
-#!/bin/sh
+# ~/.profile: user-specific .profile file for the Bourne shell (sh(1))
+# and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
 
 ENV=$HOME/.shrc
 
-# xdg
-# ------------
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-"$HOME"/.config}
 export XDG_CACHE_HOME=${XDG_CACHE_HOME:-"$HOME"/.cache}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-"$HOME"/.local/share}
 export XDG_STATE_HOME=${XDG_STATE_HOME:-"$HOME"/.local/state}
 
-# fzf
-# ------------
 export FZF_TMUX=1
 export FZF_DEFAULT_OPTS="--color 'bg+:239,marker:226'"
 export FZF_CTRL_R_OPTS="--sort"
@@ -19,23 +16,29 @@ export FZF_CTRL_T_OPTS="--preview 'bat {} --color=always --line-range :30'"
 export FZF_ALT_C_COMMAND='fasd_cd -d -l -R'
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
-# pyenv
-# ------------
-if [ -d "${PYENV_ROOT:=$HOME/.pyenv}" ]; then
-  export PYENV_ROOT
+[ -e "$HOME"/.asdf/asdf.sh ] &&
+  . "$HOME"/.asdf/asdf.sh
+
+[ -e "$HOME"/.nix-profile/etc/profile.d/nix.sh ] &&
+  . "$HOME"/.nix-profile/etc/profile.d/nix.sh
+
+[ -e "$HOME"/.cargo/env ] &&
+  . "$HOME"/.cargo/env
+
+if [ -d "$HOME"/.pyenv ]; then
 	export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-	export PATH="$PYENV_ROOT/bin:$PATH"
-	eval "$(pyenv init --path)"
+	eval "$("$HOME"/.pyenv/bin/pyenv init --path)"
 fi
 
-# rust
-# ------------
-[ -e "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+if [ -d "$HOME"/.profile.d ]; then
+  for i in "$HOME"/.profile.d/*.sh; do
+    if [ -r "$i" ]; then
+      . "$i"
+    fi
+  done
+  unset i
+fi
 
-# nix
-# ------------
-[ -f "$HOME"/.nix-profile/etc/profile.d/nix.sh ] && . "$HOME"/.nix-profile/etc/profile.d/nix.sh
+[ -e "$HOME"/.profile.local ] &&
+  . "$HOME"/.profile.local
 
-# locals
-# ------------
-[ -f "$HOME/.profile.local" ] && . "$HOME/.profile.local"
