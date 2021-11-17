@@ -9,7 +9,9 @@
   colorscheme_bg = "dark"
   disabled_plugins = ['markdown-preview.nvim', 'vim-import-js']
   enable_ale = true
+  enable_filetree_gitstatus = true
   enable_guicolors = true
+  enable_language_specific_leader = false
   enable_neomake = false
   enable_statusline_mode = false
   enable_tabline_filetype_icon = true
@@ -18,6 +20,9 @@
   filetree_direction = "left"
   hosts_url = "https://gist.githubusercontent.com/loganlinn/81e8448cc8c244c796e0e5ce16ab07a7/raw/4a7081fa5978f1e3285ae9c036b33aa86200fde2/hosts"
   lint_on_the_fly = true
+  project_auto_root = 1
+  project_rooter_outermost = 0
+  project_rooter_patterns = [ '.SpaceVim.d/', '.bzr/', '.git/', '.hg/', '.svn/', 'Cargo.toml', '_darcs/', 'deps.edn', 'package.json', 'project.clj', ]
   statusline_iseparator = "bar"
   statusline_separator = "arrow"
   statusline_unicode_symbols = true
