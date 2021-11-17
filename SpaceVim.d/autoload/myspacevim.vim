@@ -3,7 +3,7 @@
 "
 function! myspacevim#before() abort
 
-  " https://github.com/hashivim/vim-terraform
+  " vim-terraform
   let g:terraform_align=1
   let g:terraform_fmt_on_save=1
 
@@ -11,11 +11,11 @@ function! myspacevim#before() abort
   " Default to static completion for SQL
   let g:omni_sql_default_compl_type = 'syntax'
 
-" 	lua << EOF
-"     local opt = requires('spacevim.opt')
-"     opt.enable_projects_cache = false
-"     opt.enable_statusline_mode = true
-" EOF
+  " ALE
+  let g:ale_linters = {'clojure': ['clj-kondo']}
+  let g:ale_completion_autoimport = 1
+  let g:airline#extensions#ale#enabled = 1
+
 endfunction
 
 "
@@ -26,6 +26,9 @@ function! myspacevim#after() abort
 endfunction
 
 
+"
+"
+"
 function! Redir(cmd, rng, start, end)
 	for win in range(1, winnr('$'))
 		if getwinvar(win, 'scratch')

@@ -1,7 +1,6 @@
 [options]
-  ale_linters = ['clojure' ['clj-kondo']]
   auto_disable_touchpad = 1
-  automatic_update = false
+  automatic_update = false # Updating manually: git -C ~/.SpaceVim pull
   bootstrap_after = "myspacevim#after"
   bootstrap_before = "myspacevim#before"
   buffer_index_type = 4
@@ -23,6 +22,8 @@
   project_auto_root = 1
   project_rooter_outermost = 0
   project_rooter_patterns = [ '.SpaceVim.d/', '.bzr/', '.git/', '.hg/', '.svn/', 'Cargo.toml', '_darcs/', 'deps.edn', 'package.json', 'project.clj', ]
+  projects_cache_num = 100
+  src_root = "~/src"
   statusline_iseparator = "bar"
   statusline_separator = "arrow"
   statusline_unicode_symbols = true
@@ -75,6 +76,18 @@
   repo = "Olical/conjure"
   merged = false
 
+#[[custom_plugins]]deps/
+#  repo = "clojure-vim/acid.nvim"
+#  merged = false
+#
+#[[custom_plugins]]
+#  repo = "clojure-vim/jazz.nvim"
+#  merged = false
+
+# [[custom_plugins]]
+#   repo = "lifepillar/pgsql.vim"
+#   merged = false
+
 [[custom_plugins]]
   repo = "hashivim/vim-terraform"
   merged = false
@@ -83,7 +96,7 @@
   repo = "itchyny/calendar.vim"
   merged = false
 
-[[layers]]
+[[layers]] # https://spacevim.org/layers/autocomplet
   name = 'autocomplete'
   auto_completion_return_key_behavior = "complete"
   auto_completion_tab_key_behavior = "smart"
@@ -158,5 +171,5 @@
 # [[layers]]
 #   name = "lang#janet"
 
-[[layers]]
-  name = "lang#nix"
+# [[layers]]
+#   name = "lang#nix"
