@@ -8,4 +8,5 @@
 i3-wm.binding.ws_prev: bracketleft
 i3-wm.binding.ws_next: bracketright
 i3-wm.binding.ws_back_and_forth: Tab
+
 i3-wm.program.1: /usr/bin/x-terminal-emulator

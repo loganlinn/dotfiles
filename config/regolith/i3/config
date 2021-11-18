@@ -679,6 +679,11 @@ exec --no-startup-id $i3-wm.program.2
 set_from_resource $i3-wm.program.3 i3-wm.program.3 :
 exec --no-startup-id $i3-wm.program.3
 
+# Automatic tiling based on dimensions
+# To install autotiling(1), sudo pip install https://github.com/nwg-piotr/autotiling.git
+# See https://github.com/nwg-piotr/autotiling
+exec_always --no-startup-id autotiling
+
 assign [class="Slack"] → workspace "9: Chat"
 assign [class="cryptowatch"] → workspace "11: Cryptowatch"
 for_window [title="^zoom$" class="[zoom]*"] floating enable
