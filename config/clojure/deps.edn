@@ -97,22 +97,22 @@
   ;;;; Remote REPL connection
   ;; Connect to the nREPL server of a remote REPL
   ;; clojure -M:repl/remote --host hostname --port 12345
-;; replace --host and --port values with that of remote nREPL server
-:repl/remote
-{:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}}
- :main-opts ["-m" "nrepl.cmdline"
-             "--connect"]}
+  ;; replace --host and --port values with that of remote nREPL server
+  :repl/remote
+  {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}}
+   :main-opts ["-m" "nrepl.cmdline"
+               "--connect"]}
 
-;; clojure -M:repl/rebel-remote --host hostname --port 12345
-:repl/rebel-remote
-{:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}
-              cider/cider-nrepl          {:mvn/version "0.26.0"}
-              com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
- :main-opts  ["-m" "nrepl.cmdline"
-              "--connect"
-              "--middleware" "[cider.nrepl/cider-middleware]"
-              "-i"
-              "-f" "rebel-readline.main/-main"]}
+  ;; clojure -M:repl/rebel-remote --host hostname --port 12345
+  :repl/rebel-remote
+  {:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}
+                cider/cider-nrepl          {:mvn/version "0.26.0"}
+                com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
+   :main-opts  ["-m" "nrepl.cmdline"
+                "--connect"
+                "--middleware" "[cider.nrepl/cider-middleware]"
+                "-i"
+                "-f" "rebel-readline.main/-main"]}
 
 ;; End of REPL and nREPL connections
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
