@@ -11,11 +11,20 @@ set textobj-entire
 set ReplaceWithRegister
 
 """ Common settings -------------------------
+set clipboard^=unnamed
+set hlsearch
+set ignorecase
+set incsearch
+set keymodel=
+set nonumber
+set noshowmode
+set nostartofline
+set notimeout
+set rnu
 set scrolloff=5
 set showmode
+set smartcase
 set so=5
-set incsearch
-set rnu
 
 """ Idea specific settings ------------------
 set ideajoin
