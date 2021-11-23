@@ -685,5 +685,5 @@ exec --no-startup-id $i3-wm.program.3
 exec_always --no-startup-id autotiling
 
 assign [class="Slack"] → workspace "9: Chat"
-assign [class="cryptowatch"] → workspace "11: Cryptowatch"
+
 for_window [title="^zoom$" class="[zoom]*"] floating enable
