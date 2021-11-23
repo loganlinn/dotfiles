@@ -1,7 +1,6 @@
 #!/usr/bin/env zsh
 
 antigen use oh-my-zsh
-
 # https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 antigen bundles <<EOBUNDLES
     Aloxaf/fzf-tab
@@ -48,7 +47,7 @@ export FORGIT_ADD_FZF_OPTS='--ansi'
 # jeffreytse/zsh-vi-mode
 function zvm_config() {
 	ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
-	ZVM_VI_INSERT_ESCAPE_BINDKEY=fd
+	#ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
 }
 function zvm_after_init() {
 	# zvm overwrites fzf-history-widget bindkey
