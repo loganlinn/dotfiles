@@ -1,5 +1,3 @@
---- Official docs: http://www.postgresql.org/docs/9.3/static/app-psql.html
-
 -- Don't display the "helpful" message on startup.
 \set QUIET 1
 \pset null '[NULL]'
@@ -15,6 +13,7 @@
 
 -- Use best available output format
 \x auto
+\pset linestyle unicode
 \set VERBOSITY verbose
 \set HISTFILE ~/.psql_history- :DBNAME
 \set HISTCONTROL ignoredups
