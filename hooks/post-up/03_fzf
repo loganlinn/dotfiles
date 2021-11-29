@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-FZF_BASE=${FZF_BASE:-$HOME/.fzf}
+FZF_BASE=$HOME/.fzf
 
 if ! [[ -d $FZF_BASE ]]; then
-  git clone --depth 1 https://github.com/junegunn/fzf.git "$FZF_BASE"
+	git clone --depth 1 https://github.com/junegunn/fzf.git "$FZF_BASE"
 fi
 
 if ! [[ -d ${XDG_CONFIG_HOME:-$HOME/.config}/fzf ]]; then

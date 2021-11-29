@@ -1,5 +1,6 @@
 # ~/.profile: user-specific .profile file for the Bourne shell (sh(1))
 # and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+# shellcheck disable=SC1090
 
 ENV=$HOME/.shrc
 
@@ -33,10 +34,8 @@ if [ -d "${PYENV_HOME:=$HOME/.pyenv}" ]; then
 fi
 
 if [ -d "$HOME"/.profile.d ]; then
-  for i in "$HOME"/.profile.d/*.sh; do
-    if [ -r "$i" ]; then
-      . "$i"
-    fi
+  for i in "$HOME"/.profile.d/*; do
+    ! [ -f "$i" ] || . "$i"
   done
   unset i
 fi

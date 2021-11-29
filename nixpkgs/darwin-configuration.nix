@@ -44,7 +44,6 @@
     curl
     entr
     fd
-    fzf
     gettext
     git
     glow
