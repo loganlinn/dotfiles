@@ -67,7 +67,6 @@
     stow
     tmux
     tree
-    vim
     wget
 
     darwin-zsh-completions
