@@ -57,7 +57,6 @@
     kitty
     lsd
     mosh
-    neovim
     pinentry_mac
     rcm
     rlwrap
