@@ -1,21 +1,12 @@
-###############################################################
-# This configuration file lets you
-# - define new commands
-# - change the shortcut or triggering keys of built-in verbs
-# - change the colors
-# - set default values for flags
-# - set special behaviors on specific paths
-# - and more...
+# ~/.config/broot/conf.hjson#
 #
 # Configuration documentation is available at
 #     https://dystroy.org/broot
 #
-# This file's format is Hjson ( https://hjson.github.io/ ). Some
-# properties are commented out. To enable them, remove the `#`.
+# Default configuration is available at
+#     https://github.com/Canop/broot/blob/v1.7.5/resources/default-conf.hjson
 #
-###############################################################
 {
-
 	###############################################################
 	# Default flags
 	# You can set up flags you want broot to start with by
@@ -165,6 +156,7 @@
 		#  execution: nvim +{line} {file}
 		{
 			invocation: edit
+			key: enter
 			shortcut: e
 			execution: "$EDITOR +{line} {file}"
 			leave_broot: false
