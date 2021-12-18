@@ -62,6 +62,7 @@ fi
 ## git
 alias glr='git pull --rebase'
 alias gp='git push -u'
+alias gpa='git push all --all'
 alias glrp='glr && gp'
 alias gd='git diff --color'
 alias gdc='gd --cached'
