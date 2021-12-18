@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+
+msg () { printf "%s\n" "$@"; } >&2
+die () { msg "" "$@" "" ; exit "${ERRNO:-1}"; }
+
+plugin=${1-}
+version=${2:-latest}
+
+if [[ -z $plugin ]]
+then plugin=$(asdf plugin list | fzf --no-sort --reverse --no-multi --header "plugin")
+fi
+
+if [[ -z $plugin ]]
+then die "error: must specify plugin"
+fi
+
+if [[ $version == 'latest' ]]; then
+  msg "$plugin: fetching latest version"
+  version=$(asdf latest "$plugin")
+fi
+
+# handle case where plugin fails to report latest version
+if [[ -z $version ]]
+then version=$(asdf list all "$plugin" | fzf --tac --no-sort)
+fi
+
+if [[ -z $version ]]
+then die "error: must specify version"
+fi
+
+msg "installing $plugin @ $version"
+
+asdf install "$plugin" "$version" 
+
+asdf global "$plugin" "$version"
+
+msg "done"
