@@ -26,11 +26,11 @@ export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 [ -e "$HOME"/.cargo/env ] &&
   . "$HOME"/.cargo/env
 
-export PYENV_HOME=$HOME/.pyenv
-if [ -d "$PYENV_HOME" ]; then
-  export PATH="$PYENV_HOME/bin:$PATH"
+export PYENV_ROOT="$HOME/.pyenv"
+if [ -d "$PYENV_ROOT" ]; then
 	export PYENV_VIRTUALENV_DISABLE_PROMPT=1
-	eval "$(pyenv init -)"
+	export PATH="$PYENV_ROOT/bin:$PATH"
+	eval "$(pyenv init --path)"
 fi
 
 if [ -d "$HOME"/.profile.d ]; then
