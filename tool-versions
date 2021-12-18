@@ -17,7 +17,7 @@ direnv 2.28.0
 doctl 1.58.0
 fd 8.2.1
 fzf 0.27.3
-github-cli 2.2.0
+github-cli 2.3.0
 glab 1.21.1
 golang 1.15.12
 java adoptopenjdk-11.0.10+9
@@ -35,3 +35,4 @@ sops 3.7.1
 starship 0.55.0
 terraform 1.0.5
 watchexec 1.15.3
+kpt v1.0.0-beta.9
