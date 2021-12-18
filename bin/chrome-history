@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+#
+# @file chrome-history
+# @brief chrome web browser history fuzzy search
+# @author loganlinn <logan@llinn.dev>
+# @license Unlicense <http://unlicense.org/>
+
+set -eo pipefail
+
+[[ -z ${TRACE-} ]] || set -x
+
+msg() { printf "%s\n" "$@"; } >&2
+
+has() { hash "$@" 2>&1; }
+
+require() { hash "$@" || exit 127; }
+
+require sqlite3
+require fzf
+require awk
+require sed
+require xargs
+require mktemp
+
+history_paths=(
+	~/Library/Application\ Support/Google/Chrome/*/History
+	~/.config/google-chrome/*/History
+	~/.var/app/org.chromium.Chromium/config/chromium/*/History
+	~/snap/chromium/common/chromium/*/History
+)
+
+cleanup_paths=()
+
+cleanup() {
+  if [[ ${#cleanup_paths} -gt 0 ]]; then
+    rm -f "${cleanup_paths[@]}"
+  fi
+}
+
+trap cleanup EXIT
+
+main() {
+	local width sep q open historydb
+
+	width=$(( COLUMNS / 3 ))
+  if [[ ${width:-0} -eq 0 ]]; then
+    width=30
+  fi
+
+	sep='{::}'
+
+	open="printf 'Unable to open: %s'"
+	for q in xdg-open open cygstart start; do
+		if has $q; then
+			open=$q
+			break
+		fi
+	done
+
+	for q in "${history_paths[@]}"; do
+		if [[ -e $q ]]; then
+
+      msg "Using $q"
+			if [[ -z $historydb ]]; then
+				historydb=$(mktemp -p "${TMPDIR:-.}" History.XXXX) || return 3
+        cleanup_paths+=("$historydb")
+				cp -f "$q" "$historydb"
+			else
+        local tmpdb urlscols
+				tmpdb=$(mktemp -p "${TMPDIR:-.}" History.XXXX) || return 3
+        cleanup_paths+=("$tmpdb")
+				cp -f "$q" "$tmpdb"
+        urlscols=id,url,title,typed_count,last_visit_time,hidden
+				sqlite3 "$historydb" <<-EOI
+					attach 'file:$tmpdb?immutable=1' as source;
+					insert or ignore into urls ($urlscols) select $urlscols from source.urls;
+					.exit
+				EOI
+			fi
+		fi
+	done
+
+	if [[ -z $historydb ]]; then
+		msg "Chrome History file could not be found"
+		return 1
+	fi
+
+	sqlite3 -separator "$sep" "file:$historydb?immutable=1" \
+		"select substr(title, 1, $width), url from urls where not hidden order by last_visit_time desc" |
+		awk -F "$sep" '{printf "%-'$width's  \x1b[36m%s\x1b[m\n", $1, $2}' |
+    uniq |
+		fzf --ansi --multi |
+		sed 's#.*\(https*://\)#\1#' |
+		xargs $open >/dev/null 2>&1
+}
+
+main "$@"
+exit "$?"
