@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 
+
 function br {
 	if ! type -p broot >/dev/null 2>&1; then
 		if type -p cargo >/dev/null 2>&1; then
@@ -14,7 +15,6 @@ function br {
 	fi
 
 	local cmd cmd_file code
-
 	cmd_file=$(mktemp)
 	if broot --outcmd "$cmd_file" "$@"; then
 		cmd=$(<"$cmd_file")
