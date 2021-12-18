@@ -18,6 +18,16 @@
 	~/.zsh/completion.zsh \
   ~/.zshrc.local
 
+command_exists() {
+  (( $+commands[$1]))
+}
+
+function_exists() {
+  (( $+functions[$1]))
+}
+
+alias -g eless='2>&1 | less'
+
 if autoload -U zmv; then
   alias zcp='zmv -C'
   alias zln='zmv -L'
