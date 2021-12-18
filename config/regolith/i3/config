@@ -682,8 +682,22 @@ exec --no-startup-id $i3-wm.program.3
 # Automatic tiling based on dimensions
 # To install autotiling(1), sudo pip install https://github.com/nwg-piotr/autotiling.git
 # See https://github.com/nwg-piotr/autotiling
-exec_always --no-startup-id autotiling
+# exec_always --no-startup-id autotiling
 
-assign [class="Slack"] → workspace "9: Chat"
+# switch to workspace with urgent window automatically
+for_window [urgent=latest] focus
 
 for_window [title="^zoom$" class="[zoom]*"] floating enable
+for_window [class="1Password"] floating enable
+for_window [class="com.system76.keyboardconfigurator"] floating enable
+
+assign [class="Slack"] → workspace "9: Chat"
+assign [class="Chromium-browser" title="Linear"] → workspace "4: Linear"
+
+# Jump to apps
+bindsym $mod+Control+e [title="vim"] focus
+bindsym $mod+Control+s [class="Slack"] focus
+bindsym $mod+Control+d [title="Linear"] focus
+bindsym $mod+Control+f [class="kitty"] focus
+bindsym $mod+Control+g [class="Chromium"] focus
+

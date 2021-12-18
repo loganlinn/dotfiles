@@ -1,12 +1,18 @@
 ! ~/.config/regolith/Xresources
+! 
 ! Applies specific overrides to Xresources defaults
-!
 ! See: https://regolith-linux.org/docs/howtos/override-xres/
+!
+! Show current values: `xrdb -query`
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-i3-wm.binding.ws_prev: bracketleft
-i3-wm.binding.ws_next: bracketright
+i3-wm.bar.position: bottom
+i3-wm.bar.status_command: SCRIPT_DIR=~/.config/regolith/i3xrocks/scripts i3xrocks -u ~/.config/regolith/i3xrocks/conf.d -d /etc/regolith/i3xrocks/conf.d
 i3-wm.binding.ws_back_and_forth: Tab
-
+i3-wm.binding.ws_next: bracketright
+i3-wm.binding.ws_prev: bracketleft
+i3-wm.gaps.inner.size:	5
+i3-wm.gaps.outer.size:	5
 i3-wm.program.1: /usr/bin/x-terminal-emulator
+i3-wm.window.border.size:	2
