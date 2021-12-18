@@ -1,10 +1,11 @@
 #!/usr/bin/env zsh
 
 antigen use oh-my-zsh
-# https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
-antigen bundles <<EOBUNDLES
-    Aloxaf/fzf-tab
-    clvv/fasd
+
+# See also:
+# - https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
+# - https://github.com/unixorn/awesome-zsh-plugins
+antigen bundles <<EOL
     colored-man-pages
     fasd
     fzf
@@ -12,27 +13,29 @@ antigen bundles <<EOBUNDLES
     git
     gitignore
     gpg-agent
-    jeffreytse/zsh-vi-mode
-    johanhaleby/kubetail
-    loganlinn/zzz.plugin.zsh
-    pyenv
-    sirhc/op.plugin.zsh
     ssh-agent
     terraform
     urltools
     web-search
-    wfxr/forgit
     zsh-interactive-cd
+    Aloxaf/fzf-tab
+    clvv/fasd
+    jeffreytse/zsh-vi-mode
+    johanhaleby/kubetail
+    loganlinn/zzz.plugin.zsh
+    wfxr/forgit
     zsh-users/zsh-autosuggestions 
     zsh-users/zsh-completions 
     zsh-users/zsh-history-substring-search 
-EOBUNDLES
+EOL
 
-[[ -d ~/.jenv ]] && antigen bundle jenv
+[[ -d ~/.pyenv ]] && antigen bundle pyenv
+[[ -d ~/.jenv  ]] && antigen bundle jenv
 
-antigen bundle --no-local-clone "$ZSH_CUSTOM"/plugins/*(/)
-
-# antigen theme "${ANTIGEN_THEME:-romkatv/powerlevel10k}"
+for _zsh_custom_plugin in $ZSH_CUSTOM/plugins/*(/); do
+  antigen bundle "$_zsh_custom_plugin" --no-local-clone
+done
+unset _zsh_custom_plugin
 
 ###############################################################################
 
@@ -45,10 +48,9 @@ export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
 export FORGIT_ADD_FZF_OPTS='--ansi'
 
 # jeffreytse/zsh-vi-mode
-function zvm_config() {
-	ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
-	#ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
-}
+ZVM_LAZY_KEYBINDINGS=false
+ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
+
 function zvm_after_init() {
 	# zvm overwrites fzf-history-widget bindkey
 	if [[ -f $XDG_CONFIG_HOME/fzf/fzf.zsh ]]; then
@@ -56,6 +58,9 @@ function zvm_after_init() {
 	elif [[ -f ~/fzf.zsh ]]; then
 		. ~/fzf.zsh
 	fi
+
+ [[ -f $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh ]] &&
+   . $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh
 }
 
 ###############################################################################

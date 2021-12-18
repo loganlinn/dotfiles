@@ -7,6 +7,6 @@ export ZSH_CUSTOM=$HOME/.zsh
 [[ -d $ZSH ]]        || git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
 [[ -d $ZSH_CUSTOM ]] || rcup -v zsh
 
-source $ANTIGEN/antigen.zsh
+source "$ANTIGEN/antigen.zsh"
 
-antigen init $HOME/.antigenrc
+antigen init "$HOME/.antigenrc"
