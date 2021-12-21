@@ -1,0 +1,7 @@
+[purpleair]
+command=$SCRIPT_DIR/purpleair
+interval=60
+SENSOR_ID=
+SENSOR_KEY=
+
+#COLORS=#85df56,#fbcf4b,#f28c33,#dd4d3c,#cf79e0,#9b2f6a
