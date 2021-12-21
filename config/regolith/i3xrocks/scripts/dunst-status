@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+# dunst status for i3blocks
+#
+# use with dunst >= 1.6
+
+set -e
+set -o pipefail
+
+require () { hash "$@" || exit 127; }
+require dunstctl
+require xrescat
+
+action1=$(xrescat i3xrocks.action.dunst.left "dunstctl context")
+action2=$(xrescat i3xrocks.action.dunst.middle "dunstctl action")
+action3=$(xrescat i3xrocks.action.dunst.right "dunstctl set-paused toggle")
+action4=$(xrescat i3xrocks.action.dunst.scrollup "dunstctl close")
+action5=$(xrescat i3xrocks.action.dunst.scrolldn "dunstctl history-pop")
+case $BLOCK_BUTTON in
+    1) eval "$action1" ;;
+    2) eval "$action2" ;;
+    3) eval "$action3" ;;
+    4) eval "$action4" ;;
+    5) eval "$action5" ;;
+esac
+
+label_none=${i3xrocks_label_notify_none:-$(xrescat i3xrocks.label.notify.none "N")}
+label_some=${i3xrocks_label_notify_some:-$(xrescat i3xrocks.label.notify.some "N")}
+label_error=${i3xrocks_label_notify_error:-$(xrescat i3xrocks.label.notify.error "N")}
+# i3xrocks.label.notify.pause is standard in regolith look typefaces, but it should be :)
+# fallback to error label, as it conventionally conveys muted/disabled
+label_pause=${i3xrocks_label_notify_pause:-$(xrescat i3xrocks.label.notify.pause "$label_error")} 
+
+# emulate rofication-status, i.e. https://github.com/regolith-linux/regolith-rofication/blob/a75b21a4626b9ff39deb29c157a046522b44140b/rofication/resources/_static.py
+value_color=${color:-$(xrescat i3xrocks.value.color "#E6E1CF")}
+label_color=${label_color:-$(xrescat i3xrocks.label.color "#E6E1CF")}
+nominal_color=${background_color:-$(xrescat i3xrocks.nominal "#E6E1CF")}
+warning_color=${warn_color:-$(xrescat i3xrocks.warning "#FFD580")}
+critical_color=$(xrescat i3xrocks.critical.color "#BF616A")
+
+value_font=${font:-$(xrescat i3xrocks.value.font "Source Code Pro Medium 13")}
+
+label_icon=$label_none
+
+declare -i count_displayed count_waiting count_history
+if {
+  count_displayed=$(dunstctl count displayed)
+  count_waiting=$(dunstctl count waiting)
+  count_history=$(dunstctl count history)
+} then
+  num=$(( count_displayed + count_waiting + count_history ))
+
+  if (( count_displayed + count_waiting )); then
+    label_icon=$label_some
+    label_color=$warning_color
+  fi
+
+  if [[ $(dunstctl is-paused) == 'true' ]]; then
+    label_icon=$label_pause
+    label_color=$nominal_color
+    value_color=$nominal_color
+  fi
+else
+  num='?'
+  label_icon=$label_error
+  label_color=$critical_color
+fi
+
+label='<span foreground="'"$label_color"'">'"$label_icon"'</span>'
+value='<span font_desc="'"$value_font"'" foreground="'"$value_color"'"> '"$num"'</span>'
+echo "$label$value"
