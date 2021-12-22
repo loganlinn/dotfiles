@@ -90,7 +90,7 @@ This function should only modify configuration layer settings."
      (git :variables
           git-magit-status-fullscreen t
           magit-diff-refine-hunk t
-          git-enable-magit-todos-plugin t)
+          git-enable-magit-todos-plugin nil)
 
      ;; SPC g h to use GitHub repositories
      ;; SPC g g to use GitHub Gists
@@ -121,7 +121,7 @@ This function should only modify configuration layer settings."
           lsp-enable-symbol-highlighting t
 
           ;; Show lint error indicator in the mode line
-          lsp-modeline-diagnostics-enable t
+          lsp-modeline-diagnostics-enable nil
           ;; lsp-modeline-diagnostics-scope :workspace
 
           ;; popup documentation boxes
@@ -169,8 +169,8 @@ This function should only modify configuration layer settings."
           org-enable-reveal-js-support t
           org-enable-hugo-support t
           org-enable-valign t
-          org-want-todo-bindings t
-          org-enable-org-journal-support t
+          org-want-todo-bindings nil
+          org-enable-org-journal-support nil
           org-journal-dir "~/journal/"
           org-journal-file-format "%Y-%m-%d"
           org-journal-date-prefix "#+TITLE: "
@@ -192,7 +192,7 @@ This function should only modify configuration layer settings."
            rust-format-on-save t)
 
      (shell :variables
-            shell-default-shell 'eshell
+            shell-default-shell 'ansi-term ;'eshell
             shell-default-height 30
             shell-default-position 'bottom)
 
@@ -216,7 +216,9 @@ This function should only modify configuration layer settings."
      ;; Spell as you type with Flyspell package,
      ;; requires external command - ispell, hunspell, aspell
      ;; SPC S menu, SPC S s to check current word
-     spell-checking
+     (spell-checking :variables
+                     spell-checking-enable-by-default t
+                     enable-flyspell-auto-completion t)
 
      ;; Use original flycheck fringe bitmaps
      (syntax-checking :variables
@@ -258,13 +260,15 @@ This function should only modify configuration layer settings."
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages '(editorconfig
+                                      jinja2-mode
                                       jq-mode
+                                      keycast
                                       nord-theme
                                       org-cliplink
                                       ox-clip
                                       protobuf-mode
                                       shfmt
-                                      keycast
+                                      zoxide
                                       )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -894,7 +898,7 @@ you should place your code here."
   (setq-default display-line-numbers-width nil)
   ;;
   ;; replace / search with helm-swoop in Evil normal state
-  (evil-global-set-key 'normal "/" 'helm-swoop)
+  ;;(evil-global-set-key 'normal "/" 'helm-swoop)
   ;;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -959,7 +963,7 @@ you should place your code here."
   ;; `SPC g L' - list all Git repositories in the defined paths,
   (setq magit-repository-directories
         '(("~/.emacs.d"  . 0)
-          ("~/projects/" . 2)))
+          ("~/src" . 2)))
   ;;
   ;; end of version control configuration
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -977,7 +981,7 @@ you should place your code here."
   ;;
   ;; Define the location of the file to hold tasks
   (with-eval-after-load 'org
-    (setq org-default-notes-file "~/Dropbox/todo-list.org"))
+    (setq org-default-notes-file "~/todos.org"))
   ;;
   ;; Define a kanban style set of stages for todo tasks
   (with-eval-after-load 'org
@@ -1036,9 +1040,9 @@ you should place your code here."
 
   ;;
   ;; Add TODO files to the agenda automatically
-  (with-eval-after-load 'org-agenda
-    (require 'org-projectile)
-    (push (org-projectile:todo-files) org-agenda-files))
+  ; (with-eval-after-load 'org-agenda
+    ; (require 'org-projectile)
+    ; (push (org-projectile:todo-files) org-agenda-files))
 
   ;;
   ;;
@@ -1292,21 +1296,24 @@ you should place your code here."
 
   )   ;; End of dot-spacemacs/user-config
 
-;; Do not write anything past this comment. This is where Emacs will
-;; auto-generate custom variable definitions.
+  ;; do not write anything past this comment. this is where emacs will
+  ;; auto-generate custom variable definitions.
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(blink-cursor-mode nil)
- '(column-number-mode t)
- '(fringe-mode 0 nil (fringe))
+ '(ansi-color-names-vector
+   ["#0a0814" "#f2241f" "#67b11d" "#b1951d" "#4f97d7" "#a31db1" "#28def0" "#b2b2b2"])
+ '(evil-want-Y-yank-to-eol nil)
  '(package-selected-packages
-   '(sql-indent org-cliplink nord-theme rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby bazel-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode helm-css-scss haml-mode go-guru go-eldoc emmet-mode elm-mode reformatter company-web web-completion-data company-go go-mode company-emacs-eclim eclim adoc-mode markup-faces xterm-color unfill shell-pop ox-gfm mwim multi-term helm-company helm-c-yasnippet fuzzy eshell-z eshell-prompt-extras esh-help company-statistics company clojure-snippets auto-yasnippet ac-ispell auto-complete org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download htmlize gnuplot yaml-mode iedit anzu evil clj-refactor inflections seq queue spinner undo-tree gnu-elpa-keyring-update multiple-cursors paredit yasnippet cider sesman parseedn parseclj clojure-mode cider-eval-sexp-fu a powerline smartparens hydra lv parent-mode projectile pkg-info epl flx highlight goto-chg f dash s bind-map bind-key packed helm avy helm-core popup async mmm-mode markdown-toc markdown-mode gh-md ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint indent-guide hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
-
+   '(yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 (defun dotspacemacs/emacs-custom-settings ()
   "Emacs custom settings.
 This is an auto-generated function, do not modify its content directly, use
@@ -1317,14 +1324,16 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(blink-cursor-mode nil)
- '(column-number-mode t)
+ '(ansi-color-names-vector
+   ["#0a0814" "#f2241f" "#67b11d" "#b1951d" "#4f97d7" "#a31db1" "#28def0" "#b2b2b2"])
  '(evil-want-Y-yank-to-eol nil)
- '(fringe-mode 0 nil (fringe))
  '(package-selected-packages
-   '(helm-gitignore sql-indent org-cliplink nord-theme rvm ruby-tools ruby-test-mode rubocop rspec-mode robe rbenv rake minitest chruby bundler inf-ruby bazel-mode web-mode tagedit slim-mode scss-mode sass-mode pug-mode helm-css-scss haml-mode go-guru go-eldoc emmet-mode elm-mode reformatter company-web web-completion-data company-go go-mode company-emacs-eclim eclim adoc-mode markup-faces xterm-color unfill shell-pop ox-gfm mwim multi-term helm-company helm-c-yasnippet fuzzy eshell-z eshell-prompt-extras esh-help company-statistics company clojure-snippets auto-yasnippet ac-ispell auto-complete org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download htmlize gnuplot yaml-mode iedit anzu evil clj-refactor inflections seq queue spinner undo-tree gnu-elpa-keyring-update multiple-cursors paredit yasnippet cider sesman parseedn parseclj clojure-mode cider-eval-sexp-fu a powerline smartparens hydra lv parent-mode projectile pkg-info epl flx highlight goto-chg f dash s bind-map bind-key packed helm avy helm-core popup async mmm-mode markdown-toc markdown-mode gh-md ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint indent-guide hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
+   '(jinja2-mode flyspell-popup yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
+ '(safe-local-variable-values
+   '((magit-todos-exclude-globs "snippets/*")
+     (javascript-backend . tide)
+     (javascript-backend . tern)
+     (javascript-backend . lsp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
