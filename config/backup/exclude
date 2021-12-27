@@ -1,0 +1,90 @@
+##############
+# Files
+##############
+
+$HOME/Downloads
+$HOME/Sync
+$HOME/.local/share/Trash
+$HOME/.[tT]rash
+$HOME/.davfs2/cache
+$HOME/**/Cache
+$HOME/**/.cache
+$HOME/**/tmp
+$HOME/**/.tmp
+$HOME/**/.dbus
+$HOME/**/.private
+$HOME/**/.encryptfs
+.?local/share/containers/cache
+.?local/share/containers/tmp
+
+##############
+# Applications
+##############
+
+## Chrome/Chromium
+google-chrome/**/Local Storage
+google-chrome/**/Session Storage
+google-chrome/**/Application Cache
+*[cC]hromium/**/Local Storage
+*[cC]hromium/**/Session Storage
+*[cC]hromium/**/Application Cache
+
+## Firefox
+.mozilla/firefox/*/storage
+.mozilla/firefox/*/minidumps
+
+## Thunderbird
+.thunderbird/*/ImapMail
+.thunderbird/*/storage
+.thunderbird/*/minidumps
+
+## VSCode
+.config/Code/*Cache*
+.config/Code/*Crash*
+.config/Code/*Storage*
+.config/Code/logs
+
+## Electron-based
+.config/*/Cache
+.config/*/GPUCache
+.config/*/ShaderCache
+
+## Zoom
+.zoom/data
+.zoom/logs
+
+#############
+# Development
+#############
+
+## Java
+.m2/repository
+
+## Node.js
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+lerna-debug.*
+.pnpm-debug.*
+.grunt
+bower_components
+node_modules
+jspm_packages
+web_modules
+.npm
+.vscode-test
+.yarn/cache*
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+## Python
+$HOME/**/*.py[cod]
+$HOME/**/__pycache__
+.pyenv/versions
+.pyenv/cache
+
+## DynamoDB Local
+.dynamodb/
+

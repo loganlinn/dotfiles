@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+# Copyright 2021 Logan Linn
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -e
+set -u
+set -o pipefail
+[[ -z ${TRACE-} ]] || set -x
+
+PROG=$(basename "$0")
+CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+CONFIG_DIR=$CONFIG_HOME/$PROG
+
+log() { printf "${PROG}[${SECONDS-}]: %b\n" "$@"; } >&2
+
+exclude() {
+	for _pattern; do
+		_backup_flags+=(--exclude "$_pattern")
+	done
+}
+
+exclude-file() {
+	for _file; do
+		_backup_flags+=(--exclude-file "$_file")
+	done
+}
+
+iexclude() {
+	for _pattern; do
+		_backup_flags+=(--iexclude "$_pattern")
+	done
+}
+
+iexclude-file() {
+	for _file; do
+		_backup_flags+=(--iexclude-file "$_file")
+	done
+}
+
+option() {
+	[[ $# -eq 2 ]] || return 1
+	_backup_flags+=(--option "$1=$2")
+}
+
+tag() {
+	[[ $# -eq 1 ]] || return 1
+	_backup_flags+=(--tag "$1")
+}
+
+declare -a _backup_flags=()
+declare -a _backup_paths=()
+
+# shellcheck disable=SC1091
+[[ ! -e ~/.backuprc ]] || . "$HOME/.backuprc"
+
+# shellcheck disable=SC1091
+[[ ! -e $CONFIG_DIR/backuprc ]] || . "$CONFIG_DIR/backuprc"
+
+[[ ! -e $CONFIG_DIR/exclude ]] || exclude-file "$CONFIG_DIR/exclude"
+
+[[ ! -e $CONFIG_DIR/iexclude ]] || iexclude-file "$CONFIG_DIR/iexclude"
+
+[[ -z ${QUIET:-} ]] || _backup_flags+=(--quiet)
+
+declare -a _backup_args=("${_backup_flags[@]}" "${_backup_paths[@]}" "$@")
+
+log "Running: $(printenv | grep '^RESTIC_' | xargs echo || true) restic backup ${_backup_args[*]}"
+
+[[ -z ${DRY_RUN-} ]] || exit 0
+
+echo
+
+exec restic backup "${_backup_args[@]}"
