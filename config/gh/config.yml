@@ -5,17 +5,23 @@ editor:
 # When to interactively prompt. This is a global config that cannot be overridden by hostname. Supported values: enabled, disabled
 prompt: enabled
 # A pager program to send command output to, e.g. "less". Set the value to "cat" to disable the pager.
-pager:
+pager: !!null delta -s
 # Aliases allow you to create nicknames for gh commands
 aliases:
     aliases: alias list
-    v: repo view --web
+    config: '!${EDITOR:-editor} ~/.config/gh/config.yml'
+    open: repo view --web
     co: pr checkout
-    pv: pr view --web
-    land: pr merge --squash --delete-branch
-    config-edit: >-
-        !$EDITOR ~/.config/gh/config.yml
-    # Fuzzy-find a gist with fzf and then view it
-    fzgist: "!GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
-    clone: >-
-        ! set -e ; repository=$1 ; shift ; directory=~/code/$(basename "${repository}") ; directory=${directory%.git} ; git_clone="gh repo clone" ; [[ $repository == *gitlab.com* ]] && git_clone="git clone" ; mkdir -p "${directory}" && ${git_clone} "${repository}" "${directory}"
+    pro: pr view --web
+    pro: pr view --web
+    prm: pr merge --rebase --delete-branch
+    prs: >-
+        pr list --json number,title,headRefName --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}'
+    pr1: >-
+        !gh prs | fzf --ansi --color  | awk '{print $1}'
+    land: >-
+        !pr="$(gh prs | fzf | awk '{print $1}')" && [ -n "$pr" ] && gh pr merge --rebase --delete-branch "$pr"
+    landf: >-
+        !pr="$(gh prs | fzf | awk '{print $1}')" && [ -n "$pr" ] && gh pr merge --rebase --delete-branch --admin "$pr" "$@"
+    # Fuzzy-find a gist with fzf, then view it
+    gists: "!GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
