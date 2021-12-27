@@ -1,51 +1,98 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+SRC_DIR=${SRC_DIR:-$HOME/src}
+export SRC_DIR
 
-[[ -n ${TRACE+x} ]] && set -x
+_src_msg() {
+	printf "%s\n" "$@"
+} >&2
 
-src-url() {
-	local input=$1
-
-	if [[ $input == - ]]; then
-		input=$(</dev/stdin)
-	fi
-
-	case "$input" in
+# Normalize input into URL
+src-repo-url() {
+	case $1 in
 	*://*) # i.e. https://github.com/loganlinn/dotfiles
-		printf "%s" "$input"
+		printf "%s" "$1"
+		return
 		;;
 	*.*/*) # i.e. github.com/loganlinn/dotfiles
-		printf "https://%s" "$input"
+		printf "https://%s" "$1"
+		return
 		;;
 	*/*) # i.e. loganlinn/dotfiles
-		printf "https://github.com/%s" "$input"
+		printf "https://github.com/%s" "$1"
+		return
 		;;
-	*) # i.e. loganlinn
-		input=$(gh repo list "$input" | fzf | cut -f1)
-		printf "https://github.com/%s" "$input"
+	*)
+		if command -v fzf >/dev/null >&2; then
+      local repo
+			if repo=$(gh repo list "$1" | fzf | cut -f1); then
+				printf "https://github.com/%s" "$repo"
+			fi
+			return
+		fi
 		;;
 	esac
+	_src_msg "Failed to convert to repository URL: $1"
+	return 1
+}
+
+src-repo-path() {
+	local url path
+
+	if [[ $1 == *"://"* ]]; then
+		url=$1
+	else
+		url=$(src-repo-url "$1") || return 1
+	fi
+
+	path=${SRC_DIR?}/${url#*://}
+	path=${path%%.git}
+
+	printf '%s' "$path"
+}
+
+src-clone() (
+	set -e
+	for arg; do
+		src_repo=$(src-repo-url "$arg")
+		src_path=$(src-repo-path "$arg")
+
+		if [[ ! -d $src_path ]]; then
+			git clone "$src_repo" "$src_path" >&2
+    else
+      git -C "$src_path" fetch --all >&2
+    fi
+
+		##########################################
+		# Integrate with "smart cd" tools
+		#
+		if command -v zoxide >/dev/null 2>&1; then
+			zoxide add "$src_path" || true
+		fi
+		if command -v fasd >/dev/null 2>&1; then
+			fasd -A "$src_path" || true
+		fi
+		##########################################
+
+    printf '%s\n' "$src_path"
+	done
+)
+
+_src-get_usage() {
+	cat <<EOM
+Usage: src-get <REPO_URL_OR_SLUG>
+EOM
 }
 
 src-get() {
-	local url
-	local path
+	if [[ "$@" = *--help ]] || [[ "$@" = *-h ]]; then
+		_src_get_usage
+		return 0
+	fi
+	if [[ $# -ne 1 ]]; then
+		_src_get_usage >&2
+		return 1
+	fi
 
-	for arg; do
-		url=$(src-url "$arg")
-
-		path=${SRC_DIR:-$HOME/src}/${url#*://}
-		path=${path%%.git}
-
-		if [[ -d $path ]]; then
-			git -C "$path" fetch --all >&2
-		else
-			git clone "$url" "$path" >&2
-		fi
-
-		printf '%s\n' "$path"
-	done
+	cd "$(src-clone "$1")"
 }
-
-src-get "$@"
