@@ -7,3 +7,7 @@ antigen-shapshot
 *~
 **/.cpcache/**
 local/bin/bin
+
+.lsp/.cache
+.clj-kondo/.cache
+
