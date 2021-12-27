@@ -16,3 +16,10 @@ i3-wm.gaps.inner.size:	5
 i3-wm.gaps.outer.size:	5
 i3-wm.program.1: /usr/bin/x-terminal-emulator
 i3-wm.window.border.size:	2
+i3-wm.binding.editor: e
+i3-wm.program.editor: emacsclient -nc -a ""
+
+#i3-wm.program.notifications: /usr/local/bin/dunst
+#i3-wm.program.notification_ui: /usr/local/bin/dunstctl history-pop
+i3xrocks.notify.timestamp.format: %X
+i3xrocks.notify.sort.reverse:  true

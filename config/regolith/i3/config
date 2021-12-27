@@ -97,6 +97,14 @@ bindsym $mod+$i3-wm.binding.terminal exec /usr/bin/x-terminal-emulator
 set_from_resource $i3-wm.binding.browser i3-wm.binding.browser Shift+Return
 bindsym $mod+$i3-wm.binding.browser exec gtk-launch $(xdg-settings get default-web-browser)
 
+## Launch // Editor // <> e ##
+set_from_resource $i3-wm.binding.editor i3-wm.binding.editor e
+set_from_resource $i3-wm.program.editor i3-wm.program.editor /usr/bin/editor
+bindsym $mod+$i3-wm.binding.editor exec $i3-wm.program.editor
+
+set_from_resource $i3-wm.binding.edit.conifg i3-wm.binding.edit.conifg F2
+bindsym $mod+$i3-wm.binding.edit.conifg exec $i3-wm.program.editor ~/.config/regolith
+
 set_from_resource $rofiTheme rofi.theme /etc/regolith/styles/lascaille/rofi.rasi
 
 ## Launch // Application // <> Space ##
