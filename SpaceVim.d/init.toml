@@ -264,8 +264,8 @@
 [[layers]]
   name = "lang#markdown"
 
-# [[layers]]
-#   name = "lang#nix"
+[[layers]]
+  name = "lang#nix"
 
 # [[layers]]
 #   name = "lang#plantuml"
