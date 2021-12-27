@@ -166,3 +166,5 @@ if command_exists clj; then
   alias clj-doc="clj -X:deps help/doc"
   alias clj-dir="clj -X:deps help/dir"
 fi
+
+. $HOME/bin/src-get
