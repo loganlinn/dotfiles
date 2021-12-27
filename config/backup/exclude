@@ -22,16 +22,15 @@ $HOME/**/.encryptfs
 ##############
 
 ## Chrome/Chromium
-google-chrome/**/Local Storage
-google-chrome/**/Session Storage
-google-chrome/**/Application Cache
-*[cC]hromium/**/Local Storage
-*[cC]hromium/**/Session Storage
-*[cC]hromium/**/Application Cache
+google-chrome/**/*Storage*
+google-chrome/**/*Cache*
+*[cC]hromium/**/*Storage*
+*[cC]hromium/**/*Cache*
 
 ## Firefox
 .mozilla/firefox/*/storage
 .mozilla/firefox/*/minidumps
+.mozilla/firefox/*/cache*
 
 ## Thunderbird
 .thunderbird/*/ImapMail
