@@ -19,64 +19,155 @@ set -u
 set -o pipefail
 [[ -z ${TRACE-} ]] || set -x
 
-PROG=$(basename "$0")
-CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-CONFIG_DIR=$CONFIG_HOME/$PROG
+[[ -z ${BACKUP_IN_BACKUPRC-} ]] || exit 2
 
-log() { printf "${PROG}[${SECONDS-}]: %b\n" "$@"; } >&2
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME-$HOME/.config}
 
-exclude() {
+backup=$0
+
+backup_config_dir=$XDG_CONFIG_HOME/backup
+
+backup_log_format=${backup_log_format-"$(basename "$backup"): %b"}
+
+declare -a _backup_flags
+declare -a _backup_paths
+
+# Usage: log_status [<message> ...]
+#
+# Logs a status message. Acts like echo,
+# but wraps output in the standard direnv log format
+#
+#
+# Usage: log_status [<message> ...]
+#
+#
+# Logs a status message. Acts like echo,
+# but wraps output in the standard direnv log format
+# (controlled by $backup_log_format), and directs it
+# to stderr rather than stdout.
+#
+# Example:
+#
+#    log_status "Loading ..."
+#
+log_status() {
+	if [[ -n $backup_log_format ]]; then
+		# shellcheck disable=SC2059,SC1117
+		printf "${backup_log_format}\n" "$*" >&2
+	fi
+}
+
+# Usage: log_error [<message> ...]
+#
+# Logs an error message. Acts like echo,
+# but wraps output in the standard direnv log format
+# (controlled by $backup_log_format), and directs it
+# to stderr rather than stdout.
+#
+# Example:
+#
+#    log_error "Unable to find specified directory!"
+log_error() {
+	if [[ -n $backup_log_format ]]; then
+		printf "$(tput setaf 1)${backup_log_format}$(tput sgr0)\n" "$*" >&2
+	fi
+}
+
+# Usage: has <command>
+#
+# Returns 0 if the <command> is available. Returns 1 otherwise. It can be a
+# binary in the PATH or a shell function.
+#
+# Example:
+#
+#    if has curl; then
+#      echo "Yes we do"
+#    fi
+#
+has() {
+	type "$1" &>/dev/null
+}
+
+#
+#
+#
+backup_exclude() {
 	for _pattern; do
-		_backup_flags+=(--exclude "$_pattern")
+		[[ -z $_pattern ]] || _backup_flags+=(--exclude "$_pattern")
 	done
 }
 
-exclude-file() {
+#
+#
+#
+backup_exclude_file() {
 	for _file; do
-		_backup_flags+=(--exclude-file "$_file")
+		[[ -z $_file ]] || _backup_flags+=(--exclude-file "$_file")
 	done
 }
 
-iexclude() {
+#
+#
+#
+backup_iexclude() {
 	for _pattern; do
-		_backup_flags+=(--iexclude "$_pattern")
+		[[ -z $_pattern ]] || _backup_flags+=(--iexclude "$_pattern")
 	done
 }
 
-iexclude-file() {
+#
+#
+#
+backup_iexclude_file() {
 	for _file; do
-		_backup_flags+=(--iexclude-file "$_file")
+		[[ -z $_file ]] || _backup_flags+=(--iexclude-file "$_file")
 	done
 }
 
-option() {
+#
+#
+#
+backup_option() {
 	[[ $# -eq 2 ]] || return 1
 	_backup_flags+=(--option "$1=$2")
 }
 
-tag() {
+#
+#
+#
+backup_tag() {
 	[[ $# -eq 1 ]] || return 1
 	_backup_flags+=(--tag "$1")
 }
 
-declare -a _backup_flags=()
-declare -a _backup_paths=()
+#------------------------------------------------------------
 
-# shellcheck disable=SC1091
-[[ ! -e ~/.backuprc ]] || . "$HOME/.backuprc"
+for _backuprc in ~/.backuprc "$backup_config_dir"/backuprc; do
+	if [[ -e $_backuprc ]]; then
+		log_status "Loading '$_backuprc'"
+		export BACKUP_IN_BACKUPRC=1
+		# shellcheck disable=SC1091
+		. "$_backuprc"
+		unset BACKUP_IN_BACKUPRC
+		break
+	fi
+done
 
-# shellcheck disable=SC1091
-[[ ! -e $CONFIG_DIR/backuprc ]] || . "$CONFIG_DIR/backuprc"
+if [[ -e $backup_config_dir/exclude ]]; then
+	backup_exclude_file "$backup_config_dir/exclude"
+fi
 
-[[ ! -e $CONFIG_DIR/exclude ]] || exclude-file "$CONFIG_DIR/exclude"
+if [[ -e $backup_config_dir/iexclude ]]; then
+	backup_iexclude_file "$backup_config_dir/iexclude"
+fi
 
-[[ ! -e $CONFIG_DIR/iexclude ]] || iexclude-file "$CONFIG_DIR/iexclude"
-
-[[ -z ${QUIET:-} ]] || _backup_flags+=(--quiet)
+if [[ -n ${QUIET-} ]]; then
+	_backup_flags+=(--quiet)
+fi
 
 declare -a _backup_args=("${_backup_flags[@]}" "${_backup_paths[@]}" "$@")
 
-log "Running: $(printenv | grep '^RESTIC_' | xargs echo || true) restic backup ${_backup_args[*]}"
+log_status "Running: $(printenv | grep '^RESTIC_' | xargs echo || true) restic backup ${_backup_args[*]}"
 
 [[ -z ${DRY_RUN-} ]] || exit 0
 

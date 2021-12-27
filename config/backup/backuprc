@@ -1,0 +1,5 @@
+if has yarn; then
+  backup_exclude "$(yarn cache dir)"
+fi
+
+log_status "Loaded .backuprc"
