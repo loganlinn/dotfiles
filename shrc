@@ -37,6 +37,8 @@ alias sudo='sudo '
 alias printpath='echo $PATH | tr -s ":" "\n"'
 alias printfpath='echo $FPATH | tr -s ":" "\n"'
 
+alias rcup="rcup -v | grep -v '^identical '"
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
