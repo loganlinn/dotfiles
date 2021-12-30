@@ -56,6 +56,21 @@ elif command_exists pbcopy; then
 fi
 
 if command_exists emacs; then
+# -a, --alternate-editor=COMMAND
+#        if the Emacs server is not running, run the specified shell command instead.  This can also be specified  via  the  ALTER‐
+#        NATE_EDITOR  environment  variable.   If  the value of ALTERNATE_EDITOR is the empty string, run "emacs --daemon" to start
+#        Emacs in daemon mode, and try to connect to it.
+#
+# -c, --create-frame
+#       create a new frame instead of trying to use the current Emacs frame
+#
+# -n, --no-wait
+#        returns  immediately without waiting for you to "finish" the buffer in Emacs.  If combined with --eval, this option is ig‐
+#        nored.
+#
+# -nw, -t, --tty
+#        open a new Emacs frame on the current terminal
+#
   alias ec='emacsclient -nc -a ""'
   alias eg='emacsclient -n -a ""'
   alias et='TERM=xterm-256color emacsclient -t -a ""'
