@@ -1,5 +1,9 @@
 # ~/.shrc: user-specific run commands for the Bourne shell (sh(1))
 # and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+#
+
+PATH="$HOME/bin:$HOME/.local/bin:$HOME/.fzf/bin:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.krew/bin:$PATH"
+export PATH
 
 [ -n "$ENV" ] || . "$HOME"/.profile
 
@@ -129,7 +133,8 @@ fi
 
 # dotfiles
 alias dotgit='git -C ~/.dotfiles'
-alias dotsh='env -C ~/.dotfiles ${=SHELL}'
+alias dotsh='env -C ~/.dotfiles ${SHELL?}'
+alias dotedit='env -C ~/.dotfiles ${EDITOR-editor}'
 
 # kitty
 if command_exists kitty; then
@@ -182,4 +187,9 @@ if command_exists clj; then
   alias clj-dir="clj -X:deps help/dir"
 fi
 
-. $HOME/bin/src-get
+if command_exists bb; then
+	alias bbr="BABASHKA_PRELOADS='(load-file (str (System/getenv \"HOME\") \"/.config/babashka/preload.clj\"))' rlwrap bb"
+fi
+
+# TODO move src-get path so its more conventional
+. "$HOME/bin/src-get"
