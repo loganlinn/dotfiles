@@ -697,7 +697,7 @@ for_window [urgent=latest] focus
 
 for_window [title="^zoom$" class="[zoom]*"] floating enable
 for_window [class="1Password"] floating enable
-for_window [class="com.system76.keyboardconfigurator"] floating enable
+for_window [class="System76 Keyboard Configurator"] floating enable
 
 assign [class="Slack"] → workspace "9: Chat"
 assign [class="Chromium-browser" title="Linear"] → workspace "4: Linear"
