@@ -178,11 +178,15 @@ This function should only modify configuration layer settings."
           org-journal-time-prefix "* "
           org-journal-time-format ""
           org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"BLOCKED\"|TODO=\"REVIEW\""
-          org-projectile-file "notes.org")
+          org-projectile-file "notes.org"
+          org-plantuml-jar-path "~/.m2/repository/net/sourceforge/plantuml/plantuml/8059/plantuml-8059.jar" ;; See note plantuml-jar-path
+          )
 
      (plantuml :variables
-               plantuml-jar-path "~/.local/share/plantuml/plantuml.jar"
-               org-plantuml-jar-path "~/.local/share/plantuml/plantuml.jar")
+               ;; Fetch + locate PlantUML JAR:
+               ;;   clojure -Sdeps '{:deps {net.sourceforge.plantuml/plantuml {:mvn/version "RELEASE"}}}' -Spath
+               plantuml-jar-path "~/.m2/repository/net/sourceforge/plantuml/plantuml/8059/plantuml-8059.jar"
+               )
 
      protobuf
 
