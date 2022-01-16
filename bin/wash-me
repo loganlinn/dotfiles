@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+_wash_apt() {
+	apt autoclean --yes
+	apt clean --yes
+}
+
+_wash_journald() {
+	journalctl --rotate
+	journalctl --vacuum-time=1s
+}
+
+_wash_docker() {
+	docker system prune --all
+}
+
+_wash_flatpak() {
+	flatpak uninstall --unused
+}
+
+_wash_podman() {
+	podman container cleanup --all
+}
+
+_wash_brew() {
+	brew cleanup
+}
+
+_wash_conda() {
+	conda clean --all
+}
+
+_wash_npm() {
+	npm cache clean --force
+}
+
+_wash_yarn() {
+	yarn cache clean
+}
+
+wash-list() {
+	compgen -A function | grep '^_wash_' | sed 's/^_wash_//'
+}
+
+wash-show() {
+	echo "[wash-me] $1: showing '_wash_$1' definitions"
+	echo
+	declare -f "_wash_$1" | sed '1,2d;$d' | cat -n
+	echo
+}
+
+wash-run() {
+	local n=$1
+	local f="_wash_$n"
+	local c=("$f" "${@:2}")
+	local e=0
+
+	while true; do
+		unset REPLY
+		read -r -i y -p "[wash-me] $n: run '${c[*]}' [y,n,s,q,?]? " REPLY
+		case "$REPLY" in
+		y)
+      echo
+			"${c[@]}"
+      e=$?
+      echo
+      if [[ $e -ne 0 ]]; then
+				echo "[wash-me] $n: '$f' failed with exit status '$e'"
+			fi
+			return 1
+			;;
+		n)
+			echo "[wash-me] $n: skipped"
+			return 0
+			;;
+		s)
+			wash-show "$n"
+			;;
+		q)
+			exit 0
+			;;
+		\?)
+      echo
+			echo "y - invokes '${c[*]}'"
+			echo "n - cancels"
+			echo "q - quits"
+			echo "s - displays '$f' definitions"
+			echo
+			;;
+		*)
+      printf %b "$REPLY: invalid input\n"
+			;;
+		esac
+	done
+}
+
+wash-me() {
+	local n
+	for n in $(wash-list); do
+		wash-run "$n"
+	done
+}
+
+wash-me
