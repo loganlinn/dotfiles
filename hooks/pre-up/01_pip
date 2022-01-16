@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+# Note: using system python to avoid pyenv shim intall of pipx
+PYTHON=$(which -a python3 | grep -v pyenv -m1)
+
+say() {
+  printf "[$0]: %s\n" "$@" >&2
+}
+
+gtfo() {
+  say "$@"
+  say "aborting..."
+  exit
+}
+
+[[ -x $PYTHON ]] || gtfo "unable to find system 'python3' on PATH"
+"$PYTHON" -m pip >/dev/null 2>&1  || gtfo echo "unable to detect 'pip' using '$PYTHON'"
+
+if ! command -v pipx 2>/dev/null; then
+  say "installing 'pipx'..." >&2
+  /usr/bin/python3 -m pip install --user pipx
+  /usr/bin/python3 -m pipx ensurepath
+fi
