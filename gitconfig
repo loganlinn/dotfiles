@@ -27,6 +27,13 @@
 [diff]
 	wsErrorHighlight = all
 	colorMoved = zebra
+    tool = meld
+
+[difftool]
+    prompt = false
+
+[difftool "meld"]
+    cmd = meld "$LOCAL" "$REMOTE"
 
 [apply]
 	whitespace = nowarn
