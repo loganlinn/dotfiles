@@ -174,13 +174,13 @@
 ################
 
 # Get PurpleAir sensor ID
-unless (defined $ENV{'SENSOR_ID'}) {
-  print STDERR "Missing required environment variable 'SENSOR_ID'.\n";
+unless (defined $ENV{'PURPLEAIR_SENSOR_ID'}) {
+  print STDERR "Missing required environment variable 'PURPLEAIR_SENSOR_ID'.\n";
   exit 1;
 }
 
-$sensor_id = $ENV{'SENSOR_ID'};
-$sensor_key = $ENV{'SENSOR_KEY'};
+$sensor_id = $ENV{'PURPLEAIR_SENSOR_ID'};
+$sensor_key = $ENV{'PURPLEAIR_SENSOR_KEY'};
 $measurement_name = $ENV{'MEASUREMENT'} // 'US_AQI';
 
 unless (defined %measurement_subs{$measurement_name}) {

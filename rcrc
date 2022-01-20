@@ -4,7 +4,7 @@ COPY_ALWAYS="git_template/HEAD ssh/id_* local/share/fonts/* local/bin/bin"
 
 EXCLUDES="README* LICENSE THANKS Makefile installers/* *~"
 
-SYMLINK_DIRS="zsh config/regolith/i3xrocks"
+SYMLINK_DIRS="zsh"
 
 # i.e. tag-darwin, tag-linux
 TAGS="$(uname -s | tr '[:upper:]' '[:lower:]')"
