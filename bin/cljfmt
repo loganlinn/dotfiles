@@ -1,3 +1,7 @@
 #!/bin/sh 
 
-exec clojure -Sdeps '{:deps {cljfmt/cljfmt {:mvn/version "'"${CLJFMT_VERSION-0.8.0}"'"}}}' -m cljfmt.main "$@"
+exec clojure \
+  -Sdeps '{:deps {cljfmt/cljfmt {:mvn/version "'"${CLJFMT_VERSION-0.8.0}"'"}}}' \
+  -M \
+  --report stderr \
+  --main cljfmt.main "$@"
