@@ -32,7 +32,8 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(javascript
+   '(python
+     javascript
 
      (auto-completion :disabled-for org markdown
                       :variables
@@ -47,20 +48,30 @@ This function should only modify configuration layer settings."
 
      better-defaults
 
+     ;; See https://practical.li/spacemacs/reference/cider/configuration-variables.html
      (clojure :variables
               ;; clojure-backend 'cider               ;; use cider and disable lsp
               ;; clojure-enable-linters 'clj-kondo    ;; clj-kondo included in lsp
+              cider-annotate-completion-candidates nil
+              cider-annotate-completion-function nil
+              cider-clojure-cli-aliases ":dev"
+              cider-completion-annotations-alist nil
+              cider-completion-annotations-include-ns nil
+              cider-edit-jack-in-command t
+              cider-infer-remote-nrepl-ports nil
               cider-overlays-use-font-lock t
               cider-pprint-fn 'fipp                   ;; fast pretty printing
+              cider-preferred-build-tool 'clojure-cli
               cider-repl-buffer-size-limit 100        ;; limit lines shown in REPL buffer
               cider-repl-display-help-banner nil      ;; disable help banner
+              cider-repl-pop-to-buffer-on-connect t
+              cider-repl-require-ns-on-set nil
               cider-result-overlay-position 'at-point ;; results shown right after expression
               clojure-align-forms-automatically t
+              clojure-enable-clj-refactor t
               clojure-indent-style 'align-arguments
               clojure-toplevel-inside-comment-form t  ;; evaluate expressions in comment as top level
               enable-fancify-symbols t
-              clojure-enable-clj-refactor t
-              cider-repl-buffer-size-limit 100        ;; limit lines shown in REPL buffer
               )
 
      ;; Nyan cat indicating relative position in current buffer
@@ -96,6 +107,8 @@ This function should only modify configuration layer settings."
      ;; SPC g g to use GitHub Gists
      github
 
+     graphql
+
      ;; graphviz - open-source graph declaration system
      ;; Used to generated graphs of Clojure project dependencies
      ;; https://develop.spacemacs.org/layers/+lang/graphviz/README.html
@@ -106,6 +119,8 @@ This function should only modify configuration layer settings."
      java
 
      json
+
+     kubernetes
 
      ;; Language server protocol with minimal visual impact
      ;; https://practicalli.github.io/spacemacs/install-spacemacs/clojure-lsp/lsp-variables-reference.html
@@ -160,16 +175,35 @@ This function should only modify configuration layer settings."
 
      ;; Editing multiple lines of text concurrently
      ;; `g r' menu in Emacs normal state
-     multiple-cursors
+     ;; multiple-cursors
 
-     ;; Spacemacs Org mode
+     ;; [[https://develop.spacemacs.org/layers/+os/nixos/README.html]]
+     (nixos :variables
+            nixos-format-on-save t)
+
+     ;; [[https://www.spacemacs.org/layers/+emacs/org/README.html]]
      (org :variables
-          org-enable-github-support t
-          org-enable-bootstrap-support t
-          org-enable-reveal-js-support t
-          org-enable-hugo-support t
+          org-directory (expand-file-name "~/org")
+          org-default-notes-file (concat org-directory "/inbox.org")
+          org-projectile-file (concat org-directory "/todos.org")
+
+          org-enable-roam-support t
+          org-enable-roam-server nil       ;; [[https://github.com/org-roam/org-roam-server]]
+          org-enable-roam-protocol nil     ;; [[https://www.orgroam.com/manual.html#Org_002droam-Protocol]]
+          org-roam-directory (concat org-directory "/roam")
+          org-roam-db-location (concat org-roam-directory "/db/org-roam.db")
+
+          org-enable-github-support t      ;; [[https://github.com/larstvei/ox-gfm]]
+          org-enable-hugo-support t        ;; [[https://develop.spacemacs.org/layers/+emacs/org/README.html#hugo-support]]
+          org-enable-bootstrap-support nil
+          org-enable-org-brain-support nil ;; [[https://kungsgeten.github.io/org-brain.html]]
+          org-enable-reveal-js-support nil ;; [[https://github.com/yjwen/org-reveal/]]
+
           org-enable-valign t
+          valign-fancy-bar t
+
           org-want-todo-bindings nil
+
           org-enable-org-journal-support nil
           org-journal-dir "~/journal/"
           org-journal-file-format "%Y-%m-%d"
@@ -178,15 +212,10 @@ This function should only modify configuration layer settings."
           org-journal-time-prefix "* "
           org-journal-time-format ""
           org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"BLOCKED\"|TODO=\"REVIEW\""
-          org-projectile-file "notes.org"
-          org-plantuml-jar-path "~/.m2/repository/net/sourceforge/plantuml/plantuml/8059/plantuml-8059.jar" ;; See note plantuml-jar-path
           )
 
-     (plantuml :variables
-               ;; Fetch + locate PlantUML JAR:
-               ;;   clojure -Sdeps '{:deps {net.sourceforge.plantuml/plantuml {:mvn/version "RELEASE"}}}' -Spath
-               plantuml-jar-path "~/.m2/repository/net/sourceforge/plantuml/plantuml/8059/plantuml-8059.jar"
-               )
+     plantuml
+
 
      protobuf
 
@@ -196,7 +225,7 @@ This function should only modify configuration layer settings."
            rust-format-on-save t)
 
      (shell :variables
-            shell-default-shell 'ansi-term ;'eshell
+            shell-default-shell 'eshell
             shell-default-height 30
             shell-default-position 'bottom)
 
@@ -221,7 +250,7 @@ This function should only modify configuration layer settings."
      ;; requires external command - ispell, hunspell, aspell
      ;; SPC S menu, SPC S s to check current word
      (spell-checking :variables
-                     spell-checking-enable-by-default t
+                     spell-checking-enable-by-default nil
                      enable-flyspell-auto-completion t)
 
      ;; Use original flycheck fringe bitmaps
@@ -231,10 +260,16 @@ This function should only modify configuration layer settings."
      ;; Visual file manager - `SPC p t'
      ;; treemacs-no-png-images t removes file and directory icons
      (treemacs :variables
+               ;; treemacs-use-git-mode 'deferred
+               treemacs-hide-gitignored-files-mode t
+               treemacs-indent-style-guide 'block
                treemacs-indentation 1
+               ;; treemacs-litter-directories '("/node_modules" "/.venv" "/.cask" ".clj-kondo" ".lsp")
+               treemacs-show-hidden-files t
                treemacs-use-filewatch-mode t
                treemacs-use-follow-mode t
-               ;; treemacs-use-git-mode 'deferred
+               treemacs-width 42
+               treemacs-width-is-initially-locked t
                )
 
      ;; Customise the Spacemacs themes
@@ -255,7 +290,8 @@ This function should only modify configuration layer settings."
                       version-control-diff-tool 'diff-hl
                       version-control-global-margin t)
 
-     yaml
+     (yaml :variables
+           yaml-enable-lsp t)
 
      ) ;; End of dotspacemacs-configuration-layers
 
@@ -393,10 +429,10 @@ It should only modify the values of Spacemacs settings."
    ;; pair of numbers, e.g. `(recents-by-project . (7 .  5))', where the first
    ;; number is the project limit and the second the limit on the recent files
    ;; within a project.
-   dotspacemacs-startup-lists '((projects . 7)
+   dotspacemacs-startup-lists '((projects . 10)
                                 (todos . 5)
-                                (bookmarks . 10)
-                                (recents . 5))
+                                (bookmarks . 5)
+                                (recents . 10))
 
    ;; True if the home buffer should respond to resize events. (default t)
    dotspacemacs-startup-buffer-responsive t
@@ -430,10 +466,16 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(nord
-                         doom-gruvbox-light
-                         spacemacs-dark
-                         spacemacs-light)
+   dotspacemacs-themes '(
+                         doom-one
+                         doom-one-light
+                         ;; doom-nord
+                         ;; doom-nord-light
+                         ;; doom-gruvbox-light
+                         ;; doom-gruvbox
+                         ;; spacemacs-dark
+                         ;; spacemacs-light
+                         )
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
    ;; `all-the-icons', `custom', `doom', `vim-powerline' and `vanilla'. The
@@ -456,7 +498,7 @@ It should only modify the values of Spacemacs settings."
    ;;                            :width normal
    ;;                            :powerline-scale 1.1)
    dotspacemacs-default-font '("Fira Code"
-                               :size 12.0
+                               :size 11.0
                                :weight normal
                                :width normal)
 
@@ -795,14 +837,36 @@ you should place your code here."
 
   (setq evil-want-fine-undo t)
   (setq vc-follow-symlinks t) ;; automatically follow symlink to version-controlled file (ex. this file)
+
   ;; Make Spacemacs use helm-project-do-ag directly when pressing SPC / without preselecting the symbol under the cursor.
   (evil-leader/set-key "/" 'spacemacs/helm-project-do-ag)
   ;; (setq helm-ag-base-command "rg --vimgrep --no-heading --line-number --smart-case")
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; PlantUML
+
+  ;; To download the latest version of PlantUML straight into plantuml-jar-path: `M-x plantuml-download-jar<RET>`
+  (setq plantuml-jar-path (expand-file-name "~/.local/lib/plantuml/libexec/plantuml.jar")
+        org-plantuml-jar-path plantuml-jar-path
+        plantuml-default-exec-mode 'jar)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; nREPL
   ;; Connecting to a reomote nREPL server
   (setq nrepl-use-ssh-fallback-for-remote-hosts t)
+
+  (defun portal.api/open ()
+    (interactive)
+    (cider-nrepl-sync-request:eval
+      "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
+
+  (defun portal.api/clear ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+
+  (defun portal.api/close ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/close)"))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Keycast - show Emacs commands in mode line
@@ -1331,10 +1395,15 @@ This function is called at the very end of Spacemacs initialization."
  '(ansi-color-names-vector
    ["#0a0814" "#f2241f" "#67b11d" "#b1951d" "#4f97d7" "#a31db1" "#28def0" "#b2b2b2"])
  '(evil-want-Y-yank-to-eol nil)
+ '(helm-completion-style 'helm)
  '(package-selected-packages
-   '(jinja2-mode flyspell-popup yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
+   '(ox-hugo org-roam yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
  '(safe-local-variable-values
-   '((magit-todos-exclude-globs "snippets/*")
+   '((setq cider-clojure-cli-global-options . "-A:dev:test:build")
+     (setq cider-clojure-cli-global-options "-A:dev:test:build")
+     (setq cider-clojure-cli-global-options "-A:dev:build")
+     (setq cider-clojure-cli-global-options "-A:dev")
+     (magit-todos-exclude-globs "snippets/*")
      (javascript-backend . tide)
      (javascript-backend . tern)
      (javascript-backend . lsp))))
