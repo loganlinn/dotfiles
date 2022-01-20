@@ -11,35 +11,31 @@ ZOOM_PKG_URL=https://zoom.us/client/latest/zoom_amd64.deb
 ZOOM_PKG_FILE=${XDG_CACHE_HOME:-$HOME/.cache}/zoom/zoom_amd64.deb
 
 say() {
-  printf '%s\n' "$@"
+	printf '%b\n' "$@"
 }
 
 err() {
-    say "error: $1" >&2
-    exit 1
+	say "error: $*" >&2
+	exit 1
 }
 
-has_command() {
-  command -v "$1" >/dev/null 2>&1
+command_exists() {
+	command -v "$1" >/dev/null 2>&1
 }
 
-require_command() {
-  has_command "$1" || err "'$1' command is required"
+command_required() {
+	command_exists "$1" || err "'$1' command is required"
 }
 
-has_key() {
-  gpg --list-keys "$1" 2>/dev/null
-}
-
-require_command curl
-require_command gpg
-require_command dpkg
-require_command dpkg-sig
+command_required curl
+command_required gpg
+command_required dpkg
+command_required dpkg-sig
 
 ostype="$(uname -s)"
 case "$ostype" in
-  Linux*) true ;;
-  *) err "Unsupported OS: $ostype" ;;
+Linux*) true ;;
+*) err "Unsupported OS: $ostype" ;;
 esac
 
 cputype=$(uname -m)
@@ -50,27 +46,38 @@ esac
 
 ########
 
-set -eo pipefail
+zoom_pubkey_check() {
+	gpg --list-keys "$ZOOM_PKG_SIGNING_KEY_ID"
+}
 
-say "Installing: Zoom Client for Linux"
+zoom_pubkey_import() {
+  curl -sSL "$ZOOM_PKG_SIGNING_KEY_URL" | gpg --import -
+}
 
-say "→ Checking keyring for '$ZOOM_PKG_SIGNING_KEY_ID'..."
-if has_key "$ZOOM_PKG_SIGNING_KEY_ID" 2>/dev/null; then
-  say "→ Found Zoom package signing key '$ZOOM_PKG_SIGNING_KEY_ID'"
-else
-  say "→ Importing Zoom package signing key '$ZOOM_PKG_SIGNING_KEY_ID'"
-  curl -sSLf "$ZOOM_PKG_SIGNING_KEY_URL" | gpg --import -
-fi
+zoom_install() (
+	set -eo pipefail
 
-say "→ Downloading '$ZOOM_PKG_URL'..."
-mkdir -p "$(dirname -- "$ZOOM_PKG_FILE")"
-curl -SLf -o "$ZOOM_PKG_FILE" --progress-bar "$ZOOM_PKG_URL"
+	say "Installing: Zoom Client for Linux"
 
-say "→ Checking package signature..."
-dpkg-sig "$ZOOM_PKG_FILE" || err "package signature could not be verified"
-say "→ Package signature verified"
+	say "→ Checking GPG keyring for '${ZOOM_PKG_SIGNING_KEY_ID?}'..."
+  if ! zoom_pubkey_check; then
+    say "→ Importing Zoom package signing key '$ZOOM_PKG_SIGNING_KEY_ID'"
+    zoom_pubkey_import
+    zoom_pubkey_check >/dev/null 2>&1 || err ""
+  fi
 
-say "→ Installing package..."
-sudo dpkg --install "$ZOOM_PKG_FILE"
+	say "→ Downloading '$ZOOM_PKG_URL'..."
+	mkdir -p "$(dirname -- "$ZOOM_PKG_FILE")"
+	curl -SLf -o "$ZOOM_PKG_FILE" --progress-bar "$ZOOM_PKG_URL"
 
-say "→ Done!"
+	say "→ Checking package signature..."
+	dpkg-sig "$ZOOM_PKG_FILE" || err "package signature could not be verified"
+	say "→ Package signature verified"
+
+	say "→ Installing package..."
+	sudo dpkg --install "$ZOOM_PKG_FILE"
+
+	say "→ Done!"
+)
+
+zoom_install

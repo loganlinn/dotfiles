@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+require() { hash "$@" || exit 1; }
+
+require gpg
+
+gpg --receive-keys 3FEF9748469ADBE15DA7CA80AC2D62742012EA22
+gpg --verify op.sig op
