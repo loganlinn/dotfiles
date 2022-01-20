@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+GITHUB_COPILOT_VIM_GITSHA=c01314840b94da0b9767b52f8a4bbc579214e509 
+GITHUB_COPILOT_VIM_DIR=${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/pack/github/start/copilot.vim
+
+install_github_copilot_nvim_plugin() {
+  if ! hash nvim 2>/dev/null; then
+    echo >&2 "[$0]: skipping 'github/copilot.vim' setup: no such command: nvim"
+    return
+  fi
+
+  echo >&2 "[$0]: setting up 'github/copilot.vim' in $GITHUB_COPILOT_VIM_DIR"
+  if [[ -d $GITHUB_COPILOT_VIM_DIR ]]; then
+    git -C "$GITHUB_COPILOT_VIM_DIR" fetch origin
+    git -C "$GITHUB_COPILOT_VIM_DIR" checkout "$GITHUB_COPILOT_VIM_GITSHA"
+  else
+    rm -rf "$GITHUB_COPILOT_VIM_DIR"
+    git clone --quiet \
+      --branch "$GITHUB_COPILOT_VIM_GITSHA" \
+      --depth 1 \
+      https://github.com/github/copilot.vim.git "$GITHUB_COPILOT_VIM_DIR"
+  fi
+}
+
+install_github_copilot_nvim_plugin || true
