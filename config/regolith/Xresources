@@ -10,28 +10,23 @@
 i3-wm.bar.position: top
 i3-wm.bar.status_command: SCRIPT_DIR=~/.config/regolith/i3xrocks/scripts i3xrocks -u ~/.config/regolith/i3xrocks/conf.d -d /etc/regolith/i3xrocks/conf.d
 i3-wm.binding.editor: e
+i3-wm.binding.mark_current_window: m
 i3-wm.binding.ws_back_and_forth: Tab
 i3-wm.binding.ws_next: bracketright
 i3-wm.binding.ws_prev: bracketleft
-i3-wm.client.focused.color.border: #8968CD
 i3-wm.client.focused.color.background: #8968CD
-i3-wm.client.focused.color.text: #8968CD
-i3-wm.client.focused.color.indicator:	#8968CD
+i3-wm.client.focused.color.border: #8968CD
 i3-wm.client.focused.color.child_border: #8968CD
+i3-wm.client.focused.color.indicator:	#8968CD
+i3-wm.client.focused.color.text: #8968CD
 i3-wm.floatingwindow.border.size: 1
-i3-wm.gaps.inner.size:	5
-i3-wm.gaps.outer.size:	5
+i3-wm.gaps.inner.size:	3
+i3-wm.gaps.outer.size:	3
 i3-wm.program.1: /usr/bin/x-terminal-emulator
 i3-wm.program.editor: emacsclient -nc -a ""
+i3-wm.program.notifications: /usr/local/bin/rofication-daemon
 i3-wm.window.border.size:	1
 
-#i3-wm.program.notifications: /usr/local/bin/dunst
-#i3-wm.program.notification_ui: /usr/local/bin/dunstctl history-pop
-i3-wm.program.notifications: /usr/local/bin/rofication-daemon
-i3-wm.program.notification_ui: /usr/local/bin/rofication-gui
-
-i3xrocks.notify.timestamp.format: %X
-
-# show newest notifications first
-# requires patch: https://github.com/loganlinn/regolith-rofication/commit/18a6b7c76f318461a8786782ef31bfb415611c2f
-i3xrocks.notify.sort.reverse:  true
+! Notifications use fork: https://github.com/loganlinn/regolith-rofication
+i3-wm.program.notification_ui: /usr/local/bin/rofication-gui --reverse
+i3xrocks.notify.timestamp.format: %x %X
