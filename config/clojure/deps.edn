@@ -11,31 +11,25 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; REPL and nREPL connections
 
-  :nREPL
-  {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}}}
-
-  ;; - see https://github.com/bhauman/rebel-readline
-  ;; - start a Rebel Readline REPL:
-  :rebel
-  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
-   :main-opts ["-m" "rebel-readline.main"]}
-
-  ;;   - clojure -M:rebel:dev/repl
-  ;;   - clojure -M:fig:build:dev/repl
   :dev/repl
   {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
+   :extra-deps {fipp/fipp {:mvn/version "0.6.24"}}
    :main-opts ["-e" "(load-file,(str,(System/getProperty,\"user.home\"),\"/.config/clojure/dev.clj\"))"]}
 
-  #_#_
-  :dev/repl
-  {:extra-paths ["dev" "development"]
-   :extra-deps {cider/cider-nrepl          {:mvn/version "0.27.2"}
-                com.bhauman/rebel-readline {:mvn/version "0.1.4"}
-                org.clojure/tools.namespace {:mvn/version "1.1.1"}}
-   :main-opts  ["-m" "nrepl.cmdline" ;; see: https://github.com/nrepl/nrepl/blob/master/src/clojure/nrepl/cmdline.clj
-                "--middleware" "[cider.nrepl/cider-middleware]"
-                "--interactive"
-                "--repl-fn" "rebel-readline.main/-main"]}
+  :nrepl
+  {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}}}
+
+  :cider
+  {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}
+                cider/cider-nrepl {:mvn/version "0.26.0"}
+                refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}}
+
+  ;; NOTE: avoid using `rebel-readlines` with `rlwrap`...
+  ;;       i.e. prefer `clojure` over `clj` when using
+  ;; See [[https://github.com/bhauman/rebel-readline]]
+  :rebel
+  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
+   :main-opts  ["-m" "rebel-readline.main"]}
 
   ;; Built-in Clojure REPL
   ;; Run interactive REPL with nREPL connection
