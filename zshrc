@@ -7,12 +7,12 @@
 . ~/.shrc
 
 () {
-  for i; do
-    if [[ -f $i && $i != *".zwc" ]]; then
-      . "$i"
+  for f; do
+    if [[ -f $f && $f != *".zwc" ]]; then
+      . "$f"
     fi
   done
-  unset i
+  unset f
 } ~/.zsh/functions/* \
 	~/.zsh/configs{-pre,,-post}/**/*(N-.) \
 	~/.zsh/completion.zsh \
@@ -26,15 +26,17 @@ function_exists() {
   (( $+functions[$1]))
 }
 
-alias -g eless='2>&1 | less'
+autoload -U zmv
+alias zcp='zmv -C'
+alias zln='zmv -L'
 
-if autoload -U zmv; then
-  alias zcp='zmv -C'
-  alias zln='zmv -L'
-fi
-
-if (( $+commands[starship] )); then
+if command_exists starship; then
   eval "$(starship init zsh)"
 fi
 
+if command_exists zoxide; then
+  eval "$(zoxide init zsh)"
+fi
+
 # zprof
+

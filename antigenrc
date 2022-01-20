@@ -1,25 +1,22 @@
 #!/usr/bin/env zsh
 
-antigen use oh-my-zsh
+# not using omz anymore because it creates a unwanted aliases, e.g. `ls`. see https://github.com/ohmyzsh/ohmyzsh/pull/10510.
+# antigen use oh-my-zsh
 
 # See also:
 # - https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
 # - https://github.com/unixorn/awesome-zsh-plugins
 antigen bundles <<EOL
     colored-man-pages
-    fasd
     fzf
-    genpass
     git
     gitignore
     gpg-agent
     ssh-agent
     terraform
     urltools
-    web-search
     zsh-interactive-cd
     Aloxaf/fzf-tab
-    clvv/fasd
     jeffreytse/zsh-vi-mode
     johanhaleby/kubetail
     loganlinn/zzz.plugin.zsh
@@ -28,9 +25,6 @@ antigen bundles <<EOL
     zsh-users/zsh-completions 
     zsh-users/zsh-history-substring-search 
 EOL
-
-[[ -d ~/.pyenv ]] && antigen bundle pyenv
-[[ -d ~/.jenv  ]] && antigen bundle jenv
 
 for _zsh_custom_plugin in $ZSH_CUSTOM/plugins/*(/); do
   antigen bundle "$_zsh_custom_plugin" --no-local-clone
@@ -48,8 +42,8 @@ export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
 export FORGIT_ADD_FZF_OPTS='--ansi'
 
 # jeffreytse/zsh-vi-mode
-ZVM_LAZY_KEYBINDINGS=false
-ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
+export ZVM_LAZY_KEYBINDINGS=false
+export ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
 
 function zvm_after_init() {
 	# zvm overwrites fzf-history-widget bindkey

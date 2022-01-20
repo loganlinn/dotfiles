@@ -7,17 +7,10 @@ if (( $+commands[go] )); then
   path=($(go env GOPATH)/bin $path)
 fi
 
-# Moved to ~/.shrc
-# path=(
-#   ~/bin
-#   ~/.local/bin
-#   ~/.fzf/bin
-#   ~/.pyenv/bin
-#   ~/.cargo/bin
-#   ~/.krew/bin
-#   ~/.bash-my-aws
-#   ~/go/bin
-#   $path
-# )
+fpath=(
+  ~/.zsh/completion
+  ~/.zsh/functions
+  ~/.asdf/completions
+  $fpath
+)
 
-path+=(/usr/local/{s,}bin)

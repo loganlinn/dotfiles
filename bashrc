@@ -13,21 +13,28 @@
 	. ~/.bashrc.local
 
 #: https://starship.rs/
-if hash starship 2>/dev/null; then
+if command_exists starship; then
 	eval "$(starship init bash)"
 fi
 
+# https://github.com/ajeetdsouza/zoxide
+if command_exists zoxide; then
+  eval "$(zoxide init bash)"
+fi
+
 #: https://dystroy.org/broot/
-function br {
-	local cmd cmd_file code
-	cmd_file=$(mktemp)
-	if broot --outcmd "$cmd_file" "$@"; then
-		cmd=$(<"$cmd_file")
-		rm -f "$cmd_file"
-		eval "$cmd"
-	else
-		code=$?
-		rm -f "$cmd_file"
-		return "$code"
-	fi
-}
+if command_exists broot; then
+  br () {
+    local cmd cmd_file code
+    cmd_file=$(mktemp)
+    if broot --outcmd "$cmd_file" "$@"; then
+      cmd=$(<"$cmd_file")
+      rm -f "$cmd_file"
+      eval "$cmd"
+    else
+      code=$?
+      rm -f "$cmd_file"
+      return "$code"
+    fi
+  }
+fi

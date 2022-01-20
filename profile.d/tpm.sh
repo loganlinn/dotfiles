@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/env sh
 
 tpm() {
 	if [ -z "$TMUX_PLUGIN_MANAGER_PATH" ]; then
