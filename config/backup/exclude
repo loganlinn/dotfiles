@@ -1,25 +1,23 @@
-##############
+# -----
 # Files
-##############
+# -----
 
+.cache
 $HOME/Downloads
 $HOME/Sync
 $HOME/.local/share/Trash
 $HOME/.[tT]rash
 $HOME/.davfs2/cache
 $HOME/**/Cache
-$HOME/**/.cache
 $HOME/**/tmp
 $HOME/**/.tmp
 $HOME/**/.dbus
 $HOME/**/.private
 $HOME/**/.encryptfs
-.?local/share/containers/cache
-.?local/share/containers/tmp
 
-##############
+# ------------
 # Applications
-##############
+# ------------
 
 ## Chrome/Chromium
 google-chrome/**/*Storage*
@@ -52,9 +50,9 @@ google-chrome/**/*Cache*
 .zoom/data
 .zoom/logs
 
-#############
-# Development
-#############
+# -------------------
+# Runtime Environment
+# -------------------
 
 ## Java
 .m2/repository
@@ -84,6 +82,12 @@ $HOME/**/__pycache__
 .pyenv/versions
 .pyenv/cache
 
+# -----
+# Other
+# -----
+
+$HOME/.local/share/containers/cache
+$HOME/.local/share/containers/tmp
+
 ## DynamoDB Local
 .dynamodb/
-
