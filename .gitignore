@@ -11,3 +11,5 @@ local/bin/bin
 .lsp/.cache
 .clj-kondo/.cache
 
+gitconfig.local
+config/git/config.local

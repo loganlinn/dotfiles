@@ -62,7 +62,7 @@ elif command_exists pbcopy; then
 	alias cbp='pbpaste'
 fi
 
-if command_exists emacs; then
+if command_exists emacsclient; then
 	# -a, --alternate-editor=COMMAND
 	#        if the Emacs server is not running, run the specified shell command instead.  This can also be specified  via  the  ALTER‐
 	#        NATE_EDITOR  environment  variable.   If  the value of ALTERNATE_EDITOR is the empty string, run "emacs --daemon" to start
@@ -79,8 +79,8 @@ if command_exists emacs; then
 	#        open a new Emacs frame on the current terminal
 	#
 	alias ec='emacsclient -nc -a ""'
-	alias eg='emacsclient -n -a ""'
 	alias et='TERM=xterm-256color emacsclient -t -a ""'
+  alias ee='TERM=xterm-256color noglob emacsclient -t -a "" -e'
 fi
 
 ## git
