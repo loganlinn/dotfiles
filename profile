@@ -4,7 +4,13 @@
 
 export ENV="$HOME/.shrc"
 
-export FZF_TMUX=1
+# export GIT_CURL_VERBOSE=true
+# export GIT_CONFIG_NOSYSTEM=true
+# export GIT_TRACE=true
+# export GIT_TRACE_PACKET=true
+# export GIT_TRACE_PERFORMANCE=true
+# export GIT_TRACE_SETUP=true
+
 export FZF_DEFAULT_OPTS="--color 'bg+:239,marker:226'"
 export FZF_CTRL_R_OPTS="--sort"
 export FZF_CTRL_T_COMMAND='rg --files --hidden --follow --no-messages --glob "!.git/"'
