@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-#name : gitbook-hint
-#key : gitbook-hint
-#contributor : jr0cket
-# --
-> #### Hint::
-> $0

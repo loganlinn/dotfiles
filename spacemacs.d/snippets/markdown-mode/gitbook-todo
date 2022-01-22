@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-#name : gitbook-todo
-#key : gitbook-todo
-#contributor : jr0cket
-# --
-> #### Todo::$0

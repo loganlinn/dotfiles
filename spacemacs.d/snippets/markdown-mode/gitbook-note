@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-#name : gitbook-note
-#key : gitbook-note
-#contributor : jr0cket
-# --
-> #### Note::$0
