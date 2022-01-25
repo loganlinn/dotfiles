@@ -100,8 +100,9 @@ This function should only modify configuration layer settings."
      ;; show word-granularity differences in current diff hunk
      (git :variables
           git-magit-status-fullscreen t
+          git-enable-magit-todos-plugin nil
           magit-diff-refine-hunk t
-          git-enable-magit-todos-plugin nil)
+          )
 
      ;; SPC g h to use GitHub repositories
      ;; SPC g g to use GitHub Gists
@@ -159,7 +160,6 @@ This function should only modify configuration layer settings."
           ;; reference count for functions (assume their maybe other lenses in future)
           lsp-lens-enable t
 
-          ;; Efficient use of space in treemacs-lsp display
           treemacs-space-between-root-nodes nil
 
           ;; Optimization for large files
@@ -194,15 +194,25 @@ This function should only modify configuration layer settings."
           org-roam-db-location (concat org-roam-directory "/db/org-roam.db")
 
           org-enable-github-support t      ;; [[https://github.com/larstvei/ox-gfm]]
-          org-enable-hugo-support t        ;; [[https://develop.spacemacs.org/layers/+emacs/org/README.html#hugo-support]]
+          org-enable-hugo-support nil      ;; [[https://develop.spacemacs.org/layers/+emacs/org/README.html#hugo-support]]
           org-enable-bootstrap-support nil
           org-enable-org-brain-support nil ;; [[https://kungsgeten.github.io/org-brain.html]]
           org-enable-reveal-js-support nil ;; [[https://github.com/yjwen/org-reveal/]]
 
-          org-enable-valign t
-          valign-fancy-bar t
+          org-enable-valign nil
+          ;; valign-fancy-bar t
 
           org-want-todo-bindings nil
+
+          org-todo-keyword-faces '(("TODO" . "SlateGray")
+                                   ("DOING" . "DarkOrchid")
+                                   ("BLOCKED" . "Firebrick")
+                                   ("REVIEW" . "Teal")
+                                   ("DONE" . "ForestGreen")
+                                   ("ARCHIVED" .  "SlateBlue"))
+
+          ;; When a TODO item enters DONE, add a CLOSED: property with current date-time stamp
+          org-log-done 'time
 
           org-enable-org-journal-support nil
           org-journal-dir "~/journal/"
@@ -211,13 +221,18 @@ This function should only modify configuration layer settings."
           org-journal-date-format "%A, %B %d %Y"
           org-journal-time-prefix "* "
           org-journal-time-format ""
-          org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"BLOCKED\"|TODO=\"REVIEW\""
-          )
+          org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"BLOCKED\"|TODO=\"REVIEW\"")
 
      plantuml
 
-
      protobuf
+
+     (ranger :variables
+             ranger-show-preview t
+             ranger-show-hidden t
+             ranger-cleanup-eagerly t
+             ranger-cleanup-on-disable t
+             ranger-ignored-extensions '("mkv" "flv" "iso" "mp4"))
 
      ;; ruby
 
@@ -230,9 +245,8 @@ This function should only modify configuration layer settings."
             shell-default-position 'bottom)
 
      sql
-     ;; spacemacs-layouts layer added to set variables
-     ;; SPC TAB restricted to current layout buffers
-     ;; Kill buffers when killing layer - SPC l x
+
+     ;; [[https://github.com/syl20bnr/spacemacs/tree/develop/layers/%2Bspacemacs/spacemacs-layouts]]
      (spacemacs-layouts :variables
                         spacemacs-layouts-restrict-spc-tab t
                         persp-autokill-buffer-on-remove 'kill-weak)
@@ -258,17 +272,20 @@ This function should only modify configuration layer settings."
                       syntax-checking-use-original-bitmaps t)
 
      ;; Visual file manager - `SPC p t'
-     ;; treemacs-no-png-images t removes file and directory icons
      (treemacs :variables
-               ;; treemacs-use-git-mode 'deferred
+               ;; treemacs-litter-directories '("/node_modules" "/.venv" "/.cask" ".clj-kondo" ".lsp")
                treemacs-hide-gitignored-files-mode t
                treemacs-indent-style-guide 'block
                treemacs-indentation 1
-               ;; treemacs-litter-directories '("/node_modules" "/.venv" "/.cask" ".clj-kondo" ".lsp")
+               treemacs-lock-width t
+               treemacs-project-follow-mode t
                treemacs-show-hidden-files t
+               treemacs-space-between-root-nodes nil
                treemacs-use-filewatch-mode t
                treemacs-use-follow-mode t
-               treemacs-width 42
+               treemacs-use-git-mode 'deferred
+               treemacs-use-scope-type 'Perspectives
+               treemacs-width 35
                treemacs-width-is-initially-locked t
                )
 
@@ -819,54 +836,77 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
 
-  ;; (setq ns-use-srgb-colorspace nil) ;; needed?
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Key bindings
 
+  ;; Mouse navigation
   (global-set-key [mouse-8] 'switch-to-prev-buffer)
   (global-set-key [mouse-9] 'switch-to-next-buffer)
 
+  ;; org-journal - create a new journal entry - `, j' in org-journal mode
+  (spacemacs/set-leader-keys "oj" 'org-journal-new-entry)
+
+  ;; Toggle workspaces forward/backwards
+  (spacemacs/set-leader-keys "ow" 'eyebrowse-next-window-config)
+  (spacemacs/set-leader-keys "oW" 'eyebrowse-last-window-config)
+
+  ;; Revert buffer - loads in .dir-locals.el changes
+  (spacemacs/set-leader-keys "oR" 'revert-buffer)
+
+  ;; Keycast mode - show key bindings and commands in mode line
+  (spacemacs/set-leader-keys "ok" 'keycast-mode)
+
+  ;; Replace Emacs Tabs key bindings with Workspace key bindings
+  (with-eval-after-load 'evil-maps
+    (when (featurep 'tab-bar)
+      (define-key evil-normal-state-map "gt" nil)
+      (define-key evil-normal-state-map "gT" nil)))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Override Spacemacs defaults
+  ;;
+  ;; Set new location for file bookmarks, SPC f b
+  ;; Default: ~/.emacs.d/.cache/bookmarks
+  (setq bookmark-default-file "~/.spacemacs.d/bookmarks")
+  ;;
+  ;; Set new location for recent save files
+  ;; Default: ~/.emacs.d/.cache/recentf
+  (setq recentf-save-file  "~/.spacemacs.d/recentf")
+  ;;
+  ;; native line numbers taking up lots of space?
+  (setq-default display-line-numbers-width nil)
+
+  ;; replace / search with helm-swoop in Evil normal state
+  ;;(evil-global-set-key 'normal "/" 'helm-swoop)
+
+  (setq evil-want-fine-undo t)
+
+  (setq evil-symbol-word-search t)
+
+  (setq history-delete-duplicates t)
+
+  (setq extended-command-history (delq nil (delete-dups extended-command-history)))
+
+  ;; Use helm-project-do-ag directly when pressing SPC / without preselecting the symbol under the cursor.
+  ;; (evil-leader/set-key "/" 'spacemacs/helm-project-do-ag)
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; LSP
+  ;;
   (setq lsp-ui-sideline-enable nil)
   (setq lsp-modeline-diagnostics-scope :workspace)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Helm
-  (setq history-delete-duplicates t)
-  (setq extended-command-history
-        (delq nil (delete-dups extended-command-history)))
-
-  (setq evil-want-fine-undo t)
-  (setq vc-follow-symlinks t) ;; automatically follow symlink to version-controlled file (ex. this file)
-
-  ;; Make Spacemacs use helm-project-do-ag directly when pressing SPC / without preselecting the symbol under the cursor.
-  (evil-leader/set-key "/" 'spacemacs/helm-project-do-ag)
-  ;; (setq helm-ag-base-command "rg --vimgrep --no-heading --line-number --smart-case")
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; PlantUML
-
-  ;; To download the latest version of PlantUML straight into plantuml-jar-path: `M-x plantuml-download-jar<RET>`
+  ;;
+  ;; NOTE: To download the latest version of PlantUML straight into
+  ;;       configured =plantuml-jar-path=:
+  ;;
+  ;;           M-x plantuml-download-jar<RET>
+  ;;
   (setq plantuml-jar-path (expand-file-name "~/.local/lib/plantuml/libexec/plantuml.jar")
         org-plantuml-jar-path plantuml-jar-path
         plantuml-default-exec-mode 'jar)
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; nREPL
-  ;; Connecting to a reomote nREPL server
-  (setq nrepl-use-ssh-fallback-for-remote-hosts t)
-
-  (defun portal.api/open ()
-    (interactive)
-    (cider-nrepl-sync-request:eval
-      "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
-
-  (defun portal.api/clear ()
-    (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
-
-  (defun portal.api/close ()
-    (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/close)"))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Keycast - show Emacs commands in mode line
@@ -879,8 +919,7 @@ you should place your code here."
       (if keycast-mode
           (progn
             (add-hook 'pre-command-hook 'keycast-mode-line-update t)
-            (add-to-list 'mode-line-misc-info '("" mode-line-keycast "    "))
-            )
+            (add-to-list 'mode-line-misc-info '("" mode-line-keycast "    ")))
         (remove-hook 'pre-command-hook 'keycast-mode-line-update)
         (setq global-mode-string (remove '("" mode-line-keycast " ") mode-line-misc-info)))))
 
@@ -902,90 +941,43 @@ you should place your code here."
   (if (version<= "27.1" emacs-version)
       (global-so-long-mode 1))
 
-  ;; End of: Emacs text rendering optimizations
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Doom theme settings
   (setq doom-gruvbox-light-variant "hard")
 
   (defun practicalli/setup-custom-doom-modeline ()
     (doom-modeline-set-modeline 'practicalli-modeline 'default))
-  ;;
+
   (with-eval-after-load 'doom-modeline
-    (doom-modeline-def-modeline 'practicalli-modeline
-                                '(workspace-name window-number modals persp-name buffer-info matches remote-host vcs)
-                                '(misc-info repl lsp))
+    (doom-modeline-def-modeline
+      'practicalli-modeline
+      '(workspace-name window-number modals persp-name buffer-info matches remote-host vcs)
+      '(misc-info repl lsp))
     (practicalli/setup-custom-doom-modeline))
 
-  ;; checker = flycheck results (not working)
-  ;; buffer-position
-  ;; word-count - number of words in current buffer
-  ;; parrot
-  ;; selection-info
-  ;; repl - shows status of Cloure repl (not working)
-  ;; process ??
-  ;; debug
-  ;; misc-info  - used for keycast
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; User key bindings
-  ;;
-  ;; org-journal - create a new journal entry - `, j' in org-journal mode
-  (spacemacs/set-leader-keys "oj" 'org-journal-new-entry)
-  ;;
-  ;; Toggle workspaces forward/backwards
-  (spacemacs/set-leader-keys "ow" 'eyebrowse-next-window-config)
-  (spacemacs/set-leader-keys "oW" 'eyebrowse-last-window-config)
-
-  ;; Revert buffer - loads in .dir-locals.el changes
-  (spacemacs/set-leader-keys "oR" 'revert-buffer)
-  ;;
-  ;; Keycast mode - show key bindings and commands in mode line
-  (spacemacs/set-leader-keys "ok" 'keycast-mode)
-
-  ;; Replace Emacs Tabs key bindings with Workspace key bindings
-  (with-eval-after-load 'evil-maps
-    (when (featurep 'tab-bar)
-      (define-key evil-normal-state-map "gt" nil)
-      (define-key evil-normal-state-map "gT" nil)))
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Version Control configuration - Git, etc
+
+  ;; Always follow symlinks for files under version control
+  (setq vc-follow-symlinks t)
+
+  ;; diff-hl - diff hightlights in right gutter as you type
+  (diff-hl-flydiff-mode)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Override Spacemacs defaults
-  ;;
-  ;; Set new location for file bookmarks, SPC f b
-  ;; Default: ~/.emacs.d/.cache/bookmarks
-  (setq bookmark-default-file "~/.spacemacs.d/bookmarks")
-  ;;
-  ;; Set new location for recent save files
-  ;; Default: ~/.emacs.d/.cache/recentf
-  (setq recentf-save-file  "~/.spacemacs.d/recentf")
-  ;;
-  ;; native line numbers taking up lots of space?
-  (setq-default display-line-numbers-width nil)
-  ;;
-  ;; replace / search with helm-swoop in Evil normal state
-  ;;(evil-global-set-key 'normal "/" 'helm-swoop)
-  ;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Magit & Forge
 
+  (setq magit-repository-directories
+        '(("~/.emacs.d" . 0)
+          ("~/src" . 3)))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Magit - forge configuration
-  ;;
-  ;; Set the files that are searched for writing tokens
-  ;; by default ~/.authinfo will be used
-  ;; and write a token in unencrypted format
-  (setq auth-sources '("~/.authinfo.gpg"))
-  ;;
   ;; Configure number of topics show, open and closed
   ;; use negative number to toggle the view of closed topics
   ;; using `SPC SPC forge-toggle-closed-visibility'
   (setq  forge-topic-list-limit '(100 . -10))
   ;; set closed to 0 to never show closed issues
   ;; (setq  forge-topic-list-limit '(100 . 0))
-  ;;
+
   ;; GitHub user and organization accounts owned
   ;; used by @ c f  to create a fork
   (setq forge-owned-accounts
@@ -994,102 +986,12 @@ you should place your code here."
            "plumatic"
            "omcljs")))
 
-  ;; To blacklist specific accounts,
-  ;; over-riding forge-owned-accounts
-  ;; (setq forge-owned-blacklist
-  ;;       '(("bad-hacks" "really-bad-hacks")))
-  ;;
-  ;; End of Magit - forge configuration
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Safe structural editing
   ;; for all major modes
   (spacemacs/toggle-evil-safe-lisp-structural-editing-on-register-hooks)
-  ;; for clojure layer only (comment out line above)
-  ;; (spacemacs/toggle-evil-safe-lisp-structural-editing-on-register-hook-clojure-mode)
-  ;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Version Control configuration - Git, etc
-  ;;
-  ;; diff-hl - diff hightlights in right gutter as you type
-  (diff-hl-flydiff-mode)
-  ;;
-  ;; Load in magithub features after magit package has loaded
-  ;; (use-package magithub
-  ;;   :after magit
-  ;;   :config (magithub-feature-autoinject t))
-  ;;
-  ;; Use Spacemacs as the $EDITOR (or $GIT_EDITOR) for git commits messages
-  ;; when using git commit on the command line
-  ;; (global-git-commit-mode t)
-  ;;
-  ;; Set locations of all your Git repositories
-  ;; with a number to define how many sub-directories to search
-  ;; `SPC g L' - list all Git repositories in the defined paths,
-  (setq magit-repository-directories
-        '(("~/.emacs.d"  . 0)
-          ("~/src" . 2)))
-  ;;
-  ;; end of version control configuration
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Org-mode configuration
-  ;;
-  ;; I should write a toggle function to show descriptive or literate links in Org-mode
-  ;;(setq org-descriptive-links nil)
-  ;;
-  ;; Org-reveal - define were reveal.js files can be found
-  ;; (I place reveal.js files in same directory as I write the org files)
-  (setq org-reveal-root "")
-  ;;
-  ;; Define the location of the file to hold tasks
-  (with-eval-after-load 'org
-    (setq org-default-notes-file "~/todos.org"))
-  ;;
-  ;; Define a kanban style set of stages for todo tasks
-  (with-eval-after-load 'org
-    (setq org-todo-keywords
-         '((sequence "TODO" "DOING" "BLOCKED" "REVIEW" "|" "DONE" "ARCHIVED"))))
-  ;;
-  ;; The default keywords all use the same colour.
-  ;; Make the states easier to distinguish by using different colours
-  ;; Using X11 colour names from: https://en.wikipedia.org/wiki/Web_colors
-  ;; Setting colours (faces) using the `org-todo-keyword-faces' defcustom function
-  ;; https://github.com/tkf/org-mode/blob/master/lisp/org-faces.el#L376
-  ;; Using `with-eval-after-load' as a hook to call this setting when org-mode is run
-  ;;
-  (with-eval-after-load 'org
-    (setq org-todo-keyword-faces
-          '(("TODO" . "SlateGray")
-            ("DOING" . "DarkOrchid")
-            ("BLOCKED" . "Firebrick")
-            ("REVIEW" . "Teal")
-            ("DONE" . "ForestGreen")
-            ("ARCHIVED" .  "SlateBlue"))))
-  ;;
-  ;;
-  ;; Set TODO keyword faces if over-ridden by theme.
-  (defun practicalli/set-todo-keyword-faces ()
-    (interactive)
-    (setq hl-todo-keyword-faces
-          '(("TODO" . "SlateGray")
-            ("DOING" . "DarkOrchid")
-            ("BLOCKED" . "Firebrick")
-            ("REVIEW" . "Teal")
-            ("DONE" . "ForestGreen")
-            ("ARCHIVED" .  "SlateBlue"))))
-  ;;
-  ;;
-  ;; Progress Logging
-  ;; When a TODO item enters DONE, add a CLOSED: property with current date-time stamp
-  (with-eval-after-load 'org
-    (setq org-log-done 'time))
-
   ;; Babel
   (with-eval-after-load 'org
     (org-babel-do-load-languages
@@ -1106,23 +1008,15 @@ you should place your code here."
        (sql . t)
        (sqlite . t))))
 
-  ;;
-  ;; Add TODO files to the agenda automatically
-  ; (with-eval-after-load 'org-agenda
-    ; (require 'org-projectile)
-    ; (push (org-projectile:todo-files) org-agenda-files))
-
-  ;;
-  ;;
   ;; customize org-mode's checkboxes with unicode symbols
-  (add-hook
-   'org-mode-hook
-   (lambda ()
-     "Beautify Org Checkbox Symbol"
-     (push '("[ ]" . "☐") prettify-symbols-alist)
-     (push '("[X]" . "☑" ) prettify-symbols-alist)
-     (push '("[-]" . "❍" ) prettify-symbols-alist)
-     (prettify-symbols-mode)))
+  ;; (add-hook
+  ;;  'org-mode-hook
+  ;;  (lambda ()
+  ;;    "Beautify Org Checkbox Symbol"
+  ;;    (push '("[ ]" . "☐") prettify-symbols-alist)
+  ;;    (push '("[X]" . "☑" ) prettify-symbols-alist)
+  ;;    (push '("[-]" . "❍" ) prettify-symbols-alist)
+  ;;    (prettify-symbols-mode)))
   ;;
   ;; Markdown mode hook for orgtbl-mode minor mode
   ;; (add-hook 'markdown-mode-hook 'turn-on-orgtbl)
@@ -1130,12 +1024,6 @@ you should place your code here."
   ;; Turn on visual-line-mode for Org-mode only
   ;; (add-hook 'org-mode-hook 'turn-on-visual-line-mode)
   ;;
-  ;; use org-re-reveal instead of org-reveal (which hasnt been updated in ages and breaks org-mode 9.2)
-  ;; (use-package org-re-reveal :after org)
-  ;;
-  ;; End of Org-mode Configuration
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Clojure configurations
@@ -1150,9 +1038,8 @@ you should place your code here."
   ;; Lookup functions in Clojure - The Essentail Reference book
   ;; https://github.com/p3r7/clojure-essential-ref
   (spacemacs/set-leader-keys "oh" 'clojure-essential-ref)
-  ;;
-  ;;
-  ;; toggle reader macro sexp comment
+
+  ;; Toggle reader macro sexp comment
   ;; toggles the #_ characters at the start of an expression
   (defun clojure-toggle-reader-comment-sexp ()
     (interactive)
@@ -1170,10 +1057,8 @@ you should place your code here."
         (goto-char ending-point-pos)))
     (evil-normal-state))
   ;;
-  ;; Assign keybinding to the toggle-reader-comment-sexp function
   (define-key global-map (kbd "C-#") 'clojure-toggle-reader-comment-sexp)
-  ;;
-  ;;
+
   ;; Toggle view of a clojure `(comment ,,,) block'
   (defun clojure-hack/toggle-comment-block (arg)
     "Close all top level (comment) forms. With universal arg, open all."
@@ -1188,10 +1073,22 @@ you should place your code here."
   (evil-define-key 'normal clojure-mode-map
     "zC" 'clojure-hack/toggle-comment-block
     "zO" (lambda () (interactive) (clojure-hack/toggle-comment-block 'open)))
-  ;;
-  ;; end of clojure configuration
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+  (setq nrepl-use-ssh-fallback-for-remote-hosts t)
+
+  ;; Portal [[https://github.com/djblue/portal]]
+  (defun portal.api/open ()
+    (interactive)
+    (cider-nrepl-sync-request:eval
+     "(require 'portal.api) (portal.api/tap) (portal.api/open)"))
+  ;;
+  (defun portal.api/clear ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+  ;;
+  (defun portal.api/close ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/close)"))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Web-mode configuration
@@ -1204,10 +1101,6 @@ you should place your code here."
     (setq web-mode-code-indent-offset 2))
   ;;
   (add-hook 'web-mode-hook  'web-mode-indent-2-hook)
-  ;;
-  ;; End of Web-mode configuration
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Eshell visual enhancements
@@ -1243,7 +1136,6 @@ you should place your code here."
             (-reduce-from 'esh-acc "" eshell-funcs)
             "\n"
             eshell-prompt-string))
-  ;;
   ;;
   ;; Unicode icons on Emacs
   ;; `list-character-sets' and select unicode-bmp
@@ -1304,10 +1196,6 @@ you should place your code here."
   ;; Enable the new eshell prompt
   (setq eshell-prompt-function 'esh-prompt-func)
 
-  ;; End of Eshell
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; Shell configuration
   ;;
@@ -1315,53 +1203,6 @@ you should place your code here."
     (add-hook 'sh-mode-hook 'shfmt-on-save-mode))
   ;; Use zsh for default multi-term shell
   ;; (setq multi-term-program "/usr/bin/zsh")
-  ;;
-  ;; End of Shell configuration
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; Spaceline Doom theme settings
-  ;; https://seagle0128.github.io/doom-modeline/
-  ;; Configuration set in layer variables
-  ;;
-  ;; Set height of the modeline - will resize to height of text
-  ;; (setq doom-modeline-height 12)
-
-  ;; The left hand bar in the modeline
-  ;; setting to zero shows a large box outline
-  ;; (setq doom-modeline-bar-width 1)
-
-  ;; Determine style of current filename / path displayed
-  ;; default: auto
-  ;; (setq doom-modeline-buffer-file-name-style 'relative-to-project)
-
-  ;; default perspective name displayed in the mode-line.
-  ;; (setq doom-modeline-display-default-persp-name t)
-
-  ;; Do not show buffer encoding
-  ;; (setq doom-modeline-buffer-encoding nil)
-
-  ;; display GitHub notifications (requires `ghub' package)
-  ;; (setq doom-modeline-github t)
-  ;; The interval of checking GitHub.
-  ;; (setq doom-modeline-github-interval (* 30 60))
-
-  ;; GNUs notifications - default t
-  ;; (setq doom-modeline-gnus nil)
-
-  ;; IRC notifications - default t
-  ;; (setq doom-modeline-irc nil)
-
-  ;; Environment versions - default t
-  ;; (setq doom-modeline-env-version t)
-
-  ;; Use ascii rather than icon for modal state (more specific)
-  ;; Icon not changing for doom-solarized-light theme
-  ;; - icon changes color for doom-gruvbox-light theme
-  ;; (setq doom-modeline-modal-icon nil)
-  ;; End of Spaceline Doom theme settings
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
   )   ;; End of dot-spacemacs/user-config
 
   ;; do not write anything past this comment. this is where emacs will
@@ -1397,7 +1238,7 @@ This function is called at the very end of Spacemacs initialization."
  '(evil-want-Y-yank-to-eol nil)
  '(helm-completion-style 'helm)
  '(package-selected-packages
-   '(ox-hugo org-roam yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
+   '(ranger yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
  '(safe-local-variable-values
    '((setq cider-clojure-cli-global-options . "-A:dev:test:build")
      (setq cider-clojure-cli-global-options "-A:dev:test:build")
