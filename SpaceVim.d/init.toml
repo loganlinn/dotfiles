@@ -69,11 +69,6 @@
   repo = "z0mbix/vim-shfmt"
   merged = false
 
-# Disabled due to errors from `ftplugin/org.vim` depending on functions in `autoload/org.vim` <2022-01-06> #adf01bb7
-# [[custom_plugins]]
-#   repo = "axvr/org.vim"
-#   merged = false
-
 [[custom_plugins]]
   repo = "mboughaba/i3config.vim"
   merged = false
@@ -199,9 +194,6 @@
 #   name = "mail"
 
 [[layers]]
-  name = "org"
-
-[[layers]]
   name = 'shell'
   default_position = 'top'
   default_height = 30
@@ -275,6 +267,9 @@
 
 [[layers]]
   name = "lang#nix"
+
+[[layers]]
+  name = "lang#org"
 
 # [[layers]]
 #   name = "lang#plantuml"
