@@ -16,9 +16,9 @@ gtfo() {
 }
 
 [[ -x $PYTHON ]] || gtfo "unable to find system 'python3' on PATH"
-"$PYTHON" -m pip >/dev/null 2>&1  || gtfo echo "unable to detect 'pip' using '$PYTHON'"
+"$PYTHON" -m pip >/dev/null 2>&1 || gtfo echo "unable to detect 'pip' using '$PYTHON'"
 
-if ! command -v pipx 2>/dev/null; then
+if ! command -v pipx >/dev/null 2>&1; then
   say "installing 'pipx'..." >&2
   /usr/bin/python3 -m pip install --user pipx
   /usr/bin/python3 -m pipx ensurepath

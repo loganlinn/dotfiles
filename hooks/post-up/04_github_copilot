@@ -1,25 +1,34 @@
 #!/usr/bin/env bash
 
 GITHUB_COPILOT_VIM_GITSHA=c01314840b94da0b9767b52f8a4bbc579214e509 
+GITHUB_COPILOT_VIM_REPO=https://github.com/github/copilot.vim.git
 GITHUB_COPILOT_VIM_DIR=${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/pack/github/start/copilot.vim
+
+verbose() {
+  if [[ -n "${VERBOSE-}" ]]; then
+    printf "$0: %s\n" "$@"
+  fi
+} >&2
 
 install_github_copilot_nvim_plugin() {
   if ! hash nvim 2>/dev/null; then
-    echo >&2 "[$0]: skipping 'github/copilot.vim' setup: no such command: nvim"
-    return
+    verbose "nvim command not found. skipping..."
+    return 1
   fi
 
-  echo >&2 "[$0]: setting up 'github/copilot.vim' in $GITHUB_COPILOT_VIM_DIR"
+  verbose "setting up $GITHUB_COPILOT_VIM_REPO at $GITHUB_COPILOT_VIM_GITSHA in $GITHUB_COPILOT_VIM_DIR"
   if [[ -d $GITHUB_COPILOT_VIM_DIR ]]; then
-    git -C "$GITHUB_COPILOT_VIM_DIR" fetch origin
-    git -C "$GITHUB_COPILOT_VIM_DIR" checkout "$GITHUB_COPILOT_VIM_GITSHA"
+    git -C "$GITHUB_COPILOT_VIM_DIR" fetch --all --quiet
+    git -C "$GITHUB_COPILOT_VIM_DIR" checkout --quiet "$GITHUB_COPILOT_VIM_GITSHA"
   else
     rm -rf "$GITHUB_COPILOT_VIM_DIR"
-    git clone --quiet \
+    git clone \
       --branch "$GITHUB_COPILOT_VIM_GITSHA" \
       --depth 1 \
-      https://github.com/github/copilot.vim.git "$GITHUB_COPILOT_VIM_DIR"
+      --quiet \
+      "$GITHUB_COPILOT_VIM_REPO" "$GITHUB_COPILOT_VIM_DIR"
   fi
+  verbose done.
 }
 
 install_github_copilot_nvim_plugin || true
