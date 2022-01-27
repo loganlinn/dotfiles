@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+for dotfiles_dir in ${DOTFILES_DIRS:-$HOME/.dotfiles}; do
+  break
+done
+
+target_dir=
+
+while getopts "t:" opt; do
+  case "$opt" in
+  t) target_dir=$OPTARG ;;
+  *) exit 1 ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [[ -z $target_dir ]]; then
+  target_dir=$dotfiles_dir/tag-debian
+fi
+
+if [[ ! -d $target_dir ]]; then
+  echo "ERROR: Target directory does not exist: $target_dir"
+  exit 1
+fi
+
+spit() {
+  cat - >"$1"
+  echo "wrote: $1"
+}
+
+dpkg --get-selections |
+  spit "$target_dir/dpkg_selections"
+
+gpg --no-default-keyring --keyring /etc/apt/trusted.gpg --export --armor |
+  spit "$target_dir/apt_trusted.asc"
+
+spit "$target_dir/apt_sources.list" </etc/apt/sources.list 
+
+mkdir -p "$target_dir/apt_sources.list.d"
+for fp in /etc/apt/sources.list.d/*.list; do
+  fn=$(basename "$fp")
+  spit "$target_dir/apt_sources.list.d/$fn" <"$fp"
+done
