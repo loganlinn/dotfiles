@@ -60,17 +60,17 @@ This function should only modify configuration layer settings."
               cider-edit-jack-in-command t
               cider-infer-remote-nrepl-ports nil
               cider-overlays-use-font-lock t
-              cider-pprint-fn 'fipp                   ;; fast pretty printing
+              cider-pprint-fn 'fipp ;; fast pretty printing
               cider-preferred-build-tool 'clojure-cli
-              cider-repl-buffer-size-limit 100        ;; limit lines shown in REPL buffer
-              cider-repl-display-help-banner nil      ;; disable help banner
+              cider-repl-buffer-size-limit 100 ;; limit lines shown in REPL buffer
+              cider-repl-display-help-banner nil ;; disable help banner
               cider-repl-pop-to-buffer-on-connect t
               cider-repl-require-ns-on-set nil
               cider-result-overlay-position 'at-point ;; results shown right after expression
               clojure-align-forms-automatically t
               clojure-enable-clj-refactor t
               clojure-indent-style 'align-arguments
-              clojure-toplevel-inside-comment-form t  ;; evaluate expressions in comment as top level
+              clojure-toplevel-inside-comment-form t ;; evaluate expressions in comment as top level
               enable-fancify-symbols t
               )
 
@@ -130,7 +130,7 @@ This function should only modify configuration layer settings."
           lsp-enable-on-type-formatting t
           ;; Set to nil to use CIDER features instead of LSP UI
           lsp-enable-indentation t
-          lsp-enable-snippet t  ;; to test again
+          lsp-enable-snippet t ;; to test again
 
           ;; symbol highlighting - `lsp-toggle-symbol-highlight` toggles highlighting
           ;; subtle highlighting for doom-gruvbox-light theme defined in dotspacemacs/user-config
@@ -142,12 +142,12 @@ This function should only modify configuration layer settings."
 
           ;; popup documentation boxes
           ;; lsp-ui-doc-enable nil          ;; disable all doc popups
-          lsp-ui-doc-show-with-cursor nil   ;; doc popup for cursor
+          lsp-ui-doc-show-with-cursor nil ;; doc popup for cursor
           ;; lsp-ui-doc-show-with-mouse t   ;; doc popup for mouse
           ;; lsp-ui-doc-delay 2                ;; delay in seconds for popup to display
-          lsp-ui-doc-include-signature t    ;; include function signature
+          lsp-ui-doc-include-signature t ;; include function signature
           ;; lsp-ui-doc-position 'at-point  ;; top bottom at-point
-          lsp-ui-doc-alignment 'window      ;; frame window
+          lsp-ui-doc-alignment 'window ;; frame window
 
           ;; code actions and diagnostics text as right-hand side of buffer
           lsp-ui-sideline-code-actions-prefix " "
@@ -188,13 +188,13 @@ This function should only modify configuration layer settings."
           org-projectile-file (concat org-directory "/todos.org")
 
           org-enable-roam-support t
-          org-enable-roam-server nil       ;; [[https://github.com/org-roam/org-roam-server]]
-          org-enable-roam-protocol nil     ;; [[https://www.orgroam.com/manual.html#Org_002droam-Protocol]]
+          org-enable-roam-server nil ;; [[https://github.com/org-roam/org-roam-server]]
+          org-enable-roam-protocol nil ;; [[https://www.orgroam.com/manual.html#Org_002droam-Protocol]]
           org-roam-directory (concat org-directory "/roam")
           org-roam-db-location (concat org-roam-directory "/db/org-roam.db")
 
-          org-enable-github-support t      ;; [[https://github.com/larstvei/ox-gfm]]
-          org-enable-hugo-support nil      ;; [[https://develop.spacemacs.org/layers/+emacs/org/README.html#hugo-support]]
+          org-enable-github-support t ;; [[https://github.com/larstvei/ox-gfm]]
+          org-enable-hugo-support nil ;; [[https://develop.spacemacs.org/layers/+emacs/org/README.html#hugo-support]]
           org-enable-bootstrap-support nil
           org-enable-org-brain-support nil ;; [[https://kungsgeten.github.io/org-brain.html]]
           org-enable-reveal-js-support nil ;; [[https://github.com/yjwen/org-reveal/]]
@@ -316,17 +316,21 @@ This function should only modify configuration layer settings."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(editorconfig
-                                      jinja2-mode
-                                      jq-mode
-                                      keycast
-                                      nord-theme
-                                      org-cliplink
-                                      ox-clip
-                                      protobuf-mode
-                                      shfmt
-                                      zoxide
-                                      )
+   dotspacemacs-additional-packages
+   '(
+     ;; clojure-essential-ref
+     ;; clojure-essential-ref-nov
+     editorconfig
+     jinja2-mode
+     jq-mode
+     keycast
+     nord-theme
+     org-cliplink
+     ox-clip
+     protobuf-mode
+     shfmt
+     zoxide
+     )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
 
@@ -876,6 +880,8 @@ you should place your code here."
   ;; native line numbers taking up lots of space?
   (setq-default display-line-numbers-width nil)
 
+  (setq which-key-idle-delay 0.1)
+
   ;; replace / search with helm-swoop in Evil normal state
   ;;(evil-global-set-key 'normal "/" 'helm-swoop)
 
@@ -1037,7 +1043,7 @@ you should place your code here."
 
   ;; Lookup functions in Clojure - The Essentail Reference book
   ;; https://github.com/p3r7/clojure-essential-ref
-  (spacemacs/set-leader-keys "oh" 'clojure-essential-ref)
+  ;;(spacemacs/set-leader-keys "oh" 'clojure-essential-ref)
 
   ;; Toggle reader macro sexp comment
   ;; toggles the #_ characters at the start of an expression
@@ -1238,7 +1244,7 @@ This function is called at the very end of Spacemacs initialization."
  '(evil-want-Y-yank-to-eol nil)
  '(helm-completion-style 'helm)
  '(package-selected-packages
-   '(ranger yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
+   '(nov esxml kv yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vmd-mode vi-tilde-fringe uuidgen use-package unfill undo-tree toml-mode toc-org tagedit sql-indent spaceline powerline smeargle slim-mode shfmt shell-pop scss-mode sass-mode restart-emacs rainbow-mode rainbow-identifiers rainbow-delimiters racer rust-mode pug-mode protobuf-mode popwin plantuml-mode persp-mode pcre2el paradox ox-twbs ox-reveal ox-gfm ox-clip orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-cliplink org-bullets open-junk-file neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow magit-popup magit-gh-pulls macrostep lorem-ipsum livid-mode skewer-mode simple-httpd linum-relative link-hint keycast json-mode json-snatcher js2-refactor js2-mode js-doc jq-mode indent-guide hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode graphviz-dot-mode google-translate golden-ratio go-guru go-eldoc gnuplot github-search github-clone magit magit-section github-browse-file git-timemachine git-messenger git-link git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter git-commit with-editor transient gist gh marshal logito pcache gh-md fuzzy flyspell-correct-helm flyspell-correct flycheck-rust flycheck-pos-tip flycheck-elm flycheck flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg eshell-z eshell-prompt-extras esh-help emoji-cheat-sheet-plus emmet-mode elm-mode reformatter f elisp-slime-nav editorconfig dumb-jump diminish diff-hl define-word csv-mode company-web web-completion-data company-statistics company-quickhelp pos-tip company-go go-mode company-emoji company-emacs-eclim eclim s company command-log-mode column-enforce-mode color-identifiers-mode coffee-mode clojure-snippets clj-refactor hydra inflections multiple-cursors paredit lv clean-aindent-mode cider-eval-sexp-fu eval-sexp-fu cider sesman seq spinner queue pkg-info parseedn clojure-mode parseclj epl cargo markdown-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol ht dash auto-dictionary auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup nord-theme))
  '(safe-local-variable-values
    '((setq cider-clojure-cli-global-options . "-A:dev:test:build")
      (setq cider-clojure-cli-global-options "-A:dev:test:build")
