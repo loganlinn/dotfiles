@@ -24,6 +24,7 @@ alias la='ls -lAh'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -I'
+alias ln='ln -i'
 
 alias :q='exit'
 
@@ -96,6 +97,9 @@ alias gsw='git stash show -p'
 alias gcob='git checkout -b'
 alias gcop='git checkout -p'
 alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs xdg-open'
+alias gwt='git worktree'
+alias gwt-ls="git worktree list --porcelain 2>/dev/null | awk '/^worktree / { print $2 }'"
+alias gwt-rm="gwt-ls | fzf | ifne xargs git worktree remove"
 
 if command_exists ag; then
 	alias agl='ag -Q'
