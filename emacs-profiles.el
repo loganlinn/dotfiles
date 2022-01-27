@@ -1,0 +1,5 @@
+(("default" . ((user-emacs-directory . "~/.emacs.default")))
+ ("spacemacs" . ((user-emacs-directory . "~/src/github.com/syl20bnr/spacemacs")))
+ ("doom" . ((user-emacs-directory . "~/src/github.com/hlissner/doom-emacs")
+            (env . (("DOOMDIR" . "~/.config/doom")))))
+ ("prelude" . ((user-emacs-directory . "~/src/github.com/bbatsov/prelude"))))
