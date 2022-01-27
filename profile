@@ -39,6 +39,7 @@ if [ -d "$HOME/.profile.d" ]; then
 fi
 
 PATH="$HOME/.krew/bin:$PATH"
+PATH="$HOME/.deno/bin:$PATH"
 PATH="$HOME/.local/share/flatpak/exports/bin:$PATH"
 PATH="$HOME/.fzf/share/bin:$PATH"
 PATH="$HOME/bin:$HOME/.local/bin:$PATH"
