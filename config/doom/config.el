@@ -52,3 +52,78 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+(setq delete-by-moving-to-trash t                 ; Delete files to trash
+      window-combination-resize t                 ; take new window space from all other windows (not just current)
+      x-stretch-cursor t                          ; Stretch cursor to the glyph width
+      undo-limit 80000000                         ; Raise undo-limit to 80Mb
+      auto-save-default t                         ; Nobody likes to loose work, I certainly don't
+      truncate-string-ellipsis "…"                ; Unicode ellispis are nicer than "...", and also save /precious/ space
+      password-cache-expiry nil                   ; I can trust my computers ... can't I?
+      scroll-margin 2)                            ; It's nice to maintain a little margin
+
+(after! doom
+  (global-subword-mode 1) ; Iterate through CamelCase words
+  (display-time-mode 1)   ; Enable time in the mode-line
+  )
+
+(after! evil
+  (setq evil-want-fine-undo t
+        evil-move-beyond-eol t))
+
+;; (remove-hook 'doom-first-buffer-hook #'smartparens-global-mode) ;; remove smartparens
+
+(add-hook! '(clojure-mode-hook
+             clojurescript-mode-hook
+             clojurec-mode-hook
+             cider-repl-mode-hook
+             emacs-lisp-mode-hook)
+  (smartparens-strict-mode)
+  (rainbow-delimiters-mode))
+
+(after! smartparens
+  (smartparens-global-strict-mode 1))
+
+(after! lsp-mode
+  (setq lsp-log-io nil
+        lsp-file-watch-threshold 8264
+        lsp-headerline-breadcrumb-enable nil)
+  (dolist (dir '("[/\\\\]\\.ccls-cache\\'"
+                 "[/\\\\]\\.mypy_cache\\'"
+                 "[/\\\\]\\.pytest_cache\\'"
+                 "[/\\\\]\\.cache\\'"
+                 "[/\\\\]\\.clwb\\'"
+                 "[/\\\\]__pycache__\\'"
+                 "[/\\\\]bazel-bin\\'"
+                 "[/\\\\]bazel-code\\'"
+                 "[/\\\\]bazel-genfiles\\'"
+                 "[/\\\\]bazel-out\\'"
+                 "[/\\\\]bazel-testlogs\\'"
+                 "[/\\\\]third_party\\'"
+                 "[/\\\\]third-party\\'"
+                 "[/\\\\]buildtools\\'"
+                 "[/\\\\]out\\'"
+                 ))
+    (push dir lsp-file-watch-ignored-directories)))
+
+(after! lsp-ui
+  (setq lsp-enable-on-type-formatting t
+        lsp-enable-indentation t
+        lsp-ui-doc-max-width 100
+        lsp-ui-doc-max-height 30
+        lsp-ui-doc-include-signature t
+        lsp-ui-sideline-enable nil
+        lsp-lens-enable t))
+
+(after! treemacs
+  (setq
+   treemacs-project-follow-mode t
+   treemacs-use-git-mode 'deferred
+   treemacs-use-scope-type 'Perspectives
+   treemacs-width 35))
+
+(use-package! git-link
+  :config
+  (setq git-link-use-commit t))
+
+(map! :leader "0" #'treemacs-select-window) ;; spacemacs-style treemacs binding
