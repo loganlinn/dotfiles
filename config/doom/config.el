@@ -33,7 +33,7 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 
 ;; Here are some additional functions/macros that could help you configure Doom:
@@ -53,8 +53,11 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(setq delete-by-moving-to-trash t                 ; Delete files to trash
-      window-combination-resize t                 ; take new window space from all other windows (not just current)
+;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
+(setq trash-directory (concat  (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files")
+      delete-by-moving-to-trash t)
+
+(setq window-combination-resize t                 ; take new window space from all other windows (not just current)
       x-stretch-cursor t                          ; Stretch cursor to the glyph width
       undo-limit 80000000                         ; Raise undo-limit to 80Mb
       auto-save-default t                         ; Nobody likes to loose work, I certainly don't
@@ -62,27 +65,33 @@
       password-cache-expiry nil                   ; I can trust my computers ... can't I?
       scroll-margin 2)                            ; It's nice to maintain a little margin
 
-(after! doom
-  (global-subword-mode 1) ; Iterate through CamelCase words
-  (display-time-mode 1)   ; Enable time in the mode-line
-  )
+;; (after! '(doom-init-ui-hook doom-load-theme-hook)
+;;   (display-time-mode +1))
 
-(after! evil
-  (setq evil-want-fine-undo t
-        evil-move-beyond-eol t))
+(setq-hook! 'evil-mode-hook
+  evil-want-fine-undo t
+  evil-move-beyond-eol t)
 
-;; (remove-hook 'doom-first-buffer-hook #'smartparens-global-mode) ;; remove smartparens
+(use-package! evil-cleverparens
+  :after evil
+  :init
+  (setq evil-cleverparens-use-regular-insert t
+        evil-cleverparens-swap-move-by-word-and-symbol t)
+  :config
 
-(add-hook! '(clojure-mode-hook
-             clojurescript-mode-hook
-             clojurec-mode-hook
-             cider-repl-mode-hook
-             emacs-lisp-mode-hook)
-  (smartparens-strict-mode)
-  (rainbow-delimiters-mode))
+  ([smartparens-global-strict-mode] +1)
+  (evil-set-command-properties 'evil-cp-change :move-point t)
+  (evil-cleverparens-mode +1))
 
-(after! smartparens
-  (smartparens-global-strict-mode 1))
+(setq +treemacs-git-mode 'deferred)
+
+(map! (:when (featurep! :ui treemacs)
+       :leader
+       :desc "Treemacs" "0" #'treemacs-select-window))
+
+(after! treemacs
+  ;; DO follow the cursor (disabled in doom's modules/ui/treemacs/config.el)
+  (treemacs-follow-mode +1))
 
 (after! lsp-mode
   (setq lsp-log-io nil
@@ -102,28 +111,62 @@
                  "[/\\\\]third_party\\'"
                  "[/\\\\]third-party\\'"
                  "[/\\\\]buildtools\\'"
-                 "[/\\\\]out\\'"
-                 ))
+                 "[/\\\\]out\\'"))
+
     (push dir lsp-file-watch-ignored-directories)))
 
-(after! lsp-ui
-  (setq lsp-enable-on-type-formatting t
-        lsp-enable-indentation t
-        lsp-ui-doc-max-width 100
-        lsp-ui-doc-max-height 30
-        lsp-ui-doc-include-signature t
-        lsp-ui-sideline-enable nil
-        lsp-lens-enable t))
+(setq-hook! 'lisp-ui
+  lsp-enable-on-type-formatting t
+  lsp-enable-indentation t
+  lsp-ui-doc-max-width 100
+  lsp-ui-doc-max-height 30
+  lsp-ui-doc-include-signature t
+  lsp-ui-sideline-enable nil
+  lsp-lens-enable t)
 
-(after! treemacs
-  (setq
-   treemacs-project-follow-mode t
-   treemacs-use-git-mode 'deferred
-   treemacs-use-scope-type 'Perspectives
-   treemacs-width 35))
+(setq-hook! 'cider-mode-hook
+  ;; open cider-doc directly and close it with q
+  cider-prompt-for-symbol nil
+  cider-save-file-on-load 'always-save)
 
-(use-package! git-link
-  :config
-  (setq git-link-use-commit t))
+(setq-hook! 'clojure-mode-hook
+  clojure-toplevel-inside-comment-form t
+  clojure-align-forms-automatically t)
 
-(map! :leader "0" #'treemacs-select-window) ;; spacemacs-style treemacs binding
+(after! clj-refactor
+  ;;  Idiomatic namespace aliases [[https://github.com/bbatsov/clojure-style-guide#use-idiomatic-namespace-aliases]]
+  (setq cljr-magic-require-namespaces
+        '(("io"   . "clojure.java.io")
+          ("set"  . "clojure.set")
+          ("str"  . "clojure.string")
+          ("walk" . "clojure.walk")
+          ("zip"  . "clojure.zip")
+          ("xml"  . "clojure.data.xml")
+          ("as"   . "clojure.core.async")
+          ("mat"  . "clojure.core.matrix")
+          ("edn"  . "clojure.edn")
+          ("pp"   . "clojure.pprint")
+          ("spec" . "clojure.spec.alpha")
+          ("csv"  . "clojure.data.csv")
+          ("json" . "cheshire.core")
+          ("time" . "java-time")
+          ("http" . "clj-http.client")
+          ("log"  . "clojure.tools.logging")
+          ("sql"  . "hugsql.core")
+          ("yaml" . "clj-yaml.core")
+          ("sh"   . "clojure.java.shell"))))
+:config
+
+(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook ielm-mode-hook clojure-mode-hook fennel-mode-hook)
+  (subword-mode +1)
+  (aggressive-indent-mode +1)
+  (smartparens-strict-mode +1)
+  (evil-cleverparens-mode +1))
+
+(after! cider-mode
+  (evil-define-key 'normal cider-repl-mode-map
+    "C-j" 'cider-repl-next-input
+    "C-k" 'cider-repl-previous-input))
+
+(after! magit-mode
+  (add-hook! 'after-save-hook #'magit-after-save-refresh-status))
