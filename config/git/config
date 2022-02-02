@@ -8,9 +8,12 @@
 	autocrlf     = false
 
 [user]
-	name       = loganlinn
+	name       = Logan Linn
 	email      = logan@llinn.dev
 	signingKey = 32A48B412F1CA30ADB1B54382C3CDAE023DB6616
+
+[github]
+  user = loganlinn
 
 [init]
 	defaultBranch = main
@@ -87,8 +90,11 @@
   mkwt = "!f() { git worktree add \"$(git rev-parse --show-toplevel)+$@\"; }; f"
   rmwt = "!f() { git worktree remove \"$(git rev-parse --show-toplevel)+$@\"; }; f"
 
-	unmerged = branch --no-merged master
+  edit-config = config --global --edit
+
 	aliases = config --get-regexp alias
+
+	unmerged = branch --no-merged master
 
 	rank    = shortlog -sn --no-merges
 	authors = "!f() { git log --no-merges --pretty='format:%<(26)%an <%ae>' --author \"$*\" | sort | uniq; }; f"

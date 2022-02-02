@@ -17,6 +17,7 @@ aliases:
     open-pr: pr view --web
     open-issues: issue list --web
     open-release: release view --web
+    prs: pr list --web
 
     prl: >-
       pr list
