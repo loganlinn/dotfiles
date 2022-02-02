@@ -1,3 +1,0 @@
-[disk]
-command=/home/logan/.dotfiles/config/regolith/i3xrocks/scripts/disk
-interval=60

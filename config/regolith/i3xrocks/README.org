@@ -1,0 +1,24 @@
+* System requirements
+<2022-02-02 Wed>
+
+#+name: packages
+#+begin_src shell :results output
+dpkg --get-selections | awk '( $1 ~ /^i3xrocks-/ ) && ( $2 == "install" ) { print $1 }  '
+#+end_src
+
+#+RESULTS: packages
+#+begin_example
+i3xrocks-battery
+i3xrocks-cpu-usage
+i3xrocks-disk-capacity
+i3xrocks-media-player
+i3xrocks-memory
+i3xrocks-microphone
+i3xrocks-net-traffic
+i3xrocks-next-workspace
+i3xrocks-nm-vpn
+i3xrocks-rofication
+i3xrocks-temp
+i3xrocks-time
+i3xrocks-volume
+#+end_example
