@@ -63,26 +63,15 @@ elif command_exists pbcopy; then
 	alias cbp='pbpaste'
 fi
 
-if command_exists emacsclient; then
-	# -a, --alternate-editor=COMMAND
-	#        if the Emacs server is not running, run the specified shell command instead.  This can also be specified  via  the  ALTER‐
-	#        NATE_EDITOR  environment  variable.   If  the value of ALTERNATE_EDITOR is the empty string, run "emacs --daemon" to start
-	#        Emacs in daemon mode, and try to connect to it.
-	#
-	# -c, --create-frame
-	#       create a new frame instead of trying to use the current Emacs frame
-	#
-	# -n, --no-wait
-	#        returns  immediately without waiting for you to "finish" the buffer in Emacs.  If combined with --eval, this option is ig‐
-	#        nored.
-	#
-	# -nw, -t, --tty
-	#        open a new Emacs frame on the current terminal
-	#
-	alias ec='emacsclient -nc -a ""'
-	alias et='TERM=xterm-256color emacsclient -t -a ""'
-  alias ee='TERM=xterm-256color noglob emacsclient -t -a "" -e'
-fi
+## emacs
+# Assume Emacs 27.1+ (see https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html)
+alias e='emacs -nc -a ""'
+alias et='TERM=xterm-direct emacs -nw'
+ediff() { et --eval "(ediff-files \"$1\" \"$2\")"; }
+eman()  { et --eval "(switch-to-buffer (man \"$1\"))"; }
+ekill() { emacsclient --eval '(kill-emacs)'; }
+
+alias vim-ghost='vim -u NONE -c "setlocal history=0 nobackup nomodeline noshelltemp noswapfile noundofile nowritebackup secure viminfo=\"\""'
 
 ## git
 alias glr='git pull --rebase'
