@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#---------------------------------------------
+# desktop-file-list
+#
+# Utility script to search in desktop files.
+#
+#---------------------------------------------
+
+set -e
+
+: "${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}"
+
+
+xdg-desktop-dirs() {
+  tr ':' '\n' <<<"$XDG_DATA_DIRS" | sed -e 's,/*$,/applications,'
+}
+
+xdg-desktop-list(){
+  for dir in $(xdg-desktop-dirs); do
+    if [ -d "$dir" ]; then
+      printf "%s\n" "$dir"/*.desktop
+    fi
+  done
+}
+
+xdg-desktop-list

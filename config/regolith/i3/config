@@ -707,6 +707,10 @@ for_window [class="1Password"] floating enable
 for_window [class="System76 Keyboard Configurator"] floating enable
 for_window [title="Calculator"] floating enable
 for_window [class="Artha"] floating enable
+for_window [class="Tandem"] floating enable
+
+bindsym $mod+x exec /home/logan/doom-emacs/bin/org-capture
+for_window [title="^doom-capture$"] floating enable
 
 assign [class="Slack"] → workspace "9: Chat"
 assign [class="Chromium-browser" title="Linear"] → workspace "4: Linear"
