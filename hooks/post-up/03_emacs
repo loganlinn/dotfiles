@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+[[ -d ~/src/github.com/plexus/chemacs2 ]] ||
+  git clone https://github.com/plexus/chemacs2.git ~/src/github.com/plexus/chemacs2
+
+[[ -d ~/src/github.com/syl20bnr/spacemacs ]] ||
+	git clone https://github.com/syl20bnr/spacemacs.git ~/src/github.com/syl20bnr/spacemacs
+
+[[ -d ~/src/github.com/hlissner/doom-emacs ]] ||
+  git clone https://github.com/hlissner/doom-emacs.git ~/src/github.com/hlissner/doom-emacs
