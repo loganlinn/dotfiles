@@ -1,6 +1,0 @@
-#!/bin/sh
-#
-# Recent branches (reverse chronological)
-#
-git branch --sort=-committerdate | head -n 10
-
