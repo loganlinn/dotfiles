@@ -65,33 +65,27 @@
       password-cache-expiry nil                   ; I can trust my computers ... can't I?
       scroll-margin 2)                            ; It's nice to maintain a little margin
 
-;; (after! '(doom-init-ui-hook doom-load-theme-hook)
-;;   (display-time-mode +1))
-
-(setq-hook! 'evil-mode-hook
-  evil-want-fine-undo t
-  evil-move-beyond-eol t)
+(use-package! treemacs
+  :defer t
+  :init
+  (message "treemacs :init")
+  (setq +treemacs-git-mode 'deferred)
+  (map! (:leader :desc "Treemacs" "0" #'treemacs-select-window))
+  :config
+  (message "treemacs :config")
+  (treemacs-project-follow-mode +1))
 
 (use-package! evil-cleverparens
   :after evil
   :init
   (setq evil-cleverparens-use-regular-insert t
-        evil-cleverparens-swap-move-by-word-and-symbol t)
+        evil-cleverparens-swap-move-by-word-and-symbol t
+        evil-want-fine-undo t
+        evil-move-beyond-eol t)
   :config
-
-  ([smartparens-global-strict-mode] +1)
   (evil-set-command-properties 'evil-cp-change :move-point t)
+  (smartparens-strict-mode +1)
   (evil-cleverparens-mode +1))
-
-(setq +treemacs-git-mode 'deferred)
-
-(map! (:when (featurep! :ui treemacs)
-       :leader
-       :desc "Treemacs" "0" #'treemacs-select-window))
-
-(after! treemacs
-  ;; DO follow the cursor (disabled in doom's modules/ui/treemacs/config.el)
-  (treemacs-follow-mode +1))
 
 (after! lsp-mode
   (setq lsp-log-io nil
@@ -130,8 +124,18 @@
   cider-save-file-on-load 'always-save)
 
 (setq-hook! 'clojure-mode-hook
-  clojure-toplevel-inside-comment-form t
-  clojure-align-forms-automatically t)
+  clojure-toplevel-inside-comment-form t)
+
+(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook clojure-mode-hook cider-mode-hook)
+  (subword-mode +1)
+  (aggressive-indent-mode +1)
+  (smartparens-strict-mode +1)
+  (evil-cleverparens-mode +1))
+
+(after! cider-mode
+  (evil-define-key 'normal cider-repl-mode-map
+    "C-j" 'cider-repl-next-input
+    "C-k" 'cider-repl-previous-input))
 
 (after! clj-refactor
   ;;  Idiomatic namespace aliases [[https://github.com/bbatsov/clojure-style-guide#use-idiomatic-namespace-aliases]]
@@ -152,21 +156,18 @@
           ("time" . "java-time")
           ("http" . "clj-http.client")
           ("log"  . "clojure.tools.logging")
-          ("sql"  . "hugsql.core")
+          ("hsql" . "honeysql.core")
           ("yaml" . "clj-yaml.core")
           ("sh"   . "clojure.java.shell"))))
-:config
 
-(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook ielm-mode-hook clojure-mode-hook fennel-mode-hook)
-  (subword-mode +1)
-  (aggressive-indent-mode +1)
-  (smartparens-strict-mode +1)
-  (evil-cleverparens-mode +1))
-
-(after! cider-mode
-  (evil-define-key 'normal cider-repl-mode-map
-    "C-j" 'cider-repl-next-input
-    "C-k" 'cider-repl-previous-input))
-
-(after! magit-mode
+(after! magit
+  (setq magit-diff-refine-hunk 'all
+        magit-repository-directories '(("~/src" . 3)))
   (add-hook! 'after-save-hook #'magit-after-save-refresh-status))
+
+(after! forge
+  (setq  forge-topic-list-limit '(100 . -10)
+         forge-owned-accounts '(("loganlinn"
+                                 "patch-tech"
+                                 "plumatic"
+                                 "omcljs"))))
