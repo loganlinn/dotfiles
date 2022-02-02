@@ -9,6 +9,7 @@ setopt complete_in_word  # do not move cursor to end of word if completion is st
 setopt always_to_end     # always move cursor to end of word when completion is inserted
 setopt extendedglob
 setopt local_options
+setopt completealiases
 
 # case insensitive (all), partial-word and substring completion
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
