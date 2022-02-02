@@ -42,8 +42,6 @@
 set_from_resource $mod  i3-wm.mod Mod4
 set_from_resource $alt  i3-wm.alt Mod1
 
-set_from_resource $i3-wm.binding. i3-wm.binding.
-
 ###############################################################################
 # Workspace Names
 # These are the labels which define each i3 workspace.
