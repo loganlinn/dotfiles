@@ -63,9 +63,29 @@ elif command_exists pbcopy; then
 	alias cbp='pbpaste'
 fi
 
+# html man pages
+manh() {
+  file=$(mktemp)
+  man --html=cat $1 > $file 2>/dev/null
+  if [[ -s $file ]]; then
+    ${BROWSER?} $file 2>/dev/null
+  else
+    echo "no man page for '$1'"
+  fi
+}
+
 ## emacs
-# Assume Emacs 27.1+ (see https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html)
-alias e='emacs -nc -a ""'
+# run emacs in a new session
+# this way closing the shell it was started from won't
+# kill emacs, nor will it usurp the shell
+e() {
+  if [[ "${IS_MACOS}" ]]; then
+    emacs $* > /dev/null 2>&1 & disown
+  else
+    ( setsid emacs $* > /dev/null 2>&1 & );
+  fi
+}
+# TERM=xterm-direct assumes Emacs 27.1+ (see https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html)
 alias et='TERM=xterm-direct emacs -nw'
 ediff() { et --eval "(ediff-files \"$1\" \"$2\")"; }
 eman()  { et --eval "(switch-to-buffer (man \"$1\"))"; }
@@ -111,7 +131,7 @@ fi
 
 if command_exists home-manager; then
 	alias nixre="home-manager switch"
-elif command_exist darwin-rebuild; then
+elif command_exists darwin-rebuild; then
 	alias nixre="darwin-rebuild switch"
 fi
 
