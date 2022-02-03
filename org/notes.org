@@ -1,8 +1,0 @@
-* System Cleanup
-
-#+BEGIN_SRC sh
-  docker system prune --all
-  brew cleanup
-  yarn cache clean
-  conda clean --all
-#+END_SRC
