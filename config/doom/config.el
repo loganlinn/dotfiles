@@ -52,28 +52,20 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
-(setq trash-directory (concat  (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files")
-      delete-by-moving-to-trash t)
-
-(setq window-combination-resize t                 ; take new window space from all other windows (not just current)
-      x-stretch-cursor t                          ; Stretch cursor to the glyph width
-      undo-limit 80000000                         ; Raise undo-limit to 80Mb
-      auto-save-default t                         ; Nobody likes to loose work, I certainly don't
-      truncate-string-ellipsis "…"                ; Unicode ellispis are nicer than "...", and also save /precious/ space
-      password-cache-expiry nil                   ; I can trust my computers ... can't I?
-      scroll-margin 2)                            ; It's nice to maintain a little margin
+(setq delete-by-moving-to-trash t
+      ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
+      trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
 (use-package! treemacs
   :defer t
   :init
   (message "treemacs :init")
   (setq +treemacs-git-mode 'deferred)
-  (map! (:leader
-         :desc "Treemacs"
-         "0" #'treemacs-select-window)
-        (:map treemacs-mode-map
-         [mouse-1] #'treemacs-single-click-expand-action))
+  (map! :leader
+        :desc "Treemacs"
+        "0" #'treemacs-select-window)
+  (map! :map treemacs-mode-map
+        [mouse-1] #'treemacs-single-click-expand-action)
   :config
   (message "treemacs :config")
   (treemacs-project-follow-mode +1))
@@ -109,7 +101,6 @@
                  "[/\\\\]third-party\\'"
                  "[/\\\\]buildtools\\'"
                  "[/\\\\]out\\'"))
-
     (push dir lsp-file-watch-ignored-directories)))
 
 (setq-hook! 'lisp-ui
@@ -143,25 +134,27 @@
 (after! clj-refactor
   ;;  Idiomatic namespace aliases [[https://github.com/bbatsov/clojure-style-guide#use-idiomatic-namespace-aliases]]
   (setq cljr-magic-require-namespaces
-        '(("io"   . "clojure.java.io")
-          ("set"  . "clojure.set")
-          ("str"  . "clojure.string")
-          ("walk" . "clojure.walk")
-          ("zip"  . "clojure.zip")
-          ("xml"  . "clojure.data.xml")
-          ("as"   . "clojure.core.async")
-          ("mat"  . "clojure.core.matrix")
-          ("edn"  . "clojure.edn")
-          ("pp"   . "clojure.pprint")
-          ("spec" . "clojure.spec.alpha")
-          ("csv"  . "clojure.data.csv")
-          ("json" . "cheshire.core")
-          ("time" . "java-time")
-          ("http" . "clj-http.client")
-          ("log"  . "clojure.tools.logging")
-          ("hsql" . "honeysql.core")
-          ("yaml" . "clj-yaml.core")
-          ("sh"   . "clojure.java.shell"))))
+        '(("io"    . "clojure.java.io")
+          ("as"    . "clojure.core.async")
+          ("csv"   . "clojure.data.csv")
+          ("edn"   . "clojure.edn")
+          ("mat"   . "clojure.core.matrix")
+          ("nrepl" . "clojure.nrepl")
+          ("pp"    . "clojure.pprint")
+          ("s"     . "clojure.spec.alpha")
+          ("set"   . "clojure.set")
+          ("spec"  . "clojure.spec.alpha")
+          ("str"   . "clojure.string")
+          ("walk"  . "clojure.walk")
+          ("xml"   . "clojure.data.xml")
+          ("zip"   . "clojure.zip")
+          ("json"  . "cheshire.core")
+          ("time"  . "java-time")
+          ("http"  . "clj-http.client")
+          ("log"   . "clojure.tools.logging")
+          ("hsql"  . "honeysql.core")
+          ("yaml"  . "clj-yaml.core")
+          ("sh"    . "clojure.java.shell"))))
 
 (after! magit
   (setq magit-diff-refine-hunk 'all
