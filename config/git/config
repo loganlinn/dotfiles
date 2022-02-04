@@ -10,7 +10,6 @@
 [user]
 	name       = Logan Linn
 	email      = logan@llinn.dev
-	signingKey = 32A48B412F1CA30ADB1B54382C3CDAE023DB6616
 
 [github]
   user = loganlinn
