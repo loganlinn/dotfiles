@@ -56,6 +56,23 @@
       ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
+;; i want my ~~mtv~~ intellij...
+(map! (:after flycheck
+       :desc "Jump to next error" [f2]   #'flycheck-next-error
+       :desc "Jump to prev error" [S-f2] #'flycheck-previous-error)
+      (:when (featurep! :tools lsp)
+       (:after lsp
+        :desc "Rename" [S-f6] #'lsp-rename)))
+
+(use-package! flycheck
+  :defer t
+  :config
+  (setq-default flycheck-disabled-checkers
+                ;; Most of these elisp warnings assume that I'm writing a proper package
+                ;; with full documentation. This is usually not the case, so just
+                ;; disable them.
+                '(emacs-lisp-checkdoc)))
+
 (use-package! treemacs
   :defer t
   :init
@@ -81,6 +98,7 @@
   (evil-set-command-properties 'evil-cp-change :move-point t)
   (smartparens-strict-mode +1)
   (evil-cleverparens-mode +1))
+
 
 (after! lsp-mode
   (setq lsp-log-io nil
@@ -167,3 +185,6 @@
                                  "patch-tech"
                                  "plumatic"
                                  "omcljs"))))
+
+(use-package! org-noter
+  :commands org-noter)
