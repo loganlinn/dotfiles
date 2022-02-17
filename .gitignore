@@ -8,3 +8,5 @@
 .cpcache
 .dir-locals-2.el
 antigen-shapshot
+node_modules/
+.clj-kondo/
