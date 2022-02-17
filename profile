@@ -39,18 +39,16 @@ if [ -d "$HOME/.profile.d" ]; then
 fi
 
 export DOOMDIR="$HOME/.config/doom"
-export DOOMLOCALDIR="$HOME/doom-emacs/.local"
 
 PATH="$HOME/.krew/bin:$PATH"
 PATH="$HOME/.deno/bin:$PATH"
 PATH="$HOME/.local/share/flatpak/exports/bin:$PATH"
 PATH="$HOME/.fzf/share/bin:$PATH"
 PATH="$HOME/.emacs.d/bin:$PATH"
-PATH="$HOME/doom-emacs/bin:$PATH"
 PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+
 export PATH
 
 ## Host
 
-[ -e "$HOME/.profile.local" ] &&
-  . "$HOME/.profile.local"
+! [ -e "$HOME/.profile.local" ] || . "$HOME/.profile.local"

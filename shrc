@@ -2,8 +2,6 @@
 # and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
 #
 
-[ -n "$ENV" ] || . "$HOME"/.profile
-
 command_exists() {
 	command -v "$1" >/dev/null 2>&1
 }
@@ -11,6 +9,8 @@ command_exists() {
 function_exists() {
 	command -V "$1" >/dev/null 2>&1
 }
+
+[ -n "$ENV" ] || . "$HOME"/.profile
 
 if command_exists lsd; then
 	alias ls=lsd
@@ -91,24 +91,26 @@ ediff() { et --eval "(ediff-files \"$1\" \"$2\")"; }
 eman()  { et --eval "(switch-to-buffer (man \"$1\"))"; }
 ekill() { emacsclient --eval '(kill-emacs)'; }
 
-alias vim-ghost='vim -u NONE -c "setlocal history=0 nobackup nomodeline noshelltemp noswapfile noundofile nowritebackup secure viminfo=\"\""'
+# restricted-mode vim
+alias rvim='vim -Z -u NONE -c "setlocal history=0 nobackup nomodeline noshelltemp noswapfile noundofile nowritebackup secure viminfo=\"\""'
 
 ## git
-alias glr='git pull --rebase'
-alias gp='git push -u'
-alias gpa='git push all --all'
-alias glrp='glr && gp'
-alias gd='git diff --color'
-alias gdc='gd --cached'
-alias gs='git status -sb'
-alias gw='git show'
-alias gsw='git stash show -p'
+alias gtl='git rev-parse --show-toplevel'
 alias gcob='git checkout -b'
 alias gcop='git checkout -p'
+alias gd='git diff --color'
+alias gdc='gd --cached'
+alias glr='git pull --rebase'
+alias glrp='glr && gp'
 alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):|https://\1/|'"'"' -e '"'"'s|.git$||'"'"' | xargs xdg-open'
-alias gwt='git worktree'
+alias gp='git push -u'
+alias gpa='git push all --all'
+alias gs='git status -sb'
+alias gsw='git stash show -p'
+alias gw='git show'
 alias gwt-ls="git worktree list --porcelain 2>/dev/null | awk '/^worktree / { print $2 }'"
 alias gwt-rm="gwt-ls | fzf | ifne xargs git worktree remove"
+alias gwt='git worktree'
 
 if command_exists ag; then
 	alias agl='ag -Q'

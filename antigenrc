@@ -21,15 +21,17 @@ antigen bundles <<EOL
     johanhaleby/kubetail
     loganlinn/zzz.plugin.zsh
     wfxr/forgit
-    zsh-users/zsh-autosuggestions 
-    zsh-users/zsh-completions 
-    zsh-users/zsh-history-substring-search 
+    zsh-users/zsh-autosuggestions
+    zsh-users/zsh-completions
+    zsh-users/zsh-history-substring-search
 EOL
 
 for _zsh_custom_plugin in $ZSH_CUSTOM/plugins/*(/); do
   antigen bundle "$_zsh_custom_plugin" --no-local-clone
 done
 unset _zsh_custom_plugin
+
+antigen bundle hlissner/zsh-autopair
 
 ###############################################################################
 

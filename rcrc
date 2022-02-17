@@ -4,7 +4,7 @@ COPY_ALWAYS="config/git/template/HEAD ssh/id_* local/share/fonts/* local/bin/bin
 
 EXCLUDES="README* LICENSE THANKS Makefile moredots.gif installers/* *~"
 
-SYMLINK_DIRS="zsh"
+SYMLINK_DIRS="zsh zgenom node_modules"
 
 # i.e. tag-darwin, tag-linux
 TAGS="$(uname -s | tr '[:upper:]' '[:lower:]')"
