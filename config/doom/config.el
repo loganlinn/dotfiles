@@ -56,6 +56,11 @@
       ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
+(use-package! ranger
+  :when (featurep! :emacs dired +ranger)
+  :after dired
+  :init (setq ranger-override-dired 'ranger))
+
 ;; i want my ~~mtv~~ intellij...
 (map! (:after flycheck
        :desc "Jump to next error" [f2]   #'flycheck-next-error
@@ -170,7 +175,8 @@
           ("time"  . "java-time")
           ("http"  . "clj-http.client")
           ("log"   . "clojure.tools.logging")
-          ("hsql"  . "honeysql.core")
+          ("sql"   . "honey.sql")
+          ("sqlh"  . "honey.sql.helpers")
           ("yaml"  . "clj-yaml.core")
           ("sh"    . "clojure.java.shell"))))
 
