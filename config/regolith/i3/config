@@ -1,5 +1,7 @@
+
+
 ###############################################################################
-# i3-gaps config file for the Regolith Desktop Environment
+# i3 config file for the Regolith Desktop Environment
 #
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 #
@@ -35,12 +37,24 @@
 ###############################################################################
 
 ###############################################################################
-# Key Mappings
+# Meta Key Mappings
 ###############################################################################
 
 # Meta Key - Alt key is Mod1, and Windows key is Mod4
 set_from_resource $mod  i3-wm.mod Mod4
 set_from_resource $alt  i3-wm.alt Mod1
+
+###############################################################################
+# Launcher dialogs
+###############################################################################
+
+## Launch // Terminal // <> Enter ##
+set_from_resource $i3-wm.binding.terminal i3-wm.binding.terminal Return
+bindsym $mod+$i3-wm.binding.terminal exec /usr/bin/x-terminal-emulator
+
+## Launch // Browser // <><Shift> Enter ##
+set_from_resource $i3-wm.binding.browser i3-wm.binding.browser Shift+Return
+bindsym $mod+$i3-wm.binding.browser exec gtk-launch $(xdg-settings get default-web-browser)
 
 ###############################################################################
 # Workspace Names
@@ -83,25 +97,33 @@ set_from_resource $ws8_key  i3-wm.workspace.08.key 8
 set_from_resource $ws9_key  i3-wm.workspace.09.key 9
 set_from_resource $ws10_key i3-wm.workspace.10.key 0
 
+
+# Cause Settings app to float above tiled windows
+floating_maximum_size -1 x -1
+for_window [class="floating_window"] floating enable
+
+# Disable titlebar
+set_from_resource $i3-wm.floatingwindow.border.size i3-wm.floatingwindow.border.size 1
+default_floating_border pixel $i3-wm.floatingwindow.border.size
+set_from_resource $i3-wm.window.border.size i3-wm.window.border.size 1
+default_border pixel $i3-wm.window.border.size
+
+# Enable popup during fullscreen
+set_from_resource $i3-wm.gaps.popup_during_fullscreen i3-wm.gaps.popup_during_fullscreen smart
+popup_during_fullscreen $i3-wm.gaps.popup_during_fullscreen
+
+# window focus follows your mouse movements as the mouse crosses window borders
+set_from_resource $i3-wm.gaps.focus_follows_mouse i3-wm.gaps.focus_follows_mouse no
+focus_follows_mouse $i3-wm.gaps.focus_follows_mouse
+
+# Hiding borders adjacent to the screen edges.
+# The "smart" setting hides borders on workspaces with only one window visible.
+set_from_resource $i3-wm.hide.edge.borders i3-wm.hide.edge.borders smart
+hide_edge_borders $i3-wm.hide.edge.borders
+
 ###############################################################################
 # Launcher dialogs
 ###############################################################################
-
-## Launch // Terminal // <> Enter ##
-set_from_resource $i3-wm.binding.terminal i3-wm.binding.terminal Return
-bindsym $mod+$i3-wm.binding.terminal exec /usr/bin/x-terminal-emulator
-
-## Launch // Browser // <><Shift> Enter ##
-set_from_resource $i3-wm.binding.browser i3-wm.binding.browser Shift+Return
-bindsym $mod+$i3-wm.binding.browser exec gtk-launch $(xdg-settings get default-web-browser)
-
-## Launch // Editor // <> e ##
-set_from_resource $i3-wm.binding.editor i3-wm.binding.editor e
-set_from_resource $i3-wm.program.editor i3-wm.program.editor /usr/bin/editor
-bindsym $mod+$i3-wm.binding.editor exec $i3-wm.program.editor
-
-set_from_resource $i3-wm.binding.edit.conifg i3-wm.binding.edit.conifg F2
-bindsym $mod+$i3-wm.binding.edit.conifg exec $i3-wm.program.editor ~/.config/regolith
 
 set_from_resource $rofiTheme rofi.theme /etc/regolith/styles/lascaille/rofi.rasi
 
@@ -353,23 +375,9 @@ bindsym $mod+$i3-wm.binding.take_next_free exec --no-startup-id /usr/bin/i3-next
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
-# Hiding borders adjacent to the screen edges.
-# The "smart" setting hides borders on workspaces with only one window visible.
-set_from_resource $i3-wm.hide.edge.borders i3-wm.hide.edge.borders smart
-hide_edge_borders $i3-wm.hide.edge.borders
-
 # Set the default layout mode
 set_from_resource $i3-wm.workspace.layout i3-wm.workspace.layout default
 workspace_layout $i3-wm.workspace.layout
-
-# VIM-like marks (mark/goto)
-set_from_resource $i3-wm.binding.mark i3-wm.binding.mark m
-set_from_resource $i3-wm.binding.goto i3-wm.binding.goto Shift+m
-set_from_resource $i3-wm.binding.unmark i3-wm.binding.goto Mod1+m
-bindsym $mod+$i3-wm.binding.mark exec i3-input -F 'mark %s' -l 1 -P 'mark: '
-bindsym $mod+$i3-wm.binding.goto exec i3-input -F '[con_mark="%s"] focus' -l 1 -P 'goto: '
-bindsym $mod+$i3-wm.binding.unmark exec i3-input -F 'unmark %s' -l 1 -P 'unmark: '
-show_marks yes
 
 ###############################################################################
 # Session Management
@@ -477,12 +485,6 @@ bindsym $mod+$i3-wm.binding.load_layout exec /usr/bin/i3-snapshot -c < /tmp/i3-s
 set_from_resource $i3-wm.binding.bar_toggle i3-wm.binding.bar_toggle i
 bindsym $mod+$i3-wm.binding.bar_toggle bar mode toggle
 
-# Prevent floating windows going offscreen
-floating_maximum_size 1920 x 1080
-
-# Cause Settings app to float above tiled windows
-for_window [class="floating_window"] floating enable
-
 set_from_resource $i3-wm.workspace.auto_back_and_forth i3-wm.workspace.auto_back_and_forth no
 workspace_auto_back_and_forth $i3-wm.workspace.auto_back_and_forth
 
@@ -533,12 +535,6 @@ bindsym $mod+r mode "Resize Mode"
 # i3 Appearance and Behavior
 ###############################################################################
 
-# Disable titlebar
-set_from_resource $i3-wm.window.border.size i3-wm.window.border.size 1
-set_from_resource $i3-wm.floatingwindow.border.size i3-wm.floatingwindow.border.size 1
-default_border pixel $i3-wm.window.border.size
-default_floating_border pixel $i3-wm.floatingwindow.border.size
-
 # Specify the distance between windows in pixels. (i3-gaps)
 set_from_resource $i3-wm.gaps.inner.size i3-wm.gaps.inner.size 5
 set_from_resource $i3-wm.gaps.outer.size i3-wm.gaps.outer.size 0
@@ -548,14 +544,6 @@ gaps outer $i3-wm.gaps.outer.size
 # Only enable gaps on a workspace when there is at least one container
 set_from_resource $i3-wm.gaps.smart i3-wm.gaps.smart on
 smart_gaps $i3-wm.gaps.smart
-
-# Enable popup during fullscreen
-set_from_resource $i3-wm.gaps.popup_during_fullscreen i3-wm.gaps.popup_during_fullscreen smart
-popup_during_fullscreen $i3-wm.gaps.popup_during_fullscreen
-
-# window focus follows your mouse movements as the mouse crosses window borders
-set_from_resource $i3-wm.gaps.focus_follows_mouse i3-wm.gaps.focus_follows_mouse no
-focus_follows_mouse $i3-wm.gaps.focus_follows_mouse
 
 ###############################################################################
 # i3 Colors and Fonts
@@ -690,31 +678,80 @@ exec --no-startup-id $i3-wm.program.2
 set_from_resource $i3-wm.program.3 i3-wm.program.3 :
 exec --no-startup-id $i3-wm.program.3
 
-# Automatic tiling based on dimensions
-# To install autotiling(1), sudo pip install https://github.com/nwg-piotr/autotiling.git
-# See https://github.com/nwg-piotr/autotiling
-# exec_always --no-startup-id autotiling
+# include /etc/regolith/i3/config.d/*
+# include $HOME/.config/i3/config.d/*
 
-# switch to workspace with urgent window automatically
+###############################################################################
+# Key Mappings
+###############################################################################
+
+## Launch // Editor // <> e ##
+set_from_resource $i3-wm.binding.editor i3-wm.binding.editor e
+set_from_resource $i3-wm.program.editor i3-wm.program.editor /usr/bin/editor
+bindsym $mod+$i3-wm.binding.editor exec $i3-wm.program.editor
+
+## Launch // Edit Config // <> F2 ##
+set_from_resource $i3-wm.binding.edit.conifg i3-wm.binding.edit.conifg F2
+bindsym $mod+$i3-wm.binding.edit.conifg exec $i3-wm.program.editor ~/.config/regolith
+
+## Launch // Org Capture // <> x ##
+bindsym $mod+x exec /home/logan/doom-emacs/bin/org-capture
+
+## Launch // Terminal File Browser // <><Alt> n ##
+set_from_resource $i3-wm.program.files.terminal i3-wm.program.files.terminal ranger
+bindsym $mod+$alt+n exec /usr/bin/x-terminal-emulator $i3-wm.program.files.terminal
+
+###############################################################################
+# Focus behavior
+###############################################################################
+
+# Switch to workspace with urgent window automatically
 focus_on_window_activation smart
 for_window [urgent=latest] focus
 
-# Window Customizations
+###############################################################################
+# Focus keys
+###############################################################################
+
+bindsym $mod+Control+s [class="Slack"] focus
+bindsym $mod+Control+d [title="Linear"] focus
+bindsym $mod+Control+f [class="kitty"] focus
+bindsym $mod+Control+g [class="Chromium"] focus
+
+###############################################################################
+# Window customizations
+###############################################################################
+
 for_window [title="^zoom$" class="[zoom]*"] floating enable
 for_window [class="1Password"] floating enable
 for_window [class="System76 Keyboard Configurator"] floating enable
 for_window [title="Calculator"] floating enable
 for_window [class="Artha"] floating enable
 for_window [class="Tandem"] floating enable
-
-bindsym $mod+x exec /home/logan/doom-emacs/bin/org-capture
 for_window [title="^doom-capture$"] floating enable
+
+###############################################################################
+# Window assignments
+###############################################################################
 
 assign [class="Slack"] → workspace "9: Chat"
 assign [class="Chromium-browser" title="Linear"] → workspace "4: Linear"
 
-# Jump to apps
-bindsym $mod+Control+s [class="Slack"] focus
-bindsym $mod+Control+d [title="Linear"] focus
-bindsym $mod+Control+f [class="kitty"] focus
-bindsym $mod+Control+g [class="Chromium"] focus
+###############################################################################
+# Back and forth
+###############################################################################
+
+set_from_resource $i3-wm.workspace.auto_back_and_forth i3-wm.workspace.auto_back_and_forth no
+workspace_auto_back_and_forth $i3-wm.workspace.auto_back_and_forth
+
+###############################################################################
+# Marks
+###############################################################################
+
+set_from_resource $i3-wm.binding.mark i3-wm.binding.mark m
+set_from_resource $i3-wm.binding.goto i3-wm.binding.goto Shift+m
+set_from_resource $i3-wm.binding.unmark i3-wm.binding.goto Mod1+m
+bindsym $mod+$i3-wm.binding.mark exec i3-input -F 'mark %s' -l 1 -P 'mark: '
+bindsym $mod+$i3-wm.binding.goto exec i3-input -F '[con_mark="%s"] focus' -l 1 -P 'goto: '
+bindsym $mod+$i3-wm.binding.unmark exec i3-input -F 'unmark %s' -l 1 -P 'unmark: '
+show_marks yes

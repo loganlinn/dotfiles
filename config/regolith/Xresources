@@ -10,7 +10,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Programs
 i3-wm.program.1: /usr/bin/x-terminal-emulator
-i3-wm.program.editor: emacs -nc -a ""
+i3-wm.program.editor: emacs
 
 i3-wm.binding.scratchpad: minus
 i3-wm.binding.move_scratchpad: Shift+minus
