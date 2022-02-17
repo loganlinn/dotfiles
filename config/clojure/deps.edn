@@ -1,6 +1,6 @@
 {:paths ["src"]
 
- :extra-paths [".loganlinn"]
+ :extra-paths [".llinn"]
 
  :deps
  {org.clojure/clojure {:mvn/version "1.10.3"}}
@@ -19,132 +19,35 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; REPL and nREPL connections
 
-  :dev/repl
+  :dev/main
   {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
    :extra-deps {fipp/fipp {:mvn/version "0.6.24"}}
    :main-opts ["-e" "(load-file,(str,(System/getProperty,\"user.home\"),\"/.config/clojure/dev.clj\"))"]}
 
-  :nrepl
+  :+nrepl
   {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}}}
+  :nrepl/main
+  {:main-opts  ["-m" "nrepl.cmdline"]}
 
-  :cider
+  :+cider
   {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}
                 cider/cider-nrepl {:mvn/version "0.26.0"}
                 refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}}
+  :cider/main
+  {:main-opts  ["-m" "nrepl.cmdline" "--middleware" "[refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]" "-i"]}
 
   ;; NOTE: avoid using `rebel-readlines` with `rlwrap`...
   ;;       i.e. prefer `clojure` over `clj` when using
   ;; See [[https://github.com/bhauman/rebel-readline]]
-  :rebel
-  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
-   :main-opts  ["-m" "rebel-readline.main"]}
+  :+rebel
+  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}}
+  :rebel/main
+  {:main-opts  ["-m" "rebel-readline.main"]}
 
-  ;; Built-in Clojure REPL
-  ;; Run interactive REPL with nREPL connection
-  ;; NOTE: For non-interactive REPL session, use :middleware versions
-
-  ;;;; Simple nREPL server with no additional libraries
-  :repl/nrepl
-  {:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}}
-   :main-opts  ["-m" "nrepl.cmdline"]}
-
-  ;; Run an interactive Clojure REPL with nREPL connection and CIDER libraries
-  ;; clojure -M:repl/nrepl
-  :repl/cider
-  {:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}
-                cider/cider-nrepl          {:mvn/version "0.26.0"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[cider.nrepl/cider-middleware]"
-                "-i"]}
-
-  :repl/cider-refactor
-  {:extra-deps {nrepl/nrepl                   {:mvn/version "0.8.3"}
-                cider/cider-nrepl             {:mvn/version "0.26.0"}
-                refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"
-                "-i"]}
-
-  :repl/cljs-nrepl
-  {:extra-deps {org.clojure/clojurescript       {:mvn/version "1.10.773"}
-                nrepl/nrepl                     {:mvn/version "0.8.3"}
-                cider/cider-nrepl               {:mvn/version "0.26.0"}
-                cider/piggieback                {:mvn/version "0.5.2"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "-i"
-                "--middleware" "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]"]}
-
-  ;;;; Rebel Readline enhanced REPL UI
-  ;; REPL UI with syntax highlighting, built in docs and a quit command `:repl/quit`
-
-  ;;Clojure REPL with rebel readline with nrepl for editor connection
-  ;; https://github.com/bhauman/rebel-readline
-  ;; Conjure: opening a Clojure file will automatically connect to the REPL process
-  ;; CIDER: run `cider-connect-clj` and select REPL host and port
-  ;; Calva: connect to REPL command and select build tool, REPL host and port
-
-  ;; clojure -M:repl/rebel-nrepl
-  :repl/rebel
-  {:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}
-                cider/cider-nrepl          {:mvn/version "0.26.0"}
-                com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[cider.nrepl/cider-middleware]"
-                "-i"
-                "-f" "rebel-readline.main/-main"]}
-
-  :repl/reveal-nrepl
-  {:extra-deps {vlaaad/reveal {:mvn/version "1.3.214"}
-                nrepl/nrepl   {:mvn/version "0.8.3"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[vlaaad.reveal.nrepl/middleware]"
-                "-i"]}
-
-  ;; As with :repl/reveal-nrepl with a light theme and 32 point font
-  ;; Replace font-family with local font (should be slightly faster startup)
-  ;; clj -M:repl/reveal-light-nrepl
-  :repl/reveal-light-nrepl
-  {:extra-deps {vlaaad/reveal {:mvn/version "1.3.214"}
-                nrepl/nrepl   {:mvn/version "0.8.3"}}
-   :jvm-opts   ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[vlaaad.reveal.nrepl/middleware]"
-                "-i"]}
-
-;; rebel readline with reveal data visualization
-;; clojure -M:repl/rebel-reveal
-  :repl/rebel-reveal
-  {:extra-deps
-   {vlaaad/reveal              {:mvn/version "1.3.214"}
-    com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-   :jvm-opts  ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-   :main-opts ["-e" "(require,'rebel-readline.core),(require,'rebel-readline.clojure.line-reader),(require,'rebel-readline.clojure.service.local),(require,'rebel-readline.clojure.main),(require,'vlaaad.reveal)(rebel-readline.core/with-line-reader,(rebel-readline.clojure.line-reader/create,(rebel-readline.clojure.service.local/create)),(vlaaad.reveal/repl,:prompt,(fn,[]),:read,(rebel-readline.clojure.main/create-repl-read)))"]}
-
-;;;; Remote REPL connection
-;; Connect to the nREPL server of a remote REPL
-;; clojure -M:repl/remote --host hostname --port 12345
-;; replace --host and --port values with that of remote nREPL server
-  :repl/remote
-  {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}}
-   :main-opts ["-m" "nrepl.cmdline"
-               "--connect"]}
-
-;; clojure -M:repl/rebel-remote --host hostname --port 12345
-  :repl/rebel-remote
-  {:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}
-                cider/cider-nrepl          {:mvn/version "0.26.0"}
-                com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--connect"
-                "--middleware" "[cider.nrepl/cider-middleware]"
-                "-i"
-                "-f" "rebel-readline.main/-main"]}
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Cognitect REBL 
-;;
-;;     https://docs.datomic.com/cloud/other-tools/REBL.html
-;;
+  ;; Cognitect REBL
+  ;;
+  ;;     https://docs.datomic.com/cloud/other-tools/REBL.html
+  ;;
   :rebl ;; for JDK 11+
   {:extra-deps {com.cognitect/rebl          {:mvn/version "0.9.242"}
                 org.openjfx/javafx-fxml     {:mvn/version "15-ea+6"}
@@ -153,42 +56,40 @@
                 org.openjfx/javafx-base     {:mvn/version "15-ea+6"}
                 org.openjfx/javafx-web      {:mvn/version "15-ea+6"}}
    :main-opts ["-m" "cognitect.rebl"]}
-
   :rebl-jdk8 ;; for JDK 8
   {:extra-deps {com.cognitect/rebl {:mvn/version "0.9.242"}}
    :main-opts ["-m" "cognitect.rebl"]}
 
-;; End of REPL and nREPL connections
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Project compilation and dependencies
-
-;; clj-check - report detailed compilation errors for a project
-;; https://github.com/athos/clj-check
-;; clojure -M:project/check
-  :project/check
+  :clj-check ;; a la `lein check`
   {:extra-deps {athos/clj-check
                 {:git/url "https://github.com/athos/clj-check.git"
-                 :sha     "518d5a1cbfcd7c952f548e6dbfcb9a4a5faf9062"}}
+                 :sha     "0ca84df1357d71429243b99908303f45a934654c"}}
    :main-opts  ["-m" "clj-check.check"]}
 
-;; find-deps - fuzzy search Maven & Clojars and add deps to deps.edn
-;; https://github.com/hagmonk/find-deps
-;; clojure -M:project/find-deps http-kit  # fuzzy search for dependency
-;; clojure -M:project/find-deps http-kit ring compojure # multiple deps
-;; clojure -M:project/find-deps -F:merge http-kit # merge dep into deps.edn file
-  :project/find-deps
+  :deps-try
+  {:extra-deps {deps-try/deps-try
+                {:git/url "https://gitlab.com/eval/deps-try"
+                 :git/sha "9ccf64be248d5d9aa641df9e94feaea913bc0687"}}
+   :main-opts ["-m" "deps-try.main"]}
+
+  ;; find-deps - fuzzy search Maven & Clojars and add deps to deps.edn
+  ;; https://github.com/hagmonk/find-deps
+  ;; clojure -M:project/find-deps http-kit  # fuzzy search for dependency
+  ;; clojure -M:project/find-deps http-kit ring compojure # multiple deps
+  ;; clojure -M:project/find-deps -F:merge http-kit # merge dep into deps.edn file
+  :find-deps
   {:extra-deps
    {find-deps/find-deps
     {:git/url "https://github.com/hagmonk/find-deps"
-     :sha     "9bf23a52cb0a8190c9c2c7ad1d796da802f8ce7a"}}
+     :git/sha "9bf23a52cb0a8190c9c2c7ad1d796da802f8ce7a"}}
    :main-opts ["-m" "find-deps.core"]}
 
-;; Visualizing dependencies in a project
-;; https://github.com/clojure/tools.deps.graph
-;; clojure -X:project/graph-deps
-  :project/graph-deps
+  ;; Visualizing dependencies in a project
+  ;; https://github.com/clojure/tools.deps.graph
+  ;; clojure -X:project/graph-deps
+  :graph-deps
   {:replace-paths []
    :replace-deps  {org.clojure/tools.deps.graph {:mvn/version "1.0.63"}}
    :main-opts     ["-m" "clojure.tools.deps.graph"] ;; deprecated
@@ -197,132 +98,32 @@
    :exec-args     {:output "project-dependencies-graph.png"
                    :size   true}}
 
-;; Dependency version management
-;; https://github.com/liquidz/antq
-;; Manage versions for maven and git dependencies
-
-;; - report project dependencies that have newer versions available:
-;; cd project-directory && clojure -M:project/outdated
-;; - update library versions in this deps.edn file:
-;; cd ~/.clojure && clojure -M:project/outdated
+  ;; Dependency version management
+  ;; https://github.com/liquidz/antq
+  ;; Manage versions for maven and git dependencies
+  ;; - report project dependencies that have newer versions available:
+  ;; cd project-directory && clojure -M:project/outdated
+  ;; - update library versions in this deps.edn file:
+  ;; cd ~/.clojure && clojure -M:project/outdated
   :project/outdated
   {:replace-paths []
    :replace-deps  {com.github.liquidz/antq {:mvn/version "1.0.0"}
                    org.slf4j/slf4j-nop     {:mvn/version "RELEASE"}}
    :main-opts     ["-m" "antq.core"]}
 
-  :hack/antq
-  {:replace-deps
-   {antq/antq {:local/root "/home/practicalli/projects/clojure/community-tools/antq"}}
-   :main-opts ["-m" "antq.core"]}
-
-;; The classic project for checking maven based dependencies
-;; clojure -M:project/outdated-mvn
-;; DEPRECATE
-  :project/outdated-mvn
-  {:replace-paths []
-   :replace-deps  {deps-ancient/deps-ancient {:mvn/version "0.0.5"}}
-   :main-opts     ["-m" "deps-ancient.deps-ancient"]}
-
-;; Carve - search through code for unused vars and remove them
-;; clojure -M:project/unused --opts '{:paths ["src" "test"]}'
-  :project/unused
-  {:extra-deps {borkdude/carve
-                {:git/url "https://github.com/borkdude/carve"
-                 :sha     "c9a4dec89032f2003cc439c473fcd3c41e809669"}}
+  ;; Carve - search through code for unused vars and remove them
+  ;; clojure -M:project/unused --opts '{:paths ["src" "test"]}'
+  :carve
+  {:extra-deps {borkdude/carve {:mvn/version "RELEASE"}}
    :main-opts  ["-m" "carve.main"]}
 
-  :project/unused-vars
-  {:extra-deps {borkdude/carve
-                {:git/url "https://github.com/borkdude/carve"
-                 :sha     "c9a4dec89032f2003cc439c473fcd3c41e809669"}}
-   :main-opts  ["-m" "carve.main"]}
+  ;; Java Sources
 
-  :project/carve
-  {:extra-deps {borkdude/carve
-                {:git/url "https://github.com/borkdude/carve"
-                 :sha     "c9a4dec89032f2003cc439c473fcd3c41e809669"}}
-   :main-opts  ["-m" "carve.main"]}
+  ;; Look up Java Class and method definitions, eg. `cider-find-var` in Emacs
+  ;; Requires: Java sources installed locally
+  ;; Examples are from Ubuntu package install locations
 
-;; Convert Leiningen projects to Clojure CLI tools with depify
-  :project/depify
-  {:extra-deps {depify/depify {:git/url "https://github.com/hagmonk/depify"
-                               :sha     "b3f61517c860518c1990133aa6eb54caf1e4d591"}}
-   :main-opts  ["-m" "depify.project"]}
-
-;; End of: Projects and dependencies
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Project Packaging
-
-;; depstar - build jars, uberjars
-;; https://github.com/seancorfield/depstar
-;; over-ride the :main-class as the name is unlikely to match your project
-
-;; Jar archive of the project
-;; clojure -X:project/jar :main-class domain.application
-;; clojure -X:project/jar :jar '"project-name.jar"' :main-class domain.application
-  :project/jar
-  {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.297"}}
-   :exec-fn      hf.depstar/jar
-   :exec-args    {:jar "project.jar"
-                  :aot true}}
-
-;; Uberjar archive of the project, including Clojure runtime
-;; clojure -X:project/uberjar :main-class domain.application
-;; clojure -X:project/uberjar :jar '"project-name.jar"' :main-class domain.application
-  :project/uberjar
-  {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.297"}}
-   :exec-fn      hf.depstar/uberjar
-   :exec-args    {:jar "uber.jar"
-                  :aot true}}
-
-;; End of project packaging
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Project Deployment
-;; local and remote deployment of Java archives
-
-;; Clojure CLI tools - built in alias to deploy locally (in `~/.m2/`)
-;; clojure -X:deps mvn-install
-
-;; deps-deploy - Deploy libraries to Clojars
-;; https://github.com/slipset/deps-deploy
-;; Deploy to Clojars
-;; `clojure -M:project/clojars project.jar`
-;; Deploy to Clojars signed
-;; `clojure -M:project/clojars-signed project.jar`
-;;
-;; Set Clojars username/token in `CLOJARS_USERNAME` and `CLOJARS_PASSWORD`
-;; environment variables.
-;; Set fully qualified artifact-name and version in project `pom.xml` file
-
-  :project/clojars
-  {:replace-paths []
-   :replace-deps  {slipset/deps-deploy {:mvn/version "0.1.5"}}
-   :main-opts     ["-m" "deps-deploy.deps-deploy"
-                   "deploy"]}
-
-  :project/clojars-signed
-  {:replace-paths []
-   :replace-deps  {slipset/deps-deploy {:mvn/version "0.1.5"}}
-   :main-opts     ["-m" "deps-deploy.deps-deploy"
-                   "deploy"
-                   :true]}
-
-;; End of Project Deployment
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Java Sources
-
-;; Look up Java Class and method definitions, eg. `cider-find-var` in Emacs
-;; Requires: Java sources installed locally
-;; Examples are from Ubuntu package install locations
-
-;; clojure -M:lib/java11-source
+  ;; clojure -M:lib/java11-source
   :lib/java8-source
   {:extra-deps
    {openjdk/java-sources {:local/root "/usr/lib/jvm/openjdk-8/lib/src.zip"}}}
@@ -331,149 +132,40 @@
   {:extra-deps
    {openjdk/java-sources {:local/root "/usr/lib/jvm/openjdk-11/lib/src.zip"}}}
 
-;; End of: Java Sources
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Formatting tools
-
-;; pretty printing capabilities for Clojure code and EDN
-;; clojure -M:data/zprint filename
-  :format/zprint
+  ;; pretty printing capabilities for Clojure code and EDN
+  ;; clojure -M:data/zprint filename
+  :zprint
   {:extra-deps {zprint/zprint {:mvn/version "1.1.2"}}
    :main-opts  ["-m" "zprint.main"]}
 
-;; End of: Data manipulation tools
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Databases and drivers uses only during development
-
-;; H2 embedded database
-  :database/h2
-  {:extra-deps {com.h2database/h2                 {:mvn/version "1.4.200"}
-                com.github.seancorfield/next.jdbc {:mvn/version "1.2.709"}}}
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Data inspectors / visualizers
-
-  :portal ;; https://github.com/djblue/portal
+  ;; https://github.com/djblue/portal
+  :+portal 
   {:extra-deps {djblue/portal {:mvn/version "RELEASE"}}}
-  :portal/web
+
+  :portal/main
   {:extra-deps {org.clojure/clojurescript {:mvn/version "RELEASE"}}
    :main-opts  ["-m" "cljs.main"]}
+
   :portal/node
   {:extra-deps {org.clojure/clojurescript {:mvn/version "RELEASE"}}
    :main-opts  ["-m" "cljs.main" "-re" "node"]}
 
-;; Reveal - read evaluate visualize loop
-;; A REPL environment with data visualization and exploration
-;; http://practicalli.github.io/clojure/clojure-tools/data-browsers/reveal.html
-;; clojure -M:inspect/reveal
-;; clojure -X:inspect/reveal
-;; Run with theme / font changes:
-;; clojure -M:inspect/reveal-light
-;; Use with rebel repl by adding and using tap>
-;; clojure -M:inspect/reveal:repl/rebel
-;; clojure -M:inspect/reveal:rebel -J-Dvlaaad.reveal.prefs='{:theme :light :font-family "Ubuntu Mono" :font-size 32}'
-
-  :inspect/reveal
-  {:extra-deps {vlaaad/reveal {:mvn/version "1.3.214"}}
+  :reveal/main
+  {:extra-deps {vlaaad/reveal {:mvn/version "RELEASE"}}
    :ns-default vlaaad.reveal
    :exec-fn    repl
    :main-opts  ["-m" "vlaaad.reveal" "repl"]}
 
-  :inspect/reveal-light
-  {:extra-deps {vlaaad/reveal {:mvn/version "1.3.214"}}
-   :ns-default vlaaad.reveal
-   :exec-fn    repl
-   :jvm-opts   ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-   :main-opts  ["-m" "vlaaad.reveal" "repl"]}
-
-;; rebel readline with reveal data visualization
-;; clojure -M:inspect/reveal-rebel
-  :inspect/reveal-rebel
-  {:extra-deps
-   {vlaaad/reveal              {:mvn/version "1.3.214"}
-    com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-   :main-opts ["-e" "(require,'rebel-readline.core),(require,'rebel-readline.clojure.line-reader),(require,'rebel-readline.clojure.service.local),(require,'rebel-readline.clojure.main),(require,'vlaaad.reveal)(rebel-readline.core/with-line-reader,(rebel-readline.clojure.line-reader/create,(rebel-readline.clojure.service.local/create)),(vlaaad.reveal/repl,:prompt,(fn,[]),:read,(rebel-readline.clojure.main/create-repl-read)))"]}
-
-;; clojure -M:inspect/reveal-light-rebel
-  :inspect/reveal-light-rebel
-  {:extra-deps
-   {vlaaad/reveal              {:mvn/version "1.3.214"}
-    com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-   :jvm-opts  ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-   :main-opts ["-e" "(require,'rebel-readline.core),(require,'rebel-readline.clojure.line-reader),(require,'rebel-readline.clojure.service.local),(require,'rebel-readline.clojure.main),(require,'vlaaad.reveal)(rebel-readline.core/with-line-reader,(rebel-readline.clojure.line-reader/create,(rebel-readline.clojure.service.local/create)),(vlaaad.reveal/repl,:prompt,(fn,[]),:read,(rebel-readline.clojure.main/create-repl-read)))"]}
-
-;; Not sending all evaluations to Reveal
-;; It does send tap> results to Reveal
-;; :repl/reveal-rebel-nrepl
-;; {:extra-deps {nrepl/nrepl                {:mvn/version "0.8.3"}
-;;               cider/cider-nrepl          {:mvn/version "0.26.0"}
-;;               vlaaad/reveal              {:mvn/version "1.3.214"}
-;;               com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-;;  :jvm-opts   ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-;;  :main-opts  ["-m" "nrepl.cmdline"
-;;               "--middleware" "[cider.nrepl/cider-middleware,vlaaad.reveal.nrepl/middleware]"
-;;               "-f" "rebel-readline.main/-main"]}
-
-  :inspect/reveal-local ;; Hacking the project
-  {:extra-deps {vlaaad/reveal
-                {:local/root "/home/practicalli/projects/clojure/visualization/reveal/"}}
-   :main-opts  ["-m" "vlaaad.reveal" "repl"]}
-
-;; Reveal REPL with nrepl server, connect to from a Clojure aware editor
-;; clj -M:inspect/reveal-nrepl
-  :inspect/reveal-nrepl
-  {:extra-deps {vlaaad/reveal {:mvn/version "1.3.214"}
-                nrepl/nrepl   {:mvn/version "0.8.3"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[vlaaad.reveal.nrepl/middleware]"]}
-
-;; Light version of :inspect/reveal-nrepl
-  :inspect/reveal-light-nrepl
-  {:extra-deps {vlaaad/reveal {:mvn/version "1.3.214"}
-                nrepl/nrepl   {:mvn/version "0.8.3"}}
-   :jvm-opts   ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[vlaaad.reveal.nrepl/middleware]"]}
-
-;; Reveal REPL with nrepl server and Emacs CIDER specific middleware
-;; Use with `C-u cider-jack-in-clj` or `SPC u , '` on Spacemacs
-;; Edit jack-in command: clojure -M:inspect/reveal-nrepl-cider
-  :inspect/reveal-nrepl-cider
-  {:extra-deps {vlaaad/reveal                 {:mvn/version "1.3.214"}
-                nrepl/nrepl                   {:mvn/version "0.8.3"}
-                cider/cider-nrepl             {:mvn/version "0.26.0"}
-                refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[vlaaad.reveal.nrepl/middleware,refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"]}
-
-;; Light version of :inspect/reveal-nrepl-cider
-  :inspect/reveal-light-nrepl-cider
-  {:extra-deps {vlaaad/reveal                 {:mvn/version "1.3.214"}
-                nrepl/nrepl                   {:mvn/version "0.8.3"}
-                cider/cider-nrepl             {:mvn/version "0.26.0"}
-                refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}
-   :jvm-opts   ["-Dvlaaad.reveal.prefs={:theme,:light,:font-family,\"https://ff.static.1001fonts.net/u/b/ubuntu.mono.ttf\",:font-size,32}"]
-   :main-opts  ["-m" "nrepl.cmdline"
-                "--middleware" "[vlaaad.reveal.nrepl/middleware,refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"]}
-
-;; End of data browsers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Middleware
-
-;; - start a non-interactive REPL with a headless nREPL server
-;; clojure -M:middleware/nrepl
+  ;; Middleware
+  ;; - start a non-interactive REPL with a headless nREPL server
+  ;; clojure -M:middleware/nrepl
   :middleware/nrepl
   {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}}
    :main-opts  ["-m" "nrepl.cmdline"]}
 
-;; Run a REPL using nREPL server for access by cider-connect-clj
-;; clojure -M:middleware/cider-clj
+  ;; Run a REPL using nREPL server for access by cider-connect-clj
+  ;; clojure -M:middleware/cider-clj
   :middleware/cider-clj
   {:extra-deps {nrepl/nrepl       {:mvn/version "0.8.3"}
                 cider/cider-nrepl {:mvn/version "0.26.0"}}
@@ -487,9 +179,9 @@
    :main-opts  ["-m" "nrepl.cmdline"
                 "--middleware" "[refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"]}
 
-;; Run a REPL using nREPL server for access by cider-connect-cljs
-;; clojure -M:middleware/cider-cljs
-;; Using figwheel-main template and cider-connect-cljs: clojure -M:middleware/cider-cljs:fig
+  ;; Run a REPL using nREPL server for access by cider-connect-cljs
+  ;; clojure -M:middleware/cider-cljs
+  ;; Using figwheel-main template and cider-connect-cljs: clojure -M:middleware/cider-cljs:fig
   :middleware/cider-cljs
   {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.844"}
                 nrepl/nrepl               {:mvn/version "0.8.3"}
@@ -498,13 +190,13 @@
    :main-opts  ["-m" "nrepl.cmdline"
                 "--middleware" "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]"]}
 
-;; nrebl.middleware - REBL with nREPL server
-;; visualize evaluations over nREPL in REBL data browser (CIDER, Calva)
-;; https://github.com/RickMoynihan/nrebl.middleware
-;; Emacs cider `dir-locals.el` configuration
-;; ((clojure-mode . ((cider-clojure-cli-global-options . "-M:lib/cider-nrepl:inspect/rebl:middleware/nrebl"))))
+  ;; nrebl.middleware - REBL with nREPL server
+  ;; visualize evaluations over nREPL in REBL data browser (CIDER, Calva)
+  ;; https://github.com/RickMoynihan/nrebl.middleware
+  ;; Emacs cider `dir-locals.el` configuration
+  ;; ((clojure-mode . ((cider-clojure-cli-global-options . "-M:lib/cider-nrepl:inspect/rebl:middleware/nrebl"))))
 
-;; clojure -M:lib/cider-nrepl:inspect/rebl:middleware/nrebl
+  ;; clojure -M:lib/cider-nrepl:inspect/rebl:middleware/nrebl
   :middleware/nrebl
   {:extra-deps {rickmoynihan/nrebl.middleware {:mvn/version "0.3.1"}}
    :main-opts  ["-e" "((requiring-resolve,'cognitect.rebl/ui))"
@@ -512,67 +204,17 @@
                 "-i"
                 "--middleware" "[nrebl.middleware/wrap-nrebl,cider.nrepl/cider-middleware]"]}
 
-;; Supporting aliases for nrebl.middleware
+  ;; Supporting aliases for nrebl.middleware
   :lib/cider-nrepl
   {:extra-deps {nrepl/nrepl                   {:mvn/version "0.8.3"}
                 cider/cider-nrepl             {:mvn/version "0.26.0"}
                 refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}}
 
-;; End of: Middleware
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Test runners
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Clojure Specifications
-
-;; Clojure spec test.check (clojure spec included in Clojure 1.9 onwards)
-  :lib/spec-test
-  {:extra-deps
-   {org.clojure/test.check {:mvn/version "1.1.0"}}}
-
-;; Clojure spec 2 - under active development
-;; https://github.com/clojure/spec-alpha2
-;; latest commit SHA is returned by the command
-;; git ls-remote https://github.com/clojure/spec-alpha2.git refs/heads/master
-  :lib/spec2
-  {:extra-deps {org.clojure/spec-alpha2
-                {:git/url "https://github.com/clojure/spec-alpha2"
-                 :sha     "c087ded910b3532a938b37e853df79fc3b9c48c1"}}}
-
-;; End of Clojure Specifications
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Testing frameworks
-
-;; Include the test directory as a path used by Clojure CLI tools
-  :env/test
-  {:extra-paths ["test"]
-   :extra-deps  {org.clojure/test.check {:mvn/version "1.1.0"}}}
-
-  :lib/ring-mock
-  {:extra-deps {ring/ring-mock         {:mvn/version "0.4.0"}}}
-
-;; Expectations test framework
-;; https://github.com/clojure-expectations/clojure-test
-;; Example usage:
-;; clojure -A:expectations:test/cognitect
-  :lib/expectations
-  {:extra-deps {expectations/clojure-test {:mvn/version "1.2.1"}}}
-
-;; Classic version not compatible with clojure.test and tools
-;; https://github.com/clojure-expectations/expectations
-  :lib/expectations-classic
-  {:extra-deps {expectations/expectations {:mvn/version "2.1.10"}}}
-
-;; End of: Testing frameworks
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Test runners
-
-;; Cognitect test-runner
-;; https://github.com/cognitect-labs/test-runner
-;; clojure -X:test/congnitect
+  ;; Cognitect test-runner
+  ;; https://github.com/cognitect-labs/test-runner
+  ;; clojure -X:test/congnitect
   :test/cognitect
   {:extra-paths ["test"]
    :extra-deps  {io.github.cognitect-labs/test-runner
@@ -580,215 +222,43 @@
    :main-opts   ["-m" "cognitect.test-runner"]
    :exec-fn cognitect.test-runner.api/test}
 
-;; ClojureScript test runner
-;; https://github.com/Olical/cljs-test-runner
-  :test/cljs
-  {:extra-paths ["test"]
-   :extra-deps  {olical/cljs-test-runner {:mvn/version "3.8.0"}}
-   :main-opts   ["-m" "cljs-test-runner.main"]}
+  ;; Linting/ static analysis
 
-;; kaocha - comprehensive test runner for Clojure/Script
-;; tests.edn should be created for each project
-;; https://github.com/lambdaisland/kaocha
-
-;; Default test runner using kaocha (change to your own preference)
-;; clojure -M:test/runner
-  :test/runner
-  {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha {:mvn/version "1.0.887"}}
-   :main-opts   ["-m" "kaocha.runner"]}
-
-;; clojure -M:test/kaocha
-  :test/kaocha
-  {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha {:mvn/version "1.0.887"}}
-   :main-opts   ["-m" "kaocha.runner"]}
-
-;; clojure -M:test/kaocha-cljs
-  :test/kaocha-cljs
-  {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha      {:mvn/version "1.0.887"}
-                 lambdaisland/kaocha-cljs {:mvn/version "1.0.107"}}
-   :main-opts   ["-m" "kaocha.runner"]}
-
-;; https://github.com/lambdaisland/kaocha-cucumber
-;; clojure -M:test/kaocha-cucumber
-  :test/kaocha-cucumber
-  {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha          {:mvn/version "1.0.887"}
-                 lambdaisland/kaocha-cucumber {:mvn/version "0.0.53"}}
-   :main-opts   ["-m" "kaocha.runner"]}
-
-;; https://github.com/lambdaisland/kaocha-junit-xml
-;; clojure -M:test/kaocha-junit-xml
-  :test/kaocha-junit-xml
-  {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha           {:mvn/version "1.0.887"}
-                 lambdaisland/kaocha-junit-xml {:mvn/version "0.0.76"}}
-   :main-opts   ["-m" "kaocha.runner"]}
-
-;; https://github.com/lambdaisland/kaocha-cloverage
-;; clojure -M:test/kaocha-cloverage
-  :test/kaocha-cloverage
-  {:extra-paths ["test"]
-   :extra-deps  {lambdaisland/kaocha           {:mvn/version "1.0.887"}
-                 lambdaisland/kaocha-cloverage {:mvn/version "1.0.75"}}
-   :main-opts   ["-m" "kaocha.runner"]}
-
-;; End of Test runners
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Test Coverage tools
-
-;; Cloverage - Simple clojure coverage tool
-;; https://github.com/cloverage/cloverage
-;; In the root of your Clojure project, run the command:
-;; clojure -M:test/coverage
-;; clojure -X:test/coverage
-  :test/cloverage
-  {:extra-paths ["test"]
-   :extra-deps  {cloverage/cloverage {:mvn/version "1.2.2"}}
-   :main-opts   ["-m" "cloverage.coverage"
-                 "--src-ns-path" "src"
-                 "--test-ns-path" "test"]
-   :exec-fn     cloverage.coverage/run-project
-   :exec-args   {:src-ns-path  ["src"]
-                 :test-ns-path ["test"]}}
-
-;; End of Test Coverage tools
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Linting/ static analysis
-
-;; clj-kondo - comprehensive and fast linter
-;; https://github.com/borkdude/clj-kondo/
+  ;; clj-kondo - comprehensive and fast linter
+  ;; https://github.com/borkdude/clj-kondo/
   :lint/clj-kondo
   {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2021.08.06"}}
    :main-opts  ["-m" "clj-kondo.main" "--lint" "src"]}
 
-;; Eastwood - classic lint tool
-;; https://github.com/jonase/eastwood#running-eastwood-in-a-repl
+  ;; Eastwood - classic lint tool
+  ;; https://github.com/jonase/eastwood#running-eastwood-in-a-repl
   :lint/eastwood
   {:extra-deps {jonase/eastwood {:mvn/version "0.9.9"}}
    :main-opts  ["-m" "eastwood.lint"
                 "{:source-paths,[\"src\"],:test-paths,[\"test\"]}"]}
 
-;; kibit - suggest idiomatic use of Clojure
-;; https://github.com/jonase/kibit/issues/221
+  ;; kibit - suggest idiomatic use of Clojure
+  ;; https://github.com/jonase/kibit/issues/221
   :lint/idiom
   {:replace-paths []
    :replace-deps  {tvaughan/kibit-runner {:mvn/version "1.0.1"}}
    :main-opts     ["-m" "kibit-runner.cmdline"]}
 
-;; End of Linting/ static analysis
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Visualizing dependencies
-
-;; TODO: review and evaluate
-;; :graph {:deps      {org.clojure/tools.deps.graph {:mvn/version "1.0.56"}}
-;;         :main-opts ["-m" "clojure.tools.deps.graph"]}
-
-;; Morpheus - visualize project var relationships
-;; https://github.com/benedekfazekas/morpheus
-;; Options:
-;; -d to specify output directory (this must exist)
-;; -f to specify image format, dot (default), png or svg
-;; Options are followed by list of paths to analyze.
-
-;; clojure -A:graph-vars -d graphs -f png src test
-  :graph/vars
-  {:extra-deps {thomasa/morpheus
-                {:git/url "https://github.com/benedekfazekas/morpheus.git"
-                 :sha     "7f4876ea631a6f5ccee2094d255efd2d1a98ffb6"}}
-   :main-opts  ["-m" "thomasa.morpheus.main"]}
-
-;; Generate PNG image of dependency graph in directory called `graphs`
-;; clojure -A:graph-vars-png
-  :graph/vars-png
-  {:extra-deps {thomasa/morpheus
-                {:git/url "https://github.com/benedekfazekas/morpheus.git"
-                 :sha     "7f4876ea631a6f5ccee2094d255efd2d1a98ffb6"}}
-   :main-opts  ["-m" "thomasa.morpheus.main"
-                "-d" "graphs" "-f" "png" "src" "test"]}
-
-;; Generate SVG image of dependency graph in directory called `graphs`
-;; clojure -A:graph-vars-svg
-  :graph/vars-svg
-  {:extra-deps {thomasa/morpheus
-                {:git/url "https://github.com/benedekfazekas/morpheus.git"
-                 :sha     "7f4876ea631a6f5ccee2094d255efd2d1a98ffb6"}}
-   :main-opts  ["-m" "thomasa.morpheus.main"
-                "-d"  "graphs" "-f" "svg" "src" "test"]}
-
-;; Visualize connections between library dependencies and project namespaces
-;; https://github.com/SevereOverfl0w/vizns
-  :graph/deps
-  {:extra-deps {io.dominic/vizns {:git/url "https://github.com/SevereOverfl0w/vizns.git"
-                                  :sha     "69774e8c29e1c1c691f9922d5c5a6d764374ada3"}}
-   :main-opts  ["-m" "io.dominic.vizns.core"]}
-
-;; Generate single PNG image of library dependencies
-  :graph/deps-png
-  {:extra-deps {io.dominic/vizns {:git/url "https://github.com/SevereOverfl0w/vizns.git"
-                                  :sha     "69774e8c29e1c1c691f9922d5c5a6d764374ada3"}}
-   :main-opts  ["-m" "io.dominic.vizns.core" "single" "-o" "deps-graph.png" "-f" "png"]}
-
-;; Visualizing dependencies
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Performance testing
-
-;; Benchmarking library for Clojure
-;; https://github.com/hugoduncan/criterium/
-;; (require '[criterium.core :refer [bench quick-bench]]) ; require criterium
-;; (bench (adhoc-expression)) ; timing of a self contained expression
-;;
-;; (require '[practicalli/namespace-name]) ; require project source code
-;; (in-ns 'practicalli/namespace-name)
-;; (quick-bench (project-function args))
-  :performance/benchmark
-  {:extra-deps {criterium/criterium {:mvn/version "0.4.6"}}}
-
-;; clj-memory-meter
-;; - see https://github.com/clojure-goes-fast/clj-memory-meter
-;; - (require '[clj-memory-meter.core :as memory-meter])
-;; - (memory-meter/measure (your-expression))
-  :performance/memory-meter
-  {:extra-deps {com.clojure-goes-fast/clj-memory-meter {:mvn/version "0.1.3"}}
-   :jvm-opts   ["-Djdk.attach.allowAttachSelf"]}
-
-;; End of Performance testing
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Services
-
-;; https://github.com/kachayev/nasus
-;; simple zero-configuration command-line HTTP files server. Like Python's SimpleHTTPServer but scalable
+  ;; simple zero-configuration command-line HTTP files server.
+  ;; https://github.com/kachayev/nasus
   :service/webserver
   {:replace-deps {nasus/nasus {:mvn/version "0.1.7"}}
    :main-opts    ["-m" "http.server"]}
 
-;; End of Services
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Aliases to evaluate
-
-;; Reflector - datafy and nav
-;; https://github.com/stuarthalloway/reflector
-
+  ;; Reflector - datafy and nav
+  ;; https://github.com/stuarthalloway/reflector
   :alpha/reflect
   {:extra-deps {com.stuarthalloway/reflector
                 {:git/url "https://github.com/stuarthalloway/reflector"
                  :sha     "93a0c19b4526c1180959e940202928d35e5c3cef"}}}
 
-;; closh - bash shell with Clojure
+  ;; closh - bash shell with Clojure
   :alpha/closh
   {:extra-deps {closh/closh
                 {:git/url "https://github.com/dundalek/closh.git"
@@ -796,28 +266,28 @@
                  :sha     "b1a7fd310b6511048fbacb8e496f574c8ccfa291"}}
    :main-opts  ["-m" "closh.zero.frontend.rebel"]}} ;; End of alias definitions
 
-;; Library Repositories
+ ;; Library Repositories
 
-;; Specify a different local repository for maven (default `$HOME/.m2/repository)
-;; :mvn/local-repo ".m2/repository"
+ ;; Specify a different local repository for maven (default `$HOME/.m2/repository)
+ ;; :mvn/local-repo ".m2/repository"
 
-;; `clojure -Spath` will show the current class path which will include the path to the local maven repository for the library dependencies.
+ ;; `clojure -Spath` will show the current class path which will include the path to the local maven repository for the library dependencies.
 
-;; Order in which repositories are consulted is not guaranteed, so only add essential repositories
-;; Maven Central and Clojars are the canonical repositories for library dependencies
-;; JCenter is large and fast mirror often accessible behind corporate firewalls
+ ;; Order in which repositories are consulted is not guaranteed, so only add essential repositories
+ ;; Maven Central and Clojars are the canonical repositories for library dependencies
+ ;; JCenter is large and fast mirror often accessible behind corporate firewalls
 
  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://repo.clojars.org/"}
 
-            ;; Clojure snapshots
-            ;; "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}
+             ;; Clojure snapshots
+             ;; "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}
 
-            ;; clojars.org mirror - publicly accessible
-            ;; "jcenter" {:url "https://jcenter.bintray.com"}
+             ;; clojars.org mirror - publicly accessible
+             ;; "jcenter" {:url "https://jcenter.bintray.com"}
 
-            ;; cognitect dev-tools (https://cognitect.com/dev-tools/view-creds.html)
+             ;; cognitect dev-tools (https://cognitect.com/dev-tools/view-creds.html)
              "cognitect-dev-tools" {:url "https://dev-tools.cognitect.com/maven/releases/"}
 
-            ;; "patch-opz" {:url "https://pkgs.dev.azure.com/patch-opz/Patch/_packaging/custom-maven/maven/v1"}
-}}
+             ;; "patch-opz" {:url "https://pkgs.dev.azure.com/patch-opz/Patch/_packaging/custom-maven/maven/v1"}
+             }}
