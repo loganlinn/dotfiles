@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-SRC_DIR=${SRC_DIR:-$HOME/src}
-export SRC_DIR
+SRC_HOME=${SRC_HOME:-$HOME/src}
+export SRC_HOME
 
 _src_msg() {
 	printf "%s\n" "$@"
@@ -11,29 +11,24 @@ _src_msg() {
 src-repo-url() {
 	case $1 in
 	*://*) # i.e. https://github.com/loganlinn/dotfiles
-		printf "%s" "$1"
-		return
+		printf "%s\n" "$1"
 		;;
 	*.*/*) # i.e. github.com/loganlinn/dotfiles
-		printf "https://%s" "$1"
-		return
+		echo "https://$1"
 		;;
 	*/*) # i.e. loganlinn/dotfiles
-		printf "https://github.com/%s" "$1"
-		return
+		echo "https://github.com/$1"
 		;;
 	*)
-		if command -v fzf >/dev/null >&2; then
-      local repo
-			if repo=$(gh repo list "$1" | fzf | cut -f1); then
-				printf "https://github.com/%s" "$repo"
-			fi
-			return
-		fi
+    gh repo list "$@" | fzf | awk '{print $1}' || return 1
+		# if command -v fzf >/dev/null >&2; then
+		#   gh repo list "$@" | fzf | awk '{print $1}' || return 1
+    # else
+    #   _src_msg "error: failed to convert '$*' to repository URL"
+    #   return 1
+    # fi
 		;;
 	esac
-	_src_msg "Failed to convert to repository URL: $1"
-	return 1
 }
 
 src-repo-path() {
@@ -45,12 +40,15 @@ src-repo-path() {
 		url=$(src-repo-url "$1") || return 1
 	fi
 
-	path=${SRC_DIR?}/${url#*://}
+	path=${SRC_HOME?}/${url#*://}
 	path=${path%%.git}
 
 	printf '%s' "$path"
 }
 
+#
+# Usage: src-clone <repo>...
+#
 src-clone() (
 	set -e
 	for arg; do
@@ -78,21 +76,68 @@ src-clone() (
 	done
 )
 
-_src-get_usage() {
-	cat <<EOM
-Usage: src-get <REPO_URL_OR_SLUG>
-EOM
-}
-
+#
+# Usage: src-get <repository>
+#        src-get <owner>/<repo>
+#
 src-get() {
-	if [[ "$@" = *--help ]] || [[ "$@" = *-h ]]; then
-		_src_get_usage
-		return 0
-	fi
-	if [[ $# -ne 1 ]]; then
-		_src_get_usage >&2
-		return 1
-	fi
+  case $1 in
+    -h|--help|help)
+	    _src_msg "Usage: src-get <repository>"
+	    _src_msg "       src-get <owner>/<repo>"
+      return 0
+      ;;
+    -*)
+      _src_msg "src-get: unknown '$1' option"
+      _src_msg "Try 'src-get --help' for more information."
+      return 1
+      ;;
+  esac
+  if [[ -z $1 ]]; then
+    _src_msg "src-get: missing operand"
+    _src_msg "Try 'src-get --help' for more information."
+    return 1
+  elif [[ $# -gt 1 ]]; then
+    _src_msg "src-get: too many operands"
+    _src_msg "Try 'src-get --help' for more information."
+    return 1
+  fi
 
-	cd "$(src-clone "$1")"
+	cd -- "$(src-clone "$1")"
 }
+
+# shellcheck disable=SC2120
+src-fd() {
+	command fd --base-directory "${SRC_HOME?}" "$@"
+}
+
+src-for-each-repo() {
+  local repo
+
+  for repo in "${SRC_HOME?}"/*; do
+    if [[ -d "$repo" ]]; then
+      cd -- "$repo"
+      "$@"
+    fi
+  done
+}
+
+# src-list-dump () {
+#   local format
+#   case "${1-edn}" in
+#     edn)
+#       format="{:path \"%s\"\n :git/config \"%s\"}"
+#       ;;
+#     *)
+#       _src_msg "error: unknown format '$1'. Valid formats are 'edn'"
+#       return 1
+#       ;;
+#   esac
+#   local srcdir
+#   for srcdir in $(src-list); do
+#     jq --null-input \
+#       --arg srcdir "$(realpath --relative-to="$SRC_HOME" "$srcdir")" \
+#       --arg git_config "$(git -C "$srcdir" config --local --list)" \
+#       '{path: $srcdir, config: $git_config}'
+#   done
+# }
