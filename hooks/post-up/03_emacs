@@ -3,11 +3,8 @@
 set -e
 set -o pipefail
 
-[[ -d ~/src/github.com/plexus/chemacs2 ]] ||
-  git clone --depth 1 https://github.com/plexus/chemacs2.git ~/src/github.com/plexus/chemacs2
-
-[[ -d ~/src/github.com/syl20bnr/spacemacs ]] ||
-  git clone --depth 1 https://github.com/syl20bnr/spacemacs.git ~/src/github.com/syl20bnr/spacemacs
-
 [[ -d ~/src/github.com/hlissner/doom-emacs ]] ||
   git clone --depth 1 https://github.com/hlissner/doom-emacs.git ~/src/github.com/hlissner/doom-emacs
+
+[[ -e ~/.emacs.d ]] ||
+  ln -sb ~/src/github.com/hlissner/doom-emacs ~/.emacs.d
