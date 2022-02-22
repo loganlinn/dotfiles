@@ -3,9 +3,13 @@
 SRC_HOME=${SRC_HOME:-$HOME/src}
 export SRC_HOME
 
-_src_msg() {
+_src-log() {
 	printf "%s\n" "$@"
 } >&2
+
+src-home() {
+  printf '%s\n' "${SRC_HOME:=$HOME/src}"
+}
 
 # Normalize input into URL
 src-repo-url() {
@@ -24,7 +28,7 @@ src-repo-url() {
 		# if command -v fzf >/dev/null >&2; then
 		#   gh repo list "$@" | fzf | awk '{print $1}' || return 1
     # else
-    #   _src_msg "error: failed to convert '$*' to repository URL"
+    #   _src-log "error: failed to convert '$*' to repository URL"
     #   return 1
     # fi
 		;;
@@ -40,7 +44,7 @@ src-repo-path() {
 		url=$(src-repo-url "$1") || return 1
 	fi
 
-	path=${SRC_HOME?}/${url#*://}
+  path="$(src-home)/${url#*://}"
 	path=${path%%.git}
 
 	printf '%s' "$path"
@@ -83,43 +87,43 @@ src-clone() (
 src-get() {
   case $1 in
     -h|--help|help)
-	    _src_msg "Usage: src-get <repository>"
-	    _src_msg "       src-get <owner>/<repo>"
+	    echo "Usage: src-get <repository>"
+	    echo "       src-get <owner>/<repo>"
       return 0
       ;;
     -*)
-      _src_msg "src-get: unknown '$1' option"
-      _src_msg "Try 'src-get --help' for more information."
+      _src-log "src-get: unknown '$1' option"
+      _src-log "Try 'src-get --help' for more information."
       return 1
       ;;
   esac
+
   if [[ -z $1 ]]; then
-    _src_msg "src-get: missing operand"
-    _src_msg "Try 'src-get --help' for more information."
+    _src-log "src-get: missing operand"
+    _src-log "Try 'src-get --help' for more information."
     return 1
   elif [[ $# -gt 1 ]]; then
-    _src_msg "src-get: too many operands"
-    _src_msg "Try 'src-get --help' for more information."
+    _src-log "src-get: too many operands"
+    _src-log "Try 'src-get --help' for more information."
     return 1
   fi
 
 	cd -- "$(src-clone "$1")"
 }
 
-# shellcheck disable=SC2120
-src-fd() {
-	command fd --base-directory "${SRC_HOME?}" "$@"
-}
+src-for-each-exec() {
+  local shell
 
-src-for-each-repo() {
-  local repo
+  # run each command in subshell, first determine shell.
+  # since $SHELL is not always reliable, we determine from PID.
+  shell=$(ps -p $$ -o args= | sed -e 's/^.*-//' -e 's/ .*$//')
+  # womp, womp
+  if ! hash "$shell" >/dev/null 2>&1; then
+    shell=${SHELL:-bash}
+  fi
 
-  for repo in "${SRC_HOME?}"/*; do
-    if [[ -d "$repo" ]]; then
-      cd -- "$repo"
-      "$@"
-    fi
-  done
+  find "$(src-home)" -type d -name '.git' -prune \
+    -execdir "$shell" -c "$*" _ {} \;
 }
 
 # src-list-dump () {
@@ -129,7 +133,7 @@ src-for-each-repo() {
 #       format="{:path \"%s\"\n :git/config \"%s\"}"
 #       ;;
 #     *)
-#       _src_msg "error: unknown format '$1'. Valid formats are 'edn'"
+#       _src-log "error: unknown format '$1'. Valid formats are 'edn'"
 #       return 1
 #       ;;
 #   esac

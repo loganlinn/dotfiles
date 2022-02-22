@@ -1,0 +1,3 @@
+[submodule "src/github.com/Mange/rofi-emoji"]
+	path = src/github.com/Mange/rofi-emoji
+	url = https://github.com/Mange/rofi-emoji

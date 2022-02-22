@@ -17,7 +17,6 @@ antigen bundles <<EOL
     urltools
     zsh-interactive-cd
     Aloxaf/fzf-tab
-    jeffreytse/zsh-vi-mode
     johanhaleby/kubetail
     loganlinn/zzz.plugin.zsh
     wfxr/forgit
@@ -31,7 +30,10 @@ for _zsh_custom_plugin in $ZSH_CUSTOM/plugins/*(/); do
 done
 unset _zsh_custom_plugin
 
+
+#antigen bundle jeffreytse/zsh-vi-mode
 antigen bundle hlissner/zsh-autopair
+#antigen bundle joshskidmore/zsh-fzf-history-search
 
 ###############################################################################
 

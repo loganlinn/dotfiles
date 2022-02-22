@@ -9,4 +9,4 @@ export ZSH_CUSTOM=$HOME/.zsh
 
 source "$ANTIGEN/antigen.zsh"
 
-antigen init "$HOME/.antigenrc"
+antigen init "$ZSH_CUSTOM/antigenrc"

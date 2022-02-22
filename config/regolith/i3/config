@@ -722,12 +722,9 @@ bindsym $mod+Control+g [class="Chromium"] focus
 # Window customizations
 ###############################################################################
 
-for_window [title="^zoom$" class="[zoom]*"] floating enable
-for_window [class="1Password"] floating enable
 for_window [class="System76 Keyboard Configurator"] floating enable
 for_window [title="Calculator"] floating enable
 for_window [class="Artha"] floating enable
-for_window [class="Tandem"] floating enable
 for_window [title="^doom-capture$"] floating enable
 
 ###############################################################################
