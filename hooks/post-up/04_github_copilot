@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 GITHUB_COPILOT_VIM_GITURL=https://github.com/github/copilot.vim.git
-GITHUB_COPILOT_VIM_GITREF=c01314840b94da0b9767b52f8a4bbc579214e509
+GITHUB_COPILOT_VIM_GITREF=release
 GITHUB_COPILOT_VIM_DIR=${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/pack/github/start/copilot.vim
 
 verbose() {
@@ -20,7 +20,7 @@ install_github_copilot_nvim_plugin() {
 
   if [[ -d $GITHUB_COPILOT_VIM_DIR ]]; then
     git -C "$GITHUB_COPILOT_VIM_DIR" fetch --all --quiet
-    git -C "$GITHUB_COPILOT_VIM_DIR" checkout --quiet "$GITHUB_COPILOT_VIM_GITREF"
+    git -C "$GITHUB_COPILOT_VIM_DIR" checkout --quiet origin/"$GITHUB_COPILOT_VIM_GITREF"
   else
     git clone \
       --quiet \
