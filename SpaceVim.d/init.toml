@@ -116,9 +116,9 @@
   repo = "clojure-vim/vim-jack-in"
   merged = false
 
-[[custom_plugins]]
-  repo = "Olical/conjure"
-  merged = false
+#[[custom_plugins]]
+#  repo = "Olical/conjure"
+#  merged = false
 
 #[[custom_plugins]]
 #  repo = "clojure-vim/acid.nvim"
@@ -128,9 +128,9 @@
 #  repo = "clojure-vim/jazz.nvim"
 #  merged = false
 
-[[custom_plugins]]
-  repo = "clojure-vim/async-clj-omni"
-  merged = false
+#[[custom_plugins]]
+#  repo = "clojure-vim/async-clj-omni"
+#  merged = false
 
 #######################################
 
