@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -e
+
+resolve_link() {
+	"$(type -p greadlink readlink | head -1)" "$1"
+}
+
+abs_dirname() {
+	local path="$1"
+	local cwd="$PWD"
+
+	while [ -n "$path" ]; do
+		cd -P "${path%/*}"
+		local name="${path##*/}"
+		path="$(resolve_link "$name" || true)"
+	done
+
+	pwd -P
+	cd "$cwd"
+}
+
+libexec_path="$(abs_dirname "$0")"
+export PATH="$libexec_path:$PATH"
+
+_LLINN_ROOT="$(abs_dirname "$libexec_path")"
+_LLINN_COMMAND="$1"
+export _LLINN_ROOT _LLINN_COMMAND
+
+source "${_LLINN_ROOT}/lib/llinn/llinn-stdlib.sh"
+
+case "$_LLINN_COMMAND" in
+"" | help | -h | --help | -?)
+	exec llinn-help
+	;;
+*)
+	command_path="$(command -v "llinn-$_LLINN_COMMAND" || true)"
+	if [ ! -x "$command_path" ]; then
+		echo "llinn: no such command \`$_LLINN_COMMAND'" >&2
+		exit 1
+	fi
+
+	shift
+	exec "$command_path" "$@"
+	;;
+esac

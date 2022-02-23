@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+_LLINN_COMMAND=${_LLINN_COMMAND:-$1}
+
+if [ -z "$_LLINN_COMMAND" ]; then
+  echo "usage: llinn completions COMMAND [arg1 arg2...]" >&2
+  exit 1
+fi
+
+command_path="$(command -v "llinn-$_LLINN_COMMAND")"
+if grep -i "^# provide llinn completions" "$command_path" >/dev/null; then
+  shift
+  exec "$command_path" --complete "$@"
+fi

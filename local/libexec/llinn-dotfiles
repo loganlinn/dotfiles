@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+DOTFILES_DIRS=${DOTFILES_DIRS:$HOME/.dotfiles}    # rcrc variable convention
+DOTFILES_DIR={DOTFILES_DIR:-${DOTFILES_DIRS%% *}} # first word
+
+echo $_LLINN_ROOT
+echo $_LLINN_COMMAND
