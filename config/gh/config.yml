@@ -12,11 +12,23 @@ aliases:
 
     aliases: alias list
 
+    # Fuzzy-find a gist with fzf, then view it
+    gists: >-
+        !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
+
+    stars: >-
+        api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
+
     open: browse
     open-prs: pr list --web
     open-pr: pr view --web
     open-issues: issue list --web
     open-release: release view --web
+    prs-open: pr list --web
+    pr-open: pr view --web
+    issue-opens: issue list --web
+    release-open: release view --web
+
     prs: pr list --web
 
     prl: >-
@@ -37,10 +49,3 @@ aliases:
         !gh pr1 --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
     landf: >-
         !gh pr1 --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch --admin
-
-    # Fuzzy-find a gist with fzf, then view it
-    gists: >-
-        !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view \"$GIST\" $@"
-
-    stars: >-
-        api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
