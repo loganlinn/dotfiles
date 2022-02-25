@@ -45,7 +45,6 @@ autotools-dev					install
 avahi-autoipd					install
 avahi-daemon					install
 avahi-utils					install
-avr-libc					install
 avrdude						install
 ayu-theme					install
 azure-cli					install
@@ -59,8 +58,6 @@ bind9-dnsutils					install
 bind9-host					install
 bind9-libs:amd64				install
 binutils					install
-binutils-arm-none-eabi				install
-binutils-avr					install
 binutils-common:amd64				install
 binutils-x86-64-linux-gnu			install
 bluez						install
@@ -138,8 +135,6 @@ debhelper					install
 debianutils					install
 debugedit					install
 desktop-file-utils				install
-dfu-programmer					install
-dfu-util					install
 dh-autoreconf					install
 dh-strip-nondeterminism				install
 dictionaries-common				install
@@ -255,8 +250,6 @@ gcc-10						install
 gcc-10-base:amd64				install
 gcc-11-base:amd64				install
 gcc-11-base:i386				install
-gcc-arm-none-eabi				install
-gcc-avr						install
 gcr						install
 gdisk						install
 gdm3						install
@@ -297,6 +290,7 @@ gir1.2-gnomebluetooth-1.0:amd64			install
 gir1.2-gnomedesktop-3.0:amd64			install
 gir1.2-graphene-1.0:amd64			install
 gir1.2-gstreamer-1.0:amd64			install
+gir1.2-gtk-2.0:amd64				install
 gir1.2-gtk-3.0:amd64				install
 gir1.2-gtk-vnc-2.0:amd64			install
 gir1.2-gtksource-3.0:amd64			install
@@ -409,6 +403,7 @@ gobject-introspection				install
 golang-github-containernetworking-plugin-dnsname	install
 golang-github-containers-common			install
 golang-github-containers-image			install
+google-chrome-stable				install
 google-cloud-sdk				install
 gpg						install
 gpg-agent					install
@@ -455,6 +450,7 @@ gzip						install
 hdparm						install
 hicolor-icon-theme				install
 hidpi-daemon					install
+hopenpgp-tools					install
 hostname					install
 htop						install
 humanity-icon-theme				install
@@ -495,9 +491,10 @@ i3status					install
 i3xrocks					install
 i3xrocks-battery				install
 i3xrocks-cpu-usage				install
+i3xrocks-disk-capacity				install
 i3xrocks-media-player				install
 i3xrocks-memory					install
-i3xrocks-microphone				deinstall
+i3xrocks-microphone				install
 i3xrocks-net-traffic				install
 i3xrocks-next-workspace				install
 i3xrocks-nm-vpn					install
@@ -717,15 +714,21 @@ libc6:i386					install
 libc6-dev:amd64					install
 libcaca0:amd64					install
 libcacard0:amd64				install
+libcairo-gobject-perl				install
 libcairo-gobject2:amd64				install
+libcairo-perl:amd64				install
 libcairo-script-interpreter2:amd64		install
 libcairo2:amd64					install
 libcairo2-dev:amd64				install
 libcairomm-1.0-1v5:amd64			install
 libcamel-1.2-62:amd64				install
+libcanberra-dev:amd64				install
+libcanberra-gtk-common-dev			install
+libcanberra-gtk-dev:amd64			install
 libcanberra-gtk-module:amd64			install
 libcanberra-gtk0:amd64				install
 libcanberra-gtk3-0:amd64			install
+libcanberra-gtk3-dev:amd64			install
 libcanberra-gtk3-module:amd64			install
 libcanberra-pulse:amd64				install
 libcanberra0:amd64				install
@@ -873,6 +876,8 @@ libexpat1-dev:amd64				install
 libext2fs2:amd64				install
 libexttextcat-2.0-0:amd64			install
 libexttextcat-data				install
+libextutils-depends-perl			install
+libextutils-pkgconfig-perl			install
 libfakeroot:amd64				install
 libfastjson4:amd64				install
 libfdisk1:amd64					install
@@ -962,6 +967,8 @@ libglapi-mesa:amd64				install
 libgles-dev:amd64				install
 libgles1:amd64					install
 libgles2:amd64					install
+libglib-object-introspection-perl		install
+libglib-perl:amd64				install
 libglib2.0-0:amd64				install
 libglib2.0-bin					install
 libglib2.0-data					install
@@ -1031,6 +1038,8 @@ libgtk-vnc-2.0-0:amd64				install
 libgtk2.0-0:amd64				install
 libgtk2.0-bin					install
 libgtk2.0-common				install
+libgtk2.0-dev:amd64				install
+libgtk3-perl					install
 libgtkmm-3.0-1v5:amd64				install
 libgtksourceview-3.0-1:amd64			install
 libgtksourceview-3.0-common			install
@@ -1068,7 +1077,6 @@ libhcrypto4-heimdal:amd64			install
 libheif1:amd64					install
 libheimbase1-heimdal:amd64			install
 libheimntlm0-heimdal:amd64			install
-libhidapi-hidraw0:amd64				install
 libhidapi-libusb0:amd64				install
 libhogweed6:amd64				install
 libhpmud0:amd64					install
@@ -1229,6 +1237,7 @@ libmysofa1:amd64				install
 libmythes-1.2-0:amd64				install
 libnautilus-extension1a:amd64			install
 libncurses-dev:amd64				install
+libncurses5:amd64				install
 libncurses6:amd64				install
 libncursesw6:amd64				install
 libndctl6:amd64					install
@@ -1242,8 +1251,6 @@ libnetfilter-conntrack3:amd64			install
 libnetpbm10					install
 libnetplan0:amd64				install
 libnettle8:amd64				install
-libnewlib-arm-none-eabi				install
-libnewlib-dev					install
 libnewt0.52:amd64				install
 libnfnetlink0:amd64				install
 libnfs13:amd64					install
@@ -1341,6 +1348,7 @@ libpcre3:amd64					install
 libpcre3-dev:amd64				install
 libpcre32-3:amd64				install
 libpcrecpp0v5:amd64				install
+libpcsc-perl					install
 libpcsclite1:amd64				install
 libpdfbox-java					install
 libpeas-1.0-0:amd64				install
@@ -1401,18 +1409,28 @@ libqalculate21-data				install
 libqmi-glib5:amd64				install
 libqmi-proxy					install
 libqpdf28:amd64					install
+libqrencode4:amd64				install
+libqt5concurrent5:amd64				install
 libqt5core5a:amd64				install
 libqt5dbus5:amd64				install
 libqt5gui5:amd64				install
 libqt5network5:amd64				install
+libqt5positioning5:amd64			install
+libqt5printsupport5:amd64			install
 libqt5qml5:amd64				install
 libqt5qmlmodels5:amd64				install
 libqt5qmlworkerscript5:amd64			install
 libqt5quick5:amd64				install
 libqt5quickcontrols2-5:amd64			install
 libqt5quicktemplates2-5:amd64			install
+libqt5sensors5:amd64				install
+libqt5sql5:amd64				install
+libqt5sql5-sqlite:amd64				install
 libqt5svg5:amd64				install
+libqt5webchannel5:amd64				install
+libqt5webkit5:amd64				install
 libqt5widgets5:amd64				install
+libqt5x11extras5:amd64				install
 libquadmath0:amd64				install
 libquvi-0.9-0.9.3:amd64				install
 libquvi-scripts-0.9				install
@@ -1543,7 +1561,6 @@ libssl1.1:amd64					install
 libssl1.1:i386					install
 libstartup-notification0:amd64			install
 libstdc++-10-dev:amd64				install
-libstdc++-arm-none-eabi-newlib			install
 libstdc++6:amd64				install
 libstemmer0d:amd64				install
 libstrongswan					install
@@ -1571,6 +1588,7 @@ libtexluajit2:amd64				install
 libtext-charwidth-perl				install
 libtext-glob-perl				install
 libtext-iconv-perl				install
+libtext-unidecode-perl				install
 libtext-wrapi18n-perl				install
 libthai-data					install
 libthai-dev:amd64				install
@@ -1580,6 +1598,7 @@ libtie-ixhash-perl				install
 libtiff5:amd64					install
 libtime-duration-perl				install
 libtimedate-perl				install
+libtinfo5:amd64					install
 libtinfo6:amd64					install
 libtinfo6:i386					install
 libtirpc-common					install
@@ -1589,6 +1608,7 @@ libtirpc3:i386					install
 libtk8.6:amd64					install
 libtokyocabinet9:amd64				install
 libtool						install
+libtool-bin					install
 libtotem-plparser-common			install
 libtotem-plparser-videosite:amd64		install
 libtotem-plparser18:amd64			install
@@ -1635,7 +1655,6 @@ libusb-0.1-4:amd64				install
 libusb-1.0-0:amd64				install
 libusb-1.0-0-dev:amd64				install
 libusb-1.0-doc					install
-libusb-dev					install
 libusbmuxd6:amd64				install
 libusbredirhost1:amd64				install
 libusbredirparser1:amd64			install
@@ -1773,7 +1792,12 @@ libxkbcommon0:amd64				install
 libxkbfile1:amd64				install
 libxkbregistry0:amd64				install
 libxklavier16:amd64				install
+libxml-libxml-perl				install
+libxml-namespacesupport-perl			install
 libxml-parser-perl:amd64			install
+libxml-sax-base-perl				install
+libxml-sax-expat-perl				install
+libxml-sax-perl					install
 libxml-twig-perl				install
 libxml-xpathengine-perl				install
 libxml2:amd64					install
@@ -1866,6 +1890,7 @@ make						install
 man-db						install
 manpages					install
 manpages-dev					install
+materialized					install
 mawk						install
 mdadm						install
 mdevctl						install
@@ -1945,11 +1970,13 @@ p11-kit-modules:amd64				install
 packagekit					install
 pango1.0-tools					install
 parted						install
+pass						install
 passwd						install
 patch						install
 pci.ids						install
 pciutils					install
 pcmciautils					install
+pcsc-tools					install
 pcscd						install
 peek						install
 perl						install
@@ -2143,6 +2170,7 @@ qml-module-qtquick-templates2:amd64		install
 qml-module-qtquick-window2:amd64		install
 qml-module-qtquick2:amd64			install
 qogir-icon-theme				deinstall
+qrencode					install
 qt5-gtk-platformtheme:amd64			install
 qttranslations5-l10n				install
 rake						install
@@ -2197,6 +2225,7 @@ samba-libs:amd64				install
 sane-airscan					install
 sane-utils					install
 sbsigntool					install
+scdaemon					install
 scrot						install
 seabios						install
 secureboot-db					install
@@ -2249,7 +2278,6 @@ system-config-printer-udev			install
 system76-acpi-dkms				install
 system76-dkms					install
 system76-io-dkms				install
-system76-keyboard-configurator			install
 system76-power					install
 systemd						install
 systemd-container				install
@@ -2261,10 +2289,10 @@ tar						install
 tcl						install
 tcl8.6						install
 tcpdump						install
-teensy-loader-cli				install
 telnet						install
 tex-common					install
 tex-gyre					install
+texinfo						install
 texlive-base					install
 texlive-binaries				install
 texlive-fonts-recommended			install
@@ -2327,7 +2355,7 @@ vim-tiny					install
 virt-manager					install
 virt-viewer					install
 virtinst					install
-vivaldi-stable					install
+vivaldi-stable					deinstall
 w3m						install
 wamerican					install
 wayland-protocols				install
@@ -2413,6 +2441,7 @@ xz-utils					install
 yelp						install
 yelp-xsl					install
 yubikey-manager					install
+zeal						install
 zenity						install
 zenity-common					install
 zip						install
