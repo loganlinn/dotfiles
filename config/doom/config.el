@@ -56,10 +56,10 @@
       ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
-(use-package! ranger
-  :when (featurep! :emacs dired +ranger)
-  :after dired
-  :init (setq ranger-override-dired 'ranger))
+;; (use-package! ranger
+;;   :when (featurep! :emacs dired +ranger)
+;;   :after dired
+;;   :init (setq ranger-override-dired 'ranger))
 
 ;; i want my ~~mtv~~ intellij...
 (map! (:after flycheck
@@ -143,7 +143,7 @@
 (setq-hook! 'clojure-mode-hook
   clojure-toplevel-inside-comment-form t)
 
-(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook clojure-mode-hook cider-mode-hook)
+(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook clojure-mode-hook cider-repl-mode-hook)
   (subword-mode +1)
   (aggressive-indent-mode +1)
   (smartparens-strict-mode +1)
