@@ -1,7 +1,10 @@
 [Desktop Entry]
+Version=1.0
 Name=Org-Protocol
-Exec=emacsclient %u
-Icon=emacs-icon
+Exec=/usr/bin/emacs %u
+Icon=emacs
 Type=Application
 Terminal=false
 MimeType=x-scheme-handler/org-protocol
+StartupWMClass=Emacs
+Keywords=Text;Editor;
