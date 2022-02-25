@@ -79,16 +79,19 @@ manh() {
 # this way closing the shell it was started from won't
 # kill emacs, nor will it usurp the shell
 e() {
-  if [[ "${IS_MACOS}" ]]; then
-    emacs $* > /dev/null 2>&1 & disown
+  if [ $# -eq 0 ]; then
+    set -- $(fzf -m) || return $?
+  fi
+  if [ "${OSTYPE-}" = "Darwin" ]; then
+    open -a emacs --args "$@"
   else
-    ( setsid emacs $* > /dev/null 2>&1 & );
+    ( setsid emacs "$@" > /dev/null 2>&1 & );
   fi
 }
 # TERM=xterm-direct assumes Emacs 27.1+ (see https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html)
 alias et='TERM=xterm-direct emacs -nw'
-ediff() { et --eval "(ediff-files \"$1\" \"$2\")"; }
-eman()  { et --eval "(switch-to-buffer (man \"$1\"))"; }
+ediff() { et --eval "(ediff-files \"${1:-$(fzf --header=A)}\" \"${2:-$(fzf --header=B)}\")"; }
+eman()  { et --eval "(switch-to-buffer (man \"${1:-$(compgen -c | fzf)}\"))"; }
 ekill() { emacsclient --eval '(kill-emacs)'; }
 
 # restricted-mode vim
@@ -159,9 +162,9 @@ fi
 # dotfiles
 alias dotgit='git -C ~/.dotfiles'
 alias dotsh='env -C ~/.dotfiles ${SHELL?}'
-alias dotedit='env -C ~/.dotfiles ${EDITOR-editor}'
+alias doted='env -C ~/.dotfiles ${EDITOR-editor}'
+alias dote='e ~/.dotfiles'
 
-# kitty
 if command_exists kitty; then
 	case "$TERM" in
 	xterm-kitty)
@@ -170,6 +173,10 @@ if command_exists kitty; then
 		alias icat='kitty +kitten icat'
 		;;
 	esac
+fi
+
+if ! command_exists docker && command_exists podman; then
+  alias docker='podman'
 fi
 
 if command_exists direnv; then

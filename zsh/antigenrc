@@ -1,41 +1,32 @@
 #!/usr/bin/env zsh
 
-# not using omz anymore because it creates a unwanted aliases, e.g. `ls`. see https://github.com/ohmyzsh/ohmyzsh/pull/10510.
-# antigen use oh-my-zsh
+antigen bundles <<EOBUNDLES
+  colored-man-pages
+  fzf
+  git
+  gitignore
+  gpg-agent
+  ssh-agent
+  terraform
+  urltools
+  zsh-interactive-cd
+EOBUNDLES
 
-# See also:
-# - https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins
-# - https://github.com/unixorn/awesome-zsh-plugins
-antigen bundles <<EOL
-    colored-man-pages
-    fzf
-    git
-    gitignore
-    gpg-agent
-    ssh-agent
-    terraform
-    urltools
-    zsh-interactive-cd
-    Aloxaf/fzf-tab
-    johanhaleby/kubetail
-    loganlinn/zzz.plugin.zsh
-    wfxr/forgit
-    zsh-users/zsh-autosuggestions
-    zsh-users/zsh-completions
-    zsh-users/zsh-history-substring-search
-EOL
+antigen bundles <<EOBUNDLES
+  Aloxaf/fzf-tab
+  hlissner/zsh-autopair
+  johanhaleby/kubetail
+  loganlinn/zzz.plugin.zsh
+  wfxr/forgit
+  zsh-users/zsh-autosuggestions
+  zsh-users/zsh-completions
+  zsh-users/zsh-history-substring-search
+EOBUNDLES
 
 for _zsh_custom_plugin in $ZSH_CUSTOM/plugins/*(/); do
   antigen bundle "$_zsh_custom_plugin" --no-local-clone
 done
 unset _zsh_custom_plugin
-
-
-#antigen bundle jeffreytse/zsh-vi-mode
-antigen bundle hlissner/zsh-autopair
-#antigen bundle joshskidmore/zsh-fzf-history-search
-
-###############################################################################
 
 # zsh-users/zsh-autosuggestions
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
@@ -49,18 +40,16 @@ export FORGIT_ADD_FZF_OPTS='--ansi'
 export ZVM_LAZY_KEYBINDINGS=false
 export ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
 
-function zvm_after_init() {
-	# zvm overwrites fzf-history-widget bindkey
-	if [[ -f $XDG_CONFIG_HOME/fzf/fzf.zsh ]]; then
-		. "$XDG_CONFIG_HOME"/fzf/fzf.zsh
-	elif [[ -f ~/fzf.zsh ]]; then
-		. ~/fzf.zsh
-	fi
-
- [[ -f $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh ]] &&
-   . $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh
-}
-
-###############################################################################
+# function zvm_after_init() {
+#   # zvm overwrites fzf-history-widget bindkey
+#   if [[ -f $XDG_CONFIG_HOME/fzf/fzf.zsh ]]; then
+#     . "$XDG_CONFIG_HOME"/fzf/fzf.zsh
+#   elif [[ -f ~/fzf.zsh ]]; then
+#     . ~/fzf.zsh
+#   fi
+#
+#  [[ -f $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh ]] &&
+#    . $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh
+# }
 
 antigen apply

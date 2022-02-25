@@ -38,14 +38,21 @@ if [ -d "$HOME/.profile.d" ]; then
   unset f
 fi
 
+case ":$XDG_DATA_DIRS:"  in
+*":$HOME/.nix-profile/share:"*) ;;
+*) export XDG_DATA_DIRS="$HOME/.nix-profile/share:$XDG_DATA_DIRS"
+esac
+
 export DOOMDIR="$HOME/.config/doom"
 
+PATH="$PATH:/usr/local/go/bin"
 PATH="$HOME/.krew/bin:$PATH"
 PATH="$HOME/.deno/bin:$PATH"
 PATH="$HOME/.local/share/flatpak/exports/bin:$PATH"
 PATH="$HOME/.fzf/share/bin:$PATH"
 PATH="$HOME/.emacs.d/bin:$PATH"
-PATH="$HOME/bin:$HOME/.local/bin:$PATH"
+PATH="$HOME/.local/bin:$PATH"
+PATH="$HOME/bin:$PATH"
 
 export PATH
 
