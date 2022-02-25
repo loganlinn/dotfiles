@@ -43,6 +43,9 @@
   {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}}
   :rebel/main
   {:main-opts  ["-m" "rebel-readline.main"]}
+  :rebel
+  {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
+   :main-opts  ["-m" "rebel-readline.main"]}
 
   ;; Cognitect REBL
   ;;
@@ -211,6 +214,10 @@
                 refactor-nrepl/refactor-nrepl {:mvn/version "3.0.0-pr301"}}}
 
   ;; Test runners
+
+:test/kaocha {:extra-deps {lambdaisland/kaocha {:mvn/version "1.63.998"}}
+              :main-opts  ["-m" "kaocha.runner"]
+              :exec-fn    kaocha.runner/exec-fn}
 
   ;; Cognitect test-runner
   ;; https://github.com/cognitect-labs/test-runner
