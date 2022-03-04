@@ -8,9 +8,10 @@ prompt: enabled
 pager: !!null delta -s
 # Aliases allow you to create nicknames for gh commands
 aliases:
-    edit-config: '!${EDITOR:-editor} ~/.config/gh/config.yml'
-
     aliases: alias list
+
+    edit-config: '!${EDITOR:-editor} ~/.config/gh/config.yml'
+    aliases-edit: '!${EDITOR:-editor} ~/.config/gh/config.yml'
 
     # Fuzzy-find a gist with fzf, then view it
     gists: >-

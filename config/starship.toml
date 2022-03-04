@@ -1,4 +1,9 @@
+###############################################################################
+# starship.toml - shell prompt configuration
+#
 # For reference: starship print-config
+#      See also: https://starship.rs/config
+###############################################################################
 
 format = """
 $username\
@@ -8,290 +13,41 @@ $git_branch\
 $git_commit\
 $git_state\
 $git_status\
-$kubernetes\
-$aws\
-$docker_context\
 $package\
-$cmake\
-$deno\
-$elixir\
-$elm\
-$erlang\
-$golang\
-$java\
-$kotlin\
-$nodejs\
-$php\
-$python\
-$rust\
-$terraform\
-$zig\
 $nix_shell\
-$memory_usage\
-$env_var\
 $cmd_duration\
 $line_break\
 $jobs\
 $battery\
 $shlvl\
-$time\
-$status\
 $shell\
 $character"""
 
-[aws]
-# symbol = "\uf0c2 "
-symbol = " "
-format = "\\[[$symbol(\\($profile\\))($region)(\\[$duration\\])]($style)\\]"
-
-[conda]
-symbol = "\uf10c "
-format = "\\[[$symbol$environment]($style)\\]"
-
-[dart]
-symbol = "\ue798 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[directory]
-read_only = " \uf83d"
-
-[docker_context]
-symbol = "\uf308 "
-format = "\\[[$symbol$context]($style)\\]"
-
-[elixir]
-symbol = "\ue275 "
-format = "\\[[$symbol($version \\(OTP $otp_version\\))]($style)\\]"
-
-[elm]
-symbol = "\ue62c "
-format = "\\[[$symbol($version)]($style)\\]"
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol   = "[❯](bold red)"
+vicmd_symbol   = "[❮](bold yellow)"
 
 [git_branch]
-symbol = "\uf418 "
-format = "\\[[$symbol$branch]($style)\\]"
-
-[golang]
-symbol = "\ue627 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[hg_branch]
-symbol = "\uf418 "
-format = "\\[[$symbol$branch]($style)\\]"
-
-[java]
-symbol = "\ue256 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[julia]
-symbol = "\ue624 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[kubernetes]
-format = "\\[[$symbol$context( \\($namespace\\))]($style)\\]"
-disabled = false
-
-[kubernetes.context_aliases]
-"dev.local.cluster.k8s" = "dev"
-"arn:aws:eks:us-west-2:069027480284:cluster/pangaea-uw2-prod-eks-cluster" = "uw2-prod"
-
-[memory_usage]
-symbol = "\uf85a "
-format = "\\[$symbol[$ram( | $swap)]($style)\\]"
-
-[nim]
-symbol = "\uf6a4 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[nix_shell]
-symbol = "\uf2dc "
-format = "\\[[$symbol$state( \\($name\\))]($style)\\]"
-
-[package]
-symbol = "\uf8d6 "
-format = "\\[[$symbol$version]($style)\\]"
-
-[perl]
-symbol = "\ue769 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[php]
-symbol = "\ue608 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[python]
-symbol = "\ue606 "
-detect_folders = [ ".venv",]
-format = "\\[[${symbol}${pyenv_prefix}(${version})(\\($virtualenv\\))]($style)\\]"
-
-[ruby]
-symbol = "\ue23e "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[rust]
-symbol = "\ue7a8 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[scala]
-symbol = "\ue737 "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[shlvl]
-disabled = false
-symbol = "\uf120 "
-threshold = 3
-
-[swift]
-symbol = "ﯣ "
-format = "\\[[$symbol($version)]($style)\\]"
-
-[cmake]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[cmd_duration]
-min_time = 2
-format = "[( \ufa1a$duration)]($style)"
-min_time_to_notify = 30_000
-show_notifications = true
-
-[crystal]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[deno]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[dotnet]
-format = "\\[[$symbol($version)($tfm)]($style)\\]"
-
-[erlang]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[gcloud]
-format = "\\[[$symbol$account(@$domain)(\\($region\\))]($style)\\]"
+format = "[$branch]($style)"
+style = "dimmed"
 
 [git_status]
-format = "([\\[$all_status$ahead_behind\\]]($style))"
+style = "dimmed"
+#format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
+#style = "cyan"
+#conflicted = "​"
+#untracked = "​"
+#modified = "​"
+#staged = "​"
+#renamed = "​"
+#deleted = "​"
+#stashed = "≡"
 
-[helm]
-format = "\\[[$symbol($version)]($style)\\]"
+[git_state]
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+style = "bright-black"
 
-[kotlin]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[lua]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[nodejs]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[ocaml]
-format = "\\[[$symbol($version)(\\($switch_indicator$switch_name\\))]($style)\\]"
-
-[openstack]
-format = "\\[[$symbol$cloud(\\($project\\))]($style)\\]"
-
-[purescript]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[red]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[terraform]
-format = "\\[[$symbol$workspace]($style)\\]"
-
-[time]
-format = "\\[[$time]($style)\\]"
-
-[username]
-format = "\\[[$user]($style)\\]"
-
-[vagrant]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[vlang]
-format = "\\[[$symbol($version)]($style)\\]"
-
-[zig]
-format = "\\[[$symbol($version)]($style)\\]"
-
-# [aws]
-# symbol = " "
-#
-# [conda]
-# symbol = " "
-#
-# [dart]
-# symbol = " "
-#
-# [directory]
-# read_only = " "
-#
-# [docker_context]
-# symbol = " "
-#
-# [elixir]
-# symbol = " "
-#
-# [elm]
-# symbol = " "
-#
-# [git_branch]
-# symbol = " "
-#
-# [golang]
-# symbol = " "
-#
-# [hg_branch]
-# symbol = " "
-#
-# [java]
-# symbol = " "
-#
-# [julia]
-# symbol = " "
-#
-# [kubernetes]
-# format = '\[[$symbol$context( \($namespace\))]($style)\]'
-# disabled = false
-#
-# [kubernetes.context_aliases]
-# "dev.local.cluster.k8s" = "dev"
-# "arn:aws:eks:us-west-2:069027480284:cluster/pangaea-uw2-prod-eks-cluster" = "uw2-prod"
-#
-# [memory_usage]
-# symbol = " "
-#
-# [nim]
-# symbol = " "
-#
-# [nix_shell]
-# symbol = " "
-#
-# [package]
-# symbol = " "
-#
-# [perl]
-# symbol = " "
-#
-# [php]
-# symbol = " "
-#
-# [python]
-# symbol = ' '
-# detect_folders = ['.venv']
-#
-# [ruby]
-# symbol = " "
-#
-# [rust]
-# symbol = " "
-#
-# [scala]
-# symbol = " "
-#
-# [shlvl]
-# symbol = " "
-#
-# [swift]
-# symbol = "ﯣ "
-#
+[cmd_duration]
+format = " [$duration]($style)"
+style = "yellow"

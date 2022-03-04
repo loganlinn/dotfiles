@@ -1,13 +1,13 @@
 # Rofication
 #
 # Displays notifications.
-[rofication]
-command=rofication-status
-interval=10
+#[rofication]
+#command=rofication-status
+#interval=10
 
 # Dunst
 #
-# Creates a do-not-disturb button for muting dunst notifications.
-# [dunst]
-# command=~/.local/bin/dunst-status
-# interval=10
+# Creates a do-not-disturb button to mute dunst notifications.
+[dunst]
+command=$SCRIPT_DIR/dunst-status
+interval=10

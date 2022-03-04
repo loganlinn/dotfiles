@@ -20,8 +20,10 @@ i3-wm.binding.editor: e
 !! Notifications
 !!
 !! NOTE: config below uses rofication fork: https://github.com/loganlinn/regolith-rofication
-i3-wm.program.notification_ui: /usr/local/bin/rofication-gui --reverse
-i3xrocks.notify.timestamp.format: %x %X
+!!i3-wm.program.notification_ui: /usr/local/bin/rofication-gui --reverse
+!!i3xrocks.notify.timestamp.format: %x %X
+i3-wm.program.notifications: /usr/local/bin/dunst
+i3-wm.program.notification_ui: /usr/local/bin/dunstctl history-pop
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Bar

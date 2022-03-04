@@ -56,10 +56,9 @@
       ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
-;; (use-package! ranger
-;;   :when (featurep! :emacs dired +ranger)
-;;   :after dired
-;;   :init (setq ranger-override-dired 'ranger))
+(after! org-mode
+  ;; enable manpage links (man:)
+  (require 'ol-man))
 
 ;; i want my ~~mtv~~ intellij...
 (map! (:after flycheck

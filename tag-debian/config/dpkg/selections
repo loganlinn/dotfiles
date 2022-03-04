@@ -159,6 +159,7 @@ dpkg-dev					install
 dpkg-repack					install
 dpkg-sig					install
 dracula-gtk					install
+dunst						install
 dvisvgm						install
 dwz						install
 e2fsprogs					install
@@ -325,6 +326,7 @@ gir1.2-vte-2.91:amd64				install
 gir1.2-wnck-3.0:amd64				install
 git						install
 git-man						install
+gitk						install
 gjs						install
 gkbd-capplet					install
 glib-networking:amd64				install
@@ -375,8 +377,6 @@ gnome-shell-extension-desktop-icons-ng		install
 gnome-shell-extension-prefs			install
 gnome-shell-extension-system76-power		install
 gnome-shell-extensions				install
-gnome-shell-pomodoro				install
-gnome-shell-pomodoro-data			install
 gnome-startup-applications			install
 gnome-system-monitor				install
 gnome-terminal					install
@@ -498,7 +498,7 @@ i3xrocks-microphone				install
 i3xrocks-net-traffic				install
 i3xrocks-next-workspace				install
 i3xrocks-nm-vpn					install
-i3xrocks-rofication				install
+i3xrocks-rofication				deinstall
 i3xrocks-temp					install
 i3xrocks-time					install
 i3xrocks-volume					install
@@ -2195,7 +2195,6 @@ regolith-look-solarized-dark			install
 regolith-look-solarized-light			install
 regolith-look-ubuntu				install
 regolith-rofi-config				install
-regolith-rofication				install
 regolith-styles					install
 regolith-unclutter-xfixes			install
 remontoire					install

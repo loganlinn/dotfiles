@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ -n $WAYLAND_DISPLAY ]]; then
+	dmenu="dmenu-wl"
+elif [[ -n $DISPLAY ]]; then
+  # prefer rofi if we have it
+  if command -v rofi >/dev/null 2>&1; then
+    dmenu="rofi -dmenu"
+  else
+    dmenu="dmenu"
+  fi
+else
+	echo "Error: No Wayland or X11 display detected" >&2
+	exit 1
+fi
+
+declare -A menu_lbls
+declare -A menu_cmds
+
+add_menu_item() {
+  local key=$1
+  local lbl=$2
+  local cmd=$3
+  menu_lbls["$key"]="$lbl"
+  menu_cmds["$key"]="$cmd"
+}
+
+add_menu_item action "Action" "dunstctl action"
+add_menu_item close "Close" "dunstctl close"
+add_menu_item close-all "Close all" "dunstctl close-all"
+add_menu_item context "Context" "dunstctl context"
+add_menu_item history-pop "Pop history" "dunstctl history-pop"
+add_menu_item set-paused-toggle "Toggle paused" "dunstctl set-paused toggle"
+add_menu_item set-paused-true "Pause" "dunstctl set-paused true"
+add_menu_item set-paused-false  "Unpause" "dunstctl set-paused false"
+add_menu_item history "History" "dunstctl history"
+
+die(){ printf "%s\n" "${1}" >&2; exit 1; }
+
+print_menu() {
+  for key in "${!menu_lbls[@]}"; do
+    printf '%s\t%s\n' "$key" "${menu_lbls[$key]}"
+  done
+}
+
+menu_sel="$(print_menu | column --separator $'\t' --table --table-right 2 | $dmenu -i | awk '{print $1}')"
+
+sel_cmd="${menu_cmds[$menu_sel]}"
+if [[ -z $sel_cmd ]]; then
+  die "No command found for selection $menu_sel"
+fi
+
+eval "$sel_cmd"

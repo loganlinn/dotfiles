@@ -5,7 +5,9 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages '(treepy))
  '(safe-local-variable-values
-   '((cider-clojure-cli-global-options . "-A:dev:test:+default")
+   '((cljr-warn-on-eval nil)
+     (cider-repl-init-code "(dev)")
+     (cider-clojure-cli-global-options . "-A:dev:test:+default")
      (cider-repl-init-code "(start)")
      (cider-ns-refresh-after-fn . "dev-extras/resume")
      (cider-ns-refresh-before-fn . "dev-extras/suspend")

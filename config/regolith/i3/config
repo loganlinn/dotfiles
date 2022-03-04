@@ -1,5 +1,3 @@
-
-
 ###############################################################################
 # i3 config file for the Regolith Desktop Environment
 #
@@ -726,13 +724,15 @@ for_window [class="System76 Keyboard Configurator"] floating enable
 for_window [title="Calculator"] floating enable
 for_window [class="Artha"] floating enable
 for_window [title="^doom-capture$"] floating enable
+for_window [class="Gitk"] stacking enable
 
 ###############################################################################
 # Window assignments
 ###############################################################################
 
-assign [class="Slack"] → workspace "9: Chat"
 assign [class="Chromium-browser" title="Linear"] → workspace "4: Linear"
+assign [class="Geary"] → workspace "8: Email"
+assign [class="Slack"] → workspace "9: Chat"
 
 ###############################################################################
 # Back and forth
