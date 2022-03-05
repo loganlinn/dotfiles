@@ -20,8 +20,7 @@ export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
 export NIX_PATH="$HOME/.nix-defexpr/channels${NIX_PATH:+:}$NIX_PATH"
 
-# shellcheck disable=SC2016
-export RESTIC_PASSWORD_COMMAND='bash -c "eval `op signin --session $OP_SESSION_my`; op get item --fields password nrqwkl5ihm2b45iyijubvjzhxm"'
+export RESTIC_PASSWORD_COMMAND='pass show restic'
 
 [ -e "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 

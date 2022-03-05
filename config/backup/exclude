@@ -3,6 +3,8 @@
 # -----
 
 .cache
+.cpcache/
+**/.local/cache
 $HOME/Downloads
 $HOME/Sync
 $HOME/.local/share/Trash
@@ -81,6 +83,9 @@ $HOME/**/*.py[cod]
 $HOME/**/__pycache__
 .pyenv/versions
 .pyenv/cache
+
+# Golang
+go/pkg/mod/cache
 
 # -----
 # Other
