@@ -463,8 +463,13 @@ bindsym $mod+$i3-wm.binding.files exec $i3-wm.program.files
 
 ## Launch // Notification Viewer // <> n ##
 set_from_resource $i3-wm.binding.notification_ui i3-wm.binding.notification_ui n
-set_from_resource $i3-wm.program.notification_ui i3-wm.program.notification_ui /usr/bin/rofication-gui
+set_from_resource $i3-wm.program.notification_ui i3-wm.program.notification_ui dunstctl history-pop
 bindsym $mod+$i3-wm.binding.notification_ui exec $i3-wm.program.notification_ui
+
+## Launch // Notification Close // <><Ctrl> n ##
+set_from_resource $i3-wm.binding.notifcation_ui_close i3-wm.binding.notifcation_ui_close Ctrl+n
+set_from_resource $i3-wm.program.notifcation_ui_close i3-wm.program.notifcation_ui_close dunstctl close
+bindsym $mod+$i3-wm.binding.notifcation_ui_close exec $i3-wm.program.notifcation_ui_close
 
 ###############################################################################
 # Workspace Management
@@ -731,6 +736,7 @@ for_window [class="Gitk"] stacking enable
 ###############################################################################
 
 assign [class="Chromium-browser" title="Linear"] → workspace "4: Linear"
+assign [class="Google-chrome" title="Linear"] → workspace "4: Linear"
 assign [class="Geary"] → workspace "8: Email"
 assign [class="Slack"] → workspace "9: Chat"
 

@@ -24,6 +24,7 @@ i3-wm.binding.editor: e
 !!i3xrocks.notify.timestamp.format: %x %X
 i3-wm.program.notifications: /usr/local/bin/dunst
 i3-wm.program.notification_ui: /usr/local/bin/dunstctl history-pop
+i3-wm.program.notification_ui_close: dunstctl close
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Bar
