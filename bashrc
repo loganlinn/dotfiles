@@ -38,3 +38,8 @@ if command_exists broot; then
     fi
   }
 fi
+
+#: https://github.com/halcyon/asdf-java#java_home
+if [[ -e ~/.asdf/plugins/java/set-java-home.bash ]]; then
+  source ~/.asdf/plugins/java/set-java-home.bash
+fi

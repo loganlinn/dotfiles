@@ -30,12 +30,19 @@ autoload -U zmv
 alias zcp='zmv -C'
 alias zln='zmv -L'
 
+#: https://starship.rs/guide/#%F0%9F%9A%80-installation
 if command_exists starship; then
   eval "$(starship init zsh)"
 fi
 
+#: https://github.com/halcyon/asdf-java#java_home
 if command_exists zoxide; then
   eval "$(zoxide init zsh)"
+fi
+
+#: https://github.com/halcyon/asdf-java#java_home
+if [[ -e ~/.asdf/plugins/java/set-java-home.zsh ]]; then
+  source ~/.asdf/plugins/java/set-java-home.zsh
 fi
 
 # zprof
