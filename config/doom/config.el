@@ -94,7 +94,7 @@
 (use-package! evil-cleverparens
   :after evil
   :init
-  (setq evil-cleverparens-use-regular-insert t
+  (setq evil-cleverparens-use-regular-insert nil
         evil-cleverparens-swap-move-by-word-and-symbol t
         evil-want-fine-undo t
         evil-move-beyond-eol t)
@@ -142,9 +142,15 @@
 (setq-hook! 'clojure-mode-hook
   clojure-toplevel-inside-comment-form t)
 
-(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook clojure-mode-hook cider-repl-mode-hook)
+(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook clojure-mode-hook)
   (subword-mode +1)
   (aggressive-indent-mode +1)
+  (smartparens-strict-mode +1)
+  (evil-cleverparens-mode +1))
+
+(add-hook! 'cider-repl-mode-hook
+  (subword-mode +1)
+  (aggressive-indent-mode nil)
   (smartparens-strict-mode +1)
   (evil-cleverparens-mode +1))
 

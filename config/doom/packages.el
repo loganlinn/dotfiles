@@ -2,3 +2,4 @@
 ;;; $DOOMDIR/packages.el
 (package! aggressive-indent-mode)
 (package! evil-cleverparens)
+(package! kaocha-runner)
