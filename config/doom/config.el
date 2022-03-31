@@ -60,6 +60,7 @@
   ;; enable manpage links (man:)
   (require 'ol-man))
 
+
 ;; i want my ~~mtv~~ intellij...
 (map! (:after flycheck
        :desc "Jump to next error" [f2]   #'flycheck-next-error
@@ -150,7 +151,7 @@
 
 (add-hook! 'cider-repl-mode-hook
   (subword-mode +1)
-  (aggressive-indent-mode nil)
+  (aggressive-indent-mode -1)
   (smartparens-strict-mode +1)
   (evil-cleverparens-mode +1))
 
@@ -158,6 +159,17 @@
   (evil-define-key 'normal cider-repl-mode-map
     "C-j" 'cider-repl-next-input
     "C-k" 'cider-repl-previous-input))
+
+(add-hook! '(cider-connected-hook
+             cider-disconnected-hook
+             cider-mode-hook)
+  (defun +clojure--cider-eval-development-reload-sexp ()
+    "Evaluate a fixed expression used frequently in development to start/reload system."
+    (interactive)
+    (cider-interactive-eval
+     (format "(require 'dev) (dev/go)" (cider-last-sexp))))
+  (map! (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
+         "C-<f5>" #'+clojure--cider-eval-development-reload-sexp)))
 
 (after! clj-refactor
   ;;  Idiomatic namespace aliases [[https://github.com/bbatsov/clojure-style-guide#use-idiomatic-namespace-aliases]]
@@ -183,7 +195,8 @@
           ("sql"   . "honey.sql")
           ("sqlh"  . "honey.sql.helpers")
           ("yaml"  . "clj-yaml.core")
-          ("sh"    . "clojure.java.shell"))))
+          ("sh"    . "clojure.java.shell")))
+  (define-key 'clojure-refactor-map (kbd "n c") #'cljr-clean-ns))
 
 (after! magit
   (setq magit-diff-refine-hunk 'all
@@ -197,5 +210,5 @@
                                  "plumatic"
                                  "omcljs"))))
 
-(use-package! org-noter
-  :commands org-noter)
+;; (use-package! org-noter
+;;   :commands org-noter)
