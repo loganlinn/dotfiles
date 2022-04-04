@@ -3,3 +3,4 @@
 (package! aggressive-indent-mode)
 (package! evil-cleverparens)
 (package! kaocha-runner)
+(package! graphql-mode)

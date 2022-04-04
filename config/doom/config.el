@@ -1,11 +1,5 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
-
-
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets.
 (setq user-full-name "Logan Linn"
       user-mail-address "logan@llinn.dev")
 
@@ -27,13 +21,11 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-one)
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
-
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
+
+;; Org
+(setq org-directory "~/org/")
+(after! org-mode (require 'ol-man)) ;; enable manpage links (man:)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -56,54 +48,28 @@
       ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
-(after! org-mode
-  ;; enable manpage links (man:)
-  (require 'ol-man))
-
-
-;; i want my ~~mtv~~ intellij...
-(map! (:after flycheck
-       :desc "Jump to next error" [f2]   #'flycheck-next-error
-       :desc "Jump to prev error" [S-f2] #'flycheck-previous-error)
-      (:when (featurep! :tools lsp)
-       (:after lsp
-        :desc "Rename" [S-f6] #'lsp-rename)))
-
-(use-package! flycheck
-  :defer t
-  :config
-  (setq-default flycheck-disabled-checkers
-                ;; Most of these elisp warnings assume that I'm writing a proper package
-                ;; with full documentation. This is usually not the case, so just
-                ;; disable them.
-                '(emacs-lisp-checkdoc)))
+;; Bindings I've become acustom to from other editors...
+(map!
+ ;; Intellij
+ (:after flycheck
+  :desc "Jump to next error" [f2]   #'flycheck-next-error
+  :desc "Jump to prev error" [S-f2] #'flycheck-previous-error)
+ (:when (featurep! :tools lsp)
+  (:after lsp
+   :desc "Rename" [S-f6] #'lsp-rename))
+ ;; Spacemacs
+ (:when (featurep! :ui treemacs)
+  :leader
+  :desc "Focus sidebar" "0" #'treemacs-select-window))
 
 (use-package! treemacs
   :defer t
   :init
-  (message "treemacs :init")
-  (setq +treemacs-git-mode 'deferred)
-  (map! :leader
-        :desc "Treemacs"
-        "0" #'treemacs-select-window)
+  (setq +treemacs-git-mode 'deferred) ;; hack: should be in :config, but placed here to utilize logic in doom-emacs/modules/ui/treemacs (https://github.com/hlissner/doom-emacs/blob/aed2972d7400834210759727117c50de34826db9/modules/ui/treemacs/config.el#L32)
+  :config
+  (treemacs-project-follow-mode +1)
   (map! :map treemacs-mode-map
-        [mouse-1] #'treemacs-single-click-expand-action)
-  :config
-  (message "treemacs :config")
-  (treemacs-project-follow-mode +1))
-
-(use-package! evil-cleverparens
-  :after evil
-  :init
-  (setq evil-cleverparens-use-regular-insert nil
-        evil-cleverparens-swap-move-by-word-and-symbol t
-        evil-want-fine-undo t
-        evil-move-beyond-eol t)
-  :config
-  (evil-set-command-properties 'evil-cp-change :move-point t)
-  (smartparens-strict-mode +1)
-  (evil-cleverparens-mode +1))
-
+        :desc "Expand" [mouse-1] #'treemacs-single-click-expand-action))
 
 (after! lsp-mode
   (setq lsp-log-io nil
@@ -135,80 +101,8 @@
   lsp-ui-sideline-enable nil
   lsp-lens-enable t)
 
-(setq-hook! 'cider-mode-hook
-  ;; open cider-doc directly and close it with q
-  cider-prompt-for-symbol nil
-  cider-save-file-on-load 'always-save)
+(setq-hook! 'projectile-mode-hook
+  projectile-project-search-path '(("~/src" . 3)))
 
-(setq-hook! 'clojure-mode-hook
-  clojure-toplevel-inside-comment-form t)
-
-(add-hook! '(lisp-mode-hook emacs-lisp-mode-hook clojure-mode-hook)
-  (subword-mode +1)
-  (aggressive-indent-mode +1)
-  (smartparens-strict-mode +1)
-  (evil-cleverparens-mode +1))
-
-(add-hook! 'cider-repl-mode-hook
-  (subword-mode +1)
-  (aggressive-indent-mode -1)
-  (smartparens-strict-mode +1)
-  (evil-cleverparens-mode +1))
-
-(after! cider-mode
-  (evil-define-key 'normal cider-repl-mode-map
-    "C-j" 'cider-repl-next-input
-    "C-k" 'cider-repl-previous-input))
-
-(add-hook! '(cider-connected-hook
-             cider-disconnected-hook
-             cider-mode-hook)
-  (defun +clojure--cider-eval-development-reload-sexp ()
-    "Evaluate a fixed expression used frequently in development to start/reload system."
-    (interactive)
-    (cider-interactive-eval
-     (format "(require 'dev) (dev/go)" (cider-last-sexp))))
-  (map! (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
-         "C-<f5>" #'+clojure--cider-eval-development-reload-sexp)))
-
-(after! clj-refactor
-  ;;  Idiomatic namespace aliases [[https://github.com/bbatsov/clojure-style-guide#use-idiomatic-namespace-aliases]]
-  (setq cljr-magic-require-namespaces
-        '(("io"    . "clojure.java.io")
-          ("as"    . "clojure.core.async")
-          ("csv"   . "clojure.data.csv")
-          ("edn"   . "clojure.edn")
-          ("mat"   . "clojure.core.matrix")
-          ("nrepl" . "clojure.nrepl")
-          ("pp"    . "clojure.pprint")
-          ("s"     . "clojure.spec.alpha")
-          ("set"   . "clojure.set")
-          ("spec"  . "clojure.spec.alpha")
-          ("str"   . "clojure.string")
-          ("walk"  . "clojure.walk")
-          ("xml"   . "clojure.data.xml")
-          ("zip"   . "clojure.zip")
-          ("json"  . "cheshire.core")
-          ("time"  . "java-time")
-          ("http"  . "clj-http.client")
-          ("log"   . "clojure.tools.logging")
-          ("sql"   . "honey.sql")
-          ("sqlh"  . "honey.sql.helpers")
-          ("yaml"  . "clj-yaml.core")
-          ("sh"    . "clojure.java.shell")))
-  (define-key 'clojure-refactor-map (kbd "n c") #'cljr-clean-ns))
-
-(after! magit
-  (setq magit-diff-refine-hunk 'all
-        magit-repository-directories '(("~/src" . 3)))
-  (add-hook! 'after-save-hook #'magit-after-save-refresh-status))
-
-(after! forge
-  (setq  forge-topic-list-limit '(100 . -10)
-         forge-owned-accounts '(("loganlinn"
-                                 "patch-tech"
-                                 "plumatic"
-                                 "omcljs"))))
-
-;; (use-package! org-noter
-;;   :commands org-noter)
+(load! "clojure.el")
+(load! "magit.el")
