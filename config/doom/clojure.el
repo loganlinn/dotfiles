@@ -16,28 +16,32 @@
 
   ;; See: [[Idiomatic namespace aliases][https://github.com/bbatsov/clojure-style-guide#use-idiomatic-namespace-aliases]]
   cljr-magic-require-namespaces
-  '(("io"    . "clojure.java.io")
+  '(
     ("as"    . "clojure.core.async")
     ("csv"   . "clojure.data.csv")
     ("edn"   . "clojure.edn")
+    ("http"  . "clj-http.client")
+    ("io"    . "clojure.java.io")
+    ("json"  . "cheshire.core")
+    ("log"   . "clojure.tools.logging")
+    ("m"     . "malli.core")
     ("mat"   . "clojure.core.matrix")
     ("nrepl" . "clojure.nrepl")
+    ("p"     . "plumbing.core")
     ("pp"    . "clojure.pprint")
     ("s"     . "clojure.spec.alpha")
     ("set"   . "clojure.set")
+    ("sh"    . "clojure.java.shell")
     ("spec"  . "clojure.spec.alpha")
-    ("str"   . "clojure.string")
-    ("walk"  . "clojure.walk")
-    ("xml"   . "clojure.data.xml")
-    ("zip"   . "clojure.zip")
-    ("json"  . "cheshire.core")
-    ("time"  . "java-time")
-    ("http"  . "clj-http.client")
-    ("log"   . "clojure.tools.logging")
     ("sql"   . "honey.sql")
     ("sqlh"  . "honey.sql.helpers")
+    ("str"   . "clojure.string")
+    ("time"  . "java-time")
+    ("walk"  . "clojure.walk")
+    ("xml"   . "clojure.data.xml")
     ("yaml"  . "clj-yaml.core")
-    ("sh"    . "clojure.java.shell")))
+    ("zip"   . "clojure.zip")
+    ))
 
 (setq-hook! 'cider-mode-hook
   ;; open cider-doc directly and close it with q
