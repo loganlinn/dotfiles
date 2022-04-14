@@ -7,20 +7,18 @@ antigen bundles <<EOBUNDLES
   gitignore
   gpg-agent
   ssh-agent
-  terraform
   urltools
   zsh-interactive-cd
 EOBUNDLES
 
 antigen bundles <<EOBUNDLES
-  Aloxaf/fzf-tab
   hlissner/zsh-autopair
-  johanhaleby/kubetail
   loganlinn/zzz.plugin.zsh
   wfxr/forgit
-  zsh-users/zsh-autosuggestions
-  zsh-users/zsh-completions
   zsh-users/zsh-history-substring-search
+  zsh-users/zsh-autosuggestions
+  zsh-users/zsh-syntax-highlighting
+  zsh-users/zsh-completions
 EOBUNDLES
 
 for _zsh_custom_plugin in $ZSH_CUSTOM/plugins/*(/); do
@@ -35,21 +33,5 @@ export ZSH_AUTOSUGGEST_USE_ASYNC=1
 # wfxr/forgit
 export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
 export FORGIT_ADD_FZF_OPTS='--ansi'
-
-# jeffreytse/zsh-vi-mode
-export ZVM_LAZY_KEYBINDINGS=false
-export ZVM_LINE_INIT_MODE=${ZVM_MODE_INSERT-i}
-
-# function zvm_after_init() {
-#   # zvm overwrites fzf-history-widget bindkey
-#   if [[ -f $XDG_CONFIG_HOME/fzf/fzf.zsh ]]; then
-#     . "$XDG_CONFIG_HOME"/fzf/fzf.zsh
-#   elif [[ -f ~/fzf.zsh ]]; then
-#     . ~/fzf.zsh
-#   fi
-#
-#  [[ -f $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh ]] &&
-#    . $ZSH_CUSTOM/plugins/fzf-fasd/fzf-fasd.plugin.zsh
-# }
 
 antigen apply
