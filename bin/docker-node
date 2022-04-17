@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# @brief A script to run Node.js in a container. 
+# @author: Logan Linn <logan@llinn.dev>
+
+set -e
+
+if [ -n "${TRACE:-}" ]; then set -x; fi
+
+image="${CONTAINER_IMAGE:-node:${NODE_VERSION:-slim}}"
+name="${CONTAINER_NAME:-$(basename -- "$0").$$}"
+user="${CONTAINER_USER:-"$(id -u):$(id -g)"}"
+network="${CONTAINER_NETWORK:-host}"
+runtime=${CONTAINER_RUNTIME:-$(command which docker 2>/dev/null || command which podman 2>/dev/null)}
+
+if [ -z "$runtime" ]; then
+  echo >&2 "No docker or podman found in PATH"
+  exit 1
+fi
+
+if [ $# -eq 0 ]; then
+  set -- node
+fi
+
+exec "$runtime" run -it --rm --name "$name" --user "$user" --network "$network" \
+  --volume "$PWD":/home/node/workspace \
+  --workdir /home/node/workspace \
+  --volume "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}":/home/node/.npmrc \
+  --env-file <(env | grep -E '^(NODE_.+|NPM_CONFIG_.+|YARN_.+|HTTPS?_PROXY)$' | grep -v NPM_CONFIG_USERCONFIG) \
+  --env NEXT_TELEMETRY_DISABLED=true \
+  ${CONTAINER_ARGS:-} \
+  "$image" "$@"
