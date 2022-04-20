@@ -69,7 +69,9 @@
   :config
   (treemacs-project-follow-mode +1)
   (map! :map treemacs-mode-map
-        :desc "Expand" [mouse-1] #'treemacs-single-click-expand-action))
+        :desc "Expand" [mouse-1] #'treemacs-single-click-expand-action
+        :desc "Rename file" [f2] #'treemacs-rename-file
+        :desc "Refresh" [f5] #'treemacs-refresh))
 
 (after! lsp-mode
   (setq lsp-log-io nil
@@ -104,5 +106,11 @@
 (setq-hook! 'projectile-mode-hook
   projectile-project-search-path '(("~/src" . 3)))
 
+;; Disable some of ligatures enabled by (ligatures +extra)
+(let ((ligatures-to-disable '(:true :false :int :float :str :bool :list :and :or)))
+  (dolist (sym ligatures-to-disable)
+    (plist-put! +ligatures-extra-symbols sym nil)))
+
 (load! "clojure.el")
+
 (load! "magit.el")
