@@ -23,6 +23,7 @@
 
 (setq display-line-numbers-type 'relative)
 
+
 ;; Org
 (setq org-directory "~/org/")
 (after! org-mode (require 'ol-man)) ;; enable manpage links (man:)
@@ -48,8 +49,14 @@
       ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
+;; which-key
+(setq which-key-idle-delay 0.4)
+
 ;; Bindings I've become acustom to from other editors...
 (map!
+ ;; vim
+ :nv "C-a" #'evil-numbers/inc-at-pt
+ :nv "C-S-a" #'evil-numbers/dec-at-pt
  ;; Intellij
  (:after flycheck
   :desc "Jump to next error" [f2]   #'flycheck-next-error
@@ -104,7 +111,9 @@
   lsp-lens-enable t)
 
 (setq-hook! 'projectile-mode-hook
-  projectile-project-search-path '(("~/src" . 3)))
+  projectile-project-search-path '(("~/src" . 3))
+  projectile-enable-caching nil
+  projectile-indexing-method 'alien)
 
 ;; Disable some of ligatures enabled by (ligatures +extra)
 (let ((ligatures-to-disable '(:true :false :int :float :str :bool :list :and :or)))

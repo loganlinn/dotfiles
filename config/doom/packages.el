@@ -2,5 +2,7 @@
 ;;; $DOOMDIR/packages.el
 (package! aggressive-indent-mode)
 (package! evil-cleverparens)
+(package! neil :recipe (:host github :repo "babashka/neil" :files ("*.el")))
 (package! kaocha-runner)
-(package! graphql-mode)
+(package! just-mode)
+(package! justl)

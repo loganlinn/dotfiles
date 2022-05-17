@@ -1,3 +1,14 @@
+(defun jet-pretty ()
+  (interactive)
+  (shell-command-on-region
+   (region-beginning)
+   (region-end)
+   "jet --pretty --edn-reader-opts '{:default tagged-literal}'"
+   (current-buffer)
+   t
+   "*jet error buffer*"
+   t))
+
 (use-package! evil-cleverparens
   :after evil
   :init
@@ -41,18 +52,71 @@
     ("xml"   . "clojure.data.xml")
     ("yaml"  . "clj-yaml.core")
     ("zip"   . "clojure.zip")
-    ))
 
-(setq-hook! 'cider-mode-hook
-  ;; open cider-doc directly and close it with q
-  cider-prompt-for-symbol nil
-  cider-save-file-on-load 'always-save)
+    ("p.a.eql"  . "com.wsscode.pathom3.interface.async.eql")
+    ("p.cache"  . "com.wsscode.pathom3.cache")
+    ("p.eql"    . "com.wsscode.pathom3.interface.eql")
+    ("p.error"  . "com.wsscode.pathom3.error")
+    ("p.path"   . "com.wsscode.pathom3.path")
+    ("p.plugin" . "com.wsscode.pathom3.plugin")
+    ("pbip"     . "com.wsscode.pathom3.connect.built-in.plugins")
+    ("pbir"     . "com.wsscode.pathom3.connect.built-in.resolvers")
+    ("pcf"      . "com.wsscode.pathom3.connect.foreign")
+    ("pci"      . "com.wsscode.pathom3.connect.indexes")
+    ("pco"      . "com.wsscode.pathom3.connect.operation")
+    ("pcot"     . "com.wsscode.pathom3.connect.operation.transit")
+    ("pcp"      . "com.wsscode.pathom3.connect.planner")
+    ("pcr"      . "com.wsscode.pathom3.connect.runner")
+    ("pf.eql"   . "com.wsscode.pathom3.format.eql")
+    ("psm"      . "com.wsscode.pathom3.interface.smart-map")
+    ))
 
 (add-hook! 'clojure-mode-hook
   (subword-mode +1)
   (aggressive-indent-mode +1)
   (smartparens-strict-mode +1)
-  (evil-cleverparens-mode +1))
+  (evil-cleverparens-mode +1)
+
+  (define-clojure-indent
+    ;;
+    ;; prismatic plumbing
+    ;;
+    (fnk :defn)
+    (defnk :defn)
+    (letk 1)
+    (for-map 1)
+    ;;
+    ;; potemkin
+    ;;
+    (definterface+    '(2 nil nil (1)))
+    (defprotocol+     '(1 (:defn)))
+    (defrecord+       '(2 nil nil (1)))
+    (deftype+         '(2 nil nil (1)))
+    (extend-protocol+ '(1 :defn))
+    (reify+           '(:defn (1)))
+    (reify-map-type   '(:defn (1)))
+    (def-map-type     '(2 nil nil (1)))
+    (def-derived-map  '(2 nil nil (1)))
+    (try* 0)
+
+    ;;
+    ;; next.jdbc
+    ;;
+    (on-connection 1)
+    )
+
+  ;; prismatic/schema
+  ;;(put 's/defrecord 'clojure-backtracking-indent '(4 4 (2)))
+  ;;(put 's/defrecord+ 'clojure-backtracking-indent '(4 4 (2)))
+  ;; potemkin
+  ;;(put 'potemkin/deftype+ 'clojure-backtracking-indent '(4 4 (2)))
+  ;;(put 'potemkin/defrecord+ 'clojure-backtracking-indent '(4 4 (2)))
+  )
+
+(setq-hook! 'cider-mode-hook
+  ;; open cider-doc directly and close it with q
+  cider-prompt-for-symbol nil
+  cider-save-file-on-load 'always-save)
 
 (add-hook! 'cider-repl-mode-hook
   (subword-mode +1)
@@ -75,4 +139,5 @@
         :desc "Reload system" "C-<f5>" #'+clojure--cider-eval-development-reload-sexp))
 
 (after! clj-refactor
-  (define-key 'clojure-refactor-map (kbd "n c") #'cljr-clean-ns))
+  (define-key 'clojure-refactor-map (kbd "n c") #'cljr-clean-ns)
+  (setq cljr-add-ns-to-blank-clj-files +1))
