@@ -48,7 +48,7 @@
 	whitespace = nowarn
 
 [help]
-	autocorrect = 1
+	autocorrect = prompt
 
 [advice]
 	detachedHead = false
@@ -67,6 +67,9 @@
 [merge]
 	ff = only
 
+[man]
+  viewer = bat
+
 [rebase]
 	autosquash = true
 	autostash  = false # fool me once, ...
@@ -84,10 +87,14 @@
 	path = ~/.config/git/alias
 
 [alias]
+  #root = rev-parse --show-toplevel
 	wt = worktree
   lswt = worktree list
-  mkwt = "!f() { git worktree add \"$(git rev-parse --show-toplevel)+$@\"; }; f"
+  mkwt = "!f() { wtbranch=$1; shift; wtpath=\"$(git rev-parse --show-toplevel)+$wtbranch\"; git worktree add -B \"$wtbranch\" --guess-remote \"$wtpath\" \"$@\" && echo \"Worktree added: $wtpath\"; }; f"
   rmwt = "!f() { git worktree remove \"$(git rev-parse --show-toplevel)+$@\"; }; f"
+  wtls = lswt
+  wtmk = mkwt
+  wtrm = rmwt
 
   edit-config = config --global --edit
 
