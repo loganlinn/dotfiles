@@ -4,46 +4,45 @@
 
 [ -z "$PS1" ] && return
 
-. ~/.shrc
+ZSH_CONFIG=$HOME/.zsh
 
-() {
-  for f; do
-    if [[ -f $f && $f != *".zwc" ]]; then
-      . "$f"
+source $HOME/.shrc
+
+typeset -ga sources
+sources+="$ZSH_CONFIG/environment.zsh"
+sources+="$ZSH_CONFIG/options.zsh"
+sources+="$ZSH_CONFIG/path.zsh"
+sources+="$ZSH_CONFIG/functions.zsh"
+sources+="$ZSH_CONFIG/aliases.zsh"
+sources+="$ZSH_CONFIG/$(uname -s | tr '[:upper:]' '[:lower:]').zsh"
+sources+="/etc/zsh_command_not_found"
+sources+="$ZSH_CONFIG/clipboard.zsh"
+sources+="$ZSH_CONFIG/antigen.zsh"
+sources+="$ZSH_CONFIG/completion.zsh"
+sources+="$ZSH_CONFIG/keybindings.zsh"
+sources+="$ZSH_CONFIG/surround.zsh"
+sources+="$ZSH_CONFIG/kitty.zsh"
+sources+="$HOME/.fzf/shell/completion.zsh"
+sources+="$HOME/.fzf/shell/key-bindings.zsh"
+sources+="$HOME/.asdf/plugins/java/set-java-home.zsh"
+
+# And we're off...
+foreach file ("$sources[@]")
+    if [[ -a $file ]]; then
+        source $file
     fi
-  done
-  unset f
-} ~/.zsh/functions/* \
-	~/.zsh/configs{-pre,,-post}/**/*(N-.) \
-	~/.zsh/completion.zsh \
-  ~/.zshrc.local
+end
 
-command_exists() {
-  (( $+commands[$1]))
-}
+unset file sources
 
-function_exists() {
-  (( $+functions[$1]))
-}
-
-autoload -U zmv
-alias zcp='zmv -C'
-alias zln='zmv -L'
-
-#: https://starship.rs/guide/#%F0%9F%9A%80-installation
 if command_exists starship; then
   eval "$(starship init zsh)"
 fi
 
-#: https://github.com/halcyon/asdf-java#java_home
 if command_exists zoxide; then
   eval "$(zoxide init zsh)"
 fi
 
-#: https://github.com/halcyon/asdf-java#java_home
-if [[ -e ~/.asdf/plugins/java/set-java-home.zsh ]]; then
-  source ~/.asdf/plugins/java/set-java-home.zsh
-fi
-
+sources+="$HOME/zshrc.local"
 # zprof
 

@@ -40,6 +40,8 @@ alias 7='cd -7'
 alias 8='cd -8'
 alias 9='cd -9'
 
+alias inst='date --utc --iso-8601=seconds'
+
 alias mounts='mount | column -t | sort'
 alias ports='netstat -tulanp'
 
@@ -94,11 +96,10 @@ ediff() { et --eval "(ediff-files \"${1:-$(fzf --header=A)}\" \"${2:-$(fzf --hea
 eman()  { et --eval "(switch-to-buffer (man \"${1:-$(compgen -c | fzf)}\"))"; }
 ekill() { emacsclient --eval '(kill-emacs)'; }
 
-# restricted-mode vim
-alias rvim='vim -Z -u NONE -c "setlocal history=0 nobackup nomodeline noshelltemp noswapfile noundofile nowritebackup secure viminfo=\"\""'
+## jq
+alias jqr='jq -rc'
 
 ## git
-alias gtl='git rev-parse --show-toplevel'
 alias gcob='git checkout -b'
 alias gcop='git checkout -p'
 alias gd='git diff --color'
@@ -109,6 +110,7 @@ alias gopen='git config --get remote.origin.url | sed -r -e '"'"'s|^git@([^:]+):
 alias gp='git push -u'
 alias gpa='git push all --all'
 alias gs='git status -sb'
+alias gsrt='git rev-parse --show-toplevel'
 alias gsw='git stash show -p'
 alias gw='git show'
 alias gwt-ls="git worktree list --porcelain 2>/dev/null | awk '/^worktree / { print $2 }'"
@@ -202,6 +204,11 @@ if command_exists notify-send; then
 fi
 
 alias fd-git="fd --prune -Htd '\\.git\$' -x dirname"
+
+if command_exists sops; then
+  # Use a very basic editor when editing secrets (e.g. keep away from GitHub CoPilot)
+	alias sops='EDITOR="vim -u NONE" sops'
+fi
 
 if command_exists clj; then
 	# https://github.com/clojure/tools.tools/blob/main/src/clojure/tools/tools/api.clj
