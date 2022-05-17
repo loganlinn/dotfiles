@@ -8,24 +8,48 @@ if [ -n "${TRACE:-}" ]; then set -x; fi
 
 image="${CONTAINER_IMAGE:-node:${NODE_VERSION:-slim}}"
 name="${CONTAINER_NAME:-$(basename -- "$0").$$}"
-user="${CONTAINER_USER:-"$(id -u):$(id -g)"}"
 network="${CONTAINER_NETWORK:-host}"
-runtime=${CONTAINER_RUNTIME:-$(command which docker 2>/dev/null || command which podman 2>/dev/null)}
+runtime="${CONTAINER_RUNTIME:-$(which docker 2>/dev/null || which podman 2>/dev/null)}"
 
 if [ -z "$runtime" ]; then
   echo >&2 "No docker or podman found in PATH"
   exit 1
 fi
 
-if [ $# -eq 0 ]; then
-  set -- node
+options=(
+  --rm
+  --interactive
+  --tty
+  --name "$name"
+  --network "$network"
+  --volume "$PWD":/workspace
+  --workdir /workspace
+  --env NPM_CONFIG_AUDIT=false \
+  --env NPM_CONFIG_FUND=false \
+  --env NPM_CONFIG_UPDATE_NOTIFIER=false
+  --env NEXT_TELEMETRY_DISABLED=true
+)
+
+# add volume for host npm config directory, if it exists
+npm_config="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+if [ -f "$npm_config" ]; then
+  options+=(--volume "$npm_config":/home/node/.npmrc --env NPM_CONFIG_USERCONFIG=/home/node/.npmrc)
 fi
 
-exec "$runtime" run -it --rm --name "$name" --user "$user" --network "$network" \
-  --volume "$PWD":/home/node/workspace \
-  --workdir /home/node/workspace \
-  --volume "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}":/home/node/.npmrc \
+# append any custom options
+if [ -n "${CONTAINER_OPTS:-}" ]; then
+  # shellcheck disable=SC2206
+  options+=($CONTAINER_OPTS)
+fi
+
+if [ $# -eq 0 ]; then
+  # i.e. docker-node -> node
+  default_command=$(basename -- "$0")
+  default_command=${default_command#docker-}
+  default_command=${default_command%.*}
+  set -- "${CONTAINER_CMD:-$default_command}"
+fi
+
+exec "$runtime" run \
   --env-file <(env | grep -E '^(NODE_.+|NPM_CONFIG_.+|YARN_.+|HTTPS?_PROXY)$' | grep -v NPM_CONFIG_USERCONFIG) \
-  --env NEXT_TELEMETRY_DISABLED=true \
-  ${CONTAINER_ARGS:-} \
-  "$image" "$@"
+  "${options[@]}" "$image" "$@"
