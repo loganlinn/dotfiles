@@ -461,7 +461,7 @@ set_from_resource $i3-wm.binding.files i3-wm.binding.files Shift+n
 set_from_resource $i3-wm.program.files i3-wm.program.files /usr/bin/nautilus --new-window
 bindsym $mod+$i3-wm.binding.files exec $i3-wm.program.files
 
-## Launch // Notification Viewer // <> n ##
+## Launch // Notification Viewer // <> n
 set_from_resource $i3-wm.binding.notification_ui i3-wm.binding.notification_ui n
 set_from_resource $i3-wm.program.notification_ui i3-wm.program.notification_ui dunstctl history-pop
 bindsym $mod+$i3-wm.binding.notification_ui exec $i3-wm.program.notification_ui
@@ -709,7 +709,7 @@ bindsym $mod+$alt+n exec /usr/bin/x-terminal-emulator $i3-wm.program.files.termi
 ###############################################################################
 
 # Switch to workspace with urgent window automatically
-focus_on_window_activation smart
+focus_on_window_activation focus
 for_window [urgent=latest] focus
 
 ###############################################################################
@@ -730,6 +730,7 @@ for_window [title="Calculator"] floating enable
 for_window [class="Artha"] floating enable
 for_window [title="^doom-capture$"] floating enable
 for_window [class="Gitk"] stacking enable
+for_window [class="Gpick"] floating enable
 
 ###############################################################################
 # Window assignments

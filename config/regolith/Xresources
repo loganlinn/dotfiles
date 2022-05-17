@@ -7,9 +7,17 @@
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#St.font:	Source Code Pro:pixelsize=16:antialias=true:autohint=true
+#St.font:	San Francisco Display:pixelsize=16:antialias=true:autohint=true
+#i3-wm.font:	pango:San Francisco Display Regular 13
+#i3-wm.bar.font:	pango:Source Code Pro Medium 13, Material Design Icons 13
+#i3-wm.bar.font:	pango:San Francisco Display Regular 13, Material Design Icons 13
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Programs
 i3-wm.program.1: /usr/bin/x-terminal-emulator
+#i3-wm.program.2: /usr/bin/emacs
+#i3-wm.program.3: /usr/bin/x-www-browser
 i3-wm.program.editor: emacs
 
 i3-wm.binding.scratchpad: minus
@@ -23,7 +31,7 @@ i3-wm.binding.editor: e
 !!i3-wm.program.notification_ui: /usr/local/bin/rofication-gui --reverse
 !!i3xrocks.notify.timestamp.format: %x %X
 i3-wm.program.notifications: /usr/local/bin/dunst
-i3-wm.program.notification_ui: /usr/local/bin/dunstctl history-pop
+i3-wm.program.notification_ui: dunstctl history-pop
 i3-wm.program.notification_ui_close: dunstctl close
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -29,7 +29,7 @@ label_some=${i3xrocks_label_notify_some:-$(xrescat i3xrocks.label.notify.some "N
 label_error=${i3xrocks_label_notify_error:-$(xrescat i3xrocks.label.notify.error "N")}
 # i3xrocks.label.notify.pause is standard in regolith look typefaces, but it should be :)
 # fallback to error label, as it conventionally conveys muted/disabled
-label_pause=${i3xrocks_label_notify_pause:-$(xrescat i3xrocks.label.notify.pause "$label_error")} 
+label_pause=${i3xrocks_label_notify_pause:-$(xrescat i3xrocks.label.notify.pause "$label_error")}
 
 # emulate rofication-status, i.e. https://github.com/regolith-linux/regolith-rofication/blob/a75b21a4626b9ff39deb29c157a046522b44140b/rofication/resources/_static.py
 value_color=${color:-$(xrescat i3xrocks.value.color "#E6E1CF")}
