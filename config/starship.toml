@@ -15,6 +15,7 @@ $git_state\
 $git_status\
 $package\
 $nix_shell\
+$python\
 $cmd_duration\
 $line_break\
 $jobs\
@@ -29,20 +30,11 @@ error_symbol   = "[❯](bold red)"
 vicmd_symbol   = "[❮](bold yellow)"
 
 [git_branch]
-format = "[$branch]($style)"
+format = "[$branch]($style) "
 style = "dimmed"
 
 [git_status]
 style = "dimmed"
-#format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
-#style = "cyan"
-#conflicted = "​"
-#untracked = "​"
-#modified = "​"
-#staged = "​"
-#renamed = "​"
-#deleted = "​"
-#stashed = "≡"
 
 [git_state]
 format = '\([$state( $progress_current/$progress_total)]($style)\) '
