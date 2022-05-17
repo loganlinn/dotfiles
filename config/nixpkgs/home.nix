@@ -1,59 +1,113 @@
 { config, pkgs, ... }:
 
-{
+let
 
-  # Home Manager needs a bit of information about you and the
-  # paths it should manage.
+  pkgsUnstable = import <nixpkgs-unstable> { };
+
+in {
   home.username = "logan";
   home.homeDirectory = "/home/logan";
-
-  # This value determines the Home Manager release that your
-  # configuration is compatible with. This helps avoid breakage
-  # when a new Home Manager release introduces backwards
-  # incompatible changes.
-  #
-  # You can update Home Manager without changing this value. See
-  # the Home Manager release notes for a list of state version
-  # changes in each release.
   home.stateVersion = "22.05";
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
-
+  # TIP: use following vim command to sorts packages based on first alpha character 
+  #
+  #      /home\.packages =/+1,/end:home\.packages/-1 sort /\a/ r
+  #
+  # PROTIP: yank the command and execute it with `:@"`
   home.packages = with pkgs; [
     asciinema
     bat
     bottom
     broot
+    # binutils
     delta
+    dive
     doctl
     du-dust
     entr
+    # ((emacsPackagesFor emacsPgtkGcc).emacsWithPackages (epkgs: [ epkgs.vterm ]))
     fd
     fzf
     gifsicle
+    gnutls
     hyperfine
-    ijq
+    # imagemagick
+    jq
     lsd
     mdsh
+    # (mkIf (config.programs.gnupg.agent.enable) pinentry_emacs)
     neofetch
     nixfmt
+    pkgsUnstable.just
     procs
     restic
+    (ripgrep.override { withPCRE2 = true; })
     rlwrap
-    trash-cli
+    ruby
     sd
     shellharden
+    # sqlite
+    trash-cli
+    # zoom-us
     zoxide
-  ];
+    zstd
+  ]; # end:home.packages
 
-  # Things to try next: (ideas from: https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc)
-    # asdf-vm
-    # bat-extras
-    # direnv
-    # ical2org
-    # mcfly
-    # lsd
+  # See also: https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc
+
+  #  programs = {
+  #    gpg = {
+  #      enable = false;
+  #      homedir = "${config.xdg.dataHome}/gnupg";
+  #    };
+  #
+  #    # https://github.com/nix-community/home-manager/blob/master/modules/programs/git.nix 
+  #    git = {
+  #      enable = false;
+  #      userName = "Logan Linn";
+  #      userEmail = "logan@llinn.dev";
+  #      signing = {
+  #        key = "32A48B412F1CA30ADB1B54382C3CDAE023DB6616";
+  #        signByDefault = true;
+  #      };
+  #      ignores = [ "*~" "*.swp" "node_modules" ".venv" ".cpcache" ];
+  #      includes = [ { path = "~/.config/git/alias"; } { path = "~/.config/git/config.local"; } ];
+  #      aliases = {
+  #        wt   = "worktree";
+  #        lswt = "worktree list";
+  #        mkwt = "!f() { git worktree add \"$(git rev-parse --show-toplevel)+$@\"; }; f";
+  #        rmwt = "!f() { git worktree remove \"$(git rev-parse --show-toplevel)+$@\"; }; f";
+  #        wtls = "lswt";
+  #        wtmk = "mkwt";
+  #        wtrm = "rmwt";
+  #        aliases = "config --get-regexp alias";
+  #      };
+  #      extraConfig = {
+  #        commit.verbose = true;
+  #        init.defaultBranch = "main";
+  #        pull.rebase = true;
+  #      };
+  #      delta.enable = true;
+  #    };
+  #
+  #  };
+
+  programs.password-store.enable = true;
+
+  programs.command-not-found.enable = true;
+
+  #  services = {
+  #    gpg-agent = {
+  #      enable = true;
+  #      enableSshSupport = true;
+  #      defaultCacheTtl = 3600;
+  #      defaultCacheTtlSsh = 3600;
+  #    };
+  #
+  #    syncthing.enable = true;
+  #  };
 
 }
