@@ -15,14 +15,15 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Programs
-i3-wm.program.1: /usr/bin/x-terminal-emulator
-#i3-wm.program.2: /usr/bin/emacs
-#i3-wm.program.3: /usr/bin/x-www-browser
+i3-wm.program.1: workspace 1; /usr/bin/emacs
+i3-wm.program.2: workspace 2; /usr/bin/x-terminal-emulator
+#i3-wm.program.3:
+
 i3-wm.program.editor: emacs
+i3-wm.binding.editor: e
 
 i3-wm.binding.scratchpad: minus
 i3-wm.binding.move_scratchpad: Shift+minus
-i3-wm.binding.editor: e
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Notifications
