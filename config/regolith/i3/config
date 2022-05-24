@@ -684,6 +684,28 @@ exec --no-startup-id $i3-wm.program.3
 # include /etc/regolith/i3/config.d/*
 # include $HOME/.config/i3/config.d/*
 
+
+###############################################################################
+# Dunst Controls
+###############################################################################
+
+set $mode_dunst dunst: [o] action [n] close [k] close-all [x] context [p] history-pop [t] (un)pause [q] exit
+bindsym $mod+F9 mode "$mode_dunst"
+mode --pango_markup "$mode_dunst" {
+    bindsym Enter exec dunstctl action
+    bindsym o exec dunstctl action
+    bindsym k exec dunstctl close
+    bindsym n exec dunstctl close
+    bindsym shift+k exec dunstctl close-all
+    bindsym x exec dunstctl context
+    bindsym p exec dunstctl history-pop
+    bindsym t exec dunstctl set-paused toggle; mode "default"
+    bindsym q mode "default"
+
+    bindsym Escape mode "default"
+    bindsym Ctrl+c mode "default"
+}
+
 ###############################################################################
 # Key Mappings
 ###############################################################################
