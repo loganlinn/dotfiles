@@ -747,9 +747,11 @@ bindsym $mod+Control+g [class="Chromium"] focus
 # Window customizations
 ###############################################################################
 
+## TODO use resource
 for_window [class="System76 Keyboard Configurator"] floating enable
 for_window [title="Calculator"] floating enable
 for_window [class="Artha"] floating enable
+for_window [class="pavucontrol"] floating enable
 for_window [title="^doom-capture$"] floating enable
 for_window [class="Gitk"] stacking enable
 for_window [class="Gpick"] floating enable

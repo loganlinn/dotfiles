@@ -42,6 +42,7 @@ in {
     neofetch
     nixfmt
     pkgsUnstable.just
+    ponymix
     procs
     restic
     (ripgrep.override { withPCRE2 = true; })
