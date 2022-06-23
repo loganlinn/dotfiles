@@ -690,6 +690,11 @@ exec --no-startup-id $i3-wm.program.3
 ###############################################################################
 
 set $mode_dunst dunst: [o] action [n] close [k] close-all [x] context [p] history-pop [t] (un)pause [q] exit
+bindsym $mod+Ctrl+o exec "dunstctl action 0 && dunstctl close"
+bindsym $mod+Ctrl+p exec "dunstctl-snooze"
+bindsym $mod+Ctrl+bracketleft exec "dunstctl history-pop"
+bindsym $mod+Ctrl+bracketright exec "dunstctl close"
+bindsym $mod+Ctrl+backslash exec "dunstctl close-all"
 bindsym $mod+F9 mode "$mode_dunst"
 mode --pango_markup "$mode_dunst" {
     bindsym Enter exec dunstctl action
