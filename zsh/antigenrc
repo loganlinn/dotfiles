@@ -13,6 +13,7 @@ EOBUNDLES
 
 antigen bundles <<EOBUNDLES
   hlissner/zsh-autopair
+  kazhala/dotbare
   loganlinn/zzz.plugin.zsh
   wfxr/forgit
   zsh-users/zsh-history-substring-search
@@ -33,5 +34,9 @@ export ZSH_AUTOSUGGEST_USE_ASYNC=1
 # wfxr/forgit
 export FORGIT_FZF_DEFAULT_OPTS='--preview-window=right:80%'
 export FORGIT_ADD_FZF_OPTS='--ansi'
+
+# kazhala/dotbare
+export DOTBARE_DIR=$HOME/.dotfiles/.git
+export DOTBARE_TREE=$HOME/.dotfiles
 
 antigen apply

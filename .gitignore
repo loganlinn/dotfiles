@@ -1,7 +1,8 @@
 *.bak
 *.local
-*.zsh.zwc
+*.zwc
 *~
+*zcompdump*
 .DS_Store
 .\#*
 .cache
