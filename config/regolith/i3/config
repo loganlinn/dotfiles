@@ -461,16 +461,6 @@ set_from_resource $i3-wm.binding.files i3-wm.binding.files Shift+n
 set_from_resource $i3-wm.program.files i3-wm.program.files /usr/bin/nautilus --new-window
 bindsym $mod+$i3-wm.binding.files exec $i3-wm.program.files
 
-## Launch // Notification Viewer // <> n
-set_from_resource $i3-wm.binding.notification_ui i3-wm.binding.notification_ui n
-set_from_resource $i3-wm.program.notification_ui i3-wm.program.notification_ui dunstctl history-pop
-bindsym $mod+$i3-wm.binding.notification_ui exec $i3-wm.program.notification_ui
-
-## Launch // Notification Close // <><Ctrl> n ##
-set_from_resource $i3-wm.binding.notifcation_ui_close i3-wm.binding.notifcation_ui_close Ctrl+n
-set_from_resource $i3-wm.program.notifcation_ui_close i3-wm.program.notifcation_ui_close dunstctl close
-bindsym $mod+$i3-wm.binding.notifcation_ui_close exec $i3-wm.program.notifcation_ui_close
-
 ###############################################################################
 # Workspace Management
 ###############################################################################
@@ -684,32 +674,32 @@ exec --no-startup-id $i3-wm.program.3
 # include /etc/regolith/i3/config.d/*
 # include $HOME/.config/i3/config.d/*
 
-
 ###############################################################################
 # Dunst Controls
 ###############################################################################
 
-set $mode_dunst dunst: [o] action [n] close [k] close-all [x] context [p] history-pop [t] (un)pause [q] exit
+set $mode_dunst dunst: [Return] action [Shift+Return] context  [k|n] close [K] close-all [p] history-pop [t] (un)pause [q] exit
+mode --pango_markup "$mode_dunst" {
+    bindsym Return       exec "dunstctl action 0"       ; mode "default"
+    bindsym Shift+Return exec dunstctl context          ; mode "default"
+    bindsym k            exec dunstctl close            ; mode "default"
+    bindsym Shift+k      exec dunstctl close-all        ; mode "default"
+    bindsym n            exec dunstctl close
+    bindsym p            exec dunstctl history-pop
+    bindsym t            exec dunstctl set-paused toggle; mode "default"
+
+    bindsym q mode "default"
+    bindsym Escape mode "default"
+    bindsym Ctrl+c mode "default"
+    bindsym Ctrl+g mode "default"
+}
+bindsym $mod+n mode "$mode_dunst"
+
 bindsym $mod+Ctrl+o exec "dunstctl action 0 && dunstctl close"
-bindsym $mod+Ctrl+p exec "dunstctl-snooze"
+bindsym $mod+Ctrl+p exec "dunst-snooze"
 bindsym $mod+Ctrl+bracketleft exec "dunstctl history-pop"
 bindsym $mod+Ctrl+bracketright exec "dunstctl close"
 bindsym $mod+Ctrl+backslash exec "dunstctl close-all"
-bindsym $mod+F9 mode "$mode_dunst"
-mode --pango_markup "$mode_dunst" {
-    bindsym Enter exec dunstctl action
-    bindsym o exec dunstctl action
-    bindsym k exec dunstctl close
-    bindsym n exec dunstctl close
-    bindsym shift+k exec dunstctl close-all
-    bindsym x exec dunstctl context
-    bindsym p exec dunstctl history-pop
-    bindsym t exec dunstctl set-paused toggle; mode "default"
-    bindsym q mode "default"
-
-    bindsym Escape mode "default"
-    bindsym Ctrl+c mode "default"
-}
 
 ###############################################################################
 # Key Mappings
@@ -760,6 +750,7 @@ for_window [class="pavucontrol"] floating enable
 for_window [title="^doom-capture$"] floating enable
 for_window [class="Gitk"] stacking enable
 for_window [class="Gpick"] floating enable
+# for_window [class="^join\?confid"] floating enable # Zoom
 
 ###############################################################################
 # Window assignments

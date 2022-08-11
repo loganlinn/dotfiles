@@ -15,9 +15,9 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !! Programs
-i3-wm.program.1: workspace 1; /usr/bin/emacs
-i3-wm.program.2: workspace 2; /usr/bin/x-terminal-emulator
-#i3-wm.program.3:
+i3-wm.program.1: emacs
+i3-wm.program.2: x-terminal-emulator
+#i3-wm.program.3: x-www-browser
 
 i3-wm.program.editor: emacs
 i3-wm.binding.editor: e
