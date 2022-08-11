@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e
+
+: "${DOWNLOAD_URL=https://raw.githubusercontent.com/babashka/neil/main/neil}"
+: "${INSTALL_DIR=$HOME/.local/bin}"
+
+echo "Downloading $DOWNLOAD_URL" >&2
+curl -sLo "$INSTALL_DIR"/neil "$DOWNLOAD_URL"
+chmod +x "$INSTALL_DIR"/neil
+echo "Installed $INSTALL_DIR/neil" >&2
+"$INSTALL_DIR"/neil version
