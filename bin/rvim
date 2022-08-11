@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+#
+# rvim - "restricted" vim is a best-effort incognito mode for vim
+#
+exec vim -Z -u NONE -c "setlocal history=0 nobackup nomodeline noshelltemp noswapfile noundofile nowritebackup secure viminfo=\"\""
