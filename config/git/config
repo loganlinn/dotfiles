@@ -44,6 +44,12 @@
 [difftool "meld"]
 	cmd = meld "$LOCAL" "$REMOTE"
 
+[difftool "kitty"]
+    cmd = kitty +kitten diff "$LOCAL" "$REMOTE"
+
+[difftool "kitty.gui"]
+    cmd = kitty kitty +kitten diff "$LOCAL" "$REMOTE"
+
 [apply]
 	whitespace = nowarn
 
@@ -84,7 +90,7 @@
 	helper = !gh auth git-credential
 
 [include]
-	path = ~/.config/git/alias
+	path = include/com.github.gitalias/gitalias/gitalias.txt 
 
 [alias]
   #root = rev-parse --show-toplevel
