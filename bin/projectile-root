@@ -1,0 +1,3 @@
+#!/bin/sh
+
+emacsclient -a false -e "(projectile-acquire-root)" | sed -e 's/^"//' -e 's/"$//'
