@@ -3,42 +3,17 @@
 
 [global]
 
-### DISPLAY ###
-
-monitor = 0
-follow = keyboard
-
 ### GEOMETRY ###
 
-width  = (300, 500)
-height = 300
-origin = top-right
-offset = 30x50
-scale  = 0
-notification_limit = 0
-corner_radius = 0
-# notification_height = 0
+frame_width        = 2
+gap_size           = 2
+geometry           = "300x500-62-62"
+padding            = 8
+notification_limit = 20
+min_icon_size      = 0
+max_icon_size      = 18
 
-### UI ###
-
-frame_width = 1
-transparency = 0
-separator_height = 5
-separator_color = auto
-padding = 10
-horizontal_padding = 10
-text_icon_padding = 0
-
-min_icon_size = 0
-max_icon_size = 18
-icon_position = left
 icon_path = /usr/share/icons/gnome/16x16/status/:/usr/share/icons/gnome/16x16/devices/
-
-progress_bar = true
-progress_bar_height = 16
-progress_bar_frame_width = 1
-progress_bar_min_width = 300
-progress_bar_max_width = 500
 
 ### COLORS ###
 
@@ -48,54 +23,14 @@ frame_color = "#3B4252" # nord1
 
 ### TEXT ###
 
-#font = JetBrains Mono Medium 10
-#font = Source Code Pro Medium 13
-font = San Francisco Display Regular 11
-line_height = 0
-markup = full
-
-# The format of the message.  Possible variables are:
-#   %a  appname
-#   %s  summary
-#   %b  body
-#   %i  iconname (including its path)
-#   %I  iconname (without its path)
-#   %p  progress value if set ([  0%] to [100%]) or nothing
-#   %n  progress value if set without any extra characters
-#   %%  Literal %
-# Markup is allowed
+font   = San Francisco Display Regular 11
 format = "<b>%s</b>\n%b"
-#format = "<b>%s</b>\n<small>%a</small>\n%b"
-#format = "<b>%s</b>\n<span size='smaller'>%a</span>\n%b"
-#format = "<b>%s</b>\n%b\n<span size="x-small">%a</span>"
-#format = "<small>%a</small>: <big><b>%s</b></big>\n<small>%b</small>"
-
-alignment          = left
-vertical_alignment = center
-word_wrap          = yes
-ellipsize          = middle
-ignore_newline     = no
-
-### BEHAVIOR ###
-
-indicate_hidden = yes
-shrink = no
-sort = yes
-idle_threshold = 120
-show_age_threshold = 60
-
-stack_duplicates = true
-hide_duplicate_count = false
-show_indicators = yes
-
-ignore_dbusclose = false
-always_run_script = true
 
 ### ACTIONS ###
 
 mouse_left_click   = do_action, close_current
-mouse_middle_click = close_current
-mouse_right_click  = context
+mouse_middle_click = context
+mouse_right_click  = close_current
 
 ### HISTORY ###
 
@@ -108,50 +43,6 @@ title = Dunst
 class = Dunst
 
 dmenu   = /usr/bin/rofi -dmenu -p dunst:
-browser = /usr/bin/xdg-open
-
-# Always run rule-defined scripts, even if the notification is suppressed
-always_run_script = true
-
-# verbosity ~= /crit|warn|mesg|info|debug/
-verbosity = mesg
-
-### WAYLAND ###
-
-force_xwayland = false
-
-### LEGACY ###
-
-force_xinerama = false
-
-[experimental]
-per_monitor_dpi = false
-
-################################################################################
-
-[shortcuts]
-
-# Shortcuts are specified as [modifier+][modifier+]...key
-# Available modifiers are "ctrl", "mod1" (the alt-key), "mod2",
-# "mod3" and "mod4" (windows-key).
-# Xev might be helpful to find names for keys.
-
-# Close notification.
-close = mod4+F9
-
-# Close all notifications.
-# close_all = ctrl+shift+space
-close_all = mod4+shift+F9
-
-# Redisplay last message(s).
-# On the US keyboard layout "grave" is normally above TAB and left
-# of "1". Make sure this key actually exists on your keyboard layout,
-# e.g. check output of 'xmodmap -pke'
-# history = ctrl+grave
-history = mod4+F10
-
-# Context menu.
-context = mod4+F11
 
 ################################################################################
 ### RULES
@@ -173,62 +64,79 @@ foreground = "#3B4252" # nord1
 background = "#B48EAD" # nord15
 timeout    = 0
 
-################################################################################
+### Applications
 
 [slack_cicd_fail]
-appname    = Slack
-summary    = "*in #cicd-feed*"
-body       = "*fail*"
-foreground = "#3B4252" # nord1
-#background = "#BF616A" # nord11
-background = "#D08770" # nord12
-timeout    = 120
+appname        = Slack
+summary        = "*feeds-cicd*"
+body           = "*fail*"
+foreground     = "#3B4252" # nord1
+#background    = "#BF616A" # nord11
+background     = "#D08770" # nord12
+timeout        = 120
+set_stack_tag  = "slack_feeds_cicd"
 
 [slack_cicd_success]
-appname    = Slack
-summary    = "*in #cicd-feed*"
-body       = "Run *succeed*"
-foreground = "#3B4252" # nord1
-background = "#A3BE8C" # nord14
-#background = "#8FBCBB" # nord7
-timeout    = 30
+appname        = Slack
+summary        = "*feeds-cicd*"
+body           = "*succeed*"
+foreground     = "#3B4252" # nord1
+background     = "#A3BE8C" # nord14
+#background    = "#8FBCBB" # nord7
+timeout        = 30
+set_stack_tag  = "slack_feeds_cicd"
 
 [slack_cicd_running]
-appname    = Slack
-summary    = "*in #cicd-feed*"
-body       = "*running*"
-foreground = "#ECEFF4" # nord6
-background = "#4C566A" # nord3
-timeout    = 4
+appname        = Slack
+summary        = "*feeds-cicd*"
+body           = "*running*"
+foreground     = "#ECEFF4" # nord6
+background     = "#4C566A" # nord3
+timeout        = 4
+set_stack_tag  = "slack_feeds_cicd"
 
-[slack_cicd_skiped]
-appname    = Slack
-summary    = "*in #cicd-feed*"
-body       = "Run * skipped."
-skip_display = true
+[slack_cicd_skipped]
+appname        = Slack
+summary        = "*feeds-cicd*"
+body           = "*skipped*"
+skip_display   = true
 history_ignore = true
+set_stack_tag  = "slack_feeds_cicd"
 
 [slack_cicd_not_started]
-appname    = Slack
-summary    = "*in #cicd-feed*"
-body       = "Run * not started."
-skip_display = true
+appname        = Slack
+summary        = "*feeds-cicd*"
+body           = "*not started*"
+skip_display   = true
 history_ignore = true
+set_stack_tag  = "slack_feeds_cicd"
 
-[slack_github_feed]
-appname  = Slack
-summary  = "*in #github-feed*"
-timeout  = 60
-new_icon = ~/.local/share/icons/GitHub-Mark-32px.png
+[slack_github]
+appname        = Slack
+summary        = "*feeds-github*"
+timeout        = 30
+new_icon       = ~/.local/share/icons/GitHub-Mark-32px.png
+
+[slack_dd_alerts]
+appname        = Slack
+summary        = "*alerts-datadog*"
+timeout        = 30
+#new_icon       = ~/.local/share/icons/Datadog_Mark.png
+
+[slack_az_alerts]
+appname        = Slack
+summary        = "*alerts-azure*"
+timeout        = 30
+#new_icon       = ~/.local/share/icons/Azure_Mark.png
 
 [slack]
-appname  = Slack
-new_icon = ~/.local/share/icons/Slack_Mark.png
+appname        = Slack
+new_icon       = ~/.local/share/icons/Slack_Mark.png
 
 [linear]
-summary  = "*Linear*"
-timeout  = 60
-new_icon = ~/.local/share/icons/Linear-app-icon.png
+summary        = "*Linear*"
+timeout        = 60
+new_icon       = ~/.local/share/icons/Linear-app-icon.png
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.
