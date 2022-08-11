@@ -43,8 +43,12 @@ if command_exists zoxide; then
   eval "$(zoxide init zsh)"
 fi
 
-sources+="$HOME/zshrc.local"
-# zprof
-
+sources+="$HOME/.zshrc.local"
+#
+#zprof
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# Add JBang to environment
+alias j!=jbang
+export PATH="$HOME/.jbang/bin:$PATH"

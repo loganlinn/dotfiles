@@ -203,7 +203,7 @@ if command_exists notify-send; then
 	alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 fi
 
-alias fd-git="fd --prune -Htd '\\.git\$' -x dirname"
+alias fd-git="fd --prune -HItd '^\\.git\$' -x echo {//} ';'"
 
 if command_exists sops; then
   # Use a very basic editor when editing secrets (e.g. keep away from GitHub CoPilot)
@@ -229,9 +229,7 @@ if command_exists clj; then
 	alias clj-dir="clj -X:deps help/dir"
 fi
 
-if command_exists bb; then
-	alias bbr="BABASHKA_PRELOADS=$BABASHKA_PRELOADS' (load-file (str (System/getenv \"HOME\") \"/.config/babashka/repl.clj\"))' rlwrap bb"
-fi
+alias bbr='rlwrap bb'
 
 # TODO move src-get path so its more conventional
 . "$HOME/bin/src-get"

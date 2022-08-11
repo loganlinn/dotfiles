@@ -43,3 +43,7 @@ fi
 if [[ -e ~/.asdf/plugins/java/set-java-home.bash ]]; then
   source ~/.asdf/plugins/java/set-java-home.bash
 fi
+
+# Add JBang to environment
+alias j!=jbang
+export PATH="$HOME/.jbang/bin:$PATH"
