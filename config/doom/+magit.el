@@ -1,6 +1,12 @@
+;;; :tools magit
 (after! magit
   (setq magit-diff-refine-hunk 'all
-        magit-repository-directories '(("~/src" . 3)))
+        magit-repository-directories '(("~/src" . 3))
+        magit-save-repository-buffers nil
+        transient-values '((magit-rebase "--autosquash" "--autostash")
+                           (magit-pull "--rebase" "--autostash")
+                           (magit-revert "--autostash")))
+
   ;; automaticailly refresh magit buffers when files are saved
   (add-hook! 'after-save-hook #'magit-after-save-refresh-status))
 

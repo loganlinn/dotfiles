@@ -3,72 +3,83 @@
 (setq user-full-name "Logan Linn"
       user-mail-address "logan@llinn.dev")
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
-;; are the three important ones:
-;;
-;; + `doom-font'
-;; + `doom-variable-pitch-font'
-;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;;
-;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
-;; font string. You generally only need these two:
-;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
-;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
-
-(setq display-line-numbers-type 'relative)
-
-
-;; Org
-(setq org-directory "~/org/")
-(after! org-mode (require 'ol-man)) ;; enable manpage links (man:)
-
-;; Here are some additional functions/macros that could help you configure Doom:
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
-
 (setq delete-by-moving-to-trash t
-      ;; https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
-;; which-key
-(setq which-key-idle-delay 0.4)
+(setq doom-theme 'doom-one)
 
-;; Bindings I've become acustom to from other editors...
+;;; :core editor
+ (setq display-line-numbers-type 'relative
+       fill-column 99)
+
+;;; :core packages
+;; projectile
+(after! projectile
+  (setq projectile-create-missing-test-files t
+        projectile-project-search-path '(("~/src" . 3))
+        projectile-enable-caching nil
+        projectile-indexing-method 'alien)
+  (projectile-update-project-type 'clojure-cli
+                                  :src-dir "src"
+                                  :test-dir "test")
+  ;; vim-projectionist (a.vim) style commands for impl<>test files
+  (evil-ex-define-cmd "A"  'projectile-toggle-between-implementation-and-test)
+  (evil-ex-define-cmd "AV" '(lambda ()
+                              (interactive)
+                              (evil-window-vsplit)
+                              (windmove-right)
+                              (projectile-toggle-between-implementation-and-test)))
+  (evil-ex-define-cmd "AS" '(lambda ()
+                              (interactive)
+                              (evil-window-split)
+                              (windmove-down)
+                              (projectile-toggle-between-implementation-and-test))))
+
+;;; :editor evil
+;; Focus new window after splitting
+(after! evil
+  (setq evil-split-window-below t
+        evil-vsplit-window-right t))
+
 (map!
  ;; vim
- :nv "C-a" #'evil-numbers/inc-at-pt
+ :nv "C-a"   #'evil-numbers/inc-at-pt
  :nv "C-S-a" #'evil-numbers/dec-at-pt
- ;; Intellij
+
+ ;; vim-projectionist (a.vim)
+ (:leader
+  :prefix-map ("p" . "project")
+  :desc "Toggle impl/test" "A" #'projectile-toggle-between-implementation-and-test)
+
+ ;; Intellij error nav
  (:after flycheck
   :desc "Jump to next error" [f2]   #'flycheck-next-error
   :desc "Jump to prev error" [S-f2] #'flycheck-previous-error)
+
+ ;; Intellij rename
  (:when (featurep! :tools lsp)
   (:after lsp
-   :desc "Rename" [S-f6] #'lsp-rename))
- ;; Spacemacs
- (:when (featurep! :ui treemacs)
-  :leader
-  :desc "Focus sidebar" "0" #'treemacs-select-window))
+   :desc "Rename" [S-f6] #'lsp-rename)))
 
+(map! :nvi
+
+      :desc "Expand region"
+      "M-=" #'er/expand-region
+
+      :desc "Reverse expand region"
+      "M--" (lambda () (interactive) (er/expand-region -1)))
+
+(map! :leader
+
+      :desc "Open dotfiles"
+      "f T" #'open-dotfiles
+
+      :desc "Find file in dotfiles"
+      "f t" #'find-in-dotfiles)
+
+
+
+;;; :ui treemacs
 (use-package! treemacs
   :defer t
   :init
@@ -80,6 +91,13 @@
         :desc "Rename file" [f2] #'treemacs-rename-file
         :desc "Refresh" [f5] #'treemacs-refresh))
 
+
+;;; :tools gist
+(after! gist
+  (setq gist-view-gist t))
+
+
+;;; :tools lsp
 (after! lsp-mode
   (setq lsp-log-io nil
         lsp-file-watch-threshold 8264
@@ -101,25 +119,71 @@
                  "[/\\\\]out\\'"))
     (push dir lsp-file-watch-ignored-directories)))
 
+(use-package! lsp-ui
+  :after lsp-mode
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-doc-enable nil
+        lsp-ui-peek-enable nil))
 (setq-hook! 'lisp-ui
-  lsp-enable-on-type-formatting t
   lsp-enable-indentation t
-  lsp-ui-doc-max-width 100
-  lsp-ui-doc-max-height 30
+  lsp-enable-on-type-formatting t
+  lsp-ui-doc-border (doom-color 'fg)
+  lsp-ui-doc-enable t
   lsp-ui-doc-include-signature t
+  lsp-ui-doc-include-signature t
+  lsp-ui-doc-max-height 30
+  lsp-ui-doc-max-width 100
   lsp-ui-sideline-enable nil
+  lsp-ui-sideline-ignore-duplicate t
   lsp-lens-enable t)
 
-(setq-hook! 'projectile-mode-hook
-  projectile-project-search-path '(("~/src" . 3))
-  projectile-enable-caching nil
-  projectile-indexing-method 'alien)
+(use-package! lsp-treemacs
+  :config
+  (setq lsp-treemacs-error-list-current-project-only t))
 
+
+;;; :ui doom-theme
+(setq doom-themes-treemacs-theme "doom-colors")
+
+
+;;; :ui doom-dashboard
+(setq fancy-splash-image (concat doom-private-dir "splash.png"))
+;; Hide the menu for as minimalistic a startup screen as possible.
+(remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
+
+
+;;; :ui ligatures
 ;; Disable some of ligatures enabled by (ligatures +extra)
-(let ((ligatures-to-disable '(:true :false :int :float :str :bool :list :and :or)))
+(let ((ligatures-to-disable '(:true :false :int :float :str :bool :list :and :or :for)))
   (dolist (sym ligatures-to-disable)
     (plist-put! +ligatures-extra-symbols sym nil)))
 
-(load! "clojure.el")
 
-(load! "magit.el")
+;;; :tools lookup
+(add-to-list '+lookup-provider-url-alist '("grep.app" "https://grep.app/search?q=%s"))
+(setq +lookup-provider-url-alist (assoc-delete-all "Google images" +lookup-provider-url-alist))
+(setq +lookup-provider-url-alist (assoc-delete-all "Google maps" +lookup-provider-url-alist))
+(setq +lookup-provider-url-alist (assoc-delete-all "DuckDuckGo" +lookup-provider-url-alist))
+
+
+;;; :package which-key
+(after! which-key
+  (setq which-key-idle-delay 0.4))
+
+
+;;; :lang org
+(setq org-directory "~/org/")
+(after! org-mode (require 'ol-man)) ;; enable manpage links (man:)
+
+
+;;; :lang sh
+;; (use-package! flymake-shellcheck
+;;   :hook (sh-mode . flymake-shellcheck-load)
+;;   :commands flymake-shellcheck-load
+;;   :init
+;;   (add-hook 'sh-mode-hook 'flymake-shellcheck-load))
+
+(load! "+ui")
+(load! "+magit")
+(load! "+clojure")
