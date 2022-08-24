@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -e
+
+fonts_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
+version=$(curl -sSLf https://api.github.com/repos/tonsky/FiraCode/releases/latest | jq -r .tag_name)
+zip=Fira_Code_v${version}.zip
+url="https://github.com/tonsky/FiraCode/releases/download/${version}/${zip}"
+
+mkdir -p "$fonts_dir"
+echo "downloading $url" >&2
+curl -sSLfO "https://github.com/tonsky/FiraCode/releases/download/${version}/${zip}"
+cleanup() {
+  rm -fv "$zip"
+}
+trap cleanup EXIT
+unzip -o "$zip" -x "*README*" "*.html" -d "$fonts_dir" 
+echo "rebuilding font cache" >&2
+fc-cache -f
+echo "done" >&2
