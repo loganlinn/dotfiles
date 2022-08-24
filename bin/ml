@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+
+SOURCE=${1?}
+DEST=${2?}
+
+mkdir -pv "$(dirname "$SOURCE")"
+rsync -avP --no-links "$SOURCE" "$DEST"
+ln -sfv "$DEST" "$SOURCE"
