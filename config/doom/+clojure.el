@@ -1,6 +1,10 @@
 ;;; :lang clojure
 (after! clojure-mode
   (setq clojure-toplevel-inside-comment-form t)
+
+  (add-hook! 'clojure-mode-hook
+             #'aggressive-indent-mode)
+
   (define-clojure-indent
     ;; plumbing
     (fnk :defn)
@@ -24,20 +28,54 @@
 (after! cider
   (setq cider-prompt-for-symbol nil
         cider-save-file-on-load 'always-save
-        cider-repl-buffer-size-limit 100
+        cider-repl-buffer-size-limit 200
         cider-enrich-classpath t)
-  (map! (:map cider-mode-map
-         :desc "Reload system" "C-<f5>" #'+clojure--cider-eval-development-reload-sexp)
-        (:map cider-repl-mode-map
-         :n "C-j" 'cider-repl-next-input
-         :n "C-k" 'cider-repl-previous-input))
-  (defun +clojure--cider-eval-development-reload-sexp ()
+
+  (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.29.1")
+
+  (map! (:map clojure-mode-map
+         :desc "Reload system" "C-<f5>" #'+cider-eval-dev-reload)
+        ;(:map cider-repl-mode-map
+        ; :n "C-j" 'cider-repl-next-input
+        ; :n "C-k" 'cider-repl-previous-input)
+        (:map clojure-mode-map
+         "C-c M-k" #'+cider-jack-in-clj-polylith
+         "C-c M-l" #'portal.api/open
+         "C-c M-S-l" #'portal.api/clear))
+
+  (defun +cider-jack-in-clj-polylith (params)
+    "Start an nREPL server for the current Polylith workspace and connect to it."
+    (interactive "P")
+    (let ((ws-dir (locate-dominating-file (pwd) "workspace.edn")))
+      (if ws-dir
+          (cider-jack-in-clj (plist-put params :project-dir ws-dir))
+        (error "Unable to locate 'workspace.edn' in current directory or parent directory"))))
+
+  (defun +cider-eval-dev-reload  ()
     "Evaluate a fixed expression used frequently in development to start/reload system."
     (interactive)
     (cider-ensure-connected)
-    (cider-interactive-eval "(require 'dev) (dev/go)")))
+    (cider-interactive-eval "(require 'dev) (dev/go)"))
+
+  ;; def portal to the dev namespace to allow dereferencing via @dev/portal
+  (defun portal.api/open ()
+    (interactive)
+    (cider-nrepl-sync-request:eval
+     "(do (ns dev) (def portal ((requiring-resolve 'portal.api/open))) (add-tap (requiring-resolve 'portal.api/submit)) (.addShutdownHook (Runtime/getRuntime) (Thread. #((requiring-resolve 'portal.api/close)))))"))
+
+  (defun portal.api/clear ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+
+  (defun portal.api/close ()
+    (interactive)
+    (cider-nrepl-sync-request:eval "(portal.api/close)")))
 
 (after! clj-refactor
+  (map! :map clojure-refactor-map
+        :desc "Add missing libspec" "n a" #'cljr-add-missing-libspec
+        :desc "Clean ns" "n c" #'lsp-clojure-clean-ns)
+
   (setq cljr-add-ns-to-blank-clj-files t
         cljr-hotload-dependencies nil
         cljr-magic-require-namespaces
@@ -63,45 +101,10 @@
           ("json"     . "cheshire.core")
           ("m"        . "malli.core")
           ("p"        . "plumbing.core")
-          ("p.a.eql"  . "com.wsscode.pathom3.interface.async.eql")
-          ("p.cache"  . "com.wsscode.pathom3.cache")
-          ("p.eql"    . "com.wsscode.pathom3.interface.eql")
-          ("p.error"  . "com.wsscode.pathom3.error")
-          ("p.path"   . "com.wsscode.pathom3.path")
-          ("p.plugin" . "com.wsscode.pathom3.plugin")
-          ("pbip"     . "com.wsscode.pathom3.connect.built-in.plugins")
-          ("pbir"     . "com.wsscode.pathom3.connect.built-in.resolvers")
-          ("pcf"      . "com.wsscode.pathom3.connect.foreign")
-          ("pci"      . "com.wsscode.pathom3.connect.indexes")
-          ("pco"      . "com.wsscode.pathom3.connect.operation")
-          ("pcot"     . "com.wsscode.pathom3.connect.operation.transit")
-          ("pcp"      . "com.wsscode.pathom3.connect.planner")
-          ("pcr"      . "com.wsscode.pathom3.connect.runner")
-          ("pf.eql"   . "com.wsscode.pathom3.format.eql")
-          ("psm"      . "com.wsscode.pathom3.interface.smart-map")
           ("sql"      . "honey.sql")
           ("sqlh"     . "honey.sql.helpers")
           ("jt"       . "java-time")
-          ("yaml"     . "clj-yaml.core")))
-
-        ;; (defun +cljr-align-clj-dependencies ()
-        ;;   (interactive "P")
-        ;;   (let* ((project-file (cljr--project-file))
-        ;;          (deps (cljr--project-with-deps-p project-file)))
-        ;;     (debug)
-        ;;     (cljr--update-file project-file
-        ;;       (goto-char (point-min))
-        ;;       (when deps
-        ;;         (re-search-forward ":deps")
-        ;;         (forward-sexp)
-        ;;         (backward-char)
-        ;;         (clojure-align))
-        ;;       (cljr--post-command-message "Aligned :deps of %s" project-file))))
-
-        (map! :map clojure-refactor-map
-              :desc "Add missing libspec" "n a" #'cljr-add-missing-libspec
-              ;; :desc "Clean ns" "n c" #'cljr-clean-ns
-              :desc "Clean ns" "n c" #'lsp-clojure-clean-ns))
+          ("yaml"     . "clj-yaml.core"))))
 
   (use-package! evil-cleverparens
     :after evil
@@ -112,37 +115,22 @@
           evil-move-beyond-eol t)
     :config
     (evil-set-command-properties 'evil-cp-change :move-point t)
-    (smartparens-strict-mode +1)
-    (evil-cleverparens-mode +1)
+
+    (add-hook! 'emacs-lisp-mode-hook
+               #'evil-cleverparens-mode)
+
     (add-hook! 'clojure-mode-hook
-      (subword-mode +1)
-      (aggressive-indent-mode +1)
-      (smartparens-strict-mode +1)
-      (evil-cleverparens-mode +1))
-    (add-hook! 'cider-repl-mode-hook
-      (subword-mode +1)
-      (aggressive-indent-mode -1)
-      (smartparens-strict-mode +1)
-      (evil-cleverparens-mode +1)))
+               #'evil-cleverparens-mode)
 
-;; def portal to the dev namespace to allow dereferencing via @dev/portal
-(defun portal.api/open ()
-  (interactive)
-  (cider-nrepl-sync-request:eval
-    "(do (ns dev) (def portal ((requiring-resolve 'portal.api/open))) (add-tap (requiring-resolve 'portal.api/submit)) (.addShutdownHook (Runtime/getRuntime) (Thread. #((requiring-resolve 'portal.api/close)))))"))
+    (add-hook! 'clojure-mode-hook
+               #'evil-cleverparens-mode))
 
-(defun portal.api/clear ()
-  (interactive)
-  (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+  (use-package! smart-parens
+    (add-hook! 'emacs-lisp-mode-hook
+               #'smartparens-strict-mode)
 
-(defun portal.api/close ()
-  (interactive)
-  (cider-nrepl-sync-request:eval "(portal.api/close)"))
+    (add-hook! 'clojure-mode-hook
+               #'smartparens-strict-mode)
 
-(map! :map clojure-mode-map
-      ;; cmd  + o
-      :n "C-S-l" #'portal.api/open
-      ;; ctrl + l
-      :n "C-l" #'portal.api/clear)
-
-;; (setq cider-clojure-cli-global-options "-A:portal")
+    (add-hook! 'clojure-mode-hook
+               #'smartparens-strict-mode))

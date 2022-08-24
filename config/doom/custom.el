@@ -3,7 +3,21 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(button-lock))
+ '(ansi-color-names-vector
+   ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
+ '(custom-safe-themes
+   '("835868dcd17131ba8b9619d14c67c127aa18b90a82438c8613586331129dda63" "d268b67e0935b9ebc427cad88ded41e875abfcc27abd409726a92e55459e0d01" "5784d048e5a985627520beb8a101561b502a191b52fa401139f4dd20acb07607" "246a9596178bb806c5f41e5b571546bb6e0f4bd41a9da0df5dfbca7ec6e2250c" default))
+ '(exwm-floating-border-color "#c2c6cb")
+ '(fci-rule-color "#AEBACF")
+ '(highlight-tail-colors ((("#d6dfdf") . 0) (("#d3dfe9") . 20)))
+ '(jdee-db-active-breakpoint-face-colors (cons "#F0F4FC" "#5d86b6"))
+ '(jdee-db-requested-breakpoint-face-colors (cons "#F0F4FC" "#4F894C"))
+ '(jdee-db-spec-breakpoint-face-colors (cons "#F0F4FC" "#B8C5DB"))
+ '(objed-cursor-color "#99324B")
+ '(package-selected-packages '(htmlize button-lock))
+ '(pdf-view-midnight-colors (cons "#3B4252" "#E5E9F0"))
+ '(rustic-ansi-faces
+   ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
  '(safe-local-variable-values
    '((cljr-magic-require-namespaces
       ("io" . "clojure.java.io")
@@ -92,7 +106,29 @@
      (cljr-clojure-test-declaration . "[clojure.test :as test :refer [deftest is testing]]")
      (cljr-warn-on-eval)
      (cider-clojure-cli-global-options . "-A:dev:test:build:+default")
-     (cider-repl-init-code "(dev)"))))
+     (cider-repl-init-code "(dev)")))
+ '(vc-annotate-background "#E5E9F0")
+ '(vc-annotate-color-map
+   (list
+    (cons 20 "#4F894C")
+    (cons 40 "#688232")
+    (cons 60 "#817b19")
+    (cons 80 "#9A7500")
+    (cons 100 "#a0640c")
+    (cons 120 "#a65419")
+    (cons 140 "#AC4426")
+    (cons 160 "#a53f37")
+    (cons 180 "#9e3a49")
+    (cons 200 "#97365B")
+    (cons 220 "#973455")
+    (cons 240 "#983350")
+    (cons 260 "#99324B")
+    (cons 280 "#a0566f")
+    (cons 300 "#a87b93")
+    (cons 320 "#b0a0b6")
+    (cons 340 "#AEBACF")
+    (cons 360 "#AEBACF")))
+ '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
