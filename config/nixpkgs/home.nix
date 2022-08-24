@@ -39,7 +39,6 @@ in {
     # (mkIf (config.programs.gnupg.agent.enable) pinentry_emacs)
     neofetch
     nixfmt
-    pkgsUnstable.just
     ponymix
     procs
     restic
