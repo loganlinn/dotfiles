@@ -4,10 +4,17 @@ GITHUB_COPILOT_VIM_GITURL=https://github.com/github/copilot.vim.git
 GITHUB_COPILOT_VIM_GITREF=release
 GITHUB_COPILOT_VIM_DIR=${XDG_DATA_HOME:-$HOME/.local/share}/nvim/site/pack/github/start/copilot.vim
 
+verbose() {
+  if [[ -n "${VERBOSE-}" ]]; then
+    printf "$0: %s\n" "$@"
+  fi
+} >&2
+
+
 if [[ ${GITHUB_COPILOT_VIM_ENABLED:-false} ]]; then
-  echo "Skipping GitHub Copilot VIM plugin install... To install, set GITHUB_COPILOT_VIM_ENABLED=true and re-run."
+  verbose "Skipping GitHub Copilot VIM plugin install... To install, set GITHUB_COPILOT_VIM_ENABLED=true and re-run."
   if [[ -d $GITHUB_COPILOT_VIM_DIR ]]; then
-    echo "Cleaning up previous GitHub Copilot install found at $GITHUB_COPILOT_VIM_DIR"
+    verbose "Cleaning up previous GitHub Copilot install found at $GITHUB_COPILOT_VIM_DIR"
     if hash trash-put >/dev/null 2>&1; then
       trash-put "$GITHUB_COPILOT_VIM_DIR"
     else
@@ -16,12 +23,6 @@ if [[ ${GITHUB_COPILOT_VIM_ENABLED:-false} ]]; then
   fi
   exit 0
 fi
-
-verbose() {
-  if [[ -n "${VERBOSE-}" ]]; then
-    printf "$0: %s\n" "$@"
-  fi
-} >&2
 
 install_github_copilot_nvim_plugin() {
   if ! hash nvim 2>/dev/null; then

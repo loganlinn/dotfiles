@@ -131,16 +131,9 @@ elif command_exists lsd; then
   alias tree='lsd --tree'
 fi
 
-if command_exists nix-env; then
-	alias nixgc="nix-collect-garbage -d"
-	alias nixq="nix-env -qaP"
-fi
-
-if command_exists home-manager; then
-	alias nixre="home-manager switch"
-elif command_exists darwin-rebuild; then
-	alias nixre="darwin-rebuild switch"
-fi
+alias nix-gc="nix-collect-garbage -d"
+alias nixq="nix-env -qaP"
+alias hm='home-manager'
 
 if command_exists kubectl; then
 	alias k=kubectl

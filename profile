@@ -18,7 +18,8 @@ export FZF_CTRL_T_OPTS="--preview 'bat {} --color=always --line-range :30'"
 export FZF_ALT_C_COMMAND='fasd_cd -d -l -R'
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
-export NIX_PATH="$HOME/.nix-defexpr/channels${NIX_PATH:+:}$NIX_PATH"
+#export NIX_PATH="$HOME/.nix-defexpr/channels${NIX_PATH:+:}$NIX_PATH"
+export NIX_PATH=$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels${NIX_PATH:+:$NIX_PATH}
 
 export RESTIC_PASSWORD_COMMAND='pass show restic'
 
