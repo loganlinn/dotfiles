@@ -19,7 +19,7 @@
 	templatedir   = ~/.config/git/template
 
 [commit]
-	gpgsign = true
+  # gpgsign = true
 
 [color]
 	ui = auto
