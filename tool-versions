@@ -18,7 +18,7 @@ direnv 2.32.1
 doctl 1.58.0
 fd 8.2.1
 fzf 0.27.3
-github-cli 2.14.4
+github-cli 2.14.6
 glab 1.21.1
 helm 3.9.2
 java adoptopenjdk-11.0.10+9
