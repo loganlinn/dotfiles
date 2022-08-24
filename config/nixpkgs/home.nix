@@ -2,8 +2,6 @@
 
 let
 
-  pkgsUnstable = import <nixpkgs-unstable> { };
-
 in {
   home.username = "logan";
   home.homeDirectory = "/home/logan";
