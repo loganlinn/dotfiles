@@ -163,7 +163,7 @@ alias dote='e ~/.dotfiles'
 if command_exists kitty; then
 	case "$TERM" in
 	xterm-kitty)
-		alias ssh='kitty +kitten ssh'
+#alias ssh='kitty +kitten ssh'
 		alias kitten='kitty +kitten'
 		alias icat='kitty +kitten icat'
 		;;
