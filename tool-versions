@@ -1,33 +1,32 @@
 # argocd 2.0.5
 # dive 0.10.0
+# doctl 1.58.0
 # dust 0.5.4
+# elm 0.19.1
+# glab 1.21.1
 # golang 1.17.7
 # grpcurl 1.8.2
 # helm 3.6.3
+# helm 3.9.2
 # kind 0.11.1
 # kpt v0.39.3
+# kpt v1.0.0-beta.9
+# kubectl 1.22.1
+# kubectx 0.9.3
+# kubeval 0.16.0
+# kustomize 4.4.1
 # packer 1.7.1
+# terraform 1.0.5
 # terraform-docs 0.12.1
 # terragrunt 0.31.1
 # variant 0.37.1
-bat 0.18.3
+# watchexec 1.15.3
 clojure 1.10.3.1075
-cue 0.4.0
 dasel 1.21.1
-direnv 2.32.1
-doctl 1.58.0
-fd 8.2.1
-fzf 0.27.3
 github-cli 2.14.6
-glab 1.21.1
-helm 3.9.2
+golang 1.15.12
 java adoptopenjdk-11.0.10+9
-jq 1.6
-kpt v1.0.0-beta.9
-kubectl 1.22.1
-kubectx 0.9.3
-kubeval 0.16.0
-kustomize 4.4.1
+k9s 0.26.3
 maven 3.8.4
 nodejs 16.11.1
 ripgrep 13.0.0
@@ -35,9 +34,3 @@ shellcheck 0.8.0
 shfmt 3.2.4
 sops 3.7.3
 starship 1.10.1
-terraform 1.0.5
-watchexec 1.15.3
-caddy 2.4.6
-elm 0.19.1
-golang 1.15.12
-k9s 0.26.3
