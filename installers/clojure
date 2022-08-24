@@ -11,7 +11,7 @@ do_usage() {
   exit 1
 }
 
-default_prefix_dir="/usr/local"
+default_prefix_dir="$HOME/.local"
 
 # use getopt if the number of params grows
 prefix_dir=$default_prefix_dir

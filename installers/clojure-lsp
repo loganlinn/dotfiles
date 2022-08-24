@@ -7,7 +7,7 @@ set -euo pipefail
 version=""
 checksum=""
 static_binary="false"
-default_install_dir="/usr/local/bin"
+default_install_dir="$HOME/.local/bin"
 install_dir="$default_install_dir"
 download_dir=""
 
