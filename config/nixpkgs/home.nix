@@ -57,6 +57,11 @@ in {
     zstd
   ]; # end:home.packages
 
+  programs.starship = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
   # See also: https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc
 
   #  programs = {
