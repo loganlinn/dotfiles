@@ -225,4 +225,5 @@ fi
 alias bbr='rlwrap bb'
 
 # TODO move src-get path so its more conventional
-. "$HOME/bin/src-get"
+[ -e "$HOME/bin/src-get" ] &&
+  . "$HOME/bin/src-get"
