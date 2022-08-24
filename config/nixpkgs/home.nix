@@ -1,7 +1,6 @@
 { pkgs, ... }:
 
 let
-
 in {
   home.username = "logan";
   home.homeDirectory = "/home/logan";
@@ -10,23 +9,32 @@ in {
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
+  services.emacs.package = pkgs.emacsUnstable;
+
+  nixpkgs.overlays = [
+    (import (builtins.fetchTarball {
+      url = https://github.com/nix-community/emacs-overlay/archive/master.tar.gz;
+    }))
+  ];
+
   # TIP: use following vim command to sorts packages based on first alpha character 
   #
   #      /home\.packages =/+1,/end:home\.packages/-1 sort /\a/ r
   #
   # PROTIP: yank the command and execute it with `:@"`
   home.packages = with pkgs; [
+    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
     asciinema
     bat
     bottom
     broot
-    # binutils
+    binutils
     delta
     dive
     doctl
     du-dust
     entr
-    # ((emacsPackagesFor emacsPgtkGcc).emacsWithPackages (epkgs: [ epkgs.vterm ]))
+    ((emacsPackagesFor emacsPgtkNativeComp).emacsWithPackages (epkgs: [ epkgs.vterm ]))
     fd
     fzf
     gifsicle
@@ -36,7 +44,7 @@ in {
     jq
     lsd
     mdsh
-    # (mkIf (config.programs.gnupg.agent.enable) pinentry_emacs)
+    pinentry_emacs
     neofetch
     nixfmt
     ponymix
@@ -47,7 +55,7 @@ in {
     ruby
     sd
     shellharden
-    # sqlite
+    sqlite
     trash-cli
     # zoom-us
     zoxide
@@ -112,5 +120,4 @@ in {
   #
   #    syncthing.enable = true;
   #  };
-
 }
