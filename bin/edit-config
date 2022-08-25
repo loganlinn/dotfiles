@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+: "${XDG_STATE_HOME=$HOME/.local/state}"
+: "${XDG_CONFIG_HOME=$HOME/.config}"
+
+history_file="${XDG_STATE_HOME}/$(basename -- "$0")/history"
+
+mkdir -p "$(dirname -- "$history_file")" || history_file=''
+
+split() {
+   # Usage: split "string" "delimiter"
+   IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+   printf '%s\n' "${arr[@]}"
+}
+
+config_dirs=("$EDIT_CONFIG_DIRS")
+
+for d in $(split "${XDG_CONFIG_HOME}:${XDG_CONFIG_DIRS}" ":"); do
+  if [[ -d $d ]]; then
+    config_dirs+=("$d")
+  fi
+done
+
+fzf_opts=(--border)
+fzf_opts+=(--tiebreak=length,end)
+fzf_opts+=(--bind "space:execute(${PAGER:-less} {})")
+
+fzf_opts+=(--query="$*")
+
+if hash bat >/dev/null 2>&1; then
+  fzf_opts+=(--preview='bat --color always --style numbers --theme TwoDark {}')
+else
+  fzf_opts+=(--preview='cat {}')
+fi
+
+if [[ -w "$history_file" ]]; then
+  fzf_opts+=(--history="$history_file")
+fi
+
+fzf_opts+=($EDIT_CONFIG_FZF_OPTS)
+
+loc="$(rg --files --follow --no-messages "${config_dirs[@]}" | fzf "${fzf_opts[@]}")"
+
+if [[ -e $loc ]]; then
+  "${EDITOR?}" "$loc"
+  exit $?
+fi
