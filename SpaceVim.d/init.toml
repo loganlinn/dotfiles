@@ -8,11 +8,9 @@
   colorscheme = "nord"
   colorscheme_bg = "dark"
   disabled_plugins = ['markdown-preview.nvim', 'vim-import-js']
-  enable_ale = true
   enable_filetree_gitstatus = true
   enable_guicolors = true
   enable_language_specific_leader = false
-  enable_neomake = false
   enable_statusline_mode = false
   enable_tabline_filetype_icon = true
   enable_vimfiler_gitstatus = true
@@ -30,14 +28,6 @@
   statusline_unicode_symbols = true
   vimcompatible = true
   windows_index_type = 3
-
-#######################################
-## language server
-
-[[plugins]]
-  repo = 'autozimu/LanguageClient-neovim'
-  branch = 'next'
-  hook_post_update = "call system('bash install.sh')"
 
 #######################################
 ## colors + visual
@@ -134,22 +124,22 @@
 
 #######################################
 
-[[custom_plugins]]
-  repo = "hashivim/vim-terraform"
-  merged = false
+# [[custom_plugins]]
+#   repo = "hashivim/vim-terraform"
+#   merged = false
 
 #######################################
 ## apps
 
-[[custom_plugins]]
-  repo = "itchyny/calendar.vim"
-  merged = false
-
-[[custom_plugins]]
-  repo = "soywod/himalaya"
-  rtp = "email-manager/vim"
-  merged = false
-  on_cmd = "Himalaya"
+# [[custom_plugins]]
+#   repo = "itchyny/calendar.vim"
+#   merged = false
+# 
+# [[custom_plugins]]
+#   repo = "soywod/himalaya"
+#   rtp = "email-manager/vim"
+#   merged = false
+#   on_cmd = "Himalaya"
 
 #######################################
 ## layers
@@ -187,8 +177,8 @@
 [[layers]]
   name = 'github'
 
-[[layers]]
-  name = "lsp"
+# [[layers]]
+# name = "lsp"
 
 # [[layers]]
 #   name = "mail"
@@ -295,8 +285,8 @@
 # [[layers]]
 #   name = "lang#typescript"
 
-# [[layers]]
-#   name = "lang#vim"
+ [[layers]]
+   name = "lang#vim"
 
 # [[layers]]
 #   name = "lang#wolfram"
@@ -304,5 +294,5 @@
 [[layers]]
   name = 'lang#xml'
 
-# [[layers]]
-#   name = 'lang#zig'
+[[layers]]
+  name = 'lang#zig'
