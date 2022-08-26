@@ -117,20 +117,13 @@
     (evil-set-command-properties 'evil-cp-change :move-point t)
 
     (add-hook! 'emacs-lisp-mode-hook
-               #'evil-cleverparens-mode)
-
-    (add-hook! 'clojure-mode-hook
-               #'evil-cleverparens-mode)
-
-    (add-hook! 'clojure-mode-hook
-               #'evil-cleverparens-mode))
-
-  (use-package! smart-parens
-    (add-hook! 'emacs-lisp-mode-hook
+               #'evil-cleverparens-mode
                #'smartparens-strict-mode)
 
     (add-hook! 'clojure-mode-hook
+               #'evil-cleverparens-mode
                #'smartparens-strict-mode)
 
     (add-hook! 'clojure-mode-hook
+               #'evil-cleverparens-mode
                #'smartparens-strict-mode))

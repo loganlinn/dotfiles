@@ -6,7 +6,12 @@
 (setq delete-by-moving-to-trash t
       trash-directory (concat (or (getenv "XDG_DATA_HOME") "~/.local/share") "/Trash/files"))
 
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-one
+      ;;doom-font (font-spec :family "Fira Code" :size 14 :weight 'light)
+      ;;doom-variable-pitch-font (font-spec :family "Fira Sans")
+      ;;doom-unicode-font (font-spec :family "DejaVu Sans Mono")
+      ;;doom-big-font (font-spec :family "Fira Mono" :size 19)
+      )
 
 ;;; :core editor
  (setq display-line-numbers-type 'relative
