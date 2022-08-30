@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+panel=$(gnome-control-center --list 2>/dev/null | awk '/Available panels:/ { found=1 } (found==1 && $1 != "Available") { print $1 }' | rofi -dmenu )
+
+if [[ -z $panel ]]; then
+  exit $?
+fi
+
+gnome-control-center "$panel" >/dev/null 2>&1 &
+disown
+exit 0

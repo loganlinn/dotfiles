@@ -8,6 +8,7 @@
 
 (setq doom-theme 'doom-one
       ;;doom-font (font-spec :family "Fira Code" :size 14 :weight 'light)
+      doom-font (font-spec :family "DejaVu Sans Mono" :size 14)
       ;;doom-variable-pitch-font (font-spec :family "Fira Sans")
       ;;doom-unicode-font (font-spec :family "DejaVu Sans Mono")
       ;;doom-big-font (font-spec :family "Fira Mono" :size 19)
@@ -23,7 +24,11 @@
   (setq projectile-create-missing-test-files t
         projectile-project-search-path '(("~/src" . 3))
         projectile-enable-caching nil
-        projectile-indexing-method 'alien)
+        projectile-indexing-method 'alien
+        projectile-project-root-functions '(projectile-root-local
+                                            projectile-root-top-down
+                                            projectile-root-top-down-recurring
+                                            projectile-root-bottom-up))
   (projectile-update-project-type 'clojure-cli
                                   :src-dir "src"
                                   :test-dir "test")

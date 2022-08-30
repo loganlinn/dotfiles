@@ -9,6 +9,7 @@ ZSH_CONFIG=$HOME/.zsh
 source $HOME/.shrc
 
 typeset -ga sources
+
 sources+="$ZSH_CONFIG/environment.zsh"
 sources+="$ZSH_CONFIG/options.zsh"
 sources+="$ZSH_CONFIG/path.zsh"
@@ -43,12 +44,13 @@ if command_exists zoxide; then
   eval "$(zoxide init zsh)"
 fi
 
-sources+="$HOME/.zshrc.local"
+if command_exists direnv; then
+  eval "$(direnv hook zsh)"
+fi
+
+if [[ -a $HOME/.zshrc.local ]]; then
+  source "$HOME/.zshrc.local"
+fi
+
 #
 #zprof
-
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-
-# Add JBang to environment
-alias j!=jbang
-export PATH="$HOME/.jbang/bin:$PATH"

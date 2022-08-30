@@ -19,7 +19,8 @@
  '(rustic-ansi-faces
    ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
  '(safe-local-variable-values
-   '((cljr-magic-require-namespaces
+   '((fill-column 99)
+     (cljr-magic-require-namespaces
       ("io" . "clojure.java.io")
       ("as" . "clojure.core.async")
       ("csv" . "clojure.data.csv")

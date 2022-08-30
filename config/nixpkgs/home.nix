@@ -39,6 +39,7 @@
     kubectl
     lsd
     mdsh
+    moreutils
     neofetch
     nixfmt
     pinentry_emacs
@@ -61,6 +62,12 @@
   home.stateVersion = "22.05";
 
   programs.home-manager.enable = true;
+
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    enableBashIntegration = true;
+  };
 
   programs.starship = {
     enable = true;

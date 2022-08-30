@@ -43,7 +43,7 @@ main() {
 
 	if [[ -z $EDITOR ]]; then
 		echo "warn: EDITOR is not set" >&2
-		EDITOR=vim
+		EDITOR=editor
 	fi
 
 	local script
