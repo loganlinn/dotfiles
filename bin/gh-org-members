@@ -1,0 +1,4 @@
+#!/bin/sh
+
+gh api /orgs/{owner}/members | jq -r '.[].login' | fzf -m
+
