@@ -9,17 +9,13 @@ pager: !!null delta -s
 # Aliases allow you to create nicknames for gh commands
 aliases:
     aliases: alias list
-
-    edit-config: '!${EDITOR:-editor} ~/.config/gh/config.yml'
+    edit: '!${EDITOR:-editor} ~/.config/gh/config.yml'
     aliases-edit: '!${EDITOR:-editor} ~/.config/gh/config.yml'
-
     # Fuzzy-find a gist with fzf, then view it
     gists: >-
-      !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
-
+        !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
     stars: >-
         api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
-
     open: browse
     open-prs: pr list --web
     open-pr: pr view --web
@@ -27,28 +23,25 @@ aliases:
     open-release: release view --web
     prs-open: pr list --web
     pr-open: pr view --web
+    pro: pr view --web
+    issue-opens: issue list --web
     issue-opens: issue list --web
     release-open: release view --web
-
     prs: pr list --web
-
     # For some reason I keep typing `pull` instead of `pr`
     pull: >-
-      !echo "*ahem* Executing 'gh pr $@'..." >&2 && gh pr "$@"
-
+        !echo "*ahem* Executing 'gh pr $@'..." >&2 && gh pr "$@"
     prl: >-
-      pr list
-        --json number,title,headRefName
-        --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}'
-      
+        pr list
+
+          --json number,title,headRefName
+          --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}'
     # Interactively select one PR
     pr1: >-
-      !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
-
+        !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
     # Interactively checkout a PR
     prco: >-
         !gh pr1 | ifne xargs -n1 gh pr checkout
-
     # Interactively merge my PR
     land: >-
         !gh pr1 --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
