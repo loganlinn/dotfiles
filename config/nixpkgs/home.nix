@@ -30,21 +30,28 @@
     du-dust
     entr
     fd
+    #ffmpeg
     fzf
     gifsicle
+    git
+    go
+    gifski
     gnutls
     hyperfine
-    # imagemagick
+    #imagemagick
     jq
     kubectl
     lsd
+    maven
     mdsh
     moreutils
+    meld
     neofetch
     nixfmt
     pinentry_emacs
     ponymix
     procs
+    pqrs
     restic
     (ripgrep.override { withPCRE2 = true; })
     rlwrap
@@ -52,6 +59,7 @@
     rofi
     sd
     silver-searcher
+    shellcheck
     shellharden
     sqlite
     trash-cli
