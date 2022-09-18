@@ -1,0 +1,5 @@
+#!/bin/sh
+
+xdotool search --class kitty-floating windowactivate ||
+  kitty --class=kitty-floating --detach
+
