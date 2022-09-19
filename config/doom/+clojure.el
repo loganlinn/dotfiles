@@ -27,8 +27,11 @@
 
 (after! cider
   (setq cider-prompt-for-symbol nil
-        cider-save-file-on-load 'always-save
-        cider-repl-buffer-size-limit 200
+        cider-save-file-on-load 'always-save ;; don't prompt to save. just do it.
+        cider-print-fn 'puget
+        cider-repl-history-size 1000
+        cider-known-endpoints nil
+        ;;cider-repl-buffer-size-limit 200
         cider-enrich-classpath t)
 
   (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.29.1")

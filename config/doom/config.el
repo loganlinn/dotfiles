@@ -21,14 +21,24 @@
 ;;; :core packages
 ;; projectile
 (after! projectile
+
   (setq projectile-create-missing-test-files t
         projectile-project-search-path '(("~/src" . 3))
         projectile-enable-caching nil
-        projectile-indexing-method 'alien
-        projectile-project-root-functions '(projectile-root-local
+        projectile-indexing-method 'alien)
+
+  (defun projectile-root-poly-workspace-dir (dir)
+    "Identify a project root in DIR by top-downsearch for Polylith workspace.edn in dir.
+Return the first (topmost) matched directory or nil if not found."
+    (locate-dominating-file dir "workspace.edn"))
+
+  (setq projectile-project-root-functions '(projectile-root-local
+                                            projectile-root-poly-workspace-dir
+                                            projectile-root-bottom-up
                                             projectile-root-top-down
-                                            projectile-root-top-down-recurring
-                                            projectile-root-bottom-up))
+                                            projectile-root-top-down-recurring))
+
+
   (projectile-update-project-type 'clojure-cli
                                   :src-dir "src"
                                   :test-dir "test")
@@ -197,3 +207,4 @@
 (load! "+ui")
 (load! "+magit")
 (load! "+clojure")
+(load! "+crystal")

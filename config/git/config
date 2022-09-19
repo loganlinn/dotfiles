@@ -1,122 +1,112 @@
 # -*- mode: gitconfig; -*-
 # vim: set filetype=gitconfig:
 
-[core]
-	autocrlf     = input
-	pager        = delta
-	excludesFile = ~/.config/git/ignore
-	autocrlf     = false
-
 [user]
-	name       = Logan Linn
-	email      = logan@llinn.dev
+  name       = Logan Linn
+  email      = logan@llinn.dev
 
 [github]
   user = loganlinn
 
-[init]
-	defaultBranch = main
-	templatedir   = ~/.config/git/template
+[core]
+  autocrlf     = input
+  pager        = delta
+  excludesFile = ~/.config/git/ignore
+  autocrlf     = false
 
-[commit]
-  # gpgsign = true
+[credential "https://github.com"]
+  helper = !gh auth git-credential
+
+[init]
+  defaultBranch = main
+  templatedir   = ~/.config/git/template
+
+# [commit]
+#   gpgsign = true
 
 [color]
-	ui = auto
+  ui = auto
 
 [pager]
-	diff   = delta
-	log    = delta
-	reflog = delta
-	show   = delta
+  diff   = delta
+  log    = delta
+  reflog = delta
+  show   = delta
 
 [interactive]
-	diffFilter = delta --color-only --features=interactive
+  diffFilter = delta --color-only --features=interactive
 
 [diff]
-	wsErrorHighlight = all
-	colorMoved       = zebra
-	tool             = meld
+  wsErrorHighlight = all
+  colorMoved       = zebra
+  tool             = meld
 
-[difftool]
-	prompt = false
+# [difftool]
+#  prompt = false
 
 [difftool "meld"]
-	cmd = meld "$LOCAL" "$REMOTE"
+  cmd = meld "$LOCAL" "$REMOTE"
 
 [difftool "kitty"]
-    cmd = kitty +kitten diff "$LOCAL" "$REMOTE"
+  cmd = kitty +kitten diff "$LOCAL" "$REMOTE"
 
 [difftool "kitty.gui"]
-    cmd = kitty kitty +kitten diff "$LOCAL" "$REMOTE"
+  cmd = kitty kitty +kitten diff "$LOCAL" "$REMOTE"
 
 [apply]
-	whitespace = nowarn
+  whitespace = nowarn
 
 [help]
-	autocorrect = prompt
+  autocorrect = prompt
 
 [advice]
-	detachedHead = false
-	statusHints  = false
+  detachedHead = false
+  statusHints  = false
 
 [fetch]
-	prune            = true
-	writeCommitGraph = true
+  prune            = true
+  writeCommitGraph = true
 
 [push]
-	default = current
+  default = current
 
 [pull]
-	rebase = true
+  rebase = true
 
 [merge]
-	ff = only
+  ff = only
 
 [man]
   viewer = bat
 
 [rebase]
-	autosquash = true
-	autostash  = false # fool me once, ...
+  autosquash = true
+  autostash  = false # fool me once, ...
 
 [filter "lfs"]
-	clean    = git-lfs clean -- %f
-	smudge   = git-lfs smudge -- %f
-	process  = git-lfs filter-process
-	required = true
-
-[credential "https://github.com"]
-	helper = !gh auth git-credential
+  clean    = git-lfs clean -- %f
+  smudge   = git-lfs smudge -- %f
+  process  = git-lfs filter-process
+  required = true
 
 [include]
-	path = include/com.github.gitalias/gitalias/gitalias.txt 
+  path = include/com.github.gitalias/gitalias/gitalias.txt 
 
 [alias]
-  #root = rev-parse --show-toplevel
-	wt = worktree
+  wt = worktree
   lswt = worktree list
   mkwt = "!f() { wtbranch=$1; shift; wtpath=\"$(git rev-parse --show-toplevel)+$wtbranch\"; git worktree add -B \"$wtbranch\" --guess-remote \"$wtpath\" \"$@\" && echo \"Worktree added: $wtpath\"; }; f"
   rmwt = "!f() { git worktree remove \"$(git rev-parse --show-toplevel)+$@\"; }; f"
   wtls = lswt
   wtmk = mkwt
   wtrm = rmwt
-
   edit-config = config --global --edit
-
-	aliases = config --get-regexp alias
-
-	unmerged = branch --no-merged master
-
-	rank    = shortlog -sn --no-merges
-	authors = "!f() { git log --no-merges --pretty='format:%<(26)%an <%ae>' --author \"$*\" | sort | uniq; }; f"
-
-  #upstream        = !git for-each-ref --format='%(upstream:short)' $(git symbolic-ref -q HEAD)
-  #upstream-remote = !git upstream | sed -e 's/\\/.*$//g'
-
-	stash-grep = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
-
-	fzfixup  = "!f() { git log --pretty=oneline -n 100 | fzf | awk '{ print $1 }' | xargs git fixup ; }; f"
+  aliases = config --get-regexp alias
+  unmerged = branch --no-merged master
+  rank    = shortlog -sn --no-merges
+  authors = "!f() { git log --no-merges --pretty='format:%<(26)%an <%ae>' --author \"$*\" | sort | uniq; }; f"
+  stash-grep = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
+  fzfixup  = "!f() { git log --pretty=oneline -n 100 | fzf | awk '{ print $1 }' | xargs git fixup ; }; f"
 
 [include]
-	path = ~/.config/git/config.local
+  path = ~/.config/git/config.local

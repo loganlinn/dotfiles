@@ -16,13 +16,7 @@ split() {
    printf '%s\n' "${arr[@]}"
 }
 
-config_dirs=("$EDIT_CONFIG_DIRS")
-
-for d in $(split "${XDG_CONFIG_HOME}:${XDG_CONFIG_DIRS}" ":"); do
-  if [[ -d $d ]]; then
-    config_dirs+=("$d")
-  fi
-done
+config_dirs=("$EDIT_CONFIG_DIRS" "$XDG_CONFIG_HOME")
 
 fzf_opts=(--border)
 fzf_opts+=(--tiebreak=length,end)

@@ -1,5 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-xdotool search --class kitty-floating windowactivate ||
-  kitty --class=kitty-floating --detach
+# launch or switch to floating kitty terminal 
+#
+# depends on window manager being configured with "floating exception" 
+# for window class, 'kitty-floating'.
+# i.e. on Pop_OS: ~/.config/pop-shell/config.json
 
+set -e
+
+WM_CLASS=kitty-floating
+
+# detect if already running
+if window=$(xdotool search --limit 1 --class "$WM_CLASS"); then
+  # move to current desktop and make sure its visible
+  xdotool set_desktop_for_window "$window" "$(xdotool get_desktop)";
+  xdotool windowactivate --sync "$window"
+else
+  # otherwise, start new window
+  kitty --class="$WM_CLASS" --detach
+fi

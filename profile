@@ -42,6 +42,7 @@ case ":$XDG_DATA_DIRS:"  in
 *) export XDG_DATA_DIRS="$HOME/.nix-profile/share:$XDG_DATA_DIRS"
 esac
 
+#export EMACSDIR="$HOME/.emacs.d"
 export DOOMDIR="$HOME/.config/doom"
 
 PATH="$PATH:/usr/local/go/bin"

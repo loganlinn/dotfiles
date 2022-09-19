@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ ! -f ~/.config/git/config.local ]]; then
+  echo "initializing ~/.config/git/config.local"
+  cat - <<-EOF > ~/.config/git/config.local
+# -*- mode: gitconfig; -*-
+# vim: set filetype=gitconfig:
+
+[github]
+# oauth-token =
+EOF
+fi
+
+chmod 600 ~/.config/git/config.local

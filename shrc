@@ -54,8 +54,8 @@ alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox}'
 alias sudo='sudo '
 
 # paths a la printenv(1)
-alias printpath='echo $PATH | tr -s ":" "\n"'
-alias printfpath='echo $FPATH | tr -s ":" "\n"'
+alias printpath='printenv PATH | tr -s ":" "\n"'
+alias printfpath='printenv FPATH | tr -s ":" "\n"'
 
 if command_exists xsel; then
 	alias cbc='xsel -i -b'
@@ -90,11 +90,13 @@ e() {
     ( setsid emacs "$@" > /dev/null 2>&1 & );
   fi
 }
+
 # TERM=xterm-direct assumes Emacs 27.1+ (see https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html)
 alias et='TERM=xterm-direct emacs -nw'
-ediff() { et --eval "(ediff-files \"${1:-$(fzf --header=A)}\" \"${2:-$(fzf --header=B)}\")"; }
-eman()  { et --eval "(switch-to-buffer (man \"${1:-$(compgen -c | fzf)}\"))"; }
-ekill() { emacsclient --eval '(kill-emacs)'; }
+
+ediff () { et --eval "(ediff-files \"${1:-$(fzf --header=A)}\" \"${2:-$(fzf --header=B)}\")"; }
+eman ()  { et --eval "(switch-to-buffer (man \"${1:-$(compgen -c | fzf)}\"))"; }
+ekill () { emacsclient --eval '(kill-emacs)'; }
 
 ## jq
 alias jqr='jq -rc'
@@ -198,6 +200,8 @@ alias clj-doc="clj -X:deps help/doc"
 alias clj-dir="clj -X:deps help/dir"
 # babashka
 alias bbr='rlwrap bb'
+alias bb-deps='deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
+alias bb-deps-repl='rlwrap deps.clj -Scommand "bb -cp {{classpath}} {{main-opts}}"'
 
 if ! command_exists inkscape; then
   alias inkscape=org.inkscape.Inkscape

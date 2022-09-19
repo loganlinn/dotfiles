@@ -15,4 +15,4 @@ if [ -f /etc/os-release ]; then TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LI
 # i.e. tag-x11
 TAGS="$TAGS $XDG_SESSION_TYPE"
 
-UNDOTTED="bin src Library raycast flake.nix"
+UNDOTTED="Desktop Documents Downloads Library Music Pictures Templates bin flake.nix raycast src"

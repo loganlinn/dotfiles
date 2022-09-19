@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+cd "$(xdg-user-dir DOWNLOAD)" || true
+
+set -x
+
+pwd
+wget https://github.com/elbywan/crystalline/releases/latest/download/crystalline_x86_64-unknown-linux-gnu.gz -O crystalline.gz
+gzip -d crystalline.gz
+chmod u+x crystalline
+if [[ -f ~/.local/bin/crystalline ]]; then
+  mv ~/.local/bin/crystalline ~/.local/bin/crystalline~
+fi
+mv crystalline ~/.local/bin

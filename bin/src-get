@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 
-SRC_HOME=${SRC_HOME:-$HOME/src}
-export SRC_HOME
-
-_src-log() {
-	printf "%s\n" "$@"
-} >&2
-
 src-home() {
+  export SRC_HOME
   printf '%s\n' "${SRC_HOME:=$HOME/src}"
 }
 
@@ -51,36 +45,6 @@ src-repo-path() {
 }
 
 #
-# Usage: src-clone <repo>...
-#
-src-clone() (
-	set -e
-	for arg; do
-		src_repo=$(src-repo-url "$arg")
-		src_path=$(src-repo-path "$arg")
-
-		if [[ ! -d $src_path ]]; then
-			git clone "$src_repo" "$src_path" >&2
-    else
-      git -C "$src_path" fetch --all >&2
-    fi
-
-		##########################################
-		# Integrate with "smart cd" tools
-		#
-		if command -v zoxide >/dev/null 2>&1; then
-			zoxide add "$src_path" || true
-		fi
-		if command -v fasd >/dev/null 2>&1; then
-			fasd -A "$src_path" || true
-		fi
-		##########################################
-
-    printf '%s\n' "$src_path"
-	done
-)
-
-#
 # Usage: src-get <repository>
 #        src-get <owner>/<repo>
 #
@@ -92,23 +56,44 @@ src-get() {
       return 0
       ;;
     -*)
-      _src-log "src-get: unknown '$1' option"
-      _src-log "Try 'src-get --help' for more information."
+      echo "src-get: unknown '$1' option" >&2
+      echo "Try 'src-get --help' for more information." >&2
       return 1
       ;;
   esac
 
   if [[ -z $1 ]]; then
-    _src-log "src-get: missing operand"
-    _src-log "Try 'src-get --help' for more information."
-    return 1
-  elif [[ $# -gt 1 ]]; then
-    _src-log "src-get: too many operands"
-    _src-log "Try 'src-get --help' for more information."
+    echo "src-get: missing operand" >&2
+    echo "Try 'src-get --help' for more information." >&2
     return 1
   fi
 
-	cd -- "$(src-clone "$1")"
+  local repo=${1?}
+  shift
+  local src_repo
+  local src_path
+
+  src_repo=$(src-repo-url "$repo")
+  src_path=$(src-repo-path "$repo")
+
+  if [[ ! -d $src_path ]]; then
+    local -a clone_opts
+
+    if [[ $# -ne 0 ]]; then
+      clone_opts+=("$@")
+    else
+      clone_opts+=(--depth=1 --progress)
+    fi
+
+    clone_opts+=(-- "$src_repo" "$src_path")
+
+    git clone "${clone_opts[@]}" \
+      && cd "$src_path" \
+      || return $?
+  else
+    cd "$src_path" \
+      && git fetch --all
+  fi
 }
 
 src-for-each-exec() {

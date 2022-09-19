@@ -28,10 +28,18 @@ let
   ];
 
   pkgsDev = with pkgs; [
+    # crystal
+    crystal
+    icr     # crystal repl
+    shards  # package-manager
+
     # shell
     shfmt
     shellcheck
     shellharden
+    
+    # general
+    hey
 
     # java
     maven
@@ -49,9 +57,18 @@ let
     # ruby
     ruby
 
+    # rust
+    rustc
+    rustfmt
+    rust-analyzer
+
+    # javascript
+    yarn
+
     # kubernetes
     k9s
     kubectl
+    kubernetes-helm
     stern   # pod logs. https://github.com/wercker/stern
 
     # rust
@@ -76,12 +93,16 @@ let
     dive
     doctl
     hyperfine
+    jless
     mdsh
     neofetch
     pqrs
     procs
     scrot
+    sysz
+    tig
     trash-cli
+    xclip
   ];
 
 in {
@@ -130,6 +151,8 @@ in {
 
     bottom.enable = true;
 
+    broot.enable = false;
+
     direnv = {
       enable = true;
       enableZshIntegration = true;
@@ -160,6 +183,10 @@ in {
           pco  = "!gh prz | ifne xargs -n1 gh pr checkout";
 
           aliases = "alias list";
+
+          check-fail = ''
+            !gh pr checks "$@" | awk '$2=="fail"{ print $4 }'
+          '';
 
           prz = ''
             !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
@@ -199,18 +226,18 @@ in {
 
     go.enable = true;
 
+    helix.enable = true;
+
+    home-manager.enable = true;
+
     htop.enable = true;
 
     java = {
       enable = true;
-      package = pkgs.jdk;
+      package = pkgs.jdk11;
     };
 
     jq.enable = true;
-
-    helix.enable = true;
-
-    home-manager.enable = true;
 
     lsd = {
       enable = true;
@@ -264,11 +291,20 @@ in {
 
     readline.enable = true;
 
-    # rofi.enable = true;
-    # rofi.pass.enable = true;
+    rofi = {
+      enable = true;
+      pass = {
+        enable = true;
+      };
+    };
 
     zoxide = {
       enable = true;
+    };
+
+    zsh = {
+      enable = false;
+      dotDir = ".zsh";
     };
   };
 
@@ -302,11 +338,15 @@ in {
   # };
 
   services.syncthing = {
-    enable = false;
+    enable = true;
+    tray = {
+      enable = false;
+    };
   };
 
   systemd.user = {
     timers = {
+
       # example = {
       #   Unit.Description = "Example timer";
       #   Install.WantedBy = [ "timers.target" ];

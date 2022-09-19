@@ -21,6 +21,12 @@
     },
     {
       "class": "Gnome-tweaks"
+    },
+    {
+      "class": "Mullvad VPN"
+    },
+    {
+      "class": "kitty-floating"
     }
   ],
   "skiptaskbarhidden": [],

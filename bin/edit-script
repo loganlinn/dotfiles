@@ -41,11 +41,6 @@ main() {
 		esac
 	done
 
-	if [[ -z $EDITOR ]]; then
-		echo "warn: EDITOR is not set" >&2
-		EDITOR=editor
-	fi
-
 	local script
 	for script in "${scripts[@]}"; do
 		mkdir -p "$(dirname -- "$script")"
@@ -67,9 +62,9 @@ main() {
 			esac >>"$script"
 		fi
 
-		chmod +x "$script"
-
-		"${EDITOR?}" -- "$script"
+    if "${EDITOR?}" -- "$script"; then
+      chmod +x "$script"
+    fi
 	done
 }
 

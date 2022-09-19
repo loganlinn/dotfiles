@@ -211,6 +211,9 @@
 #   name = "lang#c"
 
 [[layers]]
+  name = "lang#crystal"
+
+[[layers]]
   name = "lang#clojure"
 
 [[layers]]
