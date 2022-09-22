@@ -25,7 +25,7 @@ sources+="$ZSH_CONFIG/surround.zsh"
 sources+="$ZSH_CONFIG/kitty.zsh"
 sources+="$HOME/.fzf/shell/completion.zsh"
 sources+="$HOME/.fzf/shell/key-bindings.zsh"
-sources+="$HOME/.asdf/plugins/java/set-java-home.zsh"
+#sources+="$HOME/.asdf/plugins/java/set-java-home.zsh"
 
 # And we're off...
 foreach file ("$sources[@]")

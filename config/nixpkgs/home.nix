@@ -105,6 +105,7 @@ let
     xclip
   ];
 
+  jdkPackage = pkgs.jdk11;
 in {
   nixpkgs.overlays = [
     (import (builtins.fetchTarball {
@@ -115,6 +116,10 @@ in {
   home.stateVersion = "22.05";
   home.username = "logan";
   home.homeDirectory = "/home/logan";
+
+  xdg.userDirs.enable = true;
+
+  home.file.".local/opt/jdk".source = jdkPackage;
 
   # home.file = {
   #   ".emacs.d" = {
@@ -234,7 +239,7 @@ in {
 
     java = {
       enable = true;
-      package = pkgs.jdk11;
+      package = jdkPackage;
     };
 
     jq.enable = true;

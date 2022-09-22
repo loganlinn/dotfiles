@@ -2,8 +2,8 @@
 # vim: set filetype=gitconfig:
 
 [user]
-  name       = Logan Linn
-  email      = logan@llinn.dev
+  name  = Logan Linn
+  email = logan@llinn.dev
 
 [github]
   user = loganlinn
@@ -107,6 +107,13 @@
   authors = "!f() { git log --no-merges --pretty='format:%<(26)%an <%ae>' --author \"$*\" | sort | uniq; }; f"
   stash-grep = "!f() { git show $(git stash list | cut -d\":\" -f 1) | grep \"$@\" ; }; f"
   fzfixup  = "!f() { git log --pretty=oneline -n 100 | fzf | awk '{ print $1 }' | xargs git fixup ; }; f"
+  stack     = "!gt stack"
+  upstack   = "!gt upstack"
+  us        = "!gt upstack"
+  downstack = "!gt downstack"
+  ds        = "!gt downstack"
+  b         = "!gt branch"
+  l         = "!gt log"
 
 [include]
   path = ~/.config/git/config.local
