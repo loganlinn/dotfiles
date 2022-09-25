@@ -193,8 +193,8 @@
   default_position = 'top'
   default_height = 30
 
-[[layers]]
-  name = "sudo"
+[[layers]] 
+  name = "telescope" # requires nvim>=0.7
 
 [[layers]]
   name = "tmux"
