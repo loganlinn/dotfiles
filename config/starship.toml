@@ -16,6 +16,7 @@ $git_status\
 $package\
 $nix_shell\
 $python\
+$kubernetes\
 $cmd_duration\
 $line_break\
 $jobs\
@@ -35,6 +36,7 @@ style = "dimmed"
 
 [git_status]
 style = "dimmed"
+disabled = true
 
 [git_state]
 format = '\([$state( $progress_current/$progress_total)]($style)\) '
@@ -43,3 +45,37 @@ style = "bright-black"
 [cmd_duration]
 format = " [$duration]($style)"
 style = "yellow"
+
+[python]
+pyenv_version_name = false
+pyenv_prefix = 'pyenv '
+python_binary = [
+    'python',
+    'python3',
+    'python2',
+]
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+version_format = 'v${major}.${minor}'
+style = 'yellow bold'
+symbol = '🐍 '
+disabled = false
+detect_extensions = ['py']
+detect_files = [
+    'requirements.txt',
+    '.python-version',
+    'pyproject.toml',
+    'Pipfile',
+    'tox.ini',
+    'setup.py',
+    '__init__.py',
+]
+detect_folders = []
+
+[kubernetes]
+symbol = '☸ '
+format = '[$symbol$context( \($namespace\))]($style) in '
+style = 'cyan bold'
+disabled = false
+detect_extensions = []
+detect_files = []
+detect_folders = []

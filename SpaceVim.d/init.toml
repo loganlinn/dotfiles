@@ -5,7 +5,7 @@
   bootstrap_after = "myspacevim#after"
   bootstrap_before = "myspacevim#before"
   buffer_index_type = 4
-  colorscheme = "nord"
+  colorscheme = "kanagawa"
   colorscheme_bg = "dark"
   disabled_plugins = ['markdown-preview.nvim', 'vim-import-js']
   enable_filetree_gitstatus = true
@@ -33,7 +33,7 @@
 ## colors + visual
 
 [[custom_plugins]]
-  repo = "arcticicestudio/nord-vim"
+  repo = "rebelot/kanagawa.nvim"
   merged = false
 
 #######################################
@@ -65,6 +65,10 @@
 
 #######################################
 ## utils
+
+[[custom_plugins]]
+  repo = 'aymericbeaumet/vim-symlink'
+  merged = false
 
 [[custom_plugins]]
   repo = "tpope/vim-dispatch"
@@ -173,6 +177,7 @@
 
 [[layers]]
   name = "git"
+  git_plugin = 'fugitive'
 
 [[layers]]
   name = 'github'

@@ -136,6 +136,7 @@ fi
 alias nix-gc="nix-collect-garbage -d"
 alias nixq="nix-env -qaP"
 alias hm='home-manager'
+alias hmes='home-manager edit && home-manager switch'
 
 if command_exists kubectl; then
 	alias k=kubectl

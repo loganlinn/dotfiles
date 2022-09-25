@@ -27,6 +27,9 @@
     },
     {
       "class": "kitty-floating"
+    },
+    {
+      "class": "ocs-url"
     }
   ],
   "skiptaskbarhidden": [],

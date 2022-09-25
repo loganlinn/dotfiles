@@ -40,9 +40,10 @@ let
     
     # general
     hey
+    meld
 
     # java
-    maven
+    # maven
 
     # golang
     gopls
@@ -68,23 +69,19 @@ let
     # kubernetes
     k9s
     kubectl
+    kustomize
+    kubectx
     kubernetes-helm
     stern   # pod logs. https://github.com/wercker/stern
 
     # rust
     # pkgs.rustup # rust toolchain
-    # pkgs.cargo-cross # cross platform rust devel
     # pkgs.rustc # compiler
     # pkgs.cargo # package manager
     # pkgs.rustfmt # formatter
     # pkgs.clippy # the useful clippy
     # pkgs.rust-analyzer # lsp for rust
     # pkgs.cargo-edit # dep management
-    # pkgs.cargo-bloat # find big chunks
-    # pkgs.cargo-udeps # find unnecessary deps
-    # pkgs.cargo-release # for releasing packages
-    # pkgs.cargo-watch # continuously run cargo check
-
   ];
 
   pkgsTools = with pkgs; [
@@ -105,7 +102,6 @@ let
     xclip
   ];
 
-  jdkPackage = pkgs.jdk11;
 in {
   nixpkgs.overlays = [
     (import (builtins.fetchTarball {
@@ -117,9 +113,14 @@ in {
   home.username = "logan";
   home.homeDirectory = "/home/logan";
 
-  xdg.userDirs.enable = true;
+  xdg = {
+    userDirs.enable = true;
+    # desktopEntries = { };
+  };
 
-  home.file.".local/opt/jdk".source = jdkPackage;
+  # dconf = {
+  #   settings = { };
+  # }
 
   # home.file = {
   #   ".emacs.d" = {
@@ -128,26 +129,36 @@ in {
   #   };
   # };
 
-  home.sessionVariables = {
-  };
+  # home.file = with pkgs; {
+  #   "lib/jvm/jdk11".source = jdk11;
+  #   "lib/jvm/jdk17".source = jdk17;
+  # };
+
+  # pam.yubico.authorizedYubiKeys = {
+  #   ids = [ ];
+  # };
+
+  # home.sessionVariables = { };
 
   home.packages = with pkgs; pkgsCore ++ pkgsFonts ++ pkgsTools ++ pkgsDev ++ [
     aspell
     aspellDicts.en
     aspellDicts.en-computers
     aspellDicts.en-science
+
     chafa # show images in terminal using half blocks
+
     #ffmpeg
+    #imagemagick
     gifsicle
     gifski
-    #imagemagick
-    meld
-    pinentry_emacs
+
     #ponymix
+
+    pinentry_emacs
     sqlite
     restic
-  ]; # end:home.packages
-
+  ];
 
   programs = {
     command-not-found.enable = true;
@@ -239,7 +250,7 @@ in {
 
     java = {
       enable = true;
-      package = jdkPackage;
+      package = pkgs.jdk11;
     };
 
     jq.enable = true;

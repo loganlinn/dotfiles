@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# turn off filename globbing, and
+# split strings in unquoted variables on colons
+set -f; IFS=:
+
+# set the positional parameters to the list of
+# directories in the PATH variable
+set -- $PATH
+
+# turn on filename globbing again
+# (leave IFS as is, it won't affect anything else here)
+set +f
+
+# loop over those directories and do the things
+for dir do
+        for pathname in "$dir"/*; do
+                [ -x "$pathname" ] && printf '%s\t%s\n' "$dir" "${pathname##*/}"
+        done
+done |
+awk -F '\t' '
+{
+        dir[$2] = ( dir[$2] == "" ? $1 : dir[$2] "\t" $1 )
+        count[$2]++
+}
+END {
+        for (util in dir)
+                if (count[util] > 1)
+                        printf "%s\t%s\n", util, dir[util]
+}'
+
