@@ -20,7 +20,7 @@ export FZF_CTRL_T_OPTS="--preview 'bat {} --color=always --line-range :30'"
 export FZF_ALT_C_COMMAND='fasd_cd -d -l -R'
 export FZF_ALT_C_OPTS="--preview 'tree -C {} | head -200'"
 
-export NIX_PATH=$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels${NIX_PATH:+:$NIX_PATH}
+export NIX_PATH="$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels${NIX_PATH:+:$NIX_PATH}"
 
 [ -e "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
@@ -29,6 +29,10 @@ export NIX_PATH=$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/
 [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 
 [ -e "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ] && . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+
+export GUIX_PROFILE
+[ -n "${GUIX_PROFILE-}" ] || GUIX_PROFILE="$HOME/.config/guix/current"
+[ -e "$GUIX_PROFILE" ] && . "$GUIX_PROFILE/etc/profile"
 
 if [ -d "$HOME/.profile.d" ]; then
   for f in "$HOME"/.profile.d/*; do

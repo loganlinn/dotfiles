@@ -30,6 +30,9 @@
     },
     {
       "class": "ocs-url"
+    },
+    {
+      "class": "Gnome-calculator"
     }
   ],
   "skiptaskbarhidden": [],

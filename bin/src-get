@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 src-home() {
-  export SRC_HOME
-  printf '%s\n' "${SRC_HOME:=$HOME/src}"
+	export SRC_HOME
+	printf '%s\n' "${SRC_HOME:=$HOME/src}"
 }
 
 # Normalize input into URL
@@ -18,115 +18,90 @@ src-repo-url() {
 		echo "https://github.com/$1"
 		;;
 	*)
-    gh repo list "$@" | fzf | awk '{print $1}' || return 1
-		# if command -v fzf >/dev/null >&2; then
-		#   gh repo list "$@" | fzf | awk '{print $1}' || return 1
-    # else
-    #   _src-log "error: failed to convert '$*' to repository URL"
-    #   return 1
-    # fi
+		(
+			set -eo pipefail
+			gh repo list "$@" |
+				fzf -m --layout=reverse --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all |
+				cut -f1 |
+				sed -e 's|^|https://github.com/|' -e 's|$|.git|'
+		)
 		;;
 	esac
 }
 
 src-repo-path() {
-	local url path
+	for url; do
+		local path
 
-	if [[ $1 == *"://"* ]]; then
-		url=$1
-	else
-		url=$(src-repo-url "$1") || return 1
-	fi
+		path="${url#*://}"   # strip prefix
+		path="${path%%.git}" # strip suffix
 
-  path="$(src-home)/${url#*://}"
-	path=${path%%.git}
-
-	printf '%s' "$path"
+		printf "%s/%s\n" "$(src-home)" "$path"
+	done
 }
 
 #
 # Usage: src-get <repository>
 #        src-get <owner>/<repo>
 #
-src-get() {
-  case $1 in
-    -h|--help|help)
-	    echo "Usage: src-get <repository>"
-	    echo "       src-get <owner>/<repo>"
-      return 0
-      ;;
-    -*)
-      echo "src-get: unknown '$1' option" >&2
-      echo "Try 'src-get --help' for more information." >&2
-      return 1
-      ;;
-  esac
+src-get() (
+	case $1 in
+	-h | --help | help)
+		echo "Usage: src-get <repository>"
+		echo "       src-get <owner>/<repo>"
+		return 0
+		;;
+	--debug)
+		shift
+		SRC_GET_DEBUG=1
+		;;
+	--)
+		shift
+		;;
+	-*)
+		echo "src-get: unknown '$1' option" >&2
+		echo "Try 'src-get --help' for more information." >&2
+		return 1
+		;;
+	esac
 
-  if [[ -z $1 ]]; then
-    echo "src-get: missing operand" >&2
-    echo "Try 'src-get --help' for more information." >&2
-    return 1
-  fi
+	if [[ -z $1 ]]; then
+		echo "src-get: missing operand" >&2
+		echo "Try 'src-get --help' for more information." >&2
+		return 1
+	fi
 
-  local repo=${1?}
-  shift
-  local src_repo
-  local src_path
+	local src_repo
+	local src_path
 
-  src_repo=$(src-repo-url "$repo")
-  src_path=$(src-repo-path "$repo")
+	[[ -z ${SRC_GET_DEBUG:-} ]] || set -x
 
-  if [[ ! -d $src_path ]]; then
-    local -a clone_opts
+	for repo; do
+		for src_repo in $(src-repo-url "$repo"); do
+			src_path=$(src-repo-path "$src_repo")
 
-    if [[ $# -ne 0 ]]; then
-      clone_opts+=("$@")
-    else
-      clone_opts+=(--depth=1 --progress)
-    fi
-
-    clone_opts+=(-- "$src_repo" "$src_path")
-
-    git clone "${clone_opts[@]}" \
-      && cd "$src_path" \
-      || return $?
-  else
-    cd "$src_path" \
-      && git fetch --all
-  fi
-}
+			if [[ ! -d $src_path ]]; then
+				git clone --depth=1 --progress -- "$src_repo" "$src_path" &&
+					cd "$src_path" ||
+					return $?
+			else
+				cd -- "$src_path" && git fetch --all
+			fi
+		done
+	done
+)
 
 src-for-each-exec() {
-  local shell
+	local shell
 
-  # run each command in subshell, first determine shell.
-  # since $SHELL is not always reliable, we determine from PID.
-  shell=$(ps -p $$ -o args= | sed -e 's/^.*-//' -e 's/ .*$//')
-  # womp, womp
-  if ! hash "$shell" >/dev/null 2>&1; then
-    shell=${SHELL:-bash}
-  fi
+	# run each command in subshell, first determine shell.
+	# since $SHELL is not always reliable, we determine from PID.
+	shell=$(ps -p $$ -o args= | sed -e 's/^.*-//' -e 's/ .*$//')
+	# womp, womp
+	if ! hash "$shell" >/dev/null 2>&1; then
+		shell=${SHELL:-bash}
+	fi
 
-  find "$(src-home)" -type d -name '.git' -prune \
-    -execdir "$shell" -c "$*" _ {} \;
+	find "$(src-home)" -type d -name '.git' -prune \
+		-execdir "$shell" -c "$*" _ {} \;
 }
-
-# src-list-dump () {
-#   local format
-#   case "${1-edn}" in
-#     edn)
-#       format="{:path \"%s\"\n :git/config \"%s\"}"
-#       ;;
-#     *)
-#       _src-log "error: unknown format '$1'. Valid formats are 'edn'"
-#       return 1
-#       ;;
-#   esac
-#   local srcdir
-#   for srcdir in $(src-list); do
-#     jq --null-input \
-#       --arg srcdir "$(realpath --relative-to="$SRC_HOME" "$srcdir")" \
-#       --arg git_config "$(git -C "$srcdir" config --local --list)" \
-#       '{path: $srcdir, config: $git_config}'
-#   done
-# }
