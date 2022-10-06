@@ -10,6 +10,7 @@ let
     du-dust
     gcc
     fd
+    gawk
     git
     gnutls
     (ripgrep.override { withPCRE2 = true; }) # (rg)
@@ -41,6 +42,9 @@ let
     # general
     hey
     meld
+    protobuf
+    buf
+
 
     # java
     # maven
@@ -109,18 +113,16 @@ in {
     }))
   ];
 
-  home.stateVersion = "22.05";
-  home.username = "logan";
-  home.homeDirectory = "/home/logan";
+  imports = [
+    ./programs
+    ./programs/emanote.nix
+  ];
 
-  xdg = {
-    userDirs.enable = true;
-    # desktopEntries = { };
+  home = {
+    username = "logan";
+    homeDirectory = "/home/logan";
+    stateVersion = "22.05";
   };
-
-  # dconf = {
-  #   settings = { };
-  # }
 
   # home.file = {
   #   ".emacs.d" = {
@@ -155,10 +157,15 @@ in {
 
     #ponymix
 
-    pinentry_emacs
+    pinentry-emacs
     sqlite
     restic
   ];
+
+  # dconf = {
+  #   settings = { };
+  # }
+
 
   programs = {
     command-not-found.enable = true;
@@ -242,6 +249,10 @@ in {
 
     go.enable = true;
 
+    gpg = {
+      enable = true;
+    };
+
     helix.enable = true;
 
     home-manager.enable = true;
@@ -324,6 +335,13 @@ in {
     };
   };
 
+  services.gpg-agent = {
+    enable = true;
+    # extraConfig = ''
+    #     pinentry-program /run/current-system/sw/bin/pinentry-gtk-2
+    # '';
+  };
+
   services.emacs = {
     enable = true;
     package = pkgs.emacsUnstable;
@@ -336,10 +354,9 @@ in {
 
   services.home-manager = {
     autoUpgrade = {
-      enable = true;
+      enable = false;
       frequency = "weekly";
     };
-
   };
 
   # services.git-sync = {
@@ -355,9 +372,6 @@ in {
 
   services.syncthing = {
     enable = true;
-    tray = {
-      enable = false;
-    };
   };
 
   systemd.user = {
@@ -380,5 +394,10 @@ in {
       #     '');
       # };
     };
+  };
+
+  xdg = {
+    userDirs.enable = true;
+    # desktopEntries = { };
   };
 }
