@@ -44,7 +44,9 @@ src-repo-path() {
 # Usage: src-get <repository>
 #        src-get <owner>/<repo>
 #
-src-get() (
+src-get() {
+	local debug_flag=false
+
 	case $1 in
 	-h | --help | help)
 		echo "Usage: src-get <repository>"
@@ -53,7 +55,7 @@ src-get() (
 		;;
 	--debug)
 		shift
-		SRC_GET_DEBUG=1
+		debug_flag=true
 		;;
 	--)
 		shift
@@ -74,7 +76,7 @@ src-get() (
 	local src_repo
 	local src_path
 
-	[[ -z ${SRC_GET_DEBUG:-} ]] || set -x
+	! $debug_flag || [[ -z ${SRC_GET_DEBUG-} ]] || set -x
 
 	for repo; do
 		for src_repo in $(src-repo-url "$repo"); do
@@ -89,7 +91,7 @@ src-get() (
 			fi
 		done
 	done
-)
+}
 
 src-for-each-exec() {
 	local shell

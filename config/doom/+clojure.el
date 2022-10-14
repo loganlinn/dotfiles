@@ -6,6 +6,7 @@
              #'aggressive-indent-mode)
 
   (define-clojure-indent
+    (match 1)
     ;; plumbing
     (fnk :defn)
     (defnk :defn)

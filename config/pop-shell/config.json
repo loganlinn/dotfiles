@@ -33,6 +33,9 @@
     },
     {
       "class": "Gnome-calculator"
+    },
+    {
+      "class": "tdrop"
     }
   ],
   "skiptaskbarhidden": [],

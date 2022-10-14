@@ -62,9 +62,10 @@
 [advice]
   detachedHead = false
   statusHints  = false
+  skippedCherryPicks = false
 
 [fetch]
-  prune            = true
+  prune = true
   writeCommitGraph = true
 
 [push]

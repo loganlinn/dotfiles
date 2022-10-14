@@ -23,10 +23,10 @@
 # watchexec 1.15.3
 clojure 1.10.3.1075
 dasel 1.21.1
-github-cli 2.16.0
+github-cli 2.17.0
 golang 1.15.12
 k9s 0.26.3
-maven 3.8.4
+maven 3.8.6
 nodejs 16.11.1
 ripgrep 13.0.0
 shellcheck 0.8.0

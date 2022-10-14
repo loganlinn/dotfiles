@@ -7,5 +7,7 @@
 {
   imports = [
     ./common.nix
+    ./emacs.nix
   ];
 }
+

@@ -64,6 +64,7 @@ let
 
     # rust
     rustc
+    cargo
     rustfmt
     rust-analyzer
 
@@ -107,15 +108,9 @@ let
   ];
 
 in {
-  nixpkgs.overlays = [
-    (import (builtins.fetchTarball {
-      url = https://github.com/nix-community/emacs-overlay/archive/master.tar.gz;
-    }))
-  ];
-
   imports = [
     ./programs
-    ./programs/emanote.nix
+    ./services
   ];
 
   home = {
@@ -123,24 +118,6 @@ in {
     homeDirectory = "/home/logan";
     stateVersion = "22.05";
   };
-
-  # home.file = {
-  #   ".emacs.d" = {
-  #     source = ...
-  #     recursive = true;
-  #   };
-  # };
-
-  # home.file = with pkgs; {
-  #   "lib/jvm/jdk11".source = jdk11;
-  #   "lib/jvm/jdk17".source = jdk17;
-  # };
-
-  # pam.yubico.authorizedYubiKeys = {
-  #   ids = [ ];
-  # };
-
-  # home.sessionVariables = { };
 
   home.packages = with pkgs; pkgsCore ++ pkgsFonts ++ pkgsTools ++ pkgsDev ++ [
     aspell
@@ -162,221 +139,8 @@ in {
     restic
   ];
 
-  # dconf = {
-  #   settings = { };
-  # }
-
-
-  programs = {
-    command-not-found.enable = true;
-
-    bat.enable = true;
-
-    bottom.enable = true;
-
-    broot.enable = false;
-
-    direnv = {
-      enable = true;
-      enableZshIntegration = true;
-      enableBashIntegration = true;
-    };
-
-    emacs = {
-      enable = true;
-      package = pkgs.emacsNativeComp;
-      extraPackages = (epkgs:
-      (with epkgs; [
-        vterm
-      ])
-      );
-    };
-
-    fzf.enable = true;
-
-    gh = {
-      enable = true;
-      settings = {
-        aliases = {
-          o    = "browse";
-          op   = "pr view --web";
-          oi   = "issue list --web";
-          or   = "release view --web";
-          prs  = "pr list --web";
-          pco  = "!gh prz | ifne xargs -n1 gh pr checkout";
-
-          aliases = "alias list";
-
-          check-fail = ''
-            !gh pr checks "$@" | awk '$2=="fail"{ print $4 }'
-          '';
-
-          prz = ''
-            !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
-          '';
-
-          prl = ''
-            pr list
-
-            --json number,title,headRefName
-            --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}'
-          '';
-
-          land = ''
-            !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
-          '';
-
-          landf = ''
-            !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch --admin
-          '';
-
-          gists = ''
-            !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
-          '';
-
-          stars = ''
-            api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
-          '';
-        };
-      };
-
-      # extensions = [
-      #   "dlvhdr/gh-dash"
-      #   "gennaro-tedesco/gh-f"
-      #   "korosuke613/gh-user-stars"
-      # ];
-    };
-
-    go.enable = true;
-
-    gpg = {
-      enable = true;
-    };
-
-    helix.enable = true;
-
-    home-manager.enable = true;
-
-    htop.enable = true;
-
-    java = {
-      enable = true;
-      package = pkgs.jdk11;
-    };
-
-    jq.enable = true;
-
-    lsd = {
-      enable = true;
-      enableAliases = true;
-    };
-
-    nnn = {
-      enable = true;
-    };
-
-    kitty = {
-      enable = false; # TODO: finish migrating from config file
-      font = "Fira Code Retina";
-      # keybindings = {};
-      # settings = {};
-      # environment = {};
-      extraConfig = ''
-      # Nord Theme
-        background #1c1c1c
-        foreground #ddeedd
-        cursor #e2bbef
-        selection_background #4d4d4d
-        color0 #3d352a
-        color8 #554444
-        color1 #cd5c5c
-        color9 #cc5533
-        color2 #86af80
-        color10 #88aa22
-        color3 #e8ae5b
-        color11 #ffa75d
-        color4 #6495ed
-        color12 #87ceeb
-        color5 #deb887
-        color13 #996600
-        color6 #b0c4de
-        color14 #b0c4de
-        color7 #bbaa99
-        color15 #ddccbb
-        selection_foreground #1c1c1c
-      '';
-    };
-
-    pandoc.enable = true;
-
-    password-store.enable = true;
-
-    starship = {
-      enable = true;
-      enableZshIntegration = true;
-    };
-
-    readline.enable = true;
-
-    rofi = {
-      enable = true;
-      pass = {
-        enable = true;
-      };
-    };
-
-    zoxide = {
-      enable = true;
-    };
-
-    zsh = {
-      enable = false;
-      dotDir = ".zsh";
-    };
-  };
-
-  services.gpg-agent = {
-    enable = true;
-    # extraConfig = ''
-    #     pinentry-program /run/current-system/sw/bin/pinentry-gtk-2
-    # '';
-  };
-
-  services.emacs = {
-    enable = true;
-    package = pkgs.emacsUnstable;
-    client = {
-      enable = true;
-    };
-    startWithUserSession = true;
-    defaultEditor = true;
-  };
-
-  services.home-manager = {
-    autoUpgrade = {
-      enable = false;
-      frequency = "weekly";
-    };
-  };
-
-  # services.git-sync = {
-  #   enable = true;
-  #   repositories = {
-  #     name = {
-  #       path = "";
-  #       uri = "";
-  #       interval = 86400;
-  #     }
-  #   };
-  # };
-
-  services.syncthing = {
-    enable = true;
-  };
-
   systemd.user = {
     timers = {
-
       # example = {
       #   Unit.Description = "Example timer";
       #   Install.WantedBy = [ "timers.target" ];
