@@ -15,6 +15,7 @@
     home.packages = with pkgs; [
       delta
       fzf
+      gh
       htop
       jq
       shellcheck
@@ -29,6 +30,12 @@
     };
 
     programs.zoxide.enable = true;
+
+    programs.neovim = {
+      enable = true;
+      viAlias = true;
+      vimAlias = true;
+    };
 
     programs.zsh.enable = true;
   };
@@ -69,6 +76,7 @@
   environment.systemPackages = with pkgs; [
     curl
     delta
+    dejavu_fonts
     du-dust
     fd
     fzf
@@ -117,9 +125,9 @@
   # programs.zsh.variables.darwin = "$HOME/.nix-defexpr/darwin";
   # programs.zsh.variables.nixpkgs = "$HOME/.nix-defexpr/nixpkgs";
 
-  services.yabai.enable = true;
-  services.yabai.package = pkgs.yabai;
-  services.skhd.enable = true;
+  # services.yabai.enable = true;
+  # services.yabai.package = pkgs.yabai;
+  # services.skhd.enable = true;
 
   programs.nix-index.enable = true;
   services.nix-daemon.enable = true;
@@ -146,7 +154,7 @@
   system.defaults.NSGlobalDomain.NSAutomaticSpellingCorrectionEnabled = false;
   system.defaults.NSGlobalDomain.NSNavPanelExpandedStateForSaveMode = true;
   system.defaults.NSGlobalDomain.NSNavPanelExpandedStateForSaveMode2 = true;
-  system.defaults.NSGlobalDomain._HIHideMenuBar = true;
+  system.defaults.NSGlobalDomain._HIHideMenuBar = false;
 
   system.defaults.dock.autohide = false;
   system.defaults.dock.mru-spaces = false;

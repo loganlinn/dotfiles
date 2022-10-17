@@ -207,4 +207,4 @@ Return the first (topmost) matched directory or nil if not found."
 (load! "+ui")
 (load! "+magit")
 (load! "+clojure")
-(load! "+crystal")
+;;(load! "+crystal")
