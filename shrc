@@ -140,7 +140,6 @@ alias hmes='home-manager edit && home-manager switch'
 if command_exists kubectl; then
 	alias k=kubectl
 	alias kctx=kubectx
-	alias krew='k krew'
 	alias kusers='k config get-users'
 	alias kdesc='k describe'
 	alias kdoc='k describe'

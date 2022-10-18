@@ -2,23 +2,27 @@
 
 let
   pkgsCore = with pkgs; [
-    coreutils
     binutils
-    gnumake
     cmake
+    coreutils-full   # installs gnu versions
     curl
     du-dust
-    gcc
     fd
     gawk
+    gcc
     git
+    gnugrep
+    gnumake
+    gnused
+    gnutar
     gnutls
-    (ripgrep.override { withPCRE2 = true; }) # (rg)
+    gzip
     moreutils # (chronic, combine, errno, ifdata, ifne, isutf8, lckdo, mispipe, parallel, pee, sponge, ts, vidir, vipe, zrun )
-    rlwrap
-    silver-searcher # ag
-    sd   # search and replace
     rcm  # dotfile management (rcup, mkrc, ...)
+    ripgrep
+    rlwrap
+    sd   # search and replace
+    silver-searcher # ag
     tree
     wget
   ];
@@ -73,11 +77,12 @@ let
 
     # kubernetes
     k9s
+    krew     # required after install: krew install krew
     kubectl
-    kustomize
     kubectx
     kubernetes-helm
-    stern   # pod logs. https://github.com/wercker/stern
+    kustomize
+    stern
 
     # rust
     # pkgs.rustup # rust toolchain
@@ -94,6 +99,7 @@ let
     delta
     dive
     doctl
+    graphviz
     hyperfine
     jless
     mdsh
@@ -137,6 +143,13 @@ in {
     pinentry-emacs
     sqlite
     restic
+  ];
+
+  home.sessionPath = [
+    "$HOME/go/bin"
+    "$HOME/.local/bin"
+    "$HOME/.cargo/bin"
+    "$HOME/.krew/bin"
   ];
 
   systemd.user = {
