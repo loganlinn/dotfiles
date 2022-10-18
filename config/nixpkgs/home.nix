@@ -48,7 +48,7 @@ let
     meld
     protobuf
     buf
-
+    git-branchless
 
     # java
     # maven

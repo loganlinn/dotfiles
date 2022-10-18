@@ -77,9 +77,6 @@
 [merge]
   ff = only
 
-[man]
-  viewer = bat
-
 [rebase]
   autosquash = true
   autostash  = false # fool me once, ...
