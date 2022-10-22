@@ -5,6 +5,9 @@
   name  = Logan Linn
   email = logan@llinn.dev
 
+[includeIf "gitdir:~/src/github.com/patch-tech/"]
+  path = ./include/patch-tech.ini
+
 [github]
   user = loganlinn
 

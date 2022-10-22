@@ -9,6 +9,8 @@
 (package! neil :recipe (:host github :repo "babashka/neil" :files ("*.el")))
 (package! zprint-mode)
 
+(package! protobuf-mode)
+
 (unpin! lsp-treemacs)
 (unpin! lsp-ui)
 (unpin! treemacs)

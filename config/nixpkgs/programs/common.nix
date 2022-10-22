@@ -170,6 +170,10 @@
       };
     };
 
+    tealdeer.enable = true; # tldr command
+
+    yt-dlp.enable = true;
+
     zoxide = {
       enable = true;
       enableBashIntegration = true;

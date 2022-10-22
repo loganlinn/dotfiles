@@ -1,10 +1,8 @@
-{ pkgs,  ... }:
-
-let
+{pkgs, ...}: let
   pkgsCore = with pkgs; [
     binutils
     cmake
-    coreutils-full   # installs gnu versions
+    coreutils-full # installs gnu versions
     curl
     du-dust
     fd
@@ -18,10 +16,10 @@ let
     gnutls
     gzip
     moreutils # (chronic, combine, errno, ifdata, ifne, isutf8, lckdo, mispipe, parallel, pee, sponge, ts, vidir, vipe, zrun )
-    rcm  # dotfile management (rcup, mkrc, ...)
+    rcm # dotfile management (rcup, mkrc, ...)
     ripgrep
     rlwrap
-    sd   # search and replace
+    sd # search and replace
     silver-searcher # ag
     tree
     wget
@@ -30,25 +28,36 @@ let
   pkgsFonts = with pkgs; [
     fira-code
     fira-code-symbols
+    (nerdfonts.override {
+      fonts = [
+        "DroidSansMono"
+        "FiraCode"
+        "JetBrainsMono"
+      ];
+    })
   ];
 
   pkgsDev = with pkgs; [
-    # crystal
-    crystal
-    icr     # crystal repl
-    shards  # package-manager
-
-    # shell
-    shfmt
-    shellcheck
-    shellharden
-    
     # general
+    xh
     hey
     meld
     protobuf
     buf
     git-branchless
+    bazel
+    pre-commit
+    yamllint
+
+    # crystal
+    crystal
+    icr # crystal repl
+    shards # package-manager
+
+    # shell
+    shfmt
+    shellcheck
+    shellharden
 
     # java
     # maven
@@ -57,11 +66,16 @@ let
     gopls
     godef
 
-    # nix 
+    # nix
+    alejandra # formatter
     nixfmt
-    rnix-lsp    # nix language server
+    rnix-lsp # nix language server
     nixpkgs-fmt # nix formatter
-    statix      # linter for nix
+    statix # linter for nix
+    deadnix
+
+    # lua
+    luarocks
 
     # ruby
     ruby
@@ -77,7 +91,7 @@ let
 
     # kubernetes
     k9s
-    krew     # required after install: krew install krew
+    krew # required after install: krew install krew
     kubectl
     kubectx
     kubernetes-helm
@@ -112,8 +126,14 @@ let
     trash-cli
     xclip
   ];
-
 in {
+  nixpkgs.overlays = [
+    (import (builtins.fetchTarball {
+      url =
+        "https://github.com/nix-community/emacs-overlay/archive/master.tar.gz";
+    }))
+  ];
+
   imports = [
     ./programs
     ./services
@@ -125,25 +145,32 @@ in {
     stateVersion = "22.05";
   };
 
-  home.packages = with pkgs; pkgsCore ++ pkgsFonts ++ pkgsTools ++ pkgsDev ++ [
-    aspell
-    aspellDicts.en
-    aspellDicts.en-computers
-    aspellDicts.en-science
+  home.packages = with pkgs;
+    pkgsCore
+    ++ pkgsFonts
+    ++ pkgsTools
+    ++ pkgsDev
+    ++ [
+      aspell
+      aspellDicts.en
+      aspellDicts.en-computers
+      aspellDicts.en-science
 
-    chafa # show images in terminal using half blocks
+      chafa # show images in terminal using half blocks
 
-    #ffmpeg
-    #imagemagick
-    gifsicle
-    gifski
+      #ffmpeg
+      #imagemagick
+      gifsicle
+      gifski
 
-    #ponymix
+      #ponymix
 
-    pinentry-emacs
-    sqlite
-    restic
-  ];
+      pinentry-emacs
+      sqlite
+      restic
+
+      zk
+    ];
 
   home.sessionPath = [
     "$HOME/go/bin"
