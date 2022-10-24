@@ -47,7 +47,6 @@
     git-branchless
     bazel
     pre-commit
-    yamllint
 
     # crystal
     crystal
@@ -63,19 +62,11 @@
     # maven
 
     # golang
-    gopls
-    godef
 
     # nix
     alejandra # formatter
     nixfmt
-    rnix-lsp # nix language server
     nixpkgs-fmt # nix formatter
-    statix # linter for nix
-    deadnix
-
-    # lua
-    luarocks
 
     # ruby
     ruby
@@ -97,6 +88,7 @@
     kubernetes-helm
     kustomize
     stern
+    kind
 
     # rust
     # pkgs.rustup # rust toolchain
