@@ -1,4 +1,4 @@
-# -*- mode: sh -*-
+# -*- mode: sh; -*- vim: set filetype=sh:
 
 COPY_ALWAYS="config/git/template/HEAD ssh/id_* local/share/fonts/* local/bin/bin"
 
@@ -10,9 +10,11 @@ SYMLINK_DIRS="nix zsh zgenom node_modules com.github.gitalias"
 TAGS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 # i.e. tag-pop, tag-ubuntu, tag-debian
-if [ -f /etc/os-release ]; then TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"; fi
+if [ -f /etc/os-release ]; then
+  TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"
+fi
 
 # i.e. tag-x11
 TAGS="$TAGS $XDG_SESSION_TYPE"
 
-UNDOTTED="Desktop Documents Downloads Library Music Pictures Templates bin flake.nix raycast src"
+UNDOTTED="Desktop Documents Downloads Library Music Pictures Templates bin *.nix flake.* raycast src"
