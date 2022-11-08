@@ -52,7 +52,9 @@
     (interactive "P")
     (let ((ws-dir (locate-dominating-file (pwd) "workspace.edn")))
       (if ws-dir
-          (cider-jack-in-clj (plist-put params :project-dir ws-dir))
+          (progn
+            (message "Starting nREPL server from `%s'" ws-dir)
+            (cider-jack-in-clj (plist-put params :project-dir ws-dir)))
         (error "Unable to locate 'workspace.edn' in current directory or parent directory"))))
 
   (defun +cider-eval-dev-reload  ()
