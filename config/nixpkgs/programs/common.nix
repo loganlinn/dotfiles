@@ -47,6 +47,7 @@
         aliases = {
           o    = "browse";
           op   = "pr view --web";
+          pro  = "pr view --web";
           oi   = "issue list --web";
           or   = "release view --web";
           prs  = "pr list --web";
