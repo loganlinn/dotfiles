@@ -79,6 +79,7 @@
 
     # javascript
     yarn
+    deno
 
     # kubernetes
     k9s
@@ -114,6 +115,7 @@
     procs
     scrot
     sysz
+    screenkey
     tig
     trash-cli
     xclip
