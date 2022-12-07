@@ -24,7 +24,6 @@
   xdg.mimeApps.enable = true;
   xdg.desktopEntries = {
     # TODO Chromium profiles
-
   };
 
   home.packages = with pkgs; [
