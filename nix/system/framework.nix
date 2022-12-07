@@ -1,0 +1,5 @@
+{pkgs, ...}: {
+  import = [
+    ./logan.nix
+  ];
+}

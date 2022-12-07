@@ -1,8 +1,4 @@
-{ config
-, pkgs
-, self
-, ...
-}:
+{ pkgs , ... }:
 
 {
   imports = [
@@ -110,6 +106,8 @@
       package = pkgs.jdk11;
     };
 
+    just.enable = true;
+
     jq.enable = true;
 
     lsd = {
@@ -118,7 +116,7 @@
     };
 
     nnn = {
-      enable = true;
+      enable = false;
     };
 
     kitty = {
