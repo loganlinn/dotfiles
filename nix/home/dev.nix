@@ -1,24 +1,36 @@
 {pkgs, ...}: {
+  imports = [
+    ./clojure.nix
+    ./azure.nix
+    ./k8s.nix
+    #   ./crystal.nix
+  ];
+
   home.packages = with pkgs; [
+    # version control
+    pre-commit
+    nodePackages.graphite-cli
+    git-branchless
+    git-crypt
+
     # general
     xh
     hey
     meld
     protobuf
     buf
-    git-branchless
-    bazel
-    pre-commit
+    # bazel
 
     # crystal
-    crystal
-    icr # crystal repl
-    shards # package-manager
+    # crystal
+    # icr # crystal repl
+    # shards # package-manager
 
     # shell
     shfmt
     shellcheck
     shellharden
+    mdsh
 
     # nix
     alejandra # formatter
@@ -39,7 +51,6 @@
     deno
 
     # kubernetes
-    k9s
     krew # required after install: krew install krew
     kubectl
     kubectx

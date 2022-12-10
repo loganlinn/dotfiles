@@ -5,8 +5,8 @@
     enableExtensionUpdateCheck = true;
 
     extensions = with pkgs.vscode-extensions; [
-        bbenoist.nix
-        betterthantomorrow.calva
+      bbenoist.nix
+      betterthantomorrow.calva
     ];
 
     userSettings = {

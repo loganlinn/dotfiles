@@ -1,6 +1,6 @@
 # -*- mode: sh; -*- vim: set filetype=sh:
 
-COPY_ALWAYS="config/git/template/HEAD ssh/id_* local/share/fonts/* local/bin/bin"
+COPY_ALWAYS="config/git/template/HEAD ssh/id_* local/share/fonts/* local/bin/bin config/git/include/*"
 
 EXCLUDES="README* LICENSE THANKS Makefile src moredots.gif installers/* *~"
 

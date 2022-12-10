@@ -1,43 +1,52 @@
 {pkgs, ...}: {
+  home.packages = [pkgs.gum];
   programs.gh = {
     enable = true;
+    enableGitCredentialHelper = true;
     settings = {
-      aliases = {
+      aliases = with pkgs; {
         o = "browse";
         op = "pr view --web";
         pro = "pr view --web";
         oi = "issue list --web";
         or = "release view --web";
         prs = "pr list --web";
-        pco = "!gh prz | ifne xargs -n1 gh pr checkout";
+        pco = "!${gh} prz | ifne xargs -n1 ${gh} pr checkout";
+
+        org-members = "api /orgs/{owner}/members --jq '.[].login'";
+        teammates = "!${gh} org-memebers | sed '/loganlinn/d'";
+        reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
+        edit-reviewers = ''
+          !${gh} teammates |
+           ${gum} choose --selected="$(${gh} reviewers)"
+        '';
 
         aliases = "alias list";
 
         check-fail = ''
-          !gh pr checks "$@" | awk '$2=="fail"{ print $4 }'
-        '';
-
-        prz = ''
-          !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
+          !${gh} pr checks "$@" | awk '$2=="fail"{ print $4 }'
         '';
 
         prl = ''
           pr list
-
           --json number,title,headRefName
           --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}'
         '';
 
+        prz = ''
+          !${gh} prl "$@" | fzf --ansi --color  | awk '{print $1}'
+        '';
+
         land = ''
-          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
+          !${gh} prz --author=@me | ifne xargs -n1 ${gh} pr merge --rebase --delete-branch
         '';
 
         landf = ''
-          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch --admin
+          !${gh} prz --author=@me | ifne xargs -n1 ${gh} pr merge --rebase --delete-branch --admin
         '';
 
         gists = ''
-          !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
+          !GIST=$(${gh} gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && ${gh} gist view "$GIST" "$@"
         '';
 
         stars = ''

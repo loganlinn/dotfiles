@@ -97,8 +97,6 @@ Return the first (topmost) matched directory or nil if not found."
       :desc "Find file in dotfiles"
       "f t" #'find-in-dotfiles)
 
-
-
 ;;; :ui treemacs
 (use-package! treemacs
   :defer t
@@ -196,6 +194,8 @@ Return the first (topmost) matched directory or nil if not found."
 (setq org-directory "~/org/")
 (after! org-mode (require 'ol-man)) ;; enable manpage links (man:)
 
+;;; :lang nix
+(set-formatter! 'alejandra "alejandra --quiet" :modes '(nix-mode))
 
 ;;; :lang sh
 ;; (use-package! flymake-shellcheck

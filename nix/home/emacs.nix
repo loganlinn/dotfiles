@@ -13,11 +13,6 @@
       ];
   };
 
-  # programs.doom-emacs = {
-  #   enable = true;
-  #   doomPrivateDir = ../../config/doom;
-  # };
-
   services.emacs = {
     enable = true;
   };

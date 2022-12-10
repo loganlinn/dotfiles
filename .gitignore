@@ -1,4 +1,5 @@
 *.bak
+*.swp
 *.local
 *.zwc
 *~
@@ -12,3 +13,4 @@ antigen-shapshot
 node_modules/
 .clj-kondo/
 *.local
+result

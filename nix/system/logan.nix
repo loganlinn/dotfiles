@@ -1,7 +1,7 @@
 {pkgs, ...}: {
-  nix.trustedUsers = ["logan"];
+  nix.settings.trusted-users = ["logan"];
 
-  users.extraUsers.logan = {
+  users.users.logan = {
     extraGroups = [
       "wheel"
       "networkmanager"
