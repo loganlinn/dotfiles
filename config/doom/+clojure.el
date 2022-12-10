@@ -6,6 +6,7 @@
              #'aggressive-indent-mode)
 
   (define-clojure-indent
+    (defstruct 1)
     (match 1)
     ;; plumbing
     (fnk :defn)
@@ -19,6 +20,7 @@
     (deftype+         '(2 nil nil (1)))
     (extend-protocol+ '(1 :defn))
     (reify+           '(:defn (1)))
+    (proxy+           '(:defn (1)))
     (reify-map-type   '(:defn (1)))
     (def-map-type     '(2 nil nil (1)))
     (def-derived-map  '(2 nil nil (1)))
@@ -28,7 +30,7 @@
 
 (after! cider
   (setq cider-prompt-for-symbol nil
-        cider-save-file-on-load 'always-save ;; don't prompt to save. just do it.
+        cider-save-file-on-load t
         cider-print-fn 'puget
         cider-repl-history-size 1000
         cider-known-endpoints nil
@@ -44,8 +46,11 @@
         ; :n "C-k" 'cider-repl-previous-input)
         (:map clojure-mode-map
          "C-c M-k" #'+cider-jack-in-clj-polylith
-         "C-c M-l" #'portal.api/open
-         "C-c M-S-l" #'portal.api/clear))
+         "C-c M-o" #'portal.api/open
+         "C-c M-l" #'portal.api/clear)
+        ;; Shell-like keybind for populating input with previous command
+        (:map cider-repl-mode-map
+         "C-p" #'cider-repl-backward-input))
 
   (defun +cider-jack-in-clj-polylith (params)
     "Start an nREPL server for the current Polylith workspace and connect to it."

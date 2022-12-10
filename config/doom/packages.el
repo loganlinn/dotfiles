@@ -10,17 +10,17 @@
 (package! magit-delta)
 (package! neil :recipe (:host github :repo "babashka/neil" :files ("*.el")))
 (package! zprint-mode)
-
-(package! protobuf-mode)
-
+;; (package! protobuf-mode)
 (unpin! lsp-treemacs)
 (unpin! lsp-ui)
 (unpin! treemacs)
 (unpin! hover)
-
 ;; (package! flymake-shellcheck)
-
 ;; (package! just-mode)
 ;; (package! justl)
+
+(package! k8s-mode :recipe
+  (:host github
+   :repo "loganlinn/emacs-k8s-mode"))
 
 ;;; ~/.config/doom/packages.el ends here

@@ -123,6 +123,10 @@ Return the first (topmost) matched directory or nil if not found."
         :desc "Rename file" [f2] #'treemacs-rename-file
         :desc "Refresh" [f5] #'treemacs-refresh))
 
+;;; :editor snippets
+
+(use-package! k8s-mode
+  :hook (k8s-mode . yas-minor-mode))
 
 ;;; :tools gist
 (after! gist
