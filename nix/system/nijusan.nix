@@ -55,6 +55,8 @@
     enable = true;
   };
 
+  security.sudo.package = pkgs.sudo.override { withInsults = true; };
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
