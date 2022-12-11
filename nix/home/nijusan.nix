@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  imports = [./zsh.nix ./mosh.nix];
+  imports = [./zsh.nix ];
 
   home.packages = with pkgs; [nodePackages.graphite-cli];
 
