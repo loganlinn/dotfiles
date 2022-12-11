@@ -1,9 +1,5 @@
-{pkgs, ...}: {
-  imports = [
-    ./readline.nix
-    ./git.nix
-    ./gh.nix
-  ];
+{ pkgs, ... }: {
+  imports = [ ./readline.nix ];
 
   home.packages = with pkgs; [
     binutils
@@ -28,6 +24,7 @@
     rlwrap
     sd
     silver-searcher
+    sops
     sysz
     tree
   ];
@@ -48,9 +45,7 @@
       enable = true;
       enableZshIntegration = true;
       enableBashIntegration = true;
-      nix-direnv = {
-        enable = true;
-      };
+      nix-direnv.enable = true;
     };
 
     fzf.enable = true;
@@ -78,25 +73,8 @@
 
     yt-dlp.enable = false;
 
-    zellij = {
-      enable = true;
-    };
+    zellij.enable = true;
   };
-
-  #editorconfig = {
-  #  enable = true;
-  #  settings = {
-  #    "*" = {
-  #      charset = "utf-8";
-  #      end_of_line = "lf";
-  #      trim_trailing_whitespace = true;
-  #      insert_final_newline = true;
-  #      max_line_width = 99;
-  #      indent_style = "space";
-  #      indent_size = 2;
-  #    };
-  #  };
-  #};
 
   xdg.userDirs.enable = true;
 }
