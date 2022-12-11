@@ -31,6 +31,7 @@
       gcop = "git checkout -p";
       gd = "git diff --color";
       gdc = "gd --cached";
+      gl = "git pull";
       glr = "git pull --rebase";
       glrp = "glr && gp";
       gp = "git push -u";
