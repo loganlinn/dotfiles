@@ -46,7 +46,7 @@ in {
       advice.detachedHead = false;
       advice.skippedCherryPicks = false;
       advice.statusHints = false;
-      branch.autosetuprebase = "always";
+      branch.autoSetupRebase = "always";
       branch.sort = "-commiterdate";
       color.ui = true;
       core.askPass = ""; # needs to be empty to use terminal for ask pass
@@ -54,6 +54,7 @@ in {
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
+      push.autoSetupRemote = true;
       push.default = "tracking";
       rebase.autosquash = true;
     };

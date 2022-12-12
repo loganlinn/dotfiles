@@ -1,5 +1,8 @@
 { pkgs, ... }: {
-  imports = [ ./readline.nix ];
+  imports = [
+    ./readline.nix
+    ./shellAliases.nix
+  ];
 
   home.packages = with pkgs; [
     binutils

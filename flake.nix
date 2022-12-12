@@ -1,52 +1,27 @@
 {
   inputs = {
-    #quokka.url = "nixpkgs/nixos-22.05";
-    #racoon.url = "nixpkgs/nixos-22.11";
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     emacs.url = "github:nix-community/emacs-overlay";
     emacs.inputs.nixpkgs.follows = "nixpkgs";
-    nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
-    nix-doom-emacs.inputs.nixpkgs.follows = "nixpkgs";
-    # eww.url = "github:elkowar/eww";
-    # nur.url = "github:nix-community/NUR";
-    # nur.inputs.nixpkgs.follows = "nixpkgs";
-    # statix.url = "github:nerdypepper/statix";
-    # statix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-unstable,
     home-manager,
     emacs,
-    nix-doom-emacs,
     ...
-  }: {
+  }: let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
     homeConfigurations."logan@nijusan" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages."x86_64-linux";
-
-      modules = [
-        nix-doom-emacs.hmModule
-        ./nix/home/nijusan.nix
-        ./nix/home/common.nix
-        ./nix/home/dev.nix
-        ./nix/home/pretty.nix
-        {
-          home.username = "logan";
-          home.homeDirectory = "/home/logan";
-          home.stateVersion = "22.11";
-          programs.home-manager.enable = true;
-          programs.doom-emacs = {
-            enable = true;
-            doomPrivateDir = ./config/doom;
-          };
-          services.emacs = {
-            enable = true;
-          };
-        }
-      ];
+      inherit pkgs;
+      modules = [ ./nix/home/nijusan.nix ];
     };
 
     #homeConfigurations = {
@@ -58,7 +33,7 @@
     # };
 
     nixosConfigurations.nijusan = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
+      inherit system;
 
       modules = [
         ./nix/hardware/nijusan.nix

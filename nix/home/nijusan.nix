@@ -1,11 +1,15 @@
 {pkgs, ...}: {
   imports = [
-    ./zsh.nix
-    ./git.nix
+    ./common.nix
+    ./dev.nix
+    ./emacs.nix
     ./gh.nix
+    ./git.nix
+    ./pretty.nix
+    ./zsh.nix
   ];
 
-  home.packages = with pkgs; [nodePackages.graphite-cli];
-
-  services.emacs = {enable = true;};
+  home.username = "logan";
+  home.homeDirectory = "/home/logan";
+  home.stateVersion = "22.11";
 }

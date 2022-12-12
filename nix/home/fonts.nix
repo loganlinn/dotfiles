@@ -11,5 +11,6 @@
         "JetBrainsMono"
       ];
     })
+    emacs-all-the-icons-fonts
   ];
 }
