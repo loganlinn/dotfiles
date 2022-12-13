@@ -1,47 +1,49 @@
 { pkgs, ... }:
 
 {
-  home.shellAliases = with pkgs; {
-    "'?'" = "which";
-    "'??'" = "which -a";
-    ".." = "cd ..";
-    "..." = "cd ...";
+  home.shellAliases = with pkgs;
+    let gitBin = "${git}/bin/git";
+    in {
+      "'?'" = "which";
+      "'??'" = "which -a";
+      ".." = "cd ..";
+      "..." = "cd ...";
 
-    et = "emacs -nw";
+      et = "emacs -nw";
 
-    gc = "${git} commit -v";
-    gcob = "${git} checkout -b";
-    gcop = "${git} checkout -p";
-    gd = "${git} diff --color";
-    gdc = "gd --cached";
-    gl = "${git} pull";
-    glr = "${git} pull --rebase";
-    glrp = "glr && gp";
-    gp = "${git} push -u";
-    gpa = "${git} push all --all";
-    gs = "${git} status -sb";
-    gsrt = "${git} rev-parse --show-toplevel";
-    gsw = "${git} stash show -p";
-    gw = "${git} show";
-    grt = ''cd -- "$(${git} rev-parse  --show-top-level || echo .)"'';
+      gc = "${gitBin} commit -v";
+      gcob = "${gitBin} checkout -b";
+      gcop = "${gitBin} checkout -p";
+      gd = "${gitBin} diff --color";
+      gdc = "gd --cached";
+      gl = "${gitBin} pull";
+      glr = "${gitBin} pull --rebase";
+      glrp = "glr && gp";
+      gp = "${gitBin} push -u";
+      gpa = "${gitBin} push all --all";
+      gs = "${gitBin} status -sb";
+      gsrt = "${gitBin} rev-parse --show-toplevel";
+      gsw = "${gitBin} stash show -p";
+      gw = "${gitBin} show";
+      grt = ''cd -- "$(${gitBin} rev-parse  --show-top-level || echo .)"'';
 
-    nix-gc = "nix-collect-garbage -d";
-    nixq = "${nix}/bin/nix-env -qaP";
-    home-switch =
-      "${home-manager} switch --flake $HOME/.dotfiles#\${USER?}@\${HOST?}";
-    hm-switch = "home-switch";
-    hm = "${home-manager}";
+      nix-gc = "nix-collect-garbage -d";
+      nixq = "${nix}/bin/nix-env -qaP";
+      home-switch =
+        "${home-manager} switch --flake $HOME/.dotfiles#\${USER?}@\${HOST?}";
+      hm-switch = "home-switch";
+      hm = "${home-manager}";
 
-    k = "${kubectl}";
-    kctx = "${kubectx}";
-    kusers = "k config get-users";
-    kdesc = "k describe";
-    kdoc = "k describe";
-    kinfo = "k cluster-info";
-    kcfg = "k config view --raw";
-    kk = "${kustomize}";
-    kkb = "kk build";
+      k = "${kubectl}";
+      kctx = "${kubectx}";
+      kusers = "k config get-users";
+      kdesc = "k describe";
+      kdoc = "k describe";
+      kinfo = "k cluster-info";
+      kcfg = "k config view --raw";
+      kk = "${kustomize}";
+      kkb = "kk build";
 
-    bbr = "${rlwrap} bb";
-  };
+      bbr = "${rlwrap} bb";
+    };
 }

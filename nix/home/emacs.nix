@@ -1,9 +1,10 @@
-{ pkgs, emacs, ... }:
+{ config, lib, pkgs, emacs, ... }:
 
 let
   forgeUrl = "https://github.com";
-  repoUrl = "${forgeUrl}/doomemacs/doomemacs";
-  configRepoUrl = "${forgeUrl}/loganlinn/.doom.d";
+  emacsRepoUrl = "${forgeUrl}/doomemacs/doomemacs";
+  doomRepoUrl = "${forgeUrl}/loganlinn/.doom.d";
+  configHome = config.xdg.configHome;
 in {
   programs.emacs = {
     enable = true;
@@ -44,5 +45,23 @@ in {
     sqlite
     # :lang latex & :lang org (latex previews)
     texlive.combined.scheme-medium
+
+    emacs-all-the-icons-fonts
   ];
+
+  home.sessionPath = [
+    "${configHome}/emacs/bin"
+  ];
+
+  home.activation.cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ! [ -d "${configHome}/emacs" ]; then
+       ${pkgs.git}/bin/git clone --depth=1 --single-branch "${emacsRepoUrl}" "${configHome}/emacs"
+    fi
+  '';
+
+  home.activation.cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ! [ -d "${configHome}/doom" ]; then
+       ${pkgs.git}/bin/git clone "${doomRepoUrl}" "${configHome}/doom"
+    fi
+  '';
 }
