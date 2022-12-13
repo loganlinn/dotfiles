@@ -15,6 +15,7 @@ in {
     aliases = {
       amend = "commit --amend --reuse-message HEAD";
       touch = ''!git commit --amend --date="$(date -r)"'';
+      undo = "reset --soft HEAD~1";
       stack = "!gt stack";
       upstack = "!gt upstack";
       us = "!gt upstack";
