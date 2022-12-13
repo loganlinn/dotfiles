@@ -1,4 +1,5 @@
 { pkgs, emacs, ... }:
+
 let
   forgeUrl = "https://github.com";
   repoUrl = "${forgeUrl}/doomemacs/doomemacs";
@@ -28,8 +29,9 @@ in {
     fd # faster projectile indexing
     imagemagick # for image-dired
 
-    (mkIf (config.programs.gnupg.agent.enable)
-      pinentry_emacs) # in-emacs gnupg prompts
+    # in-emacs gnupg prompts
+    # (lib.mkIf (programs.gnupg.agent.enable) pinentry_emacs)
+    pinentry_emacs
 
     zstd # for undo-fu-session/undo-tree compression
 
