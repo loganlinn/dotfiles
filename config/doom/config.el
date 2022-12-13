@@ -97,6 +97,20 @@ Return the first (topmost) matched directory or nil if not found."
       :desc "Find file in dotfiles"
       "f t" #'find-in-dotfiles)
 
+;; Fix evil-cleverparens in terminal (https://github.com/emacs-evil/evil-cleverparens/issues/58)
+
+;; disable additional bindings so they aren't bound when the package loads
+(setq evil-cleverparens-use-additional-bindings nil)
+(after! evil-cleverparens
+  ;; turn on the "additional-bindings" so that when we call `evil-cp-set-additional-bindings` it will bind keys
+  (setq evil-cleverparens-use-additional-bindings t)
+  (unless window-system
+    ;; when we're in the terminal, delete the bindings for M-[ and M-] from the alist of additional bindings
+    (setq evil-cp-additional-bindings (assoc-delete-all "M-[" evil-cp-additional-bindings))
+    (setq evil-cp-additional-bindings (assoc-delete-all "M-]" evil-cp-additional-bindings)))
+  ;; bind all the keys listed in evil-cp-additional-bindings
+  (evil-cp-set-additional-bindings))
+
 ;;; :ui treemacs
 (use-package! treemacs
   :defer t
