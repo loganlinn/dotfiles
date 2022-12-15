@@ -12,6 +12,9 @@ function_exists() {
 
 [ -n "$ENV" ] || . "$HOME"/.profile
 
+alias '?'='which'
+alias '??'='which -a'
+
 if command_exists lsd; then
 	alias ls=lsd
 else
@@ -40,6 +43,8 @@ alias 7='cd -7'
 alias 8='cd -8'
 alias 9='cd -9'
 
+alias s="kitty +kitten ssh"
+ 
 alias inst='date --utc --iso-8601=seconds'
 
 alias mounts='mount | column -t | sort'

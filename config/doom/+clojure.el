@@ -37,7 +37,8 @@
         ;;cider-repl-buffer-size-limit 200
         cider-enrich-classpath t)
 
-  (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.29.1")
+  (cider-add-to-alist 'cider-jack-in-dependencies "djblue/portal" "0.35.0")
+  (cider-add-to-alist 'cider-jack-in-dependencies "io.github.nextjournal/clerk" "0.12.707")
 
   (map! (:map clojure-mode-map
          :desc "Reload system" "C-<f5>" #'+cider-eval-dev-reload)
@@ -71,16 +72,38 @@
   ;; def portal to the dev namespace to allow dereferencing via @dev/portal
   (defun portal.api/open ()
     (interactive)
-    (cider-nrepl-sync-request:eval
-     "(do (ns dev) (def portal ((requiring-resolve 'portal.api/open))) (add-tap (requiring-resolve 'portal.api/submit)) (.addShutdownHook (Runtime/getRuntime) (Thread. #((requiring-resolve 'portal.api/close)))))"))
+    (cider-interactive-eval
+     (concat
+      "(do"
+      "(ns dev)"
+      "(def portal ((requiring-resolve 'portal.api/open)))"
+      "(add-tap (requiring-resolve 'portal.api/submit))"
+      "(. (Runtime/getRuntime) (addShutdownHook (Thread. #((requiring-resolve 'portal.api/close)))))"
+      ")")))
 
   (defun portal.api/clear ()
     (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/clear)"))
+    (cider-interactive-eval
+     "((requiring-resolve 'portal.api/clear))"))
 
   (defun portal.api/close ()
     (interactive)
-    (cider-nrepl-sync-request:eval "(portal.api/close)")))
+    (cider-interactive-eval
+     "((requiring-resolve 'portal.api/close))"))
+
+  (defun clerk/serve ()
+    (interactive)
+    (cider-interactive-eval
+     "((requiring-resolve 'nextjournal.clerk/serve!) {:browse? true})"))
+
+  (defun clerk/show ()
+    (interactive)
+    (when-let
+        ((filename
+          (buffer-file-name)))
+      (save-buffer)
+      (cider-interactive-eval
+       (concat "(nextjournal.clerk/show! \"" filename "\")")))))
 
 (after! clj-refactor
   (map! :map clojure-refactor-map

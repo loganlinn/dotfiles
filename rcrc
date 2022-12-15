@@ -1,10 +1,10 @@
-# -*- mode: sh; -*- vim: set filetype=sh:
+# -*- mode: sh; -*- vim: set filetype=sh:-
 
 COPY_ALWAYS="config/git/template/HEAD ssh/id_* local/share/fonts/* local/bin/bin config/git/include/*"
 
-EXCLUDES="README* LICENSE THANKS Makefile src moredots.gif installers/* *~"
+EXCLUDES='README* LICENSE THANKS Makefile src moredots.gif installers/* *~'
 
-SYMLINK_DIRS="nix zsh zgenom node_modules com.github.gitalias"
+SYMLINK_DIRS='^bin$ nix zsh zgenom node_modules com.github.gitalias'
 
 # i.e. tag-darwin, tag-linux
 TAGS="$(uname -s | tr '[:upper:]' '[:lower:]')"

@@ -36,6 +36,9 @@
     },
     {
       "class": "tdrop"
+    },
+    {
+      "class": "Gnome-connections"
     }
   ],
   "skiptaskbarhidden": [],
