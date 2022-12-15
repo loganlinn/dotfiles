@@ -9,39 +9,36 @@
       ".." = "cd ..";
       "..." = "cd ...";
 
-      et = "emacs -nw";
-
-      gc = "${gitBin} commit -v";
-      gcob = "${gitBin} checkout -b";
-      gcop = "${gitBin} checkout -p";
-      gd = "${gitBin} diff --color";
-      gdc = "gd --cached";
-      gl = "${gitBin} pull";
-      glr = "${gitBin} pull --rebase";
+      gc   = "${git}/bin/git commit -v";
+      gcob = "${git}/bin/git checkout -b";
+      gcop = "${git}/bin/git checkout -p";
+      gd   = "${git}/bin/git diff --color";
+      gdc  = "${git}/bin/git diff --color --cached";
+      gl   = "${git}/bin/git pull";
+      glr  = "${git}/bin/git pull --rebase";
       glrp = "glr && gp";
-      gp = "${gitBin} push -u";
-      gpa = "${gitBin} push all --all";
-      gs = "${gitBin} status -sb";
-      gsrt = "${gitBin} rev-parse --show-toplevel";
-      gsw = "${gitBin} stash show -p";
-      gw = "${gitBin} show";
-      grt = ''cd -- "$(${gitBin} rev-parse  --show-top-level || echo .)"'';
+      gp   = "${git}/bin/git push -u";
+      gpa  = "${git}/bin/git push all --all";
+      gs   = "${git}/bin/git status -sb";
+      gsrt = "${git}/bin/git rev-parse --show-toplevel";
+      gsw  = "${git}/bin/git stash show -p";
+      gw   = "${git}/bin/git show";
+      grt  = ''cd -- "$(${git}/bin/git rev-parse  --show-top-level || echo .)"'';
 
-      nix-gc = "nix-collect-garbage -d";
+      nix-gc = "${nix}/bin/nix-collect-garbage -d";
       nixq = "${nix}/bin/nix-env -qaP";
-      home-switch =
-        "${home-manager} switch --flake $HOME/.dotfiles#\${USER?}@\${HOST?}";
-      hm-switch = "home-switch";
-      hm = "${home-manager}";
+      nors = "${nix}/bin/nixos-rebuild switch";
+      hm = "${home-manager}/bin/home-manager";
+      hm-switch = "${home-manager}/bin/home-manager switch --flake $HOME/.dotfiles#\${USER?}@\${HOST?}";
 
-      k = "${kubectl}";
-      kctx = "${kubectx}";
+      k = "${kubectl}/bin/kubectl";
+      kctx = "${kubectx}/bin/kubectx";
       kusers = "k config get-users";
       kdesc = "k describe";
       kdoc = "k describe";
       kinfo = "k cluster-info";
       kcfg = "k config view --raw";
-      kk = "${kustomize}";
+      kk = "${kustomize}/bin/kustomize";
       kkb = "kk build";
 
       bbr = "${rlwrap} bb";

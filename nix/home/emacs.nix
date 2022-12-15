@@ -4,7 +4,8 @@ let
   forgeUrl = "https://github.com";
   emacsRepoUrl = "${forgeUrl}/doomemacs/doomemacs";
   doomRepoUrl = "${forgeUrl}/loganlinn/.doom.d";
-  configHome = config.xdg.configHome;
+  emacsDir = "${config.home.homeDirectory}/.emacs.d";
+  doomDir = "${config.home.homeDirectory}/.doom.d";
 in {
   programs.emacs = {
     enable = true;
@@ -50,18 +51,28 @@ in {
   ];
 
   home.sessionPath = [
-    "${configHome}/emacs/bin"
+    "${emacsDir}/bin"
   ];
 
+  home.sessionVariables = {
+    # NOTE: trailing slash is significant
+    EMACSDIR = "${emacsDir}/";
+    DOOMDIR  = "${doomDir}/";
+  };
+
+  home.shellAliases = {
+    et = "${pkgs.emacs}/bin/emacs -nw";
+  };
+
   home.activation.cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! [ -d "${configHome}/emacs" ]; then
-       ${pkgs.git}/bin/git clone --depth=1 --single-branch "${emacsRepoUrl}" "${configHome}/emacs"
+    if ! [ -d "${emacsDir}"/.git ]; then
+       ${pkgs.git}/bin/git clone --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
     fi
   '';
 
   home.activation.cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! [ -d "${configHome}/doom" ]; then
-       ${pkgs.git}/bin/git clone "${doomRepoUrl}" "${configHome}/doom"
+    if ! [ -d "${doomDir}" ]; then
+       ${pkgs.git}/bin/git clone "${doomRepoUrl}" "${doomDir}"
     fi
   '';
 }

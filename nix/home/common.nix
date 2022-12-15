@@ -33,10 +33,12 @@
   ];
 
   home.sessionPath = [
-    "$HOME/go/bin"
+    "$HOME/.dotfiles/bin"
+    "$HOME/.dotfiles/local/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.krew/bin"
+    "$HOME/go/bin"
   ];
 
   programs = {
