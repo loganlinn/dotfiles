@@ -23,6 +23,7 @@
     silver-searcher # ag
     tree
     wget
+    nushell
   ];
 
   pkgsFonts = with pkgs; [
@@ -123,8 +124,7 @@
 in {
   nixpkgs.overlays = [
     (import (builtins.fetchTarball {
-      url =
-        "https://github.com/nix-community/emacs-overlay/archive/master.tar.gz";
+      url = "https://github.com/nix-community/emacs-overlay/archive/master.tar.gz";
     }))
   ];
 

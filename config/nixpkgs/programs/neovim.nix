@@ -1,7 +1,10 @@
-{ config, pkgs, self, lib, ... }:
-
 {
-
+  config,
+  pkgs,
+  self,
+  lib,
+  ...
+}: {
   home.packages = with pkgs; [
     deadnix
     gopls
@@ -21,7 +24,7 @@
     yamllint
     neovim
   ];
-  
+
   # programs.neovim = {
   #   enable = true;
   #   withNodeJs = false;

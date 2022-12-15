@@ -1,7 +1,10 @@
-{ config, pkgs, lib, ... }:
-
 {
-  imports = [ <home-manager/nix-darwin> ];
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
+  imports = [<home-manager/nix-darwin>];
 
   users.users.logan = {
     name = "logan";
@@ -10,26 +13,26 @@
     home = "/Users/logan";
   };
 
-  home-manager.users.logan = { pkgs, ... }: {
+  home-manager.users.logan = {pkgs, ...}: {
     home.stateVersion = "22.11";
-    home.packages = with pkgs; [
-      delta
-      fzf
-      gh
-      htop
-      jq
-      m-cli
-      qemu
-      shellcheck
-      zsh
-    ] ++ [
-
-      luarocks
-      deadnix
-      statix
-      rnix-lsp
-
-    ];
+    home.packages = with pkgs;
+      [
+        delta
+        fzf
+        gh
+        htop
+        jq
+        m-cli
+        qemu
+        shellcheck
+        zsh
+      ]
+      ++ [
+        luarocks
+        deadnix
+        statix
+        rnix-lsp
+      ];
 
     # programs.kitty.enable = true;
 
@@ -52,7 +55,6 @@
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
 
-
   homebrew = {
     enable = true;
     onActivation = {
@@ -67,10 +69,10 @@
       {
         name = "emacs-plus@28";
         args = [
-           "with-no-titlebar"
-           "with-xwidgets"
-           "with-native-comp"
-           "with-modern-doom3-icon"
+          "with-no-titlebar"
+          "with-xwidgets"
+          "with-native-comp"
+          "with-modern-doom3-icon"
         ];
       }
     ];
@@ -112,18 +114,21 @@
       noto-fonts-emoji
       ubuntu_font_family
 
-      recursive (nerdfonts.override { fonts = [ 
-        "DroidSansMono"
-        "FiraCode"
-        "JetBrainsMono"
-       ]; })
+      recursive
+      (nerdfonts.override {
+        fonts = [
+          "DroidSansMono"
+          "FiraCode"
+          "JetBrainsMono"
+        ];
+      })
     ];
   };
 
   programs.man.enable = true;
   programs.bash.enableCompletion = true;
 
-  programs.zsh.enable = true; 
+  programs.zsh.enable = true;
   programs.zsh.enableCompletion = true;
   programs.zsh.enableBashCompletion = true;
   programs.zsh.enableFzfCompletion = true;
@@ -141,12 +146,14 @@
   programs.nix-index.enable = true;
   services.nix-daemon.enable = true;
   # nix.package = pkgs.nix;
-  nix.extraOptions = ''
-    auto-optimise-store = true
-    experimental-features = nix-command flakes
-  '' + lib.optionalString (pkgs.system == "aarch64-darwin") ''
-    extra-platforms = x86_64-darwin aarch64-darwin
-  '';
+  nix.extraOptions =
+    ''
+      auto-optimise-store = true
+      experimental-features = nix-command flakes
+    ''
+    + lib.optionalString (pkgs.system == "aarch64-darwin") ''
+      extra-platforms = x86_64-darwin aarch64-darwin
+    '';
   nix.configureBuildUsers = true;
 
   # FIXME
@@ -184,4 +191,3 @@
   # $ darwin-rebuild changelog
   system.stateVersion = 4;
 }
-

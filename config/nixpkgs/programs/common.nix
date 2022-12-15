@@ -1,6 +1,4 @@
-{ pkgs , ... }:
-
-{
+{pkgs, ...}: {
   imports = [
     ./readline.nix
   ];
@@ -28,10 +26,10 @@
     emacs = {
       enable = true;
       package = pkgs.emacsUnstable;
-      extraPackages = (epkgs:
-      (with epkgs; [
-        vterm
-      ])
+      extraPackages = (
+        epkgs: (with epkgs; [
+          vterm
+        ])
       );
     };
 
@@ -41,13 +39,13 @@
       enable = true;
       settings = {
         aliases = {
-          o    = "browse";
-          op   = "pr view --web";
-          pro  = "pr view --web";
-          oi   = "issue list --web";
-          or   = "release view --web";
-          prs  = "pr list --web";
-          pco  = "!gh prz | ifne xargs -n1 gh pr checkout";
+          o = "browse";
+          op = "pr view --web";
+          pro = "pr view --web";
+          oi = "issue list --web";
+          or = "release view --web";
+          prs = "pr list --web";
+          pco = "!gh prz | ifne xargs -n1 gh pr checkout";
 
           aliases = "alias list";
 
@@ -126,28 +124,28 @@
       # settings = {};
       # environment = {};
       extraConfig = ''
-      # Nord Theme
-        background #1c1c1c
-        foreground #ddeedd
-        cursor #e2bbef
-        selection_background #4d4d4d
-        color0 #3d352a
-        color8 #554444
-        color1 #cd5c5c
-        color9 #cc5533
-        color2 #86af80
-        color10 #88aa22
-        color3 #e8ae5b
-        color11 #ffa75d
-        color4 #6495ed
-        color12 #87ceeb
-        color5 #deb887
-        color13 #996600
-        color6 #b0c4de
-        color14 #b0c4de
-        color7 #bbaa99
-        color15 #ddccbb
-        selection_foreground #1c1c1c
+        # Nord Theme
+          background #1c1c1c
+          foreground #ddeedd
+          cursor #e2bbef
+          selection_background #4d4d4d
+          color0 #3d352a
+          color8 #554444
+          color1 #cd5c5c
+          color9 #cc5533
+          color2 #86af80
+          color10 #88aa22
+          color3 #e8ae5b
+          color11 #ffa75d
+          color4 #6495ed
+          color12 #87ceeb
+          color5 #deb887
+          color13 #996600
+          color6 #b0c4de
+          color14 #b0c4de
+          color7 #bbaa99
+          color15 #ddccbb
+          selection_foreground #1c1c1c
       '';
     };
 
@@ -183,5 +181,4 @@
       dotDir = ".zsh";
     };
   };
-
 }

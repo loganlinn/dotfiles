@@ -1,9 +1,8 @@
-{ config
-, pkgs
-, ...
-}:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   programs.readline = {
     enable = true;
     bindings = {

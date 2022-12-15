@@ -1,11 +1,9 @@
-{ config
-, pkgs
-, self
-, ...
-}:
-
 {
-
+  config,
+  pkgs,
+  self,
+  ...
+}: {
   services.gpg-agent = {
     enable = true;
   };
@@ -31,5 +29,4 @@
   #     }
   #   };
   # };
-
 }
