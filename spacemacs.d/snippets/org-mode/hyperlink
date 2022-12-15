@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-#name : hyperlink
-#key : hyperlink
-#contributor : jr0cket
-# --
-[[$1][$2]]$0

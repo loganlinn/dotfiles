@@ -1,9 +1,0 @@
-# -*- mode: snippet -*-
-#name : repl-experiments
-#key : repl-experiments
-#contributor : jr0cket
-# --
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; REPL Experiments
-
-$0

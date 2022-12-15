@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-#name : hiccup-anchor
-#key : hiccup-anchor
-#contributor : jr0cket
-# --
-[:a {:class   "$1"}
-     "$0"]
