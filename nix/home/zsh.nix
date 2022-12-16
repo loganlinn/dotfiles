@@ -28,10 +28,7 @@
       patch = "$HOME/src/github.com/patch-tech/patch";
     };
     initExtra = ''
-      bindkey '^[[3~' delete-char
-      bindkey '^[3;5~' delete-char
-      bindkey "^[[H" beginning-of-line
-      bindkey "^[[F" end-of-line
+      . ${./zsh/keybindings.zsh}
 
       . ~/.dotfiles/bin/src-get
     '';
