@@ -17,6 +17,7 @@
     xh
     hey
     dive
+    delta
     jless
     protobuf
     buf
