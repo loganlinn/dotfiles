@@ -11,6 +11,7 @@
       l = "ls -lah";
 
       gc   = "${git}/bin/git commit -v";
+      gca  = "${git}/bin/git commit -v -a";
       gco  = "${git}/bin/git checkout -b";
       gcob = "${git}/bin/git checkout -b";
       gcop = "${git}/bin/git checkout -p";
