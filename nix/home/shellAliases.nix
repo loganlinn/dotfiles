@@ -29,7 +29,7 @@
       nixq = "${nix}/bin/nix-env -qaP";
       os-switch = "sudo ${nix}/bin/nixos-rebuild switch";
       hm = "${home-manager}/bin/home-manager";
-      hm-switch = ''${home-manager}/bin/home-manager switch --flake "$HOME/.dotfiles#\$\{USER?}@\$\{HOST?}"'';
+      hm-switch = "${home-manager}/bin/home-manager switch --flake \"$HOME/.dotfiles#\${USER?}@\${HOST?}\"";
 
       k = "${kubectl}/bin/kubectl";
       kctx = "${kubectx}/bin/kubectx";
