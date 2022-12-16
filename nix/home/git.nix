@@ -37,7 +37,7 @@ in {
       enable = true;
       options = {
         hunk-header-style = "omit";
-        syntax-theme = "GitHub";
+        theme = "zenburn";
         navigate = "true";
         side-by-side = "true";
         line-numbers = "true";
