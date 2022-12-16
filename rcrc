@@ -1,20 +1,67 @@
+#!/usr/bin/env sh
+# rcrc - configuration for rcm
+
+## helpers ####################################################################
+rcm_add() {
+  var="$1"; shift
+  for val; do
+    # trim trailing/leading whitespace
+    val="${val#"${val%%[![:space:]]*}"}"; val="${val%"${val##*[![:space:]]}"}";
+    # update variable
+    [ -z "$val" ] || eval "$var=\"\${$var:+\$$var }\"'$val'"
+  done
+}
+rcm_copy     () { rcm_add COPY_ALWAYS "$@"; }
+rcm_dotfiles () { rcm_add DOTFILES_DIRS "$@"; }
+rcm_exclude  () { rcm_add EXCLUDES "$@"; }
+rcm_tag      () { rcm_add TAGS "$@"; }
+rcm_undotted () { rcm_add UNDOTTED "$@"; }
+rcm_symlink  () { rcm_add SYMLINK_DIRS "$@"; }
+###############################################################################
+
+
+rcm_copy 'config/git/template/HEAD'
+rcm_copy 'config/git/include/*'
+rcm_copy 'ssh/id_*'
+rcm_copy 'gnupg/*'
+rcm_copy 'local/share/fonts/*'
+rcm_copy 'local/bin/bin'
+
+rcm_exclude '*~'
+rcm_exclude 'README*'
+rcm_exclude 'LICENSE'
+rcm_exclude 'THANKS'
+rcm_exclude 'Makefile'
+rcm_exclude 'src'
+rcm_exclude 'moredots.gif'
+rcm_exclude 'installers/*'
+rcm_exclude 'result' # i.e. nix build
+
+rcm_symlink '^bin$'
+rcm_symlink 'nix'
+rcm_symlink 'zsh'
+rcm_symlink 'zgenom'
+rcm_symlink 'node_modules'
+rcm_symlink 'com.github.gitalias'
+
+# tag by kernel (i.e. tag-darwin, tag-linux)
+rcm_tag "$(uname -s | tr '[:upper:]' '[:lower:]')"
+# tag by os (i.e. tag-nixos, tag-pop, tag-ubuntu, tag-debian)
+rcm_tag "$([ -r /etc/os-release ] && . /etc/os-release && echo "$ID" "$ID_LIKE")"
+# tag by display server
+rcm_tag "$XDG_SESSION_TYPE"
+
+rcm_undotted Desktop
+rcm_undotted Documents
+rcm_undotted Downloads
+rcm_undotted Music
+rcm_undotted Library
+rcm_undotted Pictures
+rcm_undotted Templates
+rcm_undotted bin
+rcm_undotted raycast
+rcm_undotted src
+rcm_undotted '*.nix' # flake.nix, shell.nix, etc
+rcm_undotted flake.lock
+
 # -*- mode: sh; -*- vim: set filetype=sh:-
-
-COPY_ALWAYS="config/git/template/HEAD ssh/id_* local/share/fonts/* local/bin/bin config/git/include/*"
-
-EXCLUDES='README* LICENSE THANKS Makefile src moredots.gif installers/* *~'
-
-SYMLINK_DIRS='^bin$ nix zsh zgenom node_modules com.github.gitalias'
-
-# i.e. tag-darwin, tag-linux
-TAGS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-
-# i.e. tag-pop, tag-ubuntu, tag-debian
-if [ -f /etc/os-release ]; then
-  TAGS="$TAGS $(. /etc/os-release; echo $ID $ID_LIKE)"
-fi
-
-# i.e. tag-x11
-TAGS="$TAGS $XDG_SESSION_TYPE"
-
-UNDOTTED="Desktop Documents Downloads Library Music Pictures Templates bin *.nix flake.* raycast src"
