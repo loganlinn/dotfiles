@@ -8,6 +8,8 @@
     ./fonts.nix
     ./neovim.nix
     ./pretty.nix
+    # ./rofi.nix
+    # ./sync.nix
     ./zsh.nix
   ];
 
@@ -16,6 +18,7 @@
   home.stateVersion = "22.11";
 
   home.packages = with pkgs; [
+    doctl
     trash-cli
   ];
 }

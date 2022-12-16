@@ -10,6 +10,8 @@
     ./pretty.nix
     ./rofi.nix
     ./sync.nix
+    ./zsh.nix
+    ./xdg.nix
   ];
 
   home = {
@@ -18,11 +20,6 @@
     stateVersion = "22.05";
   };
 
-  xdg.userDirs.enable = true;
-  xdg.mimeApps.enable = true;
-  xdg.desktopEntries = {
-    # TODO Chromium profiles
-  };
 
   home.packages = with pkgs; [
     asciinema
@@ -37,6 +34,5 @@
     #gifski
     #ponymix
     restic
-    zk
   ];
 }
