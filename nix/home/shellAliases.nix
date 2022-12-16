@@ -8,6 +8,8 @@
       "'?'"  = "which";
       "'??'" = "which -a";
 
+      l = "ls -lah";
+
       gc   = "${git}/bin/git commit -v";
       gco  = "${git}/bin/git checkout -b";
       gcob = "${git}/bin/git checkout -b";
