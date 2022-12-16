@@ -48,7 +48,7 @@ esac
 
 # NOTE: These both must end in slash
 export EMACSDIR="$HOME/.emacs.d/"
-export DOOMDIR="$HOME/.config/doom/"
+export DOOMDIR="$HOME/.doom.d/"
 
 PATH="$PATH:/usr/local/go/bin"
 PATH="$HOME/.krew/bin:$PATH"
