@@ -22,11 +22,18 @@
     homeConfigurations = {
       "logan@nijusan" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [./nix/home/nijusan.nix];
+        modules = [
+          # ./nix/modules/services/ssh.nix
+          ./nix/modules/programs/btrbk.nix
+          ./nix/modules/services/btrbk.nix
+          ./nix/home/nijusan.nix
+        ];
       };
       "logan@framework" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [./nix/home/framework.nix];
+        modules = [
+          ./nix/home/framework.nix
+        ];
       };
     };
 
