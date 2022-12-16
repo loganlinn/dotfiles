@@ -16,15 +16,14 @@
     # general
     xh
     hey
-    meld
+    dive
+    jless
     protobuf
     buf
+    hyperfine
+    graphviz
+    # meld
     # bazel
-
-    # crystal
-    # crystal
-    # icr # crystal repl
-    # shards # package-manager
 
     # shell
     shfmt

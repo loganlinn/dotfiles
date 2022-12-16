@@ -22,8 +22,9 @@
     gzip
     moreutils
     neofetch
+    procs
     rcm
-    ripgrep
+    (ripgrep.override { withPCRE2 = true; })
     rlwrap
     sd
     silver-searcher

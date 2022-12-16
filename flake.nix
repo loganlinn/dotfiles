@@ -19,21 +19,16 @@
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
-    homeConfigurations."logan@nijusan" = home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-
-      modules = [
-        ./nix/home/nijusan.nix
-      ];
+    homeConfigurations = {
+      "logan@nijusan" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [./nix/home/nijusan.nix];
+      };
+      "logan@framework" = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [./nix/home/framework.nix];
+      };
     };
-
-    #homeConfigurations = {
-    # "logan@framework" = home-manager.lib.homeManagerConfiguration {
-    #   pkgs = nixpkgs.legacyPackages."x86_64-linux";
-    #   modules = [
-    #     ./nix/home/framework.nix
-    #   ];
-    # };
 
     nixosConfigurations.nijusan = nixpkgs.lib.nixosSystem {
       inherit system;
