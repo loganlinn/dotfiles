@@ -23,9 +23,6 @@
       "logan@nijusan" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          # ./nix/modules/services/ssh.nix
-          ./nix/modules/programs/btrbk.nix
-          ./nix/modules/services/btrbk.nix
           ./nix/home/nijusan.nix
         ];
       };
