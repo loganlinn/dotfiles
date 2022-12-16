@@ -1,18 +1,22 @@
-{ config, pkgs, ... }: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
     enableCompletion = true;
     enableSyntaxHighlighting = true;
     defaultKeymap = "emacs";
-    sessionVariables = { EDITOR = "vim"; };
+    sessionVariables = {EDITOR = "vim";};
     history = {
       expireDuplicatesFirst = true;
       ignoreDups = true;
       ignoreSpace = true;
       extended = true;
       path = "${config.xdg.dataHome}/zsh/history";
-      share = false;
+      share = true;
       size = 100000;
       save = 100000;
     };
@@ -28,9 +32,8 @@
       patch = "$HOME/src/github.com/patch-tech/patch";
     };
     initExtra = ''
-      . ${./zsh/keybindings.zsh}
-
-      . ~/.dotfiles/bin/src-get
+      source ${./zsh/keybindings.zsh}
+      source ${./../../bin/src-get}
     '';
   };
 }
