@@ -21,7 +21,10 @@
   in {
     homeConfigurations."logan@nijusan" = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
-      modules = [ ./nix/home/nijusan.nix ];
+
+      modules = [
+        ./nix/home/nijusan.nix
+      ];
     };
 
     #homeConfigurations = {

@@ -1,15 +1,15 @@
 { pkgs, ... }:
 
 {
-  home.shellAliases = with pkgs;
-    let gitBin = "${git}/bin/git";
-    in {
-      "'?'" = "which";
-      "'??'" = "which -a";
-      ".." = "cd ..";
+  home.shellAliases = with pkgs; {
+      ".."  = "cd ..";
       "..." = "cd ...";
 
+      "'?'"  = "which";
+      "'??'" = "which -a";
+
       gc   = "${git}/bin/git commit -v";
+      gco  = "${git}/bin/git checkout -b";
       gcob = "${git}/bin/git checkout -b";
       gcop = "${git}/bin/git checkout -p";
       gd   = "${git}/bin/git diff --color";
@@ -27,9 +27,9 @@
 
       nix-gc = "${nix}/bin/nix-collect-garbage -d";
       nixq = "${nix}/bin/nix-env -qaP";
-      nors = "${nix}/bin/nixos-rebuild switch";
+      os-switch = "sudo ${nix}/bin/nixos-rebuild switch";
       hm = "${home-manager}/bin/home-manager";
-      hm-switch = "${home-manager}/bin/home-manager switch --flake $HOME/.dotfiles#\${USER?}@\${HOST?}";
+      hm-switch = ''${home-manager}/bin/home-manager switch --flake "$HOME/.dotfiles#\$\{USER?}@\$\{HOST?}"'';
 
       k = "${kubectl}/bin/kubectl";
       kctx = "${kubectx}/bin/kubectx";
@@ -41,6 +41,6 @@
       kk = "${kustomize}/bin/kustomize";
       kkb = "kk build";
 
-      bbr = "${rlwrap} bb";
+      bbr = "${rlwrap}/bin/rlwrap bb";
     };
 }

@@ -1,9 +1,9 @@
 {pkgs, ...}: {
   imports = [
-    ./clojure.nix
     ./azure.nix
+    ./clojure.nix
+    ./crystal.nix
     ./k8s.nix
-    #   ./crystal.nix
   ];
 
   home.packages = with pkgs; [

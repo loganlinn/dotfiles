@@ -1,15 +1,11 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{ config, pkgs, ... }: {
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
     enableCompletion = true;
     enableSyntaxHighlighting = true;
     defaultKeymap = "emacs";
-    sessionVariables = {EDITOR = "vim";};
+    sessionVariables = { EDITOR = "vim"; };
     history = {
       expireDuplicatesFirst = true;
       ignoreDups = true;
@@ -32,6 +28,11 @@
       patch = "$HOME/src/github.com/patch-tech/patch";
     };
     initExtra = ''
+      bindkey '^[[3~' delete-char
+      bindkey '^[3;5~' delete-char
+      bindkey "^[[H" beginning-of-line
+      bindkey "^[[F" end-of-line
+
       . ~/.dotfiles/bin/src-get
     '';
   };
