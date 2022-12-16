@@ -44,6 +44,8 @@
       kk = "${kustomize}/bin/kustomize";
       kkb = "kk build";
 
+      s = "kitty +kitten ssh";
+
       bbr = "${rlwrap}/bin/rlwrap bb";
     };
 }
