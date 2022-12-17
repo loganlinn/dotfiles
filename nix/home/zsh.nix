@@ -20,6 +20,12 @@
       size = 100000;
       save = 100000;
     };
+    shellGlobalAliases = {
+      "..."="../..";
+      "...."="../../..";
+      "....."="../../../..";
+      "......"="../../../../.." ;
+    };
     dirHashes = {
       cfg = "$HOME/.config";
       nix = "$HOME/.dotfiles/nix";

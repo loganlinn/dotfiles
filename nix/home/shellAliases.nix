@@ -2,18 +2,20 @@
 
 {
   home.shellAliases = with pkgs; {
+      "-"   = "cd -";
       ".."  = "cd ..";
       "..." = "cd ...";
 
       "'?'"  = "which";
       "'??'" = "which -a";
 
-      l = "ls -lah";
+      l   = "ls -lah";
 
       gc   = "${git}/bin/git commit -v";
       gca  = "${git}/bin/git commit -v -a";
-      gco  = "${git}/bin/git checkout -b";
-      gcob = "${git}/bin/git checkout -b";
+      gco  = "${git}/bin/git switch";
+      gcm  = "${git}/bin/git switch \"$(${git}/bin/git default-branch || echo .)\"";
+      gcob = "${git}/bin/git switch -c";
       gcop = "${git}/bin/git checkout -p";
       gd   = "${git}/bin/git diff --color";
       gdc  = "${git}/bin/git diff --color --cached";

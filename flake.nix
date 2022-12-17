@@ -8,7 +8,7 @@
     emacs.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs @ {
+  outputs = {
     self,
     nixpkgs,
     nixpkgs-unstable,
