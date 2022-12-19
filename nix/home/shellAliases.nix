@@ -2,14 +2,14 @@
 
 {
   home.shellAliases = with pkgs; {
-      "-"   = "cd -";
-      ".."  = "cd ..";
-      "..." = "cd ...";
+      "'..'"  = "cd ..";
+      "'...'" = "cd ...";
 
       "'?'"  = "which";
       "'??'" = "which -a";
 
       l   = "ls -lah";
+      mkd = "mkdir -p";
 
       gc   = "${git}/bin/git commit -v";
       gca  = "${git}/bin/git commit -v -a";
@@ -34,7 +34,9 @@
       nixq = "${nix}/bin/nix-env -qaP";
       os-switch = "sudo ${nix}/bin/nixos-rebuild switch";
       hm = "${home-manager}/bin/home-manager";
-      hm-switch = "${home-manager}/bin/home-manager switch --flake \"$HOME/.dotfiles#\${USER?}@\${HOST?}\"";
+      hms = "${home-manager}/bin/home-manager switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
+
+      reload = "hms && [[ -x $0 ]] && exec $0";
 
       k = "${kubectl}/bin/kubectl";
       kctx = "${kubectx}/bin/kubectx";

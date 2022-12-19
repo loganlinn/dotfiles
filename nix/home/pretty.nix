@@ -8,7 +8,9 @@
 
     bottom.enable = true;
 
-    fzf.enable = true;
+    fzf = {
+      enable = true;
+    };
 
     htop.enable = true;
 

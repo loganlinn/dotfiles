@@ -18,6 +18,7 @@
   home.stateVersion = "22.11";
 
   home.packages = with pkgs; [
+    _1password
     doctl
     trash-cli
   ];

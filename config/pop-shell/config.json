@@ -39,6 +39,9 @@
     },
     {
       "class": "Gnome-connections"
+    },
+    {
+      "class": "Gcolor3"
     }
   ],
   "skiptaskbarhidden": [],

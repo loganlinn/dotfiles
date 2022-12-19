@@ -5,6 +5,7 @@
   ];
 
   home.packages = with pkgs; [
+    bash
     binutils
     cmake
     coreutils-full # installs gnu versions
@@ -53,8 +54,6 @@
       enableBashIntegration = true;
       nix-direnv.enable = true;
     };
-
-    fzf.enable = true;
 
     go.enable = true;
 

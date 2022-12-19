@@ -23,6 +23,7 @@
 
 
   home.packages = with pkgs; [
+    _1password
     asciinema
     doctl
     scrot
@@ -35,5 +36,8 @@
     #gifski
     #ponymix
     restic
+    gnome.sushi                 # Nautalius file previews
+    gcolor3                     # Color picker
+    gnome-feeds                 # RSS/Atom reader
   ];
 }

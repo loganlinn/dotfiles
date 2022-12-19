@@ -18,17 +18,21 @@
   }: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
+    allowUnfree = { nixpkgs.config.allowUnfree = true; }; # _1password
   in {
     homeConfigurations = {
       "logan@nijusan" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
+          allowUnfree
           ./nix/home/nijusan.nix
         ];
       };
       "logan@framework" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+
         modules = [
+          allowUnfree
           ./nix/home/framework.nix
         ];
       };
@@ -45,7 +49,6 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          #home-manager.extraSpecialArgs = { inherit nixpkgs emacs; };
         }
       ];
     };
