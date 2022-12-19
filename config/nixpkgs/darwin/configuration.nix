@@ -4,7 +4,10 @@
   lib,
   ...
 }: {
-  imports = [<home-manager/nix-darwin>];
+  imports = [
+    <home-manager/nix-darwin>
+    ./skhd.nix
+  ];
 
   users.users.logan = {
     name = "logan";
@@ -14,26 +17,62 @@
   };
 
   home-manager.users.logan = {pkgs, ...}: {
-    home.stateVersion = "22.11";
-    home.packages = with pkgs;
-      [
-        delta
-        fzf
-        gh
-        htop
-        jq
-        m-cli
-        qemu
-        shellcheck
-        zsh
-      ]
-      ++ [
-        luarocks
-        deadnix
-        statix
-        rnix-lsp
-      ];
+    imports = [
+      # ./../../../nix/home/common.nix
+      ./../../../nix/home/git.nix
+    ];
 
+    home.stateVersion = "22.11";
+
+    home.packages = with pkgs; [
+      alejandra
+      babashka
+      cargo
+      clj-kondo
+      clojure
+      clojure-lsp
+      cmake
+      coreutils-full
+      cue
+      cuelsp
+      curl
+      delta
+      du-dust
+      direnv
+      fd
+      fzf
+      gawk
+      gh
+      gnugrep
+      gnumake
+      gnused
+      gnutar
+      gnutls
+      gzip
+      htop
+      java-language-server
+      jdk
+      jq
+      k9s
+      kubectl
+      m-cli
+      moreutils
+      qemu
+      rcm
+      ripgrep
+      rlwrap
+      rnix-lsp
+      sd
+      shellcheck
+      silver-searcher
+      sops
+      tmux
+      tree
+      visualvm
+      wget
+      zsh
+      binutils
+    ];
     # programs.kitty.enable = true;
 
     programs.starship = {
@@ -58,23 +97,25 @@
   homebrew = {
     enable = true;
     onActivation = {
-      autoUpdate = true;
+      autoUpdate = false;
       # upgrade = true; # TRYME
     };
     taps = [
-      "d12frosted/emacs-plus"
+      # "d12frosted/emacs-plus"
+      # "railwaycat/emacsport"
     ];
     brews = [
-      "choose-gui"
-      {
-        name = "emacs-plus@28";
-        args = [
-          "with-no-titlebar"
-          "with-xwidgets"
-          "with-native-comp"
-          "with-modern-doom3-icon"
-        ];
-      }
+      # "azure-cli"
+      # "libvterm"
+      # {
+      #  name = "emacs-plus@28";
+      #  args = [
+      #    "with-no-titlebar"
+      #    "with-xwidgets"
+      #    "with-native-comp"
+      #    "with-modern-doom3-icon"
+      #  ];
+      # }
     ];
     casks = [
       "kitty"
@@ -141,10 +182,11 @@
 
   # services.yabai.enable = true;
   # services.yabai.package = pkgs.yabai;
-  # services.skhd.enable = true;
 
   programs.nix-index.enable = true;
+
   services.nix-daemon.enable = true;
+
   # nix.package = pkgs.nix;
   nix.extraOptions =
     ''
@@ -162,7 +204,7 @@
   system.defaults.NSGlobalDomain.AppleKeyboardUIMode = 3;
   system.defaults.NSGlobalDomain.ApplePressAndHoldEnabled = false;
   system.defaults.NSGlobalDomain.InitialKeyRepeat = 25;
-  system.defaults.NSGlobalDomain.KeyRepeat = 6;
+  system.defaults.NSGlobalDomain.KeyRepeat = 1;
   system.defaults.NSGlobalDomain.NSAutomaticCapitalizationEnabled = false;
   system.defaults.NSGlobalDomain.NSAutomaticDashSubstitutionEnabled = false;
   system.defaults.NSGlobalDomain.NSAutomaticPeriodSubstitutionEnabled = false;
