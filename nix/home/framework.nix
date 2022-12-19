@@ -40,4 +40,5 @@
     gcolor3                     # Color picker
     gnome-feeds                 # RSS/Atom reader
   ];
+
 }
