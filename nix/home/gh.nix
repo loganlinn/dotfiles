@@ -4,7 +4,10 @@
     enable = true;
     enableGitCredentialHelper = true;
     settings = {
-      aliases = with pkgs; {
+      aliases = let
+        gh = "${pkgs.gh}/bin/gh";
+        gum = "${pkgs.gum}/bin/gum";
+      in {
         o = "browse";
         op = "pr view --web";
         pro = "pr view --web";
@@ -23,6 +26,7 @@
 
         aliases = "alias list";
 
+        checks = "checks";
         check-fail = ''
           !${gh} pr checks "$@" | awk '$2=="fail"{ print $4 }'
         '';

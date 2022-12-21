@@ -4,12 +4,13 @@
     ./clojure.nix
     ./crystal.nix
     ./k8s.nix
+    ./gh.nix
   ];
 
   home.packages = with pkgs; [
     # version control
     pre-commit
-    nodePackages.graphite-cli
+    nodePackages_latest.graphite-cli
     git-branchless
     git-crypt
 

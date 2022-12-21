@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   imports = [
     ./common.nix
+    ./linux.nix
     ./dev.nix
     ./emacs.nix
     ./fonts.nix

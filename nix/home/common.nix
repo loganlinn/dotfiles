@@ -1,7 +1,9 @@
 { pkgs, ... }: {
+
   imports = [
     ./readline.nix
     ./shellAliases.nix
+    ./git.nix
   ];
 
   home.packages = with pkgs; [
@@ -13,7 +15,6 @@
     du-dust
     fd
     gawk
-    gcc
     git
     gnugrep
     gnumake
@@ -30,7 +31,6 @@
     sd
     silver-searcher
     sops
-    sysz
     tree
   ];
 
@@ -76,10 +76,6 @@
 
     tealdeer.enable = true; # tldr command
 
-    yt-dlp.enable = false;
-
-    zellij.enable = true;
+    # yt-dlp.enable = false;
   };
-
-  xdg.userDirs.enable = true;
 }

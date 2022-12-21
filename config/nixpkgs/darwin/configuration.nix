@@ -3,7 +3,9 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  unstable = import <nixpkgs-unstable> {};
+in {
   imports = [
     <home-manager/nix-darwin>
     ./skhd.nix
@@ -18,60 +20,42 @@
 
   home-manager.users.logan = {pkgs, ...}: {
     imports = [
-      # ./../../../nix/home/common.nix
-      ./../../../nix/home/git.nix
+      ./../../../nix/home/common.nix
+      ./../../../nix/home/darwin.nix
+      ./../../../nix/home/fonts.nix
+      ./../../../nix/home/gh.nix
+      # ./../../../nix/home/dev.nix
+      ./../../../nix/home/zsh.nix
     ];
 
     home.stateVersion = "22.11";
 
     home.packages = with pkgs; [
+      unstable.nodePackages_latest.graphite-cli
       alejandra
       babashka
       cargo
       clj-kondo
       clojure
       clojure-lsp
-      cmake
-      coreutils-full
       cue
       cuelsp
-      curl
       delta
-      du-dust
       direnv
-      fd
-      fzf
-      gawk
-      gh
-      gnugrep
-      gnumake
-      gnused
-      gnutar
-      gnutls
-      gzip
-      htop
       java-language-server
       jdk
-      jq
       k9s
       kubectl
       m-cli
-      moreutils
       qemu
       rcm
       ripgrep
       rlwrap
       rnix-lsp
-      sd
       shellcheck
-      silver-searcher
-      sops
       tmux
-      tree
-      visualvm
-      wget
+      # visualvm # error: collision between `/nix/store/fl966iylvy7c443j6p2b12ifx8bn0rdy-visualvm-2.1.4/LICENSE.txt' and `/nix/store/w98d37wz9kn4p6qmhhq7spvxc66phmnk-victor-mono-1.5.4/LICENSE.txt'
       zsh
-      binutils
     ];
     # programs.kitty.enable = true;
 
@@ -87,8 +71,6 @@
       viAlias = true;
       vimAlias = true;
     };
-
-    programs.zsh.enable = true;
   };
 
   home-manager.useGlobalPkgs = true;
@@ -198,8 +180,7 @@
     '';
   nix.configureBuildUsers = true;
 
-  # FIXME
-  # security.pam.enableSudoTouchIdAuth = true;
+  security.pam.enableSudoTouchIdAuth = true;
 
   system.defaults.NSGlobalDomain.AppleKeyboardUIMode = 3;
   system.defaults.NSGlobalDomain.ApplePressAndHoldEnabled = false;
