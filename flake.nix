@@ -56,21 +56,21 @@
     };
 
     # Build darwin flake using:
-    # $ darwin-rebuild build --flake ~/.darwin#patbook --override-input darwin .
-    darwinConfigurations."patbook" = let
-      configuration = {pkgs, ...}: {
-        # nix.package = pkgs.nixVersions.stable;
+    # $ darwin-rebuild build --flake ~/.dotfiles#patbook --override-input darwin .
+    darwinConfigurations."logan@patbook" = darwin.lib.darwinSystem {
+      system = "aarch64-darwin";
+      modules = [
+        home-manager.darwinModules.home-manager
+        ./nix/darwin/patbook.nix
+        {
+          home-manager.users.logan = import ./nix/home/patbook.nix;
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+        }
+      ];
+    };
 
-        services.nix-daemon.enable = true;
-      };
-    in
-      darwin.lib.darwinSystem {
-        modules = [configuration darwin.darwinModules.simple];
-        system = "aarch64-darwin";
-      };
-
-    # Expose the package set, including overlays, for convenience.
-    darwinPackages = self.darwinConfigurations."simple".pkgs;
+    darwinPackages = self.darwinConfigurations."patbook".pkgs;
   };
 }
 # Acknowledgements
