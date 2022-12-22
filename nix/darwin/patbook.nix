@@ -15,15 +15,17 @@
   homebrew = {
     enable = true;
     brewPrefix = "/opt/homebrew/bin";
-    onActivation = {
-      autoUpdate = false;
-      # upgrade = true; # TRYME
-    };
+    # onActivation = {
+    #   autoUpdate = false;
+    #   # upgrade = true; # TRYME
+    # };
     taps = [
       # "d12frosted/emacs-plus"
       # "railwaycat/emacsport"
+      "Azure/kubelogin"
     ];
     brews = [
+      "kubelogin"
       # "azure-cli"
       # "libvterm"
       # {

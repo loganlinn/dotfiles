@@ -1,7 +1,9 @@
-{pkgs, ...}: {
-  home.packages = with pkgs; [
-    crystal
-    icr # crystal repl
-    shards # package-manager
-  ];
+{pkgs, ...}: let
+  inherit (pkgs.stdenv) isDarwin;
+in {
+  home.packages = if (!isDarwin) then [
+    pkgs.crystal
+    pkgs.icr # crystal repl
+    pkgs.shards # package-manager
+  ] else [];
 }

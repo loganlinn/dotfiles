@@ -169,6 +169,8 @@ in {
 
   services.nix-daemon.enable = true;
 
+  nix.gc.automatic = true;
+
   # nix.package = pkgs.nix;
   nix.extraOptions =
     ''

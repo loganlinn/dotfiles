@@ -8,6 +8,8 @@
     emacs.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:lnl7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
+    # neovim-flake.url = "github:jordanisaacs/neovim-flake";
+    # neovim-flake.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
@@ -17,6 +19,7 @@
     home-manager,
     emacs,
     darwin,
+    # neovim-flake,
     ...
   }: let
     system = "x86_64-linux";

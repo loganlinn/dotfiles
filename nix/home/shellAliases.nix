@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ conf, lib, pkgs, ... }:
 
 {
   home.shellAliases = with pkgs; {
@@ -34,9 +34,10 @@
       nixq = "${nix}/bin/nix-env -qaP";
       os-switch = "sudo ${nix}/bin/nixos-rebuild switch";
       hm = "${home-manager}/bin/home-manager";
-      hms = "${home-manager}/bin/home-manager switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
 
-      reload = "hms && [[ -x $0 ]] && exec $0";
+      switch = if stdenv.isDarwin
+            then "darwin-rebuild switch --flake ~/.dotfiles#\${USER?}@\${HOST?}"
+            else "${home-manager}/bin/home-manager switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
 
       k = "${kubectl}/bin/kubectl";
       kctx = "${kubectx}/bin/kubectx";
