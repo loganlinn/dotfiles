@@ -86,12 +86,6 @@
     enableSyntaxHighlighting = true;
   };
 
-  # programs.neovim = {
-  #   enable = true;
-  #   viAlias = true;
-  #   vimAlias = true;
-  # };
-
   programs.nix-index.enable = true;
 
   services.nix-daemon.enable = true;
