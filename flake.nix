@@ -55,7 +55,7 @@
       };
 
   in {
-    homeConfigurations.nijusan = let
+    homeConfigurations."logan@nijusan" = let
       system = "x86_64-linux";
     in
       homeManagerConfiguration {
@@ -66,7 +66,7 @@
         ];
       };
 
-    homeConfigurations.framework = let
+    homeConfigurations."logan@framework" = let
       system = "x86_64-linux";
     in
       homeManagerConfiguration {
@@ -94,7 +94,7 @@
         ];
       };
 
-    darwinConfigurations.patchbook = mkDarwinSystem "aarch64-darwin";
+    darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
 
   # # Executed by `nix flake check`
   # checks."<system>"."<name>" = derivation;
