@@ -51,31 +51,22 @@
             home-manager.useUserPackages = true;
           }
         ];
-        inputs = { inherit darwin nixpkgs; };
+        inputs = {inherit darwin nixpkgs;};
       };
-
   in {
-    homeConfigurations."logan@nijusan" = let
-      system = "x86_64-linux";
-    in
-      homeManagerConfiguration {
-        inherit system;
-        pkgs = mkPkgs system;
-        modules = [
-          ./nix/home/nijusan.nix
-        ];
-      };
+    homeConfigurations."logan@nijusan" = homeManagerConfiguration {
+      pkgs = mkPkgs "x86_64-linux";
+      modules = [
+        ./nix/home/nijusan.nix
+      ];
+    };
 
-    homeConfigurations."logan@framework" = let
-      system = "x86_64-linux";
-    in
-      homeManagerConfiguration {
-        inherit system;
-        pkgs = mkPkgs system;
-        modules = [
-          ./nix/home/framework.nix
-        ];
-      };
+    homeConfigurations."logan@framework" = homeManagerConfiguration {
+      pkgs = mkPkgs "x86_64-linux";
+      modules = [
+        ./nix/home/framework.nix
+      ];
+    };
 
     nixosConfigurations.nijusan = let
       system = "x86_64-linux";
@@ -96,48 +87,47 @@
 
     darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
 
-  # # Executed by `nix flake check`
-  # checks."<system>"."<name>" = derivation;
+    # # Executed by `nix flake check`
+    # checks."<system>"."<name>" = derivation;
 
-  # # Executed by `nix build .#<name>`
-  # packages."<system>"."<name>" = derivation;
+    # # Executed by `nix build .#<name>`
+    # packages."<system>"."<name>" = derivation;
 
-  # # Executed by `nix build .`
-  # packages."<system>".default = derivation;
-  # # Executed by `nix run .#<name>`
-  # apps."<system>"."<name>" = {
-  #   type = "app";
-  #   program = "<store-path>";
-  # };
-  # # Executed by `nix run . -- <args?>`
-  # apps."<system>".default = { type = "app"; program = "..."; };
+    # # Executed by `nix build .`
+    # packages."<system>".default = derivation;
+    # # Executed by `nix run .#<name>`
+    # apps."<system>"."<name>" = {
+    #   type = "app";
+    #   program = "<store-path>";
+    # };
+    # # Executed by `nix run . -- <args?>`
+    # apps."<system>".default = { type = "app"; program = "..."; };
 
-  # # Used for nixpkgs packages, also accessible via `nix build .#<name>`
-  # legacyPackages."<system>"."<name>" = derivation;
-  # # Overlay, consumed by other flakes
-  # overlays."<name>" = final: prev: { };
-  # # Default overlay
-  # overlays.default = {};
-  # # Nixos module, consumed by other flakes
-  # nixosModules."<name>" = { config }: { options = {}; config = {}; };
-  # # Default module
-  # nixosModules.default = {};
-  # # Used with `nixos-rebuild --flake .#<hostname>`
-  # # nixosConfigurations."<hostname>".config.system.build.toplevel must be a derivation
-  # nixosConfigurations."<hostname>" = {};
-  # # Used by `nix develop .#<name>`
-  # devShells."<system>"."<name>" = derivation;
-  # # Used by `nix develop`
-  # devShells."<system>".default = derivation;
-  # # Hydra build jobs
-  # hydraJobs."<attr>"."<system>" = derivation;
-  # # Used by `nix flake init -t <flake>#<name>`
-  # templates."<name>" = {
-  #   path = "<store-path>";
-  #   description = "template description goes here?";
-  # };
-  # # Used by `nix flake init -t <flake>`
-  # templates.default = { path = "<store-path>"; description = ""; };
-
+    # # Used for nixpkgs packages, also accessible via `nix build .#<name>`
+    # legacyPackages."<system>"."<name>" = derivation;
+    # # Overlay, consumed by other flakes
+    # overlays."<name>" = final: prev: { };
+    # # Default overlay
+    # overlays.default = {};
+    # # Nixos module, consumed by other flakes
+    # nixosModules."<name>" = { config }: { options = {}; config = {}; };
+    # # Default module
+    # nixosModules.default = {};
+    # # Used with `nixos-rebuild --flake .#<hostname>`
+    # # nixosConfigurations."<hostname>".config.system.build.toplevel must be a derivation
+    # nixosConfigurations."<hostname>" = {};
+    # # Used by `nix develop .#<name>`
+    # devShells."<system>"."<name>" = derivation;
+    # # Used by `nix develop`
+    # devShells."<system>".default = derivation;
+    # # Hydra build jobs
+    # hydraJobs."<attr>"."<system>" = derivation;
+    # # Used by `nix flake init -t <flake>#<name>`
+    # templates."<name>" = {
+    #   path = "<store-path>";
+    #   description = "template description goes here?";
+    # };
+    # # Used by `nix flake init -t <flake>`
+    # templates.default = { path = "<store-path>"; description = ""; };
   };
 }
