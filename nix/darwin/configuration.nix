@@ -3,6 +3,7 @@
   imports = [
     ./skhd.nix
     ./yabai.nix
+    # ./../pkgs/development/tools/neil
   ];
 
   users.users.logan = {

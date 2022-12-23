@@ -1,21 +1,25 @@
-{ pkgs, ... }:
-let jdk11 = pkgs.jdk11;
+{
+  pkgs,
+  ...
+}: let
+  jdk = pkgs.jdk11;
 in {
 
   programs.java = {
     enable = true;
-    package = jdk11;
+    package = jdk;
   };
 
   home.packages = with pkgs; [
-    (clojure.override { jdk = jdk11; })
-    clojure-lsp
-    (leiningen.override { jdk = jdk11; })
-    clj-kondo
+    (clojure.override { inherit jdk; })
+    (maven.override { inherit jdk; })
+    (leiningen.override { inherit jdk; })
+    (polylith.override { inherit jdk; })
     babashka
+    clj-kondo
+    clojure-lsp
     jet
     neil
     zprint
-    (polylith.override { jdk = jdk11; })
   ];
 }
