@@ -96,9 +96,6 @@
 
     darwinConfigurations.patchbook = mkDarwinSystem "aarch64-darwin";
 
-    packages.x86_64-linux = [devenv.packages.x86_64-linux.devenv];
-    # packages.aarch64-darwin = [devenv.packages.aarch64-darwin.devenv];
-
   # # Executed by `nix flake check`
   # checks."<system>"."<name>" = derivation;
 
