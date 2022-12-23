@@ -11,6 +11,7 @@
     # ./rofi.nix
     # ./sync.nix
     ./zsh.nix
+    ./code-server.nix
   ];
 
   home.username = "logan";
