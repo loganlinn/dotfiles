@@ -40,6 +40,7 @@
     initExtra = ''
       source ${./zsh/keybindings.zsh}
       source ${./../../bin/src-get}
+      [[ ! -f ~/zshrc.local ]] || source ~/.zshrc.local
     '';
   };
 }
