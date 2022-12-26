@@ -36,7 +36,7 @@
       hm = "${home-manager}/bin/home-manager";
 
       switch = if stdenv.isDarwin
-            then "darwin-rebuild switch --flake ~/.dotfiles#\${USER?}@\${HOST?}"
+            then "darwin-rebuild switch --impure --flake ~/.dotfiles#\${USER?}@\${HOST?}"
             else "home-manager switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
 
       k = "${kubectl}/bin/kubectl";

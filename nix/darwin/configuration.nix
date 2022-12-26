@@ -1,9 +1,12 @@
 {pkgs, lib, ...}: {
 
   imports = [
+    ./system.nix
+    ./security.nix
+    ./homebrew.nix
     ./skhd.nix
     ./yabai.nix
-    # ./../pkgs/development/tools/neil
+    ./tailscale.nix
   ];
 
   users.users.logan = {
@@ -13,41 +16,8 @@
     home = "/Users/logan";
   };
 
-  homebrew = {
-    enable = true;
-    brewPrefix = "/opt/homebrew/bin";
-    # onActivation = {
-    #   autoUpdate = false;
-    #   # upgrade = true; # TRYME
-    # };
-    taps = [
-      # "d12frosted/emacs-plus"
-      # "railwaycat/emacsport"
-      "Azure/kubelogin"
-    ];
-    brews = [
-      "kubelogin"
-      # "azure-cli"
-      # "libvterm"
-      # {
-      #  name = "emacs-plus@28";
-      #  args = [
-      #    "with-no-titlebar"
-      #    "with-xwidgets"
-      #    "with-native-comp"
-      #    "with-modern-doom3-icon"
-      #  ];
-      # }
-    ];
-    casks = [
-      # "google-chrome"
-      "kitty"
-      "slack"
-    ];
-  };
-
   environment = {
-    darwinConfig = "$HOME/.dotfiles/nix/darwin/$HOST.nix";
+    darwinConfig = "$HOME/.dotfiles/nix/darwin";
 
     systemPackages = with pkgs; [
       curl
@@ -93,9 +63,17 @@
 
   services.nix-daemon.enable = true;
 
+  # services.cachix-agent = {
+  #   enable = true;
+  #   credentialsFile = "/etc/cachix-agent.token";
+  # };
+
   nix = {
     configureBuildUsers = true;
-    gc.automatic = true;
+    gc = {
+      automatic = true;
+      interval = { Hour = 3; Minute = 15; };
+    };
     extraOptions =
       ''
         auto-optimise-store = true
@@ -105,53 +83,4 @@
         extra-platforms = x86_64-darwin aarch64-darwin
       '';
   };
-
-  security = {
-    pam.enableSudoTouchIdAuth = true;
-    pki.certificates = [];
-  };
-
-  system.defaults = {
-    NSGlobalDomain = {
-      AppleKeyboardUIMode = 3;
-      ApplePressAndHoldEnabled = false;
-      InitialKeyRepeat = 25;
-      KeyRepeat = 1;
-      NSAutomaticCapitalizationEnabled = false;
-      NSAutomaticDashSubstitutionEnabled = false;
-      NSAutomaticPeriodSubstitutionEnabled = false;
-      NSAutomaticQuoteSubstitutionEnabled = false;
-      NSAutomaticSpellingCorrectionEnabled = false;
-      NSNavPanelExpandedStateForSaveMode = true;
-      NSNavPanelExpandedStateForSaveMode2 = true;
-      _HIHideMenuBar = false;
-    };
-
-    dock = {
-      autohide = true;
-      mru-spaces = false;
-      orientation = "left";
-      showhidden = true;
-    };
-
-    finder = {
-      AppleShowAllExtensions = true;
-      QuitMenuItem = true;
-      FXEnableExtensionChangeWarning = false;
-    };
-
-    trackpad = {
-      Clicking = false;
-      TrackpadThreeFingerDrag = true;
-    };
-  };
-
-  system.keyboard = {
-    enableKeyMapping = true;
-    remapCapsLockToControl = true;
-  };
-
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 4;
 }
