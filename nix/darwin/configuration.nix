@@ -17,7 +17,7 @@
   };
 
   environment = {
-    darwinConfig = "$HOME/.dotfiles/nix/darwin";
+    darwinConfig = "$HOME/.dotfiles/nix/darwin/configuration.nix";
 
     systemPackages = with pkgs; [
       curl
@@ -41,8 +41,6 @@
       LANG = "en_US.UTF-8";
     };
   };
-
-  programs.man.enable = true;
 
   programs.bash = {
     enable = true;
