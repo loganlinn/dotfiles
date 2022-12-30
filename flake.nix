@@ -1,7 +1,9 @@
 {
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+
     nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
+
     # nixos-hardware.url = "github:nixos/nixos-hardware";
 
     # bad-hosts.url = github:StevenBlack/hosts;
@@ -27,13 +29,9 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
-    # nixos-hardware,
-    # bad-hosts,
     home-manager,
     emacs,
     darwin,
-    # devenv,
-    # neovim-flake,
     ...
   }: let
     # inherit (lib) genAttrs;
