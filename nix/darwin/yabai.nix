@@ -3,7 +3,7 @@
 {
   services.yabai = {
     enable = false;
-    enableScriptingAddition = true;
+    enableScriptingAddition = false;
     config = {
       debug_output = "on";
       focus_follows_mouse = "autoraise";

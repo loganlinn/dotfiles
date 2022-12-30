@@ -36,41 +36,41 @@
     # neovim-flake,
     ...
   }: let
-    inherit (lib) genAttrs;
-    inherit (lib.my) mapModules mapModulesRec mapHosts mapConfigurations;
+    # inherit (lib) genAttrs;
+    # inherit (lib.my) mapModules mapModulesRec mapHosts mapConfigurations;
 
     inherit (nixpkgs.lib) nixosSystem;
     inherit (home-manager.lib) homeManagerConfiguration;
     inherit (darwin.lib) darwinSystem;
 
-    lib = nixpkgs.lib.extend (self: super: {
-      my = import ./nix/lib {
-        inherit pkgs inputs darwin;
-        lib = self;
-      };
-    });
+    # lib = nixpkgs.lib.extend (self: super: {
+    #   my = import ./nix/lib {
+    #     inherit pkgs inputs darwin;
+    #     lib = self;
+    #   };
+    # });
 
-    supportedSystems = rec {
-      darwin = ["x86_64-darwin" "aarch64-darwin"];
-      linux = ["x86_64-linux" "aarch64-linux"];
-      all = darwin ++ linux;
-    };
+    # supportedSystems = rec {
+    #   darwin = ["x86_64-darwin" "aarch64-darwin"];
+    #   linux = ["x86_64-linux" "aarch64-linux"];
+    #   all = darwin ++ linux;
+    # };
 
     mkPkgs = pkgs: extraOverlays: system:
       import nixpkgs {
         inherit system;
-        overlays = extraOverlays ++ (lib.attrValues self.overlays);
+        # overlays = extraOverlays ++ (lib.attrValues self.overlays);
         config = {
           allowUnfree = true;
         };
       };
 
-    pkgs =
-      genAttrs supportedSystems.all
-      (mkPkgs nixpkgs [self.overlay]);
+    # pkgs =
+    #   genAttrs supportedSystems.all
+    #   (mkPkgs nixpkgs [self.overlay]);
 
-    pkgsUnstable =
-      genAttrs supportedSystems.all (mkPkgs nixpkgs-unstable []);
+    # pkgsUnstable =
+    #   genAttrs supportedSystems.all (mkPkgs nixpkgs-unstable []);
 
     mkDarwinSystem = system:
       darwinSystem {
@@ -88,25 +88,25 @@
         inputs = {inherit darwin nixpkgs;};
       };
   in {
-    lib = lib.my;
+    # lib = lib.my;
 
-    nixosModules =
-      {
-        dotfiles = import ./.;
-      }
-      // mapModulesRec ./nix/modules import;
+    # nixosModules =
+    #   {
+    #     dotfiles = import ./.;
+    #   }
+    #   // mapModulesRec ./nix/modules import;
 
-    darwinModules =
-      {
-        dotfiles = import ./.;
-      }
-      // mapModulesRec ./nix/modules import;
+    # darwinModules =
+    #   {
+    #     dotfiles = import ./.;
+    #   }
+    #   // mapModulesRec ./nix/modules import;
 
-    overlay = _: {system, ...}: {
-      unstable = pkgsUnstable.${system};
-      my = self.packages.${system};
-    };
-    overlays = mapModules ./nix/overlays import;
+    # overlay = _: {system, ...}: {
+    #   unstable = pkgsUnstable.${system};
+    #   my = self.packages.${system};
+    # };
+    # overlays = mapModules ./nix/overlays import;
 
     homeConfigurations."logan@nijusan" = homeManagerConfiguration {
       pkgs = mkPkgs nixpkgs [] "x86_64-linux";
