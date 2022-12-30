@@ -65,7 +65,7 @@ in {
       advice.skippedCherryPicks = false;
       advice.statusHints = false;
       branch.autoSetupRebase = "always";
-      branch.sort = "-commiterdate";
+      branch.sort = "-committerdate";
       color.ui = true;
       core.askPass = ""; # needs to be empty to use terminal for ask pass
       github.user = "loganlinn";
