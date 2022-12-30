@@ -1,120 +1,75 @@
-# vim:fileencoding=utf-8:foldmethod=marker
-
-#: Shell {{{
 SHELL := bash
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
-#: }}}
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
 
-#: Echoing {{{
-V ?=
-Q := $(if $(V),,@)
-#: }}}
+# ifndef DEBUG
+# .SILENT:
+# endif
 
-#: Colors {{{
-TERM_COLORS?=$(if $(TERM),$(shell tput colors 2>/dev/null),)
-ifeq (0,$(shell test 8 -le $(or $(TERM_COLORS),0); echo $$?))
-COLOR_RESET   = $(shell tput sgr0)
-COLOR_BOLD    = $(shell tput bold)
-COLOR_BLACK   = $(shell tput setaf 0)
-COLOR_RED     = $(shell tput setaf 1)
-COLOR_GREEN   = $(shell tput setaf 2)
-COLOR_YELLOW  = $(shell tput setaf 3)
-COLOR_BLUE    = $(shell tput setaf 4)
-COLOR_MAGENTA = $(shell tput setaf 5)
-COLOR_CYAN    = $(shell tput setaf 6)
-COLOR_WHITE   = $(shell tput setaf 7)
-endif
-#: }}}
+.DEFAULT_GOAL := switch
 
-#: Helpers {{{
-ok    = $(COLOR_BOLD)$(COLOR_GREEN)$(or $1,OK)$(COLOR_RESET)
-label = $(COLOR_BOLD)$(COLOR_MAGENTA)$1$(COLOR_RESET)
-fatal = @(echo >&2 "$(COLOR_BOLD)$(COLOR_FATAL)$1$(COLOR_RESET)"; exit 1)
+WORKDIR 	:=$(patsubst %/,%,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+USER    	?=$(shell whoami)
+HOSTNAME	?=$(shell hostname -s)
+SYSTEM 		:=$(shell uname -s)
 
-print-labeled = echo >&2 "$(call label,$1) $2"
-find-command  = $(shell command -v $1 2>/dev/null)
-show-command  = printf '%-16s%s\n' "$1" "$(call find-command,$1)" | tr ' ' .;
-file-exists   = $(wildcard $1)
-download-file = ($(call print-labeled,download,$2 <- $1); curl -fSL -o $2 $1)
-
-github-repo-release-latest-tag = $(shell curl -fsSLI -o /dev/null -w %{url_effective} "https://github.com/$(strip $(1))/releases/latest" | rev | cut -d/ -f1 | rev)
-
-islinux = $(filter Linux,$(ostype))
-ismacos = $(filter Darwin,$(ostype))
-
-ostype  := $(shell uname -s)
-cputype := $(if $(ismacos),$(shell uname -m | sed 's/i386/x86_64/'),$(shell uname -m)) # Darwin `uname -m` lies
-arch    := $(cputype:-=_)-$(shell printf %s "$(ostype)" | tr '[:upper:]' '[:lower:]')
-ext     := $(if $(findstring windows,$(ostype)),.exe,)
-#: }}
-
-ASDF_DIR ?= $(HOME)/.asdf
-
-PACKAGES := bash zsh curl rcm tmux
-COMMANDS := apt brew bash zsh rcup curl asdf bin rustup tmux fzf fd vim emacs emacs broot tree rg
-DOWNLOADS = $(LEIN_BIN) $(BIN_BIN)
-
-.PHONY: all
-all: info install
-
-.PHONY: info
-info: $(addprefix show-command-,$(sort $(COMMANDS)))
-
-.PHONY: install
-install: $(DOWNLOADS)
-	rcup -v
-
-.PHONY: packages
-packages: $(PACKAGES)
-
-.PHONY: rustup
-rustup: show-command-rustup # Installs rustup tool
-ifeq (,$(call find-command,rustup))
-	$(Q)curl --proto '=https' --tlsv1.2 -ssf https://sh.rustup.rs | sh
-endif
-
-.PHONY: asdf
-asdf:  ## Installs asdf version manager
-	$(Q)git -C $(ASDF_DIR) rev-parse 2>/dev/null || git clone https://github.com/asdf-vm/asdf.git $(ASDF_DIR)
-	$(Q)source $(ASDF_DIR)/asdf.sh
-	$(Q)asdf update
-
-# https://github.com/marcosnils/bin/releases/download/v0.9.1/bin_0.9.1_Linux_x86_64
-BIN_TAG ?= $(call github-repo-release-latest-tag,marcosnils/bin)
-BIN_URL := https://github.com/marcosnils/bin/releases/download/$(BIN_TAG)/bin_$(BIN_TAG:v%=%)_$(ostype)_$(cputype)$(ext)
-BIN_BIN := local/bin/bin
-
-$(BIN_BIN): # Installs bin tool
-	$(Q)mkdir -p $(@D)
-	$(Q)$(call download-file,$(BIN_URL),$@)
-	$(Q)chmod +x $@
-
-LEIN_TAG ?= stable
-LEIN_URL := https://raw.githubusercontent.com/technomancy/leiningen/$(LEIN_TAG)/bin/lein
-LEIN_BIN := local/bin/lein
-
-$(LEIN_BIN): ## Installs Leiningen tool
-	$(Q)mkdir -p $(@D)
-	$(Q)$(call download-file,$(LEIN_URL),$@)
-	$(Q)chmod +x $@
-
-.PHONY: $(PACKAGES)
-$(PACKAGES):
-	@$(call print-labeled,installing package,$@)
-ifneq (,$(call find-command,apt))
-	$(Q)apt install -y $@
-else ifneq (,$(call find-command,brew))
-	$(Q)brew install $@
+ifdef DEBUG
+FLAGS			+=--verbose
+FLAGS			+=--show-trace
 else
-	@$(call fatal,Unable to detect package manager to install $@)
+NIX_FLAGS 		+=--no-warn-dirty
 endif
 
-show-command-%  Scmd-% : ; @$(call show-command,$*)
-show-variable-% Svar-% : ; @echo -e "$(COLOR_BOLD)$(COLOR_BLUE)$*$(COLOR_RESET)=$($*)"
+ifeq ($(SYSTEM),Darwin)
+FLAGS			+=--impure
+else # NixOS:
+FLAGS			+=--option pure-eval no
+endif
 
-.PHONY: help
-help: ## Show this help
-	$(Q)awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / \
-		{printf "\033[38;2;98;209;150m%-20s\033[0m %s\n", $$1, $$2}' \
-		$(MAKEFILE_LIST)
+ifeq ($(SYSTEM),Darwin)
+NIX_REBUILD :=darwin-rebuild $(FLAGS)
+else
+NIX_REBUILD :=home-manager $(FLAGS)
+endif
+NIX_REBUILD +=--flake $(WORKDIR)\#$(USER)@$(HOSTNAME)
+
+# NOTE: trailing slash is significant
+DOOMDIR  ?= ${HOME}/.doom.d/
+EMACSDIR ?= ${HOME}/.emacs.d/
+
+.PHONY: all clean
+all: switch
+clean: ; rm -f result
+
+# Build targets.
+.PHONY: switch rollback upgrade
+switch: 	; $(NIX_REBUILD) switch
+rollback: 	; $(NIX_REBUILD) switch --rollback
+upgrade: 	; $(NIX_REBUILD) switch --upgrade
+
+.PHONY: test
+test: ACTION=$(if $(filter-out Darwin,$(SYSTEM)),test,check)
+test: ; $(NIX_REBUILD) $(ACTION)
+
+.PHONY: update
+update:
+	nix flake update
+
+.PHONY:	gc
+gc:
+ifeq ($(SYSTEM),Darwin) 
+	brew bundle cleanup --zap --force
+endif
+	nix-collect-garbage -d
+
+.PHONY: emacs
+emacs: $(EMACSDIR) $(DOOMDIR)
+	$(EMACSDIR)/bin/doom install
+
+$(EMACSDIR):
+	git clone --depth 1 https://github.com/doomemacs/doomemacs $@
+
+$(DOOMDIR): 
+	git clone https://github.com/loganlinn/.doom.d $@
