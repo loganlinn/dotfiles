@@ -3,18 +3,12 @@
   lib,
   pkgs,
   ...
-}: let
-  inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  gitBin = "${pkgs.git}/bin/git";
-  homeManagerBin = "${pkgs.home-manager}/bin/home-manager";
-in {
-  home.sessionVariables = {
-    DOCKER_SCAN_SUGGEST = "false";
-    NEXT_TELEMETRY_DISABLED = "1";
-    HOMEBREW_NO_ANALYTICS = "1";
-  };
-
-  home.shellAliases = {
+}: {
+  home.shellAliases = let
+    inherit (pkgs.stdenv.hostPlatform) isDarwin;
+    gitBin = "${pkgs.git}/bin/git";
+    homeManagerBin = "${pkgs.home-manager}/bin/home-manager";
+  in {
     "'..'" = "cd ..";
     "'...'" = "cd ...";
 
@@ -49,7 +43,7 @@ in {
     hm = "${homeManagerBin}";
 
     switch =
-      if pkgs.stdenv.isDarwin
+      if pkgisDarwin
       then "darwin-rebuild switch --impure --flake ~/.dotfiles#\${USER?}@\${HOST?}"
       else "${homeManagerBin} switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
 
@@ -63,7 +57,8 @@ in {
     kk = "${pkgs.kustomize}/bin/kustomize";
     kkb = "kk build";
 
-    s = "${pkgs.kitty}/bin/kitty +kitten ssh";
+    # s = "${pkgs.kitty}/bin/kitty +kitten ssh";
+    s = "kitty +kitten ssh";
 
     bbr = "${pkgs.rlwrap}/bin/rlwrap bb";
   };

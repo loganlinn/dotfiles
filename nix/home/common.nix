@@ -37,6 +37,12 @@
     tree
   ];
 
+  home.sessionVariables = {
+    DOCKER_SCAN_SUGGEST = "false";
+    NEXT_TELEMETRY_DISABLED = "1";
+    HOMEBREW_NO_ANALYTICS = "1";
+  };
+
   home.sessionPath = [
     "$HOME/.dotfiles/bin"
     "$HOME/.dotfiles/local/bin"
