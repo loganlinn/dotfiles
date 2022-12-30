@@ -31,6 +31,7 @@ rcm_copy 'local/share/fonts/*'
 rcm_copy 'ssh/id_*'
 
 rcm_exclude '*~'
+rcm_exclude '.envrc'
 rcm_exclude 'LICENSE'
 rcm_exclude 'Makefile'
 rcm_exclude 'README*'
