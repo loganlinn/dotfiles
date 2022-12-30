@@ -28,6 +28,7 @@
       # }
     ];
     casks = [
+      "1password"
       # "google-chrome"
       "kitty"
       "slack"

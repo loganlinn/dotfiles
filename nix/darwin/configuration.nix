@@ -61,10 +61,10 @@
 
   services.nix-daemon.enable = true;
 
-  # services.cachix-agent = {
-  #   enable = true;
-  #   credentialsFile = "/etc/cachix-agent.token";
-  # };
+  services.cachix-agent = {
+    enable = true;
+    # credentialsFile = "/etc/cachix-agent.token";
+  };
 
   nix = {
     configureBuildUsers = true;
