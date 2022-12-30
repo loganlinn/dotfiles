@@ -13,4 +13,13 @@ antigen-shapshot
 node_modules/
 .clj-kondo/
 *.local
-result
+
+.secrets
+
+# NixOS build results.
+**/result
+
+# QEMU VMs.
+**/*.qcow*
+
+/.direnv
