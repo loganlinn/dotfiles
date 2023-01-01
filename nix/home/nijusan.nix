@@ -7,6 +7,7 @@
     ./gh.nix
     ./git.nix
     ./fonts.nix
+    ./kitty.nix
     ./neovim.nix
     ./pretty.nix
     # ./rofi.nix
@@ -25,6 +26,5 @@
     trash-cli
     firefox
     slack
-    kitty
   ];
 }
