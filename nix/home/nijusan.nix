@@ -18,13 +18,15 @@
 
   home.username = "logan";
   home.homeDirectory = "/home/logan";
-  home.stateVersion = "22.11";
 
   home.packages = with pkgs; [
     _1password
+    _1password-gui
     doctl
     trash-cli
     firefox
     slack
   ];
+
+  home.stateVersion = "22.11";
 }
