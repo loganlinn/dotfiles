@@ -7,11 +7,11 @@
     ./gh.nix
     ./git.nix
     ./fonts.nix
-    ./kitty.nix
+    ./kitty
     ./neovim.nix
     ./pretty.nix
-    # ./rofi.nix
-    # ./sync.nix
+    ./rofi.nix
+    ./sync.nix
     ./zsh.nix
     # ./code-server.nix
   ];
