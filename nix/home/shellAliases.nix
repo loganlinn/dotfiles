@@ -32,7 +32,7 @@
 
       nix-gc = "${nix}/bin/nix-collect-garbage -d";
       nixq = "${nix}/bin/nix-env -qaP";
-      os-switch = "sudo ${nix}/bin/nixos-rebuild switch";
+      os-switch = "sudo ${nixos-rebuild}/bin/nixos-rebuild switch";
       hm = "${home-manager}/bin/home-manager";
 
       switch = if stdenv.isDarwin

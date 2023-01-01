@@ -2,6 +2,7 @@
   imports = [
     ./common.nix
     ./dev.nix
+    ./chromium.nix
     ./emacs.nix
     ./gh.nix
     ./git.nix
@@ -11,7 +12,7 @@
     # ./rofi.nix
     # ./sync.nix
     ./zsh.nix
-    ./code-server.nix
+    # ./code-server.nix
   ];
 
   home.username = "logan";
@@ -22,5 +23,8 @@
     _1password
     doctl
     trash-cli
+    firefox
+    slack
+    kitty
   ];
 }
