@@ -34,9 +34,11 @@
     mdsh
 
     # nix
-    alejandra # formatter
+    alejandra
     nixfmt
-    nixpkgs-fmt # nix formatter
+    nixpkgs-fmt
+    rnix-lsp
+
 
     # ruby
     ruby

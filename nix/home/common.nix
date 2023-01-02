@@ -8,6 +8,7 @@
 
   home.packages = with pkgs; [
     age
+    age-plugin-yubikey
     bash
     binutils
     cmake

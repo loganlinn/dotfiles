@@ -1,17 +1,19 @@
 {pkgs, ...}: {
   imports = [
+    ./browser.nix
     ./common.nix
     ./dev.nix
-    ./chromium.nix
     ./emacs.nix
+    ./fonts.nix
     ./gh.nix
     ./git.nix
-    ./fonts.nix
     ./kitty
     ./neovim.nix
     ./pretty.nix
     ./rofi.nix
     ./sync.nix
+    ./vpn.nix
+    ./vscode.nix
     ./zsh.nix
     # ./code-server.nix
   ];
@@ -23,9 +25,9 @@
     _1password
     _1password-gui
     doctl
-    trash-cli
     firefox
     slack
+    trash-cli
   ];
 
   home.stateVersion = "22.11";

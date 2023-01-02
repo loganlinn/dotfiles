@@ -1,8 +1,9 @@
 {pkgs, ...}: {
   programs.vscode = {
     enable = true;
-    enableAutoUpdateCheck = true;
+    enableUpdateCheck = true;
     enableExtensionUpdateCheck = true;
+    mutableExtensionsDir = true;
 
     extensions = with pkgs.vscode-extensions; [
       bbenoist.nix
