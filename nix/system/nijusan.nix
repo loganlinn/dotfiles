@@ -19,7 +19,7 @@
     displayManager.sddm.enable = true;
     desktopManager.plasma5.enable = true;
     layout = "us";
-    xkbOptions = "ctrl:swapcaps";
+    xkbOptions = "ctrl:nocaps"; # Make Caps Lock a Control key 
   };
 
   # console.useXkbConfig = true; # tty

@@ -1,13 +1,35 @@
 {pkgs, ...}: {
   programs.vscode = {
     enable = true;
+    package = pkgs.vscode;
     enableUpdateCheck = true;
     enableExtensionUpdateCheck = true;
     mutableExtensionsDir = true;
 
+    # https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/editors/vscode/extensions
     extensions = with pkgs.vscode-extensions; [
+      arcticicestudio.nord-visual-studio-code
       bbenoist.nix
       betterthantomorrow.calva
+      # betterthantomorrow.joyride
+      bungcip.better-toml
+      coolbear.systemd-unit-file
+      editorconfig.editorconfig
+      golang.go
+      hashicorp.terraform
+      kamadorueda.alejandra
+      ms-vscode.cpptools
+      ms-kubernetes-tools.vscode-kubernetes-tools
+      ms-pyright.pyright
+      ms-python.python
+      ms-vscode-remote.remote-ssh
+      redhat.java
+      redhat.vscode-yaml
+      skellock.just
+      sumneko.lua
+      timonwong.shellcheck
+      vscodevim.vim
+      zxh404.vscode-proto3
     ];
 
     userSettings = {
@@ -25,9 +47,6 @@
         "*.variant" = "terraform";
       };
       "git.autofetch" = true;
-      "gitlens.codeLens.authors.command" = false;
-      "gitlens.codeLens.enabled" = false;
-      "gitlens.codeLens.recentChange.command" = false;
       "markdownlint.ignore" = [
         "MD033"
       ];

@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   imports = [
+    ./_1password.nix
     ./browser.nix
     ./common.nix
     ./dev.nix
@@ -15,17 +16,14 @@
     ./vpn.nix
     ./vscode.nix
     ./zsh.nix
-    # ./code-server.nix
   ];
 
   home.username = "logan";
   home.homeDirectory = "/home/logan";
 
   home.packages = with pkgs; [
-    _1password
-    _1password-gui
     doctl
-    firefox
+    obsidian
     slack
     trash-cli
   ];

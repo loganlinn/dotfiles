@@ -1,55 +1,64 @@
-{ conf, lib, pkgs, ... }:
-
 {
-  home.shellAliases = with pkgs; {
-      "'..'"  = "cd ..";
-      "'...'" = "cd ...";
+  conf,
+  lib,
+  pkgs,
+  ...
+}: let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  git = "${pkgs.git}/bin/git";
+  home-manager = "${pkgs.home-manager}/bin/home-manager";
+in {
+  home.shellAliases = {
+    "'..'" = "cd ..";
+    "'...'" = "cd ...";
 
-      "'?'"  = "which";
-      "'??'" = "which -a";
+    "'?'" = "which";
+    "'??'" = "which -a";
 
-      l   = "ls -lah";
-      mkd = "mkdir -p";
+    l = "ls -lah";
+    mkd = "mkdir -p";
 
-      gc   = "${git}/bin/git commit -v";
-      gca  = "${git}/bin/git commit -v -a";
-      gco  = "${git}/bin/git switch";
-      gcm  = "${git}/bin/git switch \"$(${git}/bin/git default-branch || echo .)\"";
-      gcob = "${git}/bin/git switch -c";
-      gcop = "${git}/bin/git checkout -p";
-      gd   = "${git}/bin/git diff --color";
-      gdc  = "${git}/bin/git diff --color --cached";
-      gl   = "${git}/bin/git pull";
-      glr  = "${git}/bin/git pull --rebase";
-      glrp = "glr && gp";
-      gp   = "${git}/bin/git push -u";
-      gpa  = "${git}/bin/git push all --all";
-      gs   = "${git}/bin/git status -sb";
-      gsrt = "${git}/bin/git rev-parse --show-toplevel";
-      gsw  = "${git}/bin/git stash show -p";
-      gw   = "${git}/bin/git show";
-      grt  = ''cd -- "$(${git}/bin/git rev-parse  --show-top-level || echo .)"'';
+    gc = "${git} commit -v";
+    gca = "${git} commit -v -a";
+    gco = "${git} switch";
+    gcm = "${git} switch \"$(${git} default-branch || echo .)\"";
+    gcob = "${git} switch -c";
+    gcop = "${git} checkout -p";
+    gd = "${git} diff --color";
+    gdc = "${git} diff --color --cached";
+    gfo = "${git} fetch origin";
+    gl = "${git} pull";
+    glr = "${git} pull --rebase";
+    glrp = "glr && gp";
+    gp = "${git} push -u";
+    gpa = "${git} push all --all";
+    gs = "${git} status -sb";
+    gsrt = "${git} rev-parse --show-toplevel";
+    gsw = "${git} stash show -p";
+    gw = "${git} show";
+    grt = ''cd -- "$(${git} rev-parse  --show-top-level || echo .)"'';
 
-      nix-gc = "${nix}/bin/nix-collect-garbage -d";
-      nixq = "${nix}/bin/nix-env -qaP";
-      hm = "${home-manager}/bin/home-manager";
+    nix-gc = "${pkgs.nix}/bin/nix-collect-garbage -d";
+    nixq = "${pkgs.nix}/bin/nix-env -qaP";
+    hm = "${home-manager}";
 
-      switch = if stdenv.isDarwin
-            then "darwin-rebuild switch --impure --flake ~/.dotfiles#\${USER?}@\${HOST?}"
-            else "home-manager switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
+    switch =
+      if pkgs.stdenv.isDarwin
+      then "darwin-rebuild switch --impure --flake ~/.dotfiles#\${USER?}@\${HOST?}"
+      else "${home-manager} switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
 
-      k = "${kubectl}/bin/kubectl";
-      kctx = "${kubectx}/bin/kubectx";
-      kusers = "k config get-users";
-      kdesc = "k describe";
-      kdoc = "k describe";
-      kinfo = "k cluster-info";
-      kcfg = "k config view --raw";
-      kk = "${kustomize}/bin/kustomize";
-      kkb = "kk build";
+    k = "${pkgs.kubectl}/bin/kubectl";
+    kctx = "${pkgs.kubectx}/bin/kubectx";
+    kusers = "k config get-users";
+    kdesc = "k describe";
+    kdoc = "k describe";
+    kinfo = "k cluster-info";
+    kcfg = "k config view --raw";
+    kk = "${pkgs.kustomize}/bin/kustomize";
+    kkb = "kk build";
 
-      s = "kitty +kitten ssh";
+    s = "${pkgs.kitty}/bin/kitty +kitten ssh";
 
-      bbr = "${rlwrap}/bin/rlwrap bb";
-    };
+    bbr = "${pkgs.rlwrap}/bin/rlwrap bb";
+  };
 }
