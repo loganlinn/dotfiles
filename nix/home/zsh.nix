@@ -38,8 +38,23 @@
       patch = "$HOME/src/github.com/patch-tech/patch";
     };
     initExtra = ''
+      # Allow kill word and moving forward/backword by word to behave like bash (e.g. stop at / chars)
+      autoload -U select-word-style
+      select-word-style bash
+
+      # Make color constants available
+      autoload -U colors
+      colors
+
+      # Fix IntelliJ terminal issue where every keypress was accompanied by 'tmux' or 'tmux;'
+      if [[ "$TERMINAL_EMULATOR" -eq "JetBrains-JediTerm" ]]; then
+        unset TMUX
+      fi
+
       source ${./zsh/keybindings.zsh}
+      source ${./zsh/clipboard.zsh}
       source ${./../../bin/src-get}
+
       [[ ! -f ~/zshrc.local ]] || source ~/.zshrc.local
     '';
   };

@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ lib, pkgs, ... }: {
 
   imports = [
     ./readline.nix
@@ -26,6 +26,7 @@
     gzip
     moreutils
     neofetch
+    passage
     procs
     rcm
     (ripgrep.override { withPCRE2 = true; })
