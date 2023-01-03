@@ -51,6 +51,10 @@
         unset TMUX
       fi
 
+      if (( $+commands[kitty] )); then
+        kitty + complete setup zsh | source /dev/stdin
+      fi
+
       source ${./zsh/keybindings.zsh}
       source ${./zsh/clipboard.zsh}
       source ${./../../bin/src-get}

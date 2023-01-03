@@ -15,6 +15,7 @@
     ./sync.nix
     ./vpn.nix
     ./vscode.nix
+    ./xdg.nix
     ./zsh.nix
   ];
 

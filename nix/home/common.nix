@@ -2,7 +2,7 @@
 
   imports = [
     ./readline.nix
-    ./shellAliases.nix
+    ./shell.nix
     ./git.nix
   ];
 
