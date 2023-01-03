@@ -75,6 +75,8 @@ in {
       push.autoSetupRemote = true;
       push.default = "tracking";
       rebase.autosquash = true;
+      stash.showPatch = true;
+      stash.showIncludeUntracked = true;
     };
     # hooks
     ignores = [".localinn"];
