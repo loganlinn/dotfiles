@@ -43,7 +43,7 @@
     hm = "${homeManagerBin}";
 
     switch =
-      if pkgisDarwin
+      if isDarwin
       then "darwin-rebuild switch --impure --flake ~/.dotfiles#\${USER?}@\${HOST?}"
       else "${homeManagerBin} switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
 
