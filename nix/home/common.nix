@@ -39,8 +39,9 @@
 
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
-    NEXT_TELEMETRY_DISABLED = "1";
+    DO_NOT_TRACK = "1";
     HOMEBREW_NO_ANALYTICS = "1";
+    NEXT_TELEMETRY_DISABLED = "1";
   };
 
   home.sessionPath = [

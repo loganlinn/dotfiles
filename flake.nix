@@ -18,6 +18,8 @@
     darwin.url = "github:lnl7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
 
+    # agenix.url = "github:ryantm/agenix";
+
     # devenv.url = "github:cachix/devenv/v0.5";
     # devenv.inputs.nixpkgs.follows = "nixpkgs";
 

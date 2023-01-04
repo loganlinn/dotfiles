@@ -1,11 +1,11 @@
-let flake = builtins.getFlake (toString ./.);
+let
+  flake = builtins.getFlake (toString ./.);
+  nixpkgs = import <nixpkgs> { };
 in
-{
-  inherit flake;
-}
+{ inherit flake; }
 // flake
-// flake.inputs
 // builtins
+// flake.inputs.nixpkgs
 // flake.inputs.nixpkgs.lib
 // flake.homeConfigurations
 // flake.homeConfigurations."${builtins.getEnv "USER"}@${builtins.getEnv "HOSTNAME"}" or { }

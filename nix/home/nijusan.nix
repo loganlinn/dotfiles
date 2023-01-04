@@ -19,6 +19,8 @@
     ./zsh.nix
   ];
 
+  programs.librewolf.enable = true;
+
   home.username = "logan";
   home.homeDirectory = "/home/logan";
 
@@ -27,6 +29,7 @@
     obsidian
     slack
     trash-cli
+    vlc
   ];
 
   home.stateVersion = "22.11";
