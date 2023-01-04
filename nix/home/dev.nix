@@ -32,6 +32,7 @@
     shellcheck
     shellharden
     mdsh
+    nodePackages.bash-language-server
 
     # nix
     alejandra
