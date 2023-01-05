@@ -29,9 +29,13 @@
     ];
     casks = [
       # "1password"
+      # "iTerm"
       # "google-chrome"
       "kitty"
       "slack"
     ];
+    masApps = {
+      Tailscale = 1475387142;
+    };
   };
 }
