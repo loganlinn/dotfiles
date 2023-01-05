@@ -8,6 +8,7 @@
     ./fonts.nix
     ./gh.nix
     ./git.nix
+    ./graphical.nix
     ./kitty
     ./neovim.nix
     ./pretty.nix
