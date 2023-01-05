@@ -40,7 +40,6 @@
     nixpkgs-fmt
     rnix-lsp
 
-
     # ruby
     ruby
 
