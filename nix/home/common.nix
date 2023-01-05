@@ -1,9 +1,10 @@
 { lib, pkgs, ... }: {
 
   imports = [
+    ./git.nix
+    ./pam.nix
     ./readline.nix
     ./shell.nix
-    ./git.nix
   ];
 
   home.packages = with pkgs; [
