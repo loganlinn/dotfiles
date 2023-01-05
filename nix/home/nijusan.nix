@@ -22,6 +22,11 @@
 
   programs.librewolf.enable = true;
 
+  services.syncthing.tray = {
+    enable = true;
+    package = pkgs.syncthingtray;
+  };
+
   home.username = "logan";
   home.homeDirectory = "/home/logan";
 
