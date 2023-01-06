@@ -124,6 +124,7 @@
         {
           system.configurationRevision = mkIf (self ? rev) self.rev;
         }
+        agenix.nixosModule
       ];
       specialArgs = { inherit inputs; };
     };
