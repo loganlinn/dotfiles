@@ -60,6 +60,7 @@
     krew # required after install: krew install krew
     kubectl
     kubectx
+    kubelogin
     kubernetes-helm
     kustomize
     stern
