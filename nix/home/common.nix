@@ -4,7 +4,7 @@
     ./git.nix
     ./pam.nix
     ./readline.nix
-    ./shell.nix
+    ./shellAliases.nix
   ];
 
   home.packages = with pkgs; [
