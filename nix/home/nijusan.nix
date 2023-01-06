@@ -28,6 +28,8 @@
     package = pkgs.syncthingtray;
   };
 
+  xdg.enable = true;
+
   home.username = "logan";
   home.homeDirectory = "/home/logan";
 

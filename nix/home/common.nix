@@ -1,5 +1,8 @@
-{ lib, pkgs, ... }: {
-
+{
+  lib,
+  pkgs,
+  ...
+}: {
   imports = [
     ./git.nix
     ./pam.nix
@@ -29,7 +32,7 @@
     pinentry
     procs
     rcm
-    (ripgrep.override { withPCRE2 = true; })
+    (ripgrep.override {withPCRE2 = true;})
     rlwrap
     sd
     silver-searcher
@@ -71,7 +74,19 @@
 
     # helix.enable = true;
 
-    htop.enable = true;
+    htop = {
+      enable = true;
+      settings = {
+        hide_kernel_threads = 1;
+        show_program_path = 1;
+        show_cpu_usage = 1;
+        show_cpu_frequency = 0;
+        show_cpu_temperature = 1;
+        degree_fahrenheit = 0;
+        enable_mouse = 1;
+        tree_view = 0;
+      };
+    };
 
     jq.enable = true;
 
