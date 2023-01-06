@@ -7,7 +7,7 @@ in {
     age
     age-plugin-yubikey
     passage
-    (writeShellScriptBin "pazzage" ''
+    (writeShellScriptBin "pz" ''
        set -eou pipefail
        PREFIX="''${PASSAGE_DIR:-$HOME/.passage/store}"
        FZF_DEFAULT_OPTS=""
