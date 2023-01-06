@@ -78,6 +78,7 @@
     vim_configurable # has basic nix syntax
     wget
     xclip
+    yubikey-personalization
   ];
 
   programs.git.enable = true;
@@ -106,13 +107,13 @@
     permitRootLogin = "no";
   };
 
+  services.pcscd.enable = true;
+  # services.yubikey-agent.enable = true;
+
   services.flatpak.enable = true;
 
   programs.kdeconnect.enable = true;
-
-  # services.yubikey-agent.enable = true;
-
-  system.copySystemConfiguration = true;
+  # system.copySystemConfiguration = true;
 
   security.sudo.package = pkgs.sudo.override { withInsults = true; };
 

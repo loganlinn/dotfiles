@@ -124,7 +124,13 @@
 
     nixosConfigurations.nijusan = nixosSystem {
       system = "x86_64-linux";
-      modules = [./nix/system/nijusan];
+      modules = [
+        ./nix/system/nijusan
+        {
+          system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+        }
+      ];
+      specialArgs = { inherit inputs; };
     };
 
     darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
