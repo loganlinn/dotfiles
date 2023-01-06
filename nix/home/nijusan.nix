@@ -1,6 +1,7 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   imports = [
     ./_1password.nix
+    ./3d-graphics.nix
     ./browser.nix
     ./common.nix
     ./dev.nix
@@ -31,10 +32,7 @@
   home.homeDirectory = "/home/logan";
 
   home.packages = with pkgs; [
-    ark        # Graphical file compression/decompression utility
-    blender    # 3D Creation/Animation/Publishing System
-    fstl       # Fast .stl file viewer
-    doctl      # DigitalOcean CLI
+    ark
     obsidian
     slack
     trash-cli
