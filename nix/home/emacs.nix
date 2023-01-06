@@ -31,9 +31,7 @@ in {
     fd # faster projectile indexing
     imagemagick # for image-dired
 
-    # in-emacs gnupg prompts
-    # (lib.mkIf (programs.gnupg.agent.enable) pinentry_emacs)
-    pinentry_emacs
+    pinentry-emacs # in-emacs gnupg prompts
 
     zstd # for undo-fu-session/undo-tree compression
 

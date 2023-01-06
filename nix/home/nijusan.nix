@@ -33,7 +33,7 @@
   home.packages = with pkgs; [
     ark        # Graphical file compression/decompression utility
     blender    # 3D Creation/Animation/Publishing System
-    doctl
+    doctl      # DigitalOcean CLI
     obsidian
     slack
     trash-cli

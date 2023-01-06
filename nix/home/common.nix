@@ -28,6 +28,7 @@
     moreutils
     neofetch
     passage
+    pinentry
     procs
     rcm
     (ripgrep.override { withPCRE2 = true; })
