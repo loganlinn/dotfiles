@@ -31,6 +31,8 @@
   home.homeDirectory = "/home/logan";
 
   home.packages = with pkgs; [
+    ark        # Graphical file compression/decompression utility
+    blender    # 3D Creation/Animation/Publishing System
     doctl
     obsidian
     slack
