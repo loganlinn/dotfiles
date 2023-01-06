@@ -122,22 +122,10 @@
       ];
     };
 
-    nixosConfigurations.nijusan = let
+    nixosConfigurations.nijusan = nixosSystem {
       system = "x86_64-linux";
-    in
-      nixosSystem {
-        inherit system;
-        modules = [
-          ./nix/hardware/nijusan.nix
-          ./nix/system/nijusan.nix
-          ./nix/system/logan.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          }
-        ];
-      };
+      modules = [./nix/system/nijusan];
+    };
 
     darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
 
