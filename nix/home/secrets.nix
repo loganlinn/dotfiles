@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
-
-let inherit (config.home) homeDirectory;
+{
+  config,
+  pkgs,
+  ...
+}: let
+  inherit (config.home) homeDirectory;
 in {
   # https://github.com/FiloSottile/passage
   home.packages = with pkgs; [
@@ -21,8 +24,8 @@ in {
 
   home.sessionVariables = {
     PASSAGE_DIR = "${homeDirectory}/.passage/store";
-    PASSAGE_AGE = "${pkgs.age}/bin/age";
+    # PASSAGE_AGE = "${pkgs.age}/bin/age";
   };
 
-  programs.password-store.enable = true;
+  # programs.password-store.enable = true;
 }

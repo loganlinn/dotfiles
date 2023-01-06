@@ -93,9 +93,8 @@
             home-manager.useUserPackages = true;
           }
         ];
-        inputs = { inherit darwin nixpkgs; };
+        inputs = {inherit darwin nixpkgs;};
       };
-
   in {
     overlay = final: prev: {
       unstable = pkgs';
@@ -108,6 +107,7 @@
       modules = [
         ./nix/home/nijusan.nix
       ];
+      extraSpecialArgs = {unstable = pkgs'."x86_64-linux";};
     };
 
     homeConfigurations."logan@framework" = homeManagerConfiguration {
@@ -115,6 +115,7 @@
       modules = [
         ./nix/home/framework.nix
       ];
+      extraSpecialArgs = {unstable = pkgs'."x86_64-linux";};
     };
 
     nixosConfigurations.nijusan = nixosSystem {
@@ -126,7 +127,7 @@
         }
         agenix.nixosModule
       ];
-      specialArgs = { inherit inputs; };
+      specialArgs = {inherit inputs;};
     };
 
     darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
