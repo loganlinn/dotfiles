@@ -3,13 +3,12 @@
   imports = [
     ./git.nix
     ./pam.nix
+    ./passage.nix
     ./readline.nix
     ./shellAliases.nix
   ];
 
   home.packages = with pkgs; [
-    age
-    age-plugin-yubikey
     bash
     binutils
     cmake
@@ -27,7 +26,6 @@
     gzip
     moreutils
     neofetch
-    passage
     pinentry
     procs
     rcm
@@ -71,7 +69,7 @@
 
     gpg.enable = true;
 
-    helix.enable = true;
+    # helix.enable = true;
 
     htop.enable = true;
 
@@ -81,10 +79,6 @@
       enable = true;
       enableAliases = true;
     };
-
-    password-store.enable = true;
-
-    readline.enable = true;
 
     tealdeer.enable = true; # tldr command
 
