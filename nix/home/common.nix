@@ -3,7 +3,7 @@
   imports = [
     ./git.nix
     ./pam.nix
-    ./passage.nix
+    ./secrets.nix
     ./readline.nix
     ./shellAliases.nix
   ];
