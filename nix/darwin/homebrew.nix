@@ -33,6 +33,7 @@
       # "google-chrome"
       "kitty"
       "slack"
+      "syncthing"
     ];
     masApps = {
       Tailscale = 1475387142;
