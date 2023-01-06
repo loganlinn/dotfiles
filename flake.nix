@@ -14,6 +14,9 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
+
     emacs.url = "github:nix-community/emacs-overlay";
     emacs.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -35,13 +38,14 @@
     nixpkgs-unstable,
     # flake-utils,
     home-manager,
+    agenix,
     emacs,
     darwin,
     ...
   }: let
     # inherit (lib) genAttrs;
     # inherit (lib.my) mapModules mapModulesRec mapHosts mapConfigurations;
-    inherit (nixpkgs.lib) nixosSystem genAttrs;
+    inherit (nixpkgs.lib) nixosSystem genAttrs mkIf;
     inherit (home-manager.lib) homeManagerConfiguration;
     inherit (darwin.lib) darwinSystem;
 
@@ -60,6 +64,10 @@
       all = darwin ++ linux;
     };
 
+    systems = supportedSystems.all;
+
+    forAllSystems = f: genAttrs systems (system: f system);
+
     mkPkgs = pkgs: extraOverlays: system:
       import nixpkgs {
         inherit system;
@@ -69,13 +77,13 @@
         };
       };
 
-    pkgs = genAttrs supportedSystems.all (mkPkgs nixpkgs [self.overlay]);
-    pkgs' = genAttrs supportedSystems.all (mkPkgs nixpkgs-unstable [self.overlay]);
+    pkgs = genAttrs systems (mkPkgs nixpkgs [self.overlay]);
+    pkgs' = genAttrs systems (mkPkgs nixpkgs-unstable [self.overlay]);
 
     mkDarwinSystem = system:
       darwinSystem {
         inherit system;
-        pkgs = mkPkgs nixpkgs [] system;
+        pkgs = pkgs."${system}";
         modules = [
           home-manager.darwinModules.home-manager
           ./nix/darwin/configuration.nix
@@ -85,8 +93,9 @@
             home-manager.useUserPackages = true;
           }
         ];
-        inputs = {inherit darwin nixpkgs;};
+        inputs = { inherit darwin nixpkgs; };
       };
+
   in {
     overlay = final: prev: {
       unstable = pkgs';
@@ -113,57 +122,14 @@
       modules = [
         ./nix/system/nijusan
         {
-          system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+          system.configurationRevision = mkIf (self ? rev) self.rev;
         }
       ];
-      specialArgs = {inherit inputs;};
+      specialArgs = { inherit inputs; };
     };
 
     darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
 
-    formatter = genAttrs supportedSystems.all (system: pkgs.${system}.alejandra);
-
-    # # Executed by `nix flake check`
-    # checks."<system>"."<name>" = derivation;
-
-    # # Executed by `nix build .#<name>`
-    # packages."<system>"."<name>" = derivation;
-
-    # # Executed by `nix build .`
-    # packages."<system>".default = derivation;
-    # # Executed by `nix run .#<name>`
-    # apps."<system>"."<name>" = {
-    #   type = "app";
-    #   program = "<store-path>";
-    # };
-    # # Executed by `nix run . -- <args?>`
-    # apps."<system>".default = { type = "app"; program = "..."; };
-
-    # # Used for nixpkgs packages, also accessible via `nix build .#<name>`
-    # legacyPackages."<system>"."<name>" = derivation;
-    # # Overlay, consumed by other flakes
-    # overlays."<name>" = final: prev: { };
-    # # Default overlay
-    # overlays.default = {};
-    # # Nixos module, consumed by other flakes
-    # nixosModules."<name>" = { config }: { options = {}; config = {}; };
-    # # Default module
-    # nixosModules.default = {};
-    # # Used with `nixos-rebuild --flake .#<hostname>`
-    # # nixosConfigurations."<hostname>".config.system.build.toplevel must be a derivation
-    # nixosConfigurations."<hostname>" = {};
-    # # Used by `nix develop .#<name>`
-    # devShells."<system>"."<name>" = derivation;
-    # # Used by `nix develop`
-    # devShells."<system>".default = derivation;
-    # # Hydra build jobs
-    # hydraJobs."<attr>"."<system>" = derivation;
-    # # Used by `nix flake init -t <flake>#<name>`
-    # templates."<name>" = {
-    #   path = "<store-path>";
-    #   description = "template description goes here?";
-    # };
-    # # Used by `nix flake init -t <flake>`
-    # templates.default = { path = "<store-path>"; description = ""; };
+    formatter = forAllSystems (system: pkgs.${system}.alejandra);
   };
 }
