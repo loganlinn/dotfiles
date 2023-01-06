@@ -27,6 +27,9 @@
     # meld
     # bazel
 
+    # services
+    doctl
+
     # shell
     shfmt
     shellcheck

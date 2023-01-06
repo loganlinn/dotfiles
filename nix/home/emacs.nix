@@ -31,8 +31,6 @@ in {
     fd # faster projectile indexing
     imagemagick # for image-dired
 
-    pinentry-emacs # in-emacs gnupg prompts
-
     zstd # for undo-fu-session/undo-tree compression
 
     ## Module dependencies
