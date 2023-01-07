@@ -35,6 +35,7 @@
 
   home.packages = with pkgs; [
     ark
+    jetbrains.idea-community
     obsidian
     slack
     trash-cli
