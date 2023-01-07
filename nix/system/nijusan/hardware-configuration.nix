@@ -72,31 +72,19 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  hardware.nvidia.powerManagement.enable = true; # enable systemd-based suspend
+  # > With this setting, the NVIDIA GPU driver will allow the GPU to go into its lowest power state when no applications are running that use the nvidia driver stack.
+  # > Whenever an application requiring NVIDIA GPU access is started, the GPU is put into an active state.
+  # > When the application exits, the GPU is put into a low power state.
+  # https://download.nvidia.com/XFree86/Linux-x86_64/460.73.01/README/dynamicpowermanagement.html
+  # hardware.nvidia.powerManagement.finegrained = true;
 
   # high-resolution display
   hardware.video.hidpi.enable = lib.mkDefault true;
 
-  hardware.opengl = {
-    enable = true;
-    driSupport32Bit = true;
-    extraPackages = with pkgs; [
-      vaapiIntel
-      libvdpau-va-gl
-      intel-media-driver
-    ];
-  };
-
-  environment.variables = {
-    VDPAU_DRIVER = lib.mkIf config.hardware.opengl.enable (lib.mkDefault "va_gl");
-  };
-
-  # NVIDIA drivers
-  # https://nixos.wiki/wiki/Nvidia
-  # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/hardware/video/nvidia.nix
-  services.xserver.videoDrivers = ["nvidia"];
-  nixpkgs.config.allowUnfree = true;
-  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.stable;
+  hardware.opengl.enable = true;
+  hardware.opengl.driSupport32Bit = true;
 
   # Thunderbolt
   services.hardware.bolt.enable = true;

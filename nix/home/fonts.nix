@@ -5,6 +5,8 @@
     fantasque-sans-mono
     fira-code
     fira-code-symbols
+    font-awesome
+    font-awesome_5
     hack-font
     iosevka
     jetbrains-mono

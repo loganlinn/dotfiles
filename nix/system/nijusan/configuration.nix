@@ -1,37 +1,59 @@
-{ config, pkgs, ... }:
-
-{
-  imports = [
-    ./hardware-configuration.nix
-    ./tailscale.nix
-  ];
+{ config, lib, pkgs, ... }: {
+  imports = [ ./hardware-configuration.nix ./tailscale.nix ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "nijusan";
   networking.networkmanager.enable = true;
-  networking.extraHosts = ''
-  '';
+  networking.extraHosts = "";
 
   time.timeZone = "America/Los_Angeles";
 
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # KDE Plasma
-  # https://nixos.wiki/wiki/KDE
-  # https://github.com/NixOS/nixpkgs/tree/master/pkgs/desktops/plasma-5
   services.xserver.enable = true;
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
   services.xserver.layout = "us";
   services.xserver.xkbOptions = "ctrl:nocaps"; # Make Caps Lock a Control key
+
+  # xsession via home-manager
+  services.xserver.autorun = true;
+  services.xserver.displayManager = {
+    defaultSession = "none+xsession";
+    lightdm.enable = true;
+    # lightdm.greeter.enable = false;
+    autoLogin = {
+      enable = true;
+      user = "logan";
+    };
+  };
+  services.xserver.windowManager = {
+    session = lib.singleton {
+      name = "xsession";
+      start = pkgs.writeScript "xsession" ''
+        #!${pkgs.runtimeShell}
+        if test -f $HOME/.xsession; then
+          exec ${pkgs.runtimeShell} -c $HOME/.xsession
+        else
+          echo "No xsession script found"
+          exit 1
+        fi
+      '';
+    };
+  };
+  # services.xserver.desktopManager = {
+  #   xterm.enable = false;
+  # };
+
+  # # KDE Plasma
+  # # https://nixos.wiki/wiki/KDE
+  # services.xserver.displayManager.sddm.enable = true;
+  # services.xserver.desktopManager.plasma5.enable = true;
 
   sound.enable = true;
 
   services.printing.enable = true;
   services.printing.browsing = true;
-
   services.printing.drivers = with pkgs; [
     brlaser
     brgenml1lpr
@@ -39,9 +61,8 @@
   ];
 
   services.avahi.enable = true;
-  services.avahi.nssmdns = true;       # resolve .local domains of printers 
-  services.avahi.openFirewall = true;  # for a WiFi printer
-  # services.ipp-usb.enable = true;    # for a USB printer
+  services.avahi.nssmdns = true; # resolve .local domains of printers
+  services.avahi.openFirewall = true; # for a WiFi printer
 
   users.users = {
     logan = {
@@ -67,7 +88,6 @@
     killall
     nixos-option
     pciutils
-    plasma5Packages.plasma-thunderbolt
     powertop
     ripgrep
     sysz
@@ -79,7 +99,10 @@
     wget
     xclip
     yubikey-personalization
-  ];
+  ] ++ lib.optionals config.services.xserver.desktopManager.plasma5.enable [
+    plasma5Packages.plasma-thunderbolt
+    libsForQt5.bismuth
+  ] ;
 
   programs.git.enable = true;
 
@@ -108,22 +131,16 @@
   };
 
   services.pcscd.enable = true;
+
   # services.yubikey-agent.enable = true;
 
-  services.flatpak.enable = true;
+  # services.flatpak.enable = true;
 
-  programs.kdeconnect.enable = true;
-  # system.copySystemConfiguration = true;
+  programs.kdeconnect.enable = config.services.xserver.desktopManager.plasma5.enable;
 
   security.sudo.package = pkgs.sudo.override { withInsults = true; };
 
-  powerManagement = {
-    enable = true;
-    # powertop.enable = true;
-    # cpuFreqGovernor = "powersave";
-    # cpuFreqGovernor = "performance";
-    # cpuFreqGovernor = "ondemand";
-  };
+  powerManagement.enable = true;
 
   nix = {
     package = pkgs.nixFlakes;
@@ -131,6 +148,12 @@
       experimental-features = nix-command flakes
     '';
     settings.trusted-users = [ "logan" ];
+  };
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true; # NVIDIA drivers, etc
+    };
   };
 
   system.stateVersion = "23.05";

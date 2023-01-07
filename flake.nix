@@ -4,7 +4,7 @@
 
     nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
 
-    # nixos-hardware.url = "github:nixos/nixos-hardware";
+    nixos-hardware.url = "github:nixos/nixos-hardware";
 
     # flake-utils.url = "github:numtide/flake-utils";
 
@@ -36,6 +36,7 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
+    nixos-hardware,
     # flake-utils,
     home-manager,
     agenix,
@@ -121,6 +122,8 @@
     nixosConfigurations.nijusan = nixosSystem {
       system = "x86_64-linux";
       modules = [
+        nixos-hardware.nixosModules.common-cpu-intel
+        nixos-hardware.nixosModules.common-gpu-nvidia
         ./nix/system/nijusan
         {
           system.configurationRevision = mkIf (self ? rev) self.rev;
