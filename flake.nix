@@ -123,7 +123,8 @@
       system = "x86_64-linux";
       modules = [
         nixos-hardware.nixosModules.common-cpu-intel
-        nixos-hardware.nixosModules.common-gpu-nvidia
+        nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
+        nixos-hardware.nixosModules.common-pc-ssd
         ./nix/system/nijusan
         {
           system.configurationRevision = mkIf (self ? rev) self.rev;

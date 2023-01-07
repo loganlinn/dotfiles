@@ -86,6 +86,12 @@
   hardware.opengl.enable = true;
   hardware.opengl.driSupport32Bit = true;
 
+  # https://wiki.archlinux.org/title/Hardware_video_acceleration#Configuring_VA-API
+  environment.variables = {
+    LIBVA_DRIVER_NAME = "vdpau";
+    VDPAU_DRIVER = "nvidia";
+  };
+
   # Thunderbolt
   services.hardware.bolt.enable = true;
 
