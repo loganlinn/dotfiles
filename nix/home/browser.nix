@@ -1,9 +1,6 @@
 { config, lib, pkgs, ... }:
 
-{
-  programs.chromium = {
-    enable = true;
-    extensions = [
+let chromeExtensions = [
       "aeblfdkhhhdcdjpifhhbdiojplfjncoa" # 1Password
       "kcabmhnajflfolhelachlflngdbfhboe" # Spoof Timezone
       "edibdbjcniadpccecjdfdjjppcpchdlm" # I still don't care about cookies
@@ -12,9 +9,15 @@
       "ldpochfccmkkmhdbclfhpagapcfdljkj" # Decentraleyes
       "cimiefiiaegbelhefglklhhakcgmhkai" # Plasma integration
     ];
+in {
+  programs.chromium = {
+    enable = true;
+    extensions = chromeExtensions;
   };
 
   programs.google-chrome.enable = true;
+
+  programs.google-chrome-beta.enable = true;
 
   programs.firefox.enable = true;
 }
