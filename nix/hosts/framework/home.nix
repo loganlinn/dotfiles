@@ -7,7 +7,6 @@
     ../../home/gh.nix
     ../../home/git.nix
     ../../home/pretty.nix
-    ../../home/rofi.nix
     ../../home/sync.nix
     ../../home/zsh.nix
     ../../home/xdg.nix

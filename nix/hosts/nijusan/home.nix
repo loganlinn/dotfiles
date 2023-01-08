@@ -20,13 +20,11 @@ in {
     ../../home/dev.nix
     ../../home/emacs.nix
     ../../home/fonts.nix
-    ../../home/gh.nix
     ../../home/git.nix
     ../../home/i3
     ../../home/kitty
     ../../home/nnn.nix
     ../../home/pretty.nix
-    ../../home/rofi.nix
     ../../home/sync.nix
     ../../home/tray.nix
     ../../home/vpn.nix
