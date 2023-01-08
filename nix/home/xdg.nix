@@ -20,7 +20,4 @@
       "video/webm" = ["firefox.desktop"];
     };
   };
-  xdg.desktopEntries = {
-    # TODO Chromium profiles
-  };
 }
