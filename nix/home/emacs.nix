@@ -1,38 +1,29 @@
 { config, lib, pkgs, emacs, ... }:
 
 let
-  forgeUrl = "https://github.com";
-  emacsRepoUrl = "${forgeUrl}/doomemacs/doomemacs";
-  doomRepoUrl = "${forgeUrl}/loganlinn/.doom.d";
+  inherit (lib) getExe;
+  emacsRepoUrl = "https://github.com/doomemacs/doomemacs";
+  doomRepoUrl = "https://github.com/loganlinn/.doom.d";
   emacsDir = "${config.home.homeDirectory}/.emacs.d";
   doomDir = "${config.home.homeDirectory}/.doom.d";
 in {
   programs.emacs = {
     enable = true;
     package = pkgs.emacsNativeComp;
-    extraPackages = epkgs: with epkgs; [ vterm ];
+    extraPackages = epkgs: [ epkgs.vterm ];
   };
 
-  services.emacs = { enable = true; };
+  services.emacs.enable = true;
 
   home.packages = with pkgs; [
-    ## Emacs itself
-    binutils # native-comp needs 'as', provided by this
-    # 28.2 + native-comp
-    # ((emacsPackagesFor emacsNativeComp).emacsWithPackages
-    #   (epkgs: [ epkgs.vterm ]))
-
-    ## Doom dependencies
-    git
-    (ripgrep.override { withPCRE2 = true; })
+    binutils # for native-comp
     gnutls # for TLS connectivity
-
-    ## Optional dependencies
-    fd # faster projectile indexing
+    git
+    ripgrep
+    fd # for faster projectile indexing
     imagemagick # for image-dired
-
     zstd # for undo-fu-session/undo-tree compression
-
+    emacs-all-the-icons-fonts
     ## Module dependencies
     # :checkers spell
     (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
@@ -42,33 +33,33 @@ in {
     sqlite
     # :lang latex & :lang org (latex previews)
     texlive.combined.scheme-medium
-
-    emacs-all-the-icons-fonts
   ];
 
   home.sessionPath = [
-    "${emacsDir}/bin"
+    "${emacsDir}/bin" # doom CLI
   ];
 
   home.sessionVariables = {
     # NOTE: trailing slash is significant
     EMACSDIR = "${emacsDir}/";
-    DOOMDIR  = "${doomDir}/";
+    DOOMDIR = "${doomDir}/";
   };
 
-  home.shellAliases = {
-    et = "${pkgs.emacs}/bin/emacs -nw";
+  home.shellAliases = { et = "${pkgs.emacs}/bin/emacs -nw"; };
+
+  # Automatically clone doom emacs repos
+  home.activation = {
+    cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      if ! [ -d "${emacsDir}"/.git ]; then
+        ${
+          getExe pkgs.git
+        }/bin/git clone --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
+      fi
+    '';
+    cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      if ! [ -d "${doomDir}" ]; then
+        ${getExe pkgs.git} clone "${doomRepoUrl}" "${doomDir}"
+      fi
+    '';
   };
-
-  home.activation.cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! [ -d "${emacsDir}"/.git ]; then
-       ${pkgs.git}/bin/git clone --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
-    fi
-  '';
-
-  home.activation.cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! [ -d "${doomDir}" ]; then
-       ${pkgs.git}/bin/git clone "${doomRepoUrl}" "${doomDir}"
-    fi
-  '';
 }
