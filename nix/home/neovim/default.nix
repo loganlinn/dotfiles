@@ -30,6 +30,10 @@
     vimAlias = true;
     viAlias = true;
 
+    extraConfig = ''
+      colorscheme catppuccin " catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
+    '';
+
     plugins = with pkgs.vimPlugins; [
       vim-commentary
       vim-dispatch
