@@ -132,7 +132,8 @@
     homeConfigurations."logan@framework" = homeManagerConfiguration {
       pkgs = pkgs."x86_64-linux";
       modules = [
-        ./nix/home/framework.nix
+        # ./nix/home/framework.nix
+        ./nix/hosts/framework/home.nix
       ];
       extraSpecialArgs = {unstable = pkgs'."x86_64-linux";};
     };
@@ -153,7 +154,13 @@
       specialArgs = {inherit inputs;};
     };
 
-    darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
+    # darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
+    darwinConfigurations."logan@patchbook" = darwinSystem {
+      inherit inputs;
+      system = "aarch64-darwin";
+      pkgs = pkgs."aarch64-darwin";
+      modules = [./nix/hosts/patchbook/darwin.nix];
+    };
 
     devShell = forAllSystems (system: import ./shell.nix { pkgs = pkgs."${system}"; });
 

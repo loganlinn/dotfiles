@@ -4,29 +4,12 @@ let cfg = config.modules.desktops.i3;
 in {
   options.modules.desktops.i3 = {
     enable = mkEnableOption "Enable i3 desktop environment";
+    thunbar.enable = mkEnableOption "Enable thunbar file manager";
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ xfce.thunar ];
-
-    programs.thunar.plugins = with pkgs.xfce; [
-      thunar-archive-plugin
-      thunar-volman
-      thunar-media-tags-plugin
-    ];
-
-    programs.dconf.enable = true;
-
-    services.tumbler.enable =
-      mkDefault true; # thunar thumbnail support for images
-
-    services.gvfs.enable =
-      mkDefault true; # thunar mount, trash, and other functionalities
-
     services.xserver.enable = true;
-
     services.xserver.autorun = true;
-
     services.xserver.displayManager = {
       lightdm.enable = true;
       defaultSession = "none+xsession";
@@ -50,5 +33,17 @@ in {
         '';
       };
     };
+
+    programs.thunar = mkIf cfg.thunbar.enable {
+      enable = true;
+      plugins = with pkgs.xfce; [
+        thunar-archive-plugin
+        thunar-volman
+        thunar-media-tags-plugin
+      ];
+    };
+    services.tumbler.enable = mkIf cfg.thunbar.enable true; # thunar thumbnail support for images
+    services.gvfs.enable = mkIf cfg.thunbar.enable true; # thunar mount, trash, and other functionalities
+
   };
 }

@@ -1,9 +1,5 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ config, lib, pkgs, ... }:
+let
   inherit (lib) getExe;
 
   bins = rec {
@@ -56,6 +52,24 @@ in {
       #   right = [ "Right" "l" ];
       # };
     };
+
+    quitModeKeybinds = {
+      "Escape" = "mode default";
+      "Ctrl+c" = "mode default";
+      "Ctrl+g" = "mode default";
+    };
+
+    resizeKeybinds = { wider, narrower, taller, shorter }: {
+      "${narrower}" = "resize shrink width 10px or 2 ppt";
+      "${taller}" = "resize grow height 10px or 2 ppt";
+      "${shorter}" = "resize shrink height 10px or 2 ppt";
+      "${wider}" = "resize grow width 10px or 2 ppt";
+
+      "Shift+${narrower}" = "resize shrink width 50px or 10 ppt";
+      "Shift+${taller}" = "resize grow height 50px or 10 ppt";
+      "Shift+${shorter}" = "resize shrink height 50px or 10 ppt";
+      "Shift+${wider}" = "resize grow width 50px or 10 ppt";
+    };
   in {
     enable = true;
     package = pkgs.i3-gaps;
@@ -73,7 +87,8 @@ in {
           "${super}+Shift+space" = "exec ${bins.rofi} -show run";
           "${super}+Ctrl+space" = "exec ${bins.rofi} -show window";
           "${super}+Shift+q" = "kill";
-          "${super}+${alt}+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
+          "${super}+${alt}+q" =
+            "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
 
           "${super}+h" = "focus left";
           "${super}+j" = "focus down";
@@ -103,16 +118,29 @@ in {
           "${super}+Tab" = "workspace back_and_forth";
 
           # Carry window to workspace 1-10
-          "${super}+${alt}+1" = "move container to workspace number 1; workspace number 1";
-          "${super}+${alt}+2" = "move container to workspace number 2; workspace number 2";
-          "${super}+${alt}+3" = "move container to workspace number 3; workspace number 3";
-          "${super}+${alt}+4" = "move container to workspace number 4; workspace number 4";
-          "${super}+${alt}+5" = "move container to workspace number 5; workspace number 5";
-          "${super}+${alt}+6" = "move container to workspace number 6; workspace number 6";
-          "${super}+${alt}+7" = "move container to workspace number 7; workspace number 7";
-          "${super}+${alt}+8" = "move container to workspace number 8; workspace number 8";
-          "${super}+${alt}+9" = "move container to workspace number 9; workspace number 9";
-          "${super}+${alt}+0" = "move container to workspace number 10; workspace number 10;";
+          "${super}+${alt}+1" =
+            "move container to workspace number 1; workspace number 1";
+          "${super}+${alt}+2" =
+            "move container to workspace number 2; workspace number 2";
+          "${super}+${alt}+3" =
+            "move container to workspace number 3; workspace number 3";
+          "${super}+${alt}+4" =
+            "move container to workspace number 4; workspace number 4";
+          "${super}+${alt}+5" =
+            "move container to workspace number 5; workspace number 5";
+          "${super}+${alt}+6" =
+            "move container to workspace number 6; workspace number 6";
+          "${super}+${alt}+7" =
+            "move container to workspace number 7; workspace number 7";
+          "${super}+${alt}+8" =
+            "move container to workspace number 8; workspace number 8";
+          "${super}+${alt}+9" =
+            "move container to workspace number 9; workspace number 9";
+          "${super}+${alt}+0" =
+            "move container to workspace number 10; workspace number 10;";
+
+          "${super}+Shift+grave" = "move scratchpad";
+          "${super}+grave" = "scratchpad show";
 
           # Carry window to next free workspace
           # "${mod}+grave" = "i3-next-workspace"; # TODO create package for https://github.com/regolith-linux/i3-next-workspace/blob/main/i3-next-workspace
@@ -140,41 +168,18 @@ in {
       keycodebindings = {
         # "214" = "exec /bin/script.sh";
       };
-      modes = let
-        exitKeybinds = {
-          "Escape" = "mode default";
-          "Ctrl+c" = "mode default";
-          "Ctrl+g" = "mode default";
-        };
-        resizeKeybinds = {
-          wider,
-          narrower,
-          taller,
-          shorter,
-        }: {
-          "${narrower}" = "resize shrink width 10px or 2 ppt";
-          "${taller}" = "resize grow height 10px or 2 ppt";
-          "${shorter}" = "resize shrink height 10px or 2 ppt";
-          "${wider}" = "resize grow width 10px or 2 ppt";
-
-          "Shift+${narrower}" = "resize shrink width 50px or 10 ppt";
-          "Shift+${taller}" = "resize grow height 50px or 10 ppt";
-          "Shift+${shorter}" = "resize shrink height 50px or 10 ppt";
-          "Shift+${wider}" = "resize grow width 50px or 10 ppt";
-        };
-      in {
-        resize =
-          resizeKeybinds {
-            narrower = "h";
-            taller = "j";
-            shorter = "k";
-            wider = "l";
-          }
-          // exitKeybinds;
+      modes = {
+        resize = resizeKeybinds {
+          narrower = "h";
+          taller = "j";
+          shorter = "k";
+          wider = "l";
+        } // quitModeKeybinds;
       };
-      bars = [];
+      bars = [ ];
       fonts = {
-        names = ["FontAwesome" "FontAwesome5Free" "Fira Sans" "DejaVu Sans Mono"];
+        names =
+          [ "FontAwesome" "FontAwesome5Free" "Fira Sans" "DejaVu Sans Mono" ];
         size = 10.0;
       };
       focus = {
@@ -198,35 +203,35 @@ in {
       floating = {
         modifier = keysyms.super; # for dragging floating windows
         criteria = [
-          {class = "blueman-manager";}
-          {class = "nm-connection-editor";}
-          {class = "obs";}
-          {class = "syncthingtray";}
-          {class = "thunar";}
-          {class = "System76 Keyboard Configurator";}
-          {class = "pavucontrol";}
-          {title = "Artha";}
-          {title = "Calculator";}
-          {title = "Steam.*";}
-          {title = "doom-capture";}
-          {window_role = "pop-up";}
-          {window_role = "prefwindow";}
+          { class = "blueman-manager"; }
+          { class = "nm-connection-editor"; }
+          { class = "obs"; }
+          { class = "syncthingtray"; }
+          { class = "thunar"; }
+          { class = "System76 Keyboard Configurator"; }
+          { class = "pavucontrol"; }
+          { title = "Artha"; }
+          { title = "Calculator"; }
+          { title = "Steam.*"; }
+          { title = "doom-capture"; }
+          { window_role = "pop-up"; }
+          { window_role = "prefwindow"; }
         ];
       };
       defaultWorkspace = "workspace number 1";
       workspaceLayout = "default";
       workspaceAutoBackAndForth = false;
       assigns = {
-        "1" = [];
-        "2" = [];
-        "3" = [];
-        "4: Linear" = [{title = "Linear";}];
-        "5" = [];
-        "6" = [];
-        "7" = [];
-        "8: Email" = [{class = "Geary";}];
-        "9: Chat" = [{class = "Slack";}];
-        "0" = [];
+        "1" = [ ];
+        "2" = [ ];
+        "3" = [ ];
+        "4: Linear" = [{ title = "Linear"; }];
+        "5" = [ ];
+        "6" = [ ];
+        "7" = [ ];
+        "8: Email" = [{ class = "Geary"; }];
+        "9: Chat" = [{ class = "Slack"; }];
+        "0" = [ ];
       };
       startup = [
         {
