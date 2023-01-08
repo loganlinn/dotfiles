@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -59,7 +60,7 @@
   programs = {
     home-manager.enable = true;
 
-    command-not-found.enable = true;
+    command-not-found.enable = !config.programs.nix-index.enable;
 
     direnv = {
       enable = true;
