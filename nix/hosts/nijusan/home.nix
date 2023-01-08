@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 let
   inherit (lib) getExe;
-
   bins = rec {
     kitty = getExe config.programs.kitty.package;
     rofi = getExe config.programs.rofi.package;
@@ -33,7 +32,6 @@ in {
     ../../home/zsh.nix
   ];
 
-  programs.rofi.enable = true;
   programs.feh.enable = true;
 
   home.sessionVariables."BROWSER" = bins.browser;
@@ -233,7 +231,7 @@ in {
       };
       startup = [
         {
-          command = "${getExe pkgs.feh} --bg-scale ${./background.jpg}";
+          command = "${lib.getExe pkgs.feh} --bg-scale ${./background.jpg}";
           always = true;
           notification = false;
         }
@@ -253,7 +251,13 @@ in {
     enable = true;
     tray = {
       enable = true;
-      package = pkgs.syncthingtray;
+      package = pkgs.syncthingtray.override {
+        webviewSupport = true;
+        jsSupport =  true;
+        plasmoidSupport = false;
+        kioPluginSupport = false;
+      };
+      command = "syncthingtray --wait";
     };
   };
 
