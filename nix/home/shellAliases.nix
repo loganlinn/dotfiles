@@ -36,6 +36,7 @@
 
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";
+
     hm = getExe pkgs.home-manager;
 
     switch = if isDarwin then

@@ -1,16 +1,16 @@
 {pkgs, ...}: {
   imports = [
-    ./common.nix
-    ./dev.nix
-    ./emacs.nix
-    ./fonts.nix
-    ./gh.nix
-    ./git.nix
-    ./pretty.nix
-    ./rofi.nix
-    ./sync.nix
-    ./zsh.nix
-    ./xdg.nix
+    ../../home/common.nix
+    ../../home/dev.nix
+    ../../home/emacs.nix
+    ../../home/fonts.nix
+    ../../home/gh.nix
+    ../../home/git.nix
+    ../../home/pretty.nix
+    ../../home/rofi.nix
+    ../../home/sync.nix
+    ../../home/zsh.nix
+    ../../home/xdg.nix
   ];
 
   home = {
@@ -18,7 +18,6 @@
     homeDirectory = "/home/logan";
     stateVersion = "22.05";
   };
-
 
   home.packages = with pkgs; [
     _1password

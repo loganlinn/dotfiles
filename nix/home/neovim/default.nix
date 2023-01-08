@@ -100,6 +100,7 @@
       telescope-fzf-native-nvim
       telescope-nvim
       trouble-nvim
+      which-key-nvim
       vim-lastplace
       vim-startify
       vim-visual-multi

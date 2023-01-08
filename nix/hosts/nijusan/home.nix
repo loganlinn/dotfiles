@@ -18,26 +18,25 @@
   };
 in {
   imports = [
-    ./3d-graphics.nix
-    ./_1password.nix
-    ./browser.nix
-    ./common.nix
-    ./dev.nix
-    ./emacs.nix
-    ./fonts.nix
-    ./gh.nix
-    ./git.nix
-    ./i3
-    ./kitty
-    ./nnn.nix
-    ./pretty.nix
-    ./rofi.nix
-    ./sync.nix
-    ./tray.nix
-    ./vpn.nix
-    ./vscode.nix
-    ./xdg.nix
-    ./zsh.nix
+    ../../home/3d-graphics.nix
+    ../../home/browser.nix
+    ../../home/common.nix
+    ../../home/dev.nix
+    ../../home/emacs.nix
+    ../../home/fonts.nix
+    ../../home/gh.nix
+    ../../home/git.nix
+    ../../home/i3
+    ../../home/kitty
+    ../../home/nnn.nix
+    ../../home/pretty.nix
+    ../../home/rofi.nix
+    ../../home/sync.nix
+    ../../home/tray.nix
+    ../../home/vpn.nix
+    ../../home/vscode.nix
+    ../../home/xdg.nix
+    ../../home/zsh.nix
   ];
 
   programs.rofi.enable = true;

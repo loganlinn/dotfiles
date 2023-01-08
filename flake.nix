@@ -124,7 +124,7 @@
     homeConfigurations."logan@nijusan" = homeManagerConfiguration {
       pkgs = pkgs."x86_64-linux";
       modules = [
-        ./nix/home/nijusan.nix
+        ./nix/hosts/nijusan/home.nix
       ];
       extraSpecialArgs = {unstable = pkgs'."x86_64-linux";};
     };

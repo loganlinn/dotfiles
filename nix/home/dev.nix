@@ -66,5 +66,5 @@
     kind
   ];
 
-  programs.nix-index.enable = lib.mkDefault true;
+  programs.nix-index.enable = lib.mkDefault false;
 }

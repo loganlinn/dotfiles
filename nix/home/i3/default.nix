@@ -4,5 +4,5 @@
   pkgs,
   ...
 }: {
-  imports = [./i3.nix ./polybar.nix];
+  imports = [./polybar.nix];
 }
