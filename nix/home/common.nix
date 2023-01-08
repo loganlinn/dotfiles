@@ -106,6 +106,10 @@ in {
     defaultCacheTtl = 1800;
     enableSshSupport = true;
     pinentryFlavor = lib.mkDefault "gtk2";
+    extraConfig = ''
+     allow-emacs-pinentry
+     allow-loopback-pinentry
+    '';
   };
 
 }
