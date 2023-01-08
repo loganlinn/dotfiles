@@ -72,9 +72,11 @@
   # networking.interfaces.wlo1.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
-  hardware.nvidia.powerManagement.enable = true; # enable systemd-based suspend
+  hardware.nvidia.powerManagement.enable = lib.mkDefault true;
+
   # > With this setting, the NVIDIA GPU driver will allow the GPU to go into its lowest power state when no applications are running that use the nvidia driver stack.
   # > Whenever an application requiring NVIDIA GPU access is started, the GPU is put into an active state.
   # > When the application exits, the GPU is put into a low power state.
@@ -89,8 +91,8 @@
 
   # https://wiki.archlinux.org/title/Hardware_video_acceleration#Configuring_VA-API
   environment.variables = {
-    LIBVA_DRIVER_NAME = "vdpau";
-    VDPAU_DRIVER = "nvidia";
+    LIBVA_DRIVER_NAME = lib.mkDefault "vdpau";
+    VDPAU_DRIVER = lib.mkDefault "nvidia";
   };
 
   # Thunderbolt
@@ -102,7 +104,7 @@
   # Sound
   hardware.pulseaudio = {
     enable = true;
-    package = pkgs.pulseaudioFull;
+    package = lib.mkDefault pkgs.pulseaudioFull;
     support32Bit = true;
   };
 
