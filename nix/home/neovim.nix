@@ -5,6 +5,7 @@
   lib,
   ...
 }: {
+  # move to programs.neovim.extraPackages?
   home.packages = with pkgs; [
     deadnix
     gopls
@@ -26,8 +27,67 @@
 
   programs.neovim = {
     enable = true;
-    viAlias = true;
+
     vimAlias = true;
+
+    plugins = with pkgs.vimPlugins; [
+      # a disciple of tpope
+      vim-sensible
+      vim-pathogen
+      vim-dispatch
+      vim-repeat
+      vim-surround
+      vim-unimpaired
+      vim-commentary
+      vim-easy-align
+      vim-speeddating
+      vim-eunuch
+      vim-sleuth
+      vim-endwise
+      vim-rsi
+      vim-salve
+      vim-fireplace
+      vim-sexp-mappings-for-regular-people
+
+      vim-fugitive
+      vim-rhubarb
+      vim-gist
+
+      vim-startify
+
+      # Themes
+      tokyonight-nvim
+      sonokai
+      dracula-vim
+      gruvbox
+      papercolor-theme
+      {
+        plugin = lualine-nvim;
+        type = "lua";
+        config = ''
+          require('lualine').setup {
+            options = {
+              theme = 'tokyonight'
+            }
+          }
+        '';
+      }
+
+      # Languages
+      vim-nix
+      vim-markdown
+      vim-clojure-static
+      vim-shellcheck
+
+      pkgs.vimPlugins.nvim-treesitter.withAllGrammars
+      pkgs.vimPlugins.nvim-tree-lua
+      {
+        plugin = pkgs.vimPlugins.vim-startify;
+        config = "let g:startify_change_to_vcs_root = 0";
+      }
+    ];
+
+    extraPython3Packages = ps: with ps; [ pynvim ];
   };
 
   # programs.neovim = {
