@@ -6,6 +6,9 @@
 
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
+    # nur.url = "github:nix-community/NUR";
+    # nur.inputs.nixpkgs.follows = "nixpkgs";
+
     # flake-utils.url = "github:numtide/flake-utils";
 
     # bad-hosts.url = github:StevenBlack/hosts;
@@ -37,6 +40,7 @@
     nixpkgs,
     nixpkgs-unstable,
     nixos-hardware,
+    # nur,
     # flake-utils,
     home-manager,
     agenix,
@@ -97,11 +101,25 @@
         inputs = {inherit darwin nixpkgs;};
       };
   in {
-    overlay = final: prev: {
-      unstable = pkgs';
-    };
+    # lib = nixpkgs.lib;
+    # lib = import ./lib { inherit inputs; } // inputs.nixpkgs.lib;
+
+    # packages = forAllSystems (system: import ./nix/pkgs self system);
+
+    overlay = _final: _prev: { };
+    # overlay = forAllSystems (system: _final: _prev: pkgs."${system}");
+
+    # overlay = final: prev: {
+    #   unstable = pkgs';
+    # };
 
     overlays = {};
+    # overlays = forAllSystems (system:
+    #   [
+    #     (self.overlay."${system}")
+    #     (nur.overlay)
+    #   ]
+    # );
 
     homeConfigurations."logan@nijusan" = homeManagerConfiguration {
       pkgs = pkgs."x86_64-linux";
@@ -125,6 +143,7 @@
         nixos-hardware.nixosModules.common-cpu-intel
         nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
         nixos-hardware.nixosModules.common-pc-ssd
+        # nur.nixosModules.nur
         ./nix/system/nijusan
         {
           system.configurationRevision = mkIf (self ? rev) self.rev;
@@ -136,6 +155,10 @@
 
     darwinConfigurations."logan@patchbook" = mkDarwinSystem "aarch64-darwin";
 
+    devShell = forAllSystems (system: import ./shell.nix { pkgs = pkgs."${system}"; });
+
     formatter = forAllSystems (system: pkgs.${system}.alejandra);
+
+    templates = import ./nix/templates;
   };
 }

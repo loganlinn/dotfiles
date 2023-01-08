@@ -3,17 +3,20 @@
   lib,
   pkgs,
   ...
-}: {
+}: let
+  inherit (pkgs.stdenv.targetPlatform) isDarwin isLinux;
+in {
   imports = [
     ./git.nix
+    ./neovim
     ./pam.nix
-    ./secrets.nix
     ./readline.nix
+    ./rofi.nix
+    ./secrets.nix
     ./shellAliases.nix
   ];
 
   home.packages = with pkgs; [
-    bash
     binutils
     cmake
     coreutils-full # installs gnu versions
@@ -21,7 +24,6 @@
     du-dust
     fd
     gawk
-    git
     gnugrep
     gnumake
     gnused
@@ -33,13 +35,13 @@
     pinentry
     procs
     rcm
-    (ripgrep.override {withPCRE2 = true;})
+    ripgrep
     rlwrap
     sd
     silver-searcher
     sops
     tree
-  ];
+  ] ++ lib.optional isLinux sysz;
 
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
@@ -59,6 +61,11 @@
 
   programs = {
     home-manager.enable = true;
+
+    bash = {
+      enable = true;
+      enableCompletion = true;
+    };
 
     command-not-found.enable = !config.programs.nix-index.enable;
 

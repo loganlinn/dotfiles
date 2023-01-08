@@ -1,7 +1,7 @@
 { conf, lib, pkgs, ... }: {
   home.shellAliases = let
     inherit (lib) getExe;
-    inherit (pkgs.stdenv.hostPlatform) isDarwin;
+    inherit (pkgs.stdenv.targetPlatform) isDarwin;
     git = getExe pkgs.git;
     kitty = getExe pkgs.kitty;
   in rec {

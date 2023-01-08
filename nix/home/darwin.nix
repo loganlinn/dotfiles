@@ -6,7 +6,6 @@
     ./dev.nix
     ./fonts.nix
     ./gh.nix
-    ./neovim.nix
     ./pretty.nix
     ./zsh.nix
   ];

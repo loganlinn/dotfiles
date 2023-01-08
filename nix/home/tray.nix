@@ -1,8 +1,7 @@
 { ... }:
 
 {
-  imports = [ ./rofi.nix ];
-
+  # Required by syncthing.service...
   systemd.user.targets.tray = {
 		Unit = {
 			Description = "Home Manager System Tray";

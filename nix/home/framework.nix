@@ -1,14 +1,11 @@
 {pkgs, ...}: {
   imports = [
     ./common.nix
-    ./linux.nix
     ./dev.nix
     ./emacs.nix
     ./fonts.nix
     ./gh.nix
     ./git.nix
-    # ./kitty.nix
-    ./neovim.nix
     ./pretty.nix
     ./rofi.nix
     ./sync.nix
