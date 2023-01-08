@@ -9,7 +9,6 @@
   bins = rec {
     kitty = getExe config.programs.kitty.package;
     rofi = getExe config.programs.rofi.package;
-    nnn = getExe config.programs.nnn.finalPackage;
     google_chrome = getExe config.programs.google-chrome.package;
     emacs = getExe config.programs.emacs.package;
     neovim = getExe config.programs.neovim.package;
@@ -48,8 +47,6 @@ in {
 
   xsession.enable = true;
   xsession.windowManager.i3 = let
-    fileManager = "${bins.terminal} ${bins.nnn} -a -P -p"; # TODO setup default and use xdg-open
-
     keysyms = {
       alt = "Mod1";
       super = "Mod4";
@@ -72,7 +69,7 @@ in {
           "${super}+Return" = "exec ${bins.kitty}";
           "${super}+Shift+Return" = "exec ${bins.browser}";
           "${super}+e" = "exec ${bins.emacs}";
-          "${super}+Shift+n" = "exec ${fileManager}";
+          "${super}+Shift+n" = "exec thunar";
           "${super}+space" = "exec ${bins.rofi} -show drun";
           "${super}+Shift+space" = "exec ${bins.rofi} -show run";
           "${super}+Ctrl+space" = "exec ${bins.rofi} -show window";
@@ -132,7 +129,10 @@ in {
 
           "${super}+f" = "fullscreen toggle";
           "${super}+Shift+f" = "floating toggle";
+          "${super}+t" = "focus mode_toggle";
+          "${super}+Shift+t" = "layout toggle tabbed splith splitv";
 
+          "${super}+Control+e" = ''[class="Emacs"] focus'';
           "${super}+Control+s" = ''[class="Slack"] focus'';
           "${super}+Control+d" = ''[title="Linear"] focus'';
           "${super}+Control+f" = ''[class="kitty"] focus'';

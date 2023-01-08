@@ -733,6 +733,7 @@ for_window [urgent=latest] focus
 # Focus keys
 ###############################################################################
 
+bindsym $mod+Control+e [class="Emacs"] focus
 bindsym $mod+Control+s [class="Slack"] focus
 bindsym $mod+Control+d [title="Linear"] focus
 bindsym $mod+Control+f [class="kitty"] focus
