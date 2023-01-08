@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{lib, pkgs, ...}: {
   imports = [
     ./azure.nix
     ./clojure.nix
@@ -66,4 +66,6 @@
     stern
     kind
   ];
+
+  programs.nix-index.enable = lib.mkDefault true;
 }
