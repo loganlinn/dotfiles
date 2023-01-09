@@ -117,7 +117,7 @@ in {
           # Carry window to next free workspace
           # "${mod}+grave" = "i3-next-workspace"; # TODO create package for https://github.com/regolith-linux/i3-next-workspace/blob/main/i3-next-workspace
 
-          "${super}+Shift+r" = "refresh";
+          "${super}+Shift+f5" = "exec ${kitty} +kitten panel --lines 10 switch";
           "${super}+Shift+c" = "reload";
 
           "${super}+r" = "mode resize";
@@ -192,6 +192,7 @@ in {
           {title = "Calculator";}
           {title = "Steam.*";}
           {title = "doom-capture";}
+          {class = "zoom";}
           {window_role = "pop-up";}
           {window_role = "prefwindow";}
         ];
