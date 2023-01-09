@@ -1,5 +1,10 @@
-{ config, lib, pkgs, ... }:
-let inherit (pkgs.stdenv.targetPlatform) isDarwin isLinux;
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  inherit (pkgs.stdenv.targetPlatform) isDarwin isLinux;
 in {
   imports = [
     ./accounts.nix
@@ -38,7 +43,19 @@ in {
       silver-searcher
       sops
       tree
-    ] ++ lib.optional isLinux sysz;
+      (writeShellApplication {
+        name = "switch";
+        text =
+          if isDarwin
+          then ''
+            darwin-rebuild switch --impure --flake ~/.dotfiles#"$(whoami)@$(hostname -s)"
+          ''
+          else ''
+            home-manager switch --flake ~/.dotfiles#"$(whoami)@$(hostname -s)"
+          '';
+      })
+    ]
+    ++ lib.optional isLinux sysz;
 
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
@@ -107,9 +124,8 @@ in {
     enableSshSupport = true;
     pinentryFlavor = lib.mkDefault "gtk2";
     extraConfig = ''
-     allow-emacs-pinentry
-     allow-loopback-pinentry
+      allow-emacs-pinentry
+      allow-loopback-pinentry
     '';
   };
-
 }

@@ -39,11 +39,6 @@
 
     hm = getExe pkgs.home-manager;
 
-    switch = if isDarwin then
-      "darwin-rebuild switch --impure --flake ~/.dotfiles#\${USER?}@\${HOST?}"
-    else
-      "${hm} switch --flake ~/.dotfiles#\${USER?}@\${HOST?}";
-
     k = getExe pkgs.kubectl;
     kctx = getExe pkgs.kubectx;
     kk = getExe pkgs.kustomize;
