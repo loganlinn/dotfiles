@@ -188,6 +188,8 @@ in {
           "${super}+Control+d" = ''[title="Linear"] focus'';
           "${super}+Control+f" = ''[class="kitty"] focus'';
           "${super}+Control+g" = ''[class="Chromium"] focus'';
+
+          "${super}+Escape" = "exec dm-tool switch-to-greeter";
         };
       keycodebindings = {
         # "214" = "exec /bin/script.sh";
