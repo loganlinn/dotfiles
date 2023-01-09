@@ -68,22 +68,22 @@ in {
     enable = true;
     platformTheme = "gtk";
   };
-  services.xsettingsd = {
-    enable = true;
-    settings = with config; {
-      # When running, most GNOME/GTK+ applications prefer those settings
-      # instead of *.ini files
-      "Net/IconThemeName" = gtk.iconTheme.name;
-      "Net/ThemeName" = gtk.theme.name;
-      "Gtk/CursorThemeName" = xsession.pointerCursor.name;
-    } // lib.optionalAttrs (super ? fonts.fontconfig) {
-      # Applications like Java/Wine doesn't use Fontconfig settings,
-      # but uses it from here
-      "Xft/Hinting" = super.fonts.fontconfig.hinting.enable;
-      "Xft/HintStyle" = super.fonts.fontconfig.hinting.style;
-      "Xft/Antialias" = super.fonts.fontconfig.antialias;
-      "Xft/RGBA" = super.fonts.fontconfig.subpixel.lcdfilter;
-    };
-  };
-
+  # services.xsettingsd = {
+  #   enable = true;
+  #   settings = with config;
+  #     {
+  #       # When running, most GNOME/GTK+ applications prefer those settings
+  #       # instead of *.ini files
+  #       "Net/IconThemeName" = gtk.iconTheme.name;
+  #       "Net/ThemeName" = gtk.theme.name;
+  #       "Gtk/CursorThemeName" = xsession.pointerCursor.name;
+  #     } // lib.optionalAttrs (super ? fonts.fontconfig) {
+  #       # Applications like Java/Wine doesn't use Fontconfig settings,
+  #       # but uses it from here
+  #       "Xft/Hinting" = super.fonts.fontconfig.hinting.enable;
+  #       "Xft/HintStyle" = super.fonts.fontconfig.hinting.style;
+  #       "Xft/Antialias" = super.fonts.fontconfig.antialias;
+  #       "Xft/RGBA" = super.fonts.fontconfig.subpixel.lcdfilter;
+  #     };
+  # };
 }

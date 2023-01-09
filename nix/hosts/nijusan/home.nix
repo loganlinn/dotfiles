@@ -30,6 +30,7 @@ in {
     ../../home/vscode.nix
     ../../home/xdg.nix
     ../../home/zsh.nix
+    ./theme.nix
   ];
 
   programs.feh.enable = true;
@@ -174,8 +175,10 @@ in {
       };
       bars = [ ];
       fonts = {
-        names =
-          [ "FontAwesome" "FontAwesome5Free" "Fira Sans" "DejaVu Sans Mono" ];
+        names = [
+          "pango:DejaVu Sans Mono"
+          #"Noto Sans"
+        ];
         size = 10.0;
       };
       focus = {
@@ -230,11 +233,11 @@ in {
         "0" = [ ];
       };
       startup = [
-        # {
-        #   command = "${lib.getExe pkgs.feh} --bg-scale ${./background.jpg}";
-        #   always = true;
-        #   notification = false;
-        # }
+        {
+          command = "${lib.getExe pkgs.feh} --bg-scale ${./background.jpg}";
+          always = true;
+          notification = false;
+        }
         {
           command = "systemctl --user restart polybar";
           always = true;
@@ -253,7 +256,7 @@ in {
       enable = true;
       package = pkgs.syncthingtray.override {
         webviewSupport = true;
-        jsSupport =  true;
+        jsSupport = true;
         plasmoidSupport = false;
         kioPluginSupport = false;
       };
@@ -276,13 +279,13 @@ in {
     ark
     jetbrains.idea-community
     obsidian
+    pango
     slack
     trash-cli
     vlc
-    i3-gaps
     xorg.xev
-    xorg.xprop
     xorg.xkill
+    xorg.xprop
   ];
   home.stateVersion = "22.11";
   home.enableDebugInfo = false;
