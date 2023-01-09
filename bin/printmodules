@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ $EUID -ne 0 ]]; then
+	echo "Please run with sudo"
+	exit 1
+fi
+
+print_module_parameters() {
+	local module="$1"
+
+	[[ ! -d "/sys/module/$module/parameters" ]] ||
+	while read -r parameter; do
+		printf "%s.%s=%s\n" "$module" "$(basename "$parameter")" "$(cat "$parameter")"
+	done < <(find "/sys/module/$module/parameters" -type f)
+}
+
+list_modules() {
+	if [[ $# == 0 ]]; then
+		cat /proc/modules | cut -f 1 -d " "
+	else
+		for module; do printf "%s\n" "$module"; done
+	fi
+}
+
+while read -r module in $modules; do
+	print_module_parameters "$module"
+done < <(list_modules)
