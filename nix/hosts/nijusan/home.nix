@@ -11,6 +11,14 @@ let
     terminal = kitty;
     browser = google_chrome;
   };
+  bookmarks = [
+    "file:///home/logan/Downloads"
+    "file:///home/logan/Documents"
+    "file:///home/logan/Sync"
+    "file:///home/logan/.dotfiles"
+    "file:///home/logan/src"
+    "file:///home/logan/src/github.com/patch-tech/patch"
+  ];
 in {
   imports = [
     ../../home/3d-graphics.nix
@@ -32,9 +40,29 @@ in {
     ../../home/zsh.nix
   ];
 
-  programs.feh.enable = true;
+  gtk = {
+    enable = true;
 
-  home.sessionVariables."BROWSER" = bins.browser;
+    font = {
+      name = "Roboto";
+      package = pkgs.roboto;
+    };
+
+    gtk3.bookmarks = bookmarks;
+    gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+
+    iconTheme = {
+      name = "Papirus-Dark";
+      package = pkgs.papirus-icon-theme;
+    };
+
+    theme = {
+      name = "Catppuccin-Orange-Dark-Compact";
+      package = pkgs.catppuccin-gtk.override {size = "compact";};
+    };
+  };
+
+  programs.feh.enable = true;
 
   xsession.enable = true;
   xsession.windowManager.i3 = let
@@ -230,11 +258,11 @@ in {
         "0" = [ ];
       };
       startup = [
-        {
-          command = "${lib.getExe pkgs.feh} --bg-scale ${./background.jpg}";
-          always = true;
-          notification = false;
-        }
+        # {
+        #   command = "${lib.getExe pkgs.feh} --bg-scale ${./background.jpg}";
+        #   always = true;
+        #   notification = false;
+        # }
         {
           command = "systemctl --user restart polybar";
           always = true;
@@ -270,7 +298,8 @@ in {
 
   home.username = "logan";
   home.homeDirectory = "/home/logan";
-
+  home.sessionVariables."BROWSER" = bins.browser;
+  home.file.".background-image".source = ./background.jpg;
   home.packages = with pkgs; [
     ark
     jetbrains.idea-community
@@ -283,6 +312,14 @@ in {
     xorg.xprop
     xorg.xkill
   ];
-
+  home.pointerCursor = {
+    # package = pkgs.breeze-qt5;
+    # name = "Breeze";
+    package = pkgs.bibata-cursors;
+    name = "Bibata-Modern-Classic";
+    gtk.enable = true;
+    x11.enable = true;
+  };
   home.stateVersion = "22.11";
+  home.enableDebugInfo = false;
 }
