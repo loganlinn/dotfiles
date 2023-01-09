@@ -17,22 +17,28 @@
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    agenix.url = "github:ryantm/agenix";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
-
-    emacs.url = "github:nix-community/emacs-overlay";
-    emacs.inputs.nixpkgs.follows = "nixpkgs";
-
     darwin.url = "github:lnl7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     # agenix.url = "github:ryantm/agenix";
+    # agenix.inputs.nixpkgs.follows = "nixpkgs";
+
+    emacs.url = "github:nix-community/emacs-overlay";
+    emacs.inputs.nixpkgs.follows = "nixpkgs";
+
+    # eww.url = "github:elkowar/eww";
+    # eww.inputs.nixpkgs.follows = "nixpkgs";
+    # eww.inputs.rust-overlay.follows = "rust-overlay";
+
+    # rust-overlay.url = "github:oxalica/rust-overlay";
+    # rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    # rust-overlay.inputs.flake-utils.follows = "fu";
+
+    # fu.url = "github:numtide/flake-utils";
+    # flake-parts.url = "github:hercules-ci/flake-parts";
 
     # devenv.url = "github:cachix/devenv/v0.5";
     # devenv.inputs.nixpkgs.follows = "nixpkgs";
-
-    # neovim-flake.url = "github:jordanisaacs/neovim-flake";
-    # neovim-flake.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
@@ -43,7 +49,7 @@
     # nur,
     # flake-utils,
     home-manager,
-    agenix,
+    # agenix,
     emacs,
     darwin,
     ...
@@ -145,11 +151,11 @@
         nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
         nixos-hardware.nixosModules.common-pc-ssd
         # nur.nixosModules.nur
+        # agenix.nixosModule
         ./nix/system/nijusan
         {
           system.configurationRevision = mkIf (self ? rev) self.rev;
         }
-        agenix.nixosModule
       ];
       specialArgs = {inherit inputs;};
     };

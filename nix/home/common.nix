@@ -7,7 +7,7 @@ in {
     ./neovim
     ./security.nix
     ./readline.nix
-    ./rofi.nix
+    ./rofi
     ./secrets.nix
     ./shellAliases.nix
   ];
