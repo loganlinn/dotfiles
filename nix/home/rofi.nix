@@ -13,7 +13,7 @@ lib.mkIf pkgs.stdenv.targetPlatform.isLinux {
     plugins = with pkgs; [
       rofi-file-browser
       rofi-calc
-      rofi-power-menu
     ];
   };
+  home.packages = with pkgs; [rofi-power-menu];
 }
