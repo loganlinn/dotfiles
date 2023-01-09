@@ -46,6 +46,7 @@ in {
   home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
     ark
+    google-cloud-sdk
     jetbrains.idea-community
     libnotify
     obsidian

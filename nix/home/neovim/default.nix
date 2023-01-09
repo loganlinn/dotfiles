@@ -110,6 +110,16 @@
       vim-markdown
       vim-clojure-static
       vim-shellcheck
+      yuck-vim
+      # pkgs.vimUtils.buildVimPlugin {
+      #   name = "vim-kitty";
+      #   src = fetchFromGitHub {
+      #     owner = "fladson";
+      #     repo = "vim-kitty";
+      #     rev = "d4c60f096b751c1462c80cbf42550e29c8cd2983";
+      #     hash = "sha256-dOz55kUIsrRIuT7UBZaGy8fxpI2zzQL875ooUmZwoY4=";
+      #   };
+      # }
     ];
 
     extraPython3Packages = ps: with ps; [pynvim];
