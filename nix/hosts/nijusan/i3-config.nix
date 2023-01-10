@@ -5,19 +5,17 @@
   modifier ? "Mod4",
   alt ? "Mod1",
   terminal ? "kitty",
-  backgroundImage ? "~/.background-image",
-  appLauncher ? "rofi -show drun",
+  menu ? "rofi -show drun",
   fileManager ? "thunar",
   sessionLocker ? "dm-tool lock",
   sessionRefresher ? "switch",
-  browser ? "google-chrome",
+  browser ? "google-chrome-stable",
   editor ? "emacs",
   messenger ? "slack",
+  backgroundImage ? "~/.background-image",
   ...
 }: rec {
-  inherit modifier terminal;
-
-  menu = appLauncher;
+  inherit modifier terminal menu;
 
   keybindings = {
     ## Session

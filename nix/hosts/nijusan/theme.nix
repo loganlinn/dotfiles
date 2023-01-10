@@ -3,7 +3,11 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+
+with lib;
+
+{
   home.packages = with pkgs; [
     noto-fonts
     noto-fonts-cjk
@@ -51,7 +55,7 @@
     package = pkgs.arc-icon-theme;
     name = "Arc";
   };
-  gtk.gtk3.bookmarks = lib.mkOptionDefault [
+  gtk.gtk3.bookmarks = mkOptionDefault [
     # "file://${config.xdg.userDirs.desktop}"
     "file://${config.xdg.userDirs.download}"
     "file://${config.xdg.userDirs.documents}"
@@ -72,18 +76,16 @@
 
   qt.platformTheme = "gtk";
 
-  programs.rofi.theme = builtins.readFile (pkgs.fetchFromGitHub {
-      owner = "dracula";
-      repo = "rofi";
-      rev = "090a990c8dc306e100e73cece82dc761f3f0130c";
-      hash = "sha256-raoJ3ndKtpEpsN3yN4tMt5Kn1PrqVzlakeCZMETmItw=";
-    }
-    + "/theme/config1.rasi");
-  programs.rofi.font = config.gtk.font.name;
+  programs.rofi.theme = pkgs.fetchFromGitHub {
+    owner = "dracula";
+    repo = "rofi";
+    rev = "090a990c8dc306e100e73cece82dc761f3f0130c";
+    hash = "sha256-raoJ3ndKtpEpsN3yN4tMt5Kn1PrqVzlakeCZMETmItw=";
+  }
+  + "/theme/config1.rasi";
 
+  programs.rofi.font = config.gtk.font.name;
   services.dunst.iconTheme = config.gtk.iconTheme;
-  services.dunst.settings.global.font = config.gtk.font.name + (lib.optionalString (config.gtk.font.size != null) " ${config.gtk.font.size}");
-  # services.dunst.settings.global.icon_path = TODO config.gtk.iconTheme.package?
 
   services.xsettingsd = {
     enable = true;
