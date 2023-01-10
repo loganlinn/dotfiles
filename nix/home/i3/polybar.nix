@@ -107,6 +107,16 @@
         label-visible-padding = 2;
         label-urgent-padding = 2;
       };
+      "module/time" = {
+        type = "internal/date";
+        interval = 1;
+        format-padding = 3;
+        time = "%I:%M %p";
+        date = "%a %b %d";
+        label = "%date%, %time%";
+        label-padding = 2;
+        label-font = 2;
+      };
       "module/temperature" = rec {
         type = "internal/temperature";
         interval = 5;
@@ -135,18 +145,17 @@
         label = "RAM %percentage_used%%";
         # label = "RAM %gb_used%/%gb_free%";
       };
-      "module/time" = {
-        type = "internal/date";
-        interval = 1;
-        format-padding = 3;
-        time = "%H:%M";
-        date = "%A %d %b";
-        label = "%date%, %time%";
-        label-padding = 2;
-        # Bold font for date
-        # This font is defined as font-1 but we actually need to say font = 2 here
-        label-font = 2;
-      };
+      # "module/gpu" = {
+      #   type = "custom/script";
+      #   exec = pkgs.writeShellApplication {
+      #     name = "polybar-system-nvidia-smi.sh";
+      #     runtimeInputs = [pkgs.gawk];
+      #     text = ''
+      #       nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | awk '{ print "GPU",""$1"","%"}'
+      #     '';
+      #   };
+      #   interval = 5;
+      # };
       "module/network_eno3" = {
         type = "internal/network";
         interface = "eno3";

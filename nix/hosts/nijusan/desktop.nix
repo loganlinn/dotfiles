@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib; {
   xsession.enable = true;
   xsession.windowManager.i3 = {
@@ -63,8 +68,8 @@ with lib; {
   services.dunst.enable = true;
   services.dunst.settings = {
     global = {
-      browser = "${config.programs.firefox.package}/bin/firefox -new-tab";
-      dmenu = "${config.programs.rofi.package}/bin/rofi -dmenu";
+      browser = getExe config.programs.google-chrome.package;
+      dmenu = "${getExe config.programs.rofi.package} -dmenu";
       follow = "mouse";
       font = "Droid Sans 10";
       format = "<b>%s</b>\\n%b";
@@ -88,7 +93,7 @@ with lib; {
       progress_bar_max_width = 300;
       # progress_bar_corner_radius = 0;
       indicate_hidden = true;
-      notification_limit = 20;
+      notification_limit = 8;
       min_icon_size = 0;
       max_icon_size = 18;
       icon_position = "off";
@@ -130,7 +135,7 @@ with lib; {
       foreground = "#ECEFF4"; # nord6
       background = "#5E81AC"; # nord10
       frame_color = "#3B4252"; # nord1
-      timeout = 0;
+      timeout = 60;
     };
 
     urgency_critical = {
@@ -221,7 +226,6 @@ with lib; {
       timeout = 60;
       new_icon = "~/.local/share/icons/Linear-app-icon.png";
     };
-
   };
   # services.dunst.configFile = builtins.readFile (pkgs.fetchFromGitHub {
   #   owner = "dracula";

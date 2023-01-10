@@ -4,10 +4,7 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-{
+with lib; {
   home.packages = with pkgs; [
     noto-fonts
     noto-fonts-cjk
@@ -21,21 +18,39 @@ with lib;
   ];
 
   home.pointerCursor = {
-    package = pkgs.dracula-theme;
-    name = "Dracula-cursors";
+    # package = pkgs.dracula-theme;
+    # name = "Dracula-cursors";
+    #
+    package = pkgs.gnome.adwaita-icon-theme;
+    name = "Adwaita";
+    size = 24;
+    #
+    # package = pkgs.breeze-qt5;
+    # name = "Breeze";
+    #
+    # package = pkgs.bibata-cursors;
+    # name = "Bibata-Modern-Classic";
+    #
     x11.enable = true;
     gtk.enable = true;
   };
 
-  xresources.extraConfig = builtins.readFile (
-    pkgs.fetchFromGitHub {
-      owner = "dracula";
-      repo = "xresources";
-      rev = "539ef24e9b0c5498a82d59bfa2bad9b618d832a3";
-      hash = "sha256-6fltsAluqOqYIh2NX0I/LC3WCWkb9Fn8PH6LNLBQbrY=";
+  # xresources.extraConfig = builtins.readFile (
+  #   pkgs.fetchFromGitHub {
+  #     owner = "dracula";
+  #     repo = "xresources";
+  #     rev = "539ef24e9b0c5498a82d59bfa2bad9b618d832a3";
+  #     hash = "sha256-6fltsAluqOqYIh2NX0I/LC3WCWkb9Fn8PH6LNLBQbrY=";
+  #   }
+  #   + "/Xresources"
+  # );
+  xresources.extraConfig = builtins.readFile (pkgs.fetchFromGitHub {
+      owner = "selloween";
+      repo = "arc-theme-xresources";
+      rev = "d1d9ccceac4e778cab58292637b0b48927756381";
+      hash = "sha256-t+GpXGmSXe6Q5eDemNlEMk2cLgUh8i5kxZ1f7bkSyG8=";
     }
-    + "/Xresources"
-  );
+    + "/Xresources");
 
   gtk.enable = true;
   gtk.font = {
@@ -43,10 +58,10 @@ with lib;
     name = "Open Sans";
   };
   gtk.theme = {
-    name = "Dracula";
-    package = pkgs.dracula-theme;
-    # name = "Arc-Dark";
-    # package = pkgs.arc-theme;
+    # name = "Dracula";
+    # package = pkgs.dracula-theme;
+    name = "Arc-Dark";
+    package = pkgs.arc-theme;
     # name = "Catppuccin-Purple-Dark-xhdpi";
     # package = pkgs.catppuccin-gtk.override { size = "compact"; };
   };
@@ -76,15 +91,15 @@ with lib;
 
   qt.platformTheme = "gtk";
 
-  programs.rofi.theme = pkgs.fetchFromGitHub {
-    owner = "dracula";
-    repo = "rofi";
-    rev = "090a990c8dc306e100e73cece82dc761f3f0130c";
-    hash = "sha256-raoJ3ndKtpEpsN3yN4tMt5Kn1PrqVzlakeCZMETmItw=";
-  }
-  + "/theme/config1.rasi";
-
-  programs.rofi.font = config.gtk.font.name;
+  programs.rofi.theme = "Arc-Dark";
+  # programs.rofi.theme = pkgs.fetchFromGitHub {
+  #   owner = "dracula";
+  #   repo = "rofi";
+  #   rev = "090a990c8dc306e100e73cece82dc761f3f0130c";
+  #   hash = "sha256-raoJ3ndKtpEpsN3yN4tMt5Kn1PrqVzlakeCZMETmItw=";
+  # }
+  # + "/theme/config1.rasi";
+  programs.rofi.font = "DejaVu Sans Mono 14";
   services.dunst.iconTheme = config.gtk.iconTheme;
 
   services.xsettingsd = {

@@ -4,8 +4,8 @@
   in rec {
     "'..'" = "cd ..";
     "'...'" = "cd ...";
-    "'?'" = "which | xargs readlink";
-    "'??'" = "which -a | xargs readlink";
+    "'?'" = "which";
+    "'??'" = "which -a";
     l = "ls -lah";
     mkd = "mkdir -p";
 

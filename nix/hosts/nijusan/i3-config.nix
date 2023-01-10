@@ -25,8 +25,7 @@
     "${modifier}+Ctrl+c" = "restart";
     "${modifier}+Escape" = "exec ${sessionLocker}";
     "${modifier}+F5" = "exec ${sessionRefresher}";
-    "${modifier}+Shift+e" =
-      "exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'";
+    "${modifier}+Shift+e" = "exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'";
 
     ## Modes
     "${modifier}+r" = "mode resize";
