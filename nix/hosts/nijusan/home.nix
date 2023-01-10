@@ -11,7 +11,6 @@ in {
     ../../home/browser.nix
     ../../home/common.nix
     ../../home/dev
-    ../../home/dunst
     ../../home/emacs.nix
     ../../home/fonts.nix
     ../../home/git.nix

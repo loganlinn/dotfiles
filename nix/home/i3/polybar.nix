@@ -44,6 +44,11 @@
         alert = "\${colors.yellow}";
         accent = "#604c7e";
       };
+      bar = {
+        fill = "⏽";
+        empty = "⏽";
+        indicator = "⏽";
+      };
       "bar/top" = rec {
         width = "100%";
         height = "36";

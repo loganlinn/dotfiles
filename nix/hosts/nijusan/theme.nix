@@ -3,8 +3,55 @@
   lib,
   pkgs,
   ...
-}: let
-  bookmarks = [
+}: {
+  home.packages = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk
+    noto-fonts-emoji
+    fira-code
+    fira-code-symbols
+    open-sans
+    font-awesome
+    siji # iconic bitmap font
+    paper-icon-theme # for rofi
+  ];
+
+  home.pointerCursor = {
+    package = pkgs.dracula-theme;
+    name = "Dracula-cursors";
+    x11.enable = true;
+    gtk.enable = true;
+  };
+
+  xresources.extraConfig = builtins.readFile (
+    pkgs.fetchFromGitHub {
+      owner = "dracula";
+      repo = "xresources";
+      rev = "539ef24e9b0c5498a82d59bfa2bad9b618d832a3";
+      hash = "sha256-6fltsAluqOqYIh2NX0I/LC3WCWkb9Fn8PH6LNLBQbrY=";
+    }
+    + "/Xresources"
+  );
+
+  gtk.enable = true;
+  gtk.font = {
+    package = pkgs.open-sans;
+    name = "Open Sans";
+  };
+  gtk.theme = {
+    name = "Dracula";
+    package = pkgs.dracula-theme;
+    # name = "Arc-Dark";
+    # package = pkgs.arc-theme;
+    # name = "Catppuccin-Purple-Dark-xhdpi";
+    # package = pkgs.catppuccin-gtk.override { size = "compact"; };
+  };
+  # TODO package https://github.com/m4thewz/dracula-icons
+  gtk.iconTheme = {
+    package = pkgs.arc-icon-theme;
+    name = "Arc";
+  };
+  gtk.gtk3.bookmarks = lib.mkOptionDefault [
     # "file://${config.xdg.userDirs.desktop}"
     "file://${config.xdg.userDirs.download}"
     "file://${config.xdg.userDirs.documents}"
@@ -18,91 +65,33 @@
     "file://${config.home.homeDirectory}/src"
     "file://${config.home.homeDirectory}/src/github.com/patch-tech"
   ];
-in {
-  home = {
-    packages = with pkgs; [
-      font-awesome_5
-      hicolor-icon-theme
-      noto-fonts
-      noto-fonts-cjk
-      noto-fonts-emoji
-    ];
+  gtk.gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+  # Workaround for apps that use libadwaita which does locate GTK settings via XDG.
+  # https://www.reddit.com/r/swaywm/comments/qodk20/gtk4_theming_not_working_how_do_i_configure_it/hzrv6gr/?context=3
+  home.sessionVariables.GTK_THEME = config.gtk.theme.name;
 
-    pointerCursor = {
-      package = pkgs.gnome.adwaita-icon-theme;
-      name = "Adwaita";
-      size = 32;
+  qt.platformTheme = "gtk";
 
-      # package = pkgs.breeze-qt5;
-      # name = "Breeze";
-
-      # package = pkgs.bibata-cursors;
-      # name = "Bibata-Modern-Classic";
-
-      x11.enable = true;
-      gtk.enable = true;
-    };
-
-    # Application using libadwaita are **not** respecting config files *sigh*
-    # https://www.reddit.com/r/swaywm/comments/qodk20/gtk4_theming_not_working_how_do_i_configure_it/hzrv6gr/?context=3
-    sessionVariables.GTK_THEME = config.gtk.theme.name;
-  };
-
-  # https://github.com/selloween/arc-theme-xresources/blob/master/Xresources
-  xresources.extraConfig = builtins.readFile (
-    pkgs.fetchFromGitHub {
+  programs.rofi.theme = builtins.readFile (pkgs.fetchFromGitHub {
       owner = "dracula";
-      repo = "xresources";
-      rev = "539ef24e9b0c5498a82d59bfa2bad9b618d832a3";
-      hash = "sha256-6fltsAluqOqYIh2NX0I/LC3WCWkb9Fn8PH6LNLBQbrY=";
-    } + "/Xresources"
-  );
-
-  gtk = {
-    enable = true;
-    font = {
-      package = pkgs.noto-fonts;
-      name = "Noto Sans";
-    };
-    iconTheme = {
-      package = pkgs.arc-icon-theme;
-      name = "Arc";
-    };
-    theme = {
-      name = "Arc-Dark";
-      package = pkgs.arc-theme;
-      # name = "Catppuccin-Purple-Dark-xhdpi";
-      # package = pkgs.catppuccin-gtk.override { size = "compact"; };
-    };
-    gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
-    gtk3.bookmarks = bookmarks;
-  };
-  qt = {
-    enable = true;
-    platformTheme = "gtk";
-  };
-
-  programs.rofi.theme = "Arc-Dark";
+      repo = "rofi";
+      rev = "090a990c8dc306e100e73cece82dc761f3f0130c";
+      hash = "sha256-raoJ3ndKtpEpsN3yN4tMt5Kn1PrqVzlakeCZMETmItw=";
+    }
+    + "/theme/config1.rasi");
   programs.rofi.font = config.gtk.font.name;
 
   services.dunst.iconTheme = config.gtk.iconTheme;
+  services.dunst.settings.global.font = config.gtk.font.name + (lib.optionalString (config.gtk.font.size != null) " ${config.gtk.font.size}");
+  # services.dunst.settings.global.icon_path = TODO config.gtk.iconTheme.package?
 
-  # services.xsettingsd = {
-  #   enable = true;
-  #   settings = with config;
-  #     {
-  #       # When running, most GNOME/GTK+ applications prefer those settings
-  #       # instead of *.ini files
-  #       "Net/IconThemeName" = gtk.iconTheme.name;
-  #       "Net/ThemeName" = gtk.theme.name;
-  #       "Gtk/CursorThemeName" = xsession.pointerCursor.name;
-  #     } // lib.optionalAttrs (super ? fonts.fontconfig) {
-  #       # Applications like Java/Wine doesn't use Fontconfig settings,
-  #       # but uses it from here
-  #       "Xft/Hinting" = super.fonts.fontconfig.hinting.enable;
-  #       "Xft/HintStyle" = super.fonts.fontconfig.hinting.style;
-  #       "Xft/Antialias" = super.fonts.fontconfig.antialias;
-  #       "Xft/RGBA" = super.fonts.fontconfig.subpixel.lcdfilter;
-  #     };
-  # };
+  services.xsettingsd = {
+    enable = true;
+    settings = with config; {
+      # When running, most GNOME/GTK+ applications prefer those settings instead of *.ini files
+      "Net/IconThemeName" = config.gtk.iconTheme.name;
+      "Net/ThemeName" = config.gtk.theme.name;
+      "Gtk/CursorThemeName" = config.xsession.pointerCursor.name;
+    };
+  };
 }
