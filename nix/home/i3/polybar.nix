@@ -1,6 +1,6 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   systemd.user.services.polybar = {
-    Install.WantedBy = ["graphical-session.target"];
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 
   services.polybar = {
@@ -21,29 +21,28 @@
       foreground-alt = "#E6B450";
       alert = "#FF3333";
     in {
-      colors = {inherit background background-alt foreground foreground-alt alert;};
+      # colors = {
+      #   inherit background background-alt foreground foreground-alt alert;
+      # };
       "bar/top" = rec {
         width = "100%";
-        radius = 0;
-        inherit background foreground;
-        font-size = "12";
-        font-0 = "VictorMono:style=Regular:size=${font-size};5";
-        font-1 = "emoji:style=Regular:scale=10;4";
-        padding = 3;
+        height = "3%";
+        # radius = 0;
+        # inherit background foreground;
+        # font-size = "12";
+        # font-0 = "VictorMono:style=Regular:size=${font-size};5";
+        # font-1 = "emoji:style=Regular:scale=10;4";
+        # padding = 3;
         # https://en.wikipedia.org/wiki/Thin_space
-        separator = " ";
-        module-margin = 0;
-        modules-left = ["i3"];
-        modules-center = ["date"];
-        modules-right = [
-          "pulseaudio"
-          "network"
-          "temperature"
-        ];
-        monitor = "\${env:MONITOR:}";
-        tray-padding = 2;
-        tray-position = "right";
-        tray-maxsize = 512;
+        # separator = " ";
+        # module-margin = 0;
+        modules-left = [ "i3" ];
+        modules-center = [ ];
+        modules-right = [ "temperature" "network" "volume" "date" ];
+        # monitor = "\${env:MONITOR:}";
+        # tray-padding = 2;
+        # tray-position = "right";
+        # tray-maxsize = 512;
         # scroll-up = "${pkgs.brillo}/bin/brillo -e -A 0.5";
         # scroll-down = "${pkgs.brillo}/bin/brillo -e -U 0.5";
       };
@@ -78,7 +77,7 @@
       "module/date" = {
         type = "internal/date";
         interval = 1;
-        date = "%H:%M | %Z";
+        date = "%H:%M";
         time = "%F";
         label = "%time% | %date%";
       };
@@ -128,6 +127,17 @@
         click-right = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
         scroll-up = "pactl set-sink-volume @DEFAULT_SINK@ +1%";
         scroll-down = "pactl set-sink-volume @DEFAULT_SINK@ -1%";
+      };
+      "module/volume" = {
+        type = "internal/pulseaudio";
+        format.volume = "<ramp-volume> <label-volume>";
+        label.muted.text = "🔇";
+        label.muted.foreground = "#666";
+        ramp.volume = [ "🔈" "🔉" "🔊" ];
+        click.right = "pavucontrol &";
+        # click-right = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
+        # scroll-up = "pactl set-sink-volume @DEFAULT_SINK@ +1%";
+        # scroll-down = "pactl set-sink-volume @DEFAULT_SINK@ -1%";
       };
       "module/temperature" = rec {
         type = "internal/temperature";

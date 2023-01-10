@@ -43,6 +43,8 @@ in {
       silver-searcher
       sops
       tree
+      xh
+      zenith
       (writeShellApplication {
         name = "switch";
         text =

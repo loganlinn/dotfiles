@@ -11,7 +11,6 @@
 
   home.packages = with pkgs; [
     # misc
-    xh
     hey
     dive
     jless
@@ -56,7 +55,7 @@
     gopls
 
     # python
-    python
+    python3
     pyright
 
     # ruby

@@ -55,7 +55,7 @@ in {
     };
   in {
     enable = true;
-    package = pkgs.i3-gaps;
+    # package = pkgs.i3-gaps;
     config = {
       terminal = bins.terminal;
       menu = "${bins.rofi} -show drun";
@@ -117,7 +117,7 @@ in {
           # Carry window to next free workspace
           # "${mod}+grave" = "i3-next-workspace"; # TODO create package for https://github.com/regolith-linux/i3-next-workspace/blob/main/i3-next-workspace
 
-          "${super}+Shift+f5" = "exec ${bins.kitty} +kitten panel --lines 10 switch";
+          "${super}+Shift+F5" = "exec switch";
           "${super}+Shift+c" = "reload";
 
           "${super}+r" = "mode resize";

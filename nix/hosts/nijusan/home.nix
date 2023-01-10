@@ -50,6 +50,7 @@ in {
   home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
     ark
+    font-manager
     google-cloud-sdk
     jetbrains.idea-community
     libnotify

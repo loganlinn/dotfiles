@@ -68,6 +68,12 @@ in {
     enable = true;
     platformTheme = "gtk";
   };
+
+  programs.rofi.theme = "Arc-Dark";
+  programs.rofi.font = config.gtk.font.name;
+
+  services.dunst.iconTheme = config.gtk.iconTheme;
+
   # services.xsettingsd = {
   #   enable = true;
   #   settings = with config;

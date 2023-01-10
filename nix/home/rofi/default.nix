@@ -15,7 +15,6 @@ with lib;
         rofi-emoji
         rofi-file-browser
       ];
-      theme = mkDefault ./theme.rasi;
     };
 
     home.packages = with pkgs; [
