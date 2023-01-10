@@ -111,6 +111,7 @@
       vim-clojure-static
       vim-shellcheck
       yuck-vim
+      # vim-kitty-navigator
       # pkgs.vimUtils.buildVimPlugin {
       #   name = "vim-kitty";
       #   src = fetchFromGitHub {

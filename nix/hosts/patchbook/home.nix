@@ -3,7 +3,7 @@
 {
   imports = [
     ../../common.nix
-    ../../dev.nix
+    ../../dev
     ../../fonts.nix
     ../../gh.nix
     ../../pretty.nix

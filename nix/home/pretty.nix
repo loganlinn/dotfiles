@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   imports = [
     ./readline.nix
+    ./starship.nix
   ];
 
   programs = {
@@ -17,11 +18,6 @@
     lsd = {
       enable = true;
       enableAliases = true;
-    };
-
-    starship = {
-      enable = true;
-      enableZshIntegration = true;
     };
 
     tealdeer.enable = true; # tldr command

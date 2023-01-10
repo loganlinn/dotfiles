@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   imports = [
     ../../home/common.nix
-    ../../home/dev.nix
+    ../../home/dev
     ../../home/emacs.nix
     ../../home/fonts.nix
     ../../home/gh.nix
@@ -32,9 +32,8 @@
     #gifski
     #ponymix
     restic
-    gnome.sushi                 # Nautalius file previews
-    gcolor3                     # Color picker
-    gnome-feeds                 # RSS/Atom reader
+    gnome.sushi # Nautalius file previews
+    gcolor3 # Color picker
+    gnome-feeds # RSS/Atom reader
   ];
-
 }

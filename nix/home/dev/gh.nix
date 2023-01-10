@@ -1,12 +1,11 @@
-{pkgs, ...}: {
-  home.packages = [pkgs.gum];
+{lib, pkgs, ...}: {
   programs.gh = {
     enable = true;
     enableGitCredentialHelper = true;
     settings = {
       aliases = let
-        gh = "${pkgs.gh}/bin/gh";
-        gum = "${pkgs.gum}/bin/gum";
+        gh = lib.getExe pkgs.gh;
+        gum = lib.getExe pkgs.gum;
       in {
         o = "browse";
         op = "pr view --web";

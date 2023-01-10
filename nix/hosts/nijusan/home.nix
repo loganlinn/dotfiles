@@ -1,12 +1,16 @@
-{ config, lib, pkgs, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) getExe;
 in {
   imports = [
     ../../home/3d-graphics.nix
     ../../home/browser.nix
     ../../home/common.nix
-    ../../home/dev.nix
+    ../../home/dev
     ../../home/dunst
     ../../home/emacs.nix
     ../../home/fonts.nix
@@ -51,6 +55,7 @@ in {
     libnotify
     obsidian
     pango
+    python3
     slack
     trash-cli
     vlc

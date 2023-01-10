@@ -7,10 +7,8 @@
   in rec {
     "'..'" = "cd ..";
     "'...'" = "cd ...";
-
-    "'?'" = "which";
-    "'??'" = "which -a";
-
+    "'?'" = "which | xargs readlink";
+    "'??'" = "which -a | xargs readlink";
     l = "ls -lah";
     mkd = "mkdir -p";
 
@@ -36,7 +34,6 @@
 
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";
-
     hm = getExe pkgs.home-manager;
 
     k = getExe pkgs.kubectl;
@@ -44,7 +41,6 @@
     kk = getExe pkgs.kustomize;
     kkb = "${kk} build";
 
-    # s = "${pkgs.kitty}/bin/kitty +kitten ssh";
     s = "${kitty} +kitten ssh";
 
     bb = "${getExe pkgs.rlwrap} ${getExe pkgs.babashka}";
