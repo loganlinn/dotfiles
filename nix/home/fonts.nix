@@ -25,6 +25,7 @@
         "DroidSansMono"
         "FiraCode"
         "JetBrainsMono"
+        "Hack"
       ];
     })
   ];

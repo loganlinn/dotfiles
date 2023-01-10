@@ -23,12 +23,6 @@ in {
     keysyms = {
       alt = "Mod1";
       super = "Mod4";
-      # directions = {
-      #   left = [ "Left" "h" ];
-      #   down = [ "Down" "j" ];
-      #   up = [ "Up" "k" ];
-      #   right = [ "Right" "l" ];
-      # };
     };
 
     quitModeKeybinds = {

@@ -18,7 +18,7 @@ in {
 
   programs.google-chrome.enable = true;
 
-  programs.google-chrome-beta.enable = true;
+  # programs.google-chrome-beta.enable = true;
 
   home.sessionVariables.MOZ_USE_XINPUT2 = "1";
   # Required to use va-api with Firefox

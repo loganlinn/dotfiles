@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   bookmarks = [
     # "file://${config.xdg.userDirs.desktop}"
     "file://${config.xdg.userDirs.download}"
@@ -44,6 +47,16 @@ in {
     # https://www.reddit.com/r/swaywm/comments/qodk20/gtk4_theming_not_working_how_do_i_configure_it/hzrv6gr/?context=3
     sessionVariables.GTK_THEME = config.gtk.theme.name;
   };
+
+  # https://github.com/selloween/arc-theme-xresources/blob/master/Xresources
+  xresources.extraConfig = builtins.readFile (
+    pkgs.fetchFromGitHub {
+      owner = "dracula";
+      repo = "xresources";
+      rev = "539ef24e9b0c5498a82d59bfa2bad9b618d832a3";
+      hash = "sha256-6fltsAluqOqYIh2NX0I/LC3WCWkb9Fn8PH6LNLBQbrY=";
+    } + "/Xresources"
+  );
 
   gtk = {
     enable = true;
