@@ -43,9 +43,9 @@ with lib; {
       "100:class_g = 'Peek'"
       "99:_NET_WM_STATE@:32a = '_NET_WM_STATE_FULLSCREEN'"
     ];
+    shadow = true;
     shadowExclude = [
-      # Put shadows on notifications, the scratch popup and rofi only
-      "! name~='(rofi|scratch|Dunst)$'"
+      "!I3_FLOATING_WINDOW@:c && !class_g = 'Rofi' && !class_g = 'dmenu' && !class_g = 'Dunst'"
     ];
     settings = {
       blur-background-exclude = [
