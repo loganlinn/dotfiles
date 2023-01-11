@@ -42,8 +42,6 @@
       "kitty_mod+y > l" = "kitten hints --type line --program @";
       "kitty_mod+y > w" = "kitten hints --type word --program @";
       "shift+super+w" = "close_os_window";
-      "kitty_mod+m" = "create_marker";
-      "kitty_mod+alt+m" = "remove_marker";
     };
 
     settings = {
@@ -56,7 +54,7 @@
 
       # Behavior
       shell_integration = "enabled";
-      confirm_os_window_close = -1;
+      confirm_os_window_close = 0;
 
       # Links
       url_style = "curly";
