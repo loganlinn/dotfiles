@@ -50,7 +50,6 @@ in {
   home.username = "logan";
   home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
-    ark
     font-manager
     google-cloud-sdk
     libnotify

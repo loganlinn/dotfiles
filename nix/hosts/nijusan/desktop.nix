@@ -17,8 +17,8 @@ with lib; {
   home.file.".background-image".source = ./background.png;
   home.packages = with pkgs; [
     hacksaw
-    shotgun # xll
-
+    shotgun
+    dmenu
   ];
 
   programs.feh.enable = true;

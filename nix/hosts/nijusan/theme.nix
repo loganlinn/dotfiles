@@ -91,6 +91,10 @@ with lib; {
 
   qt.platformTheme = "gtk";
 
+  # https://github.com/aristocratos/btop/tree/main/themes
+  programs.btop.settings.color_theme = "OneDark";
+
+  # https://github.com/davatorium/rofi/tree/next/themes
   programs.rofi.theme = "Arc-Dark";
   # programs.rofi.theme = pkgs.fetchFromGitHub {
   #   owner = "dracula";

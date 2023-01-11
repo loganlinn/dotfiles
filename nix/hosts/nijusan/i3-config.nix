@@ -84,6 +84,10 @@
     "${modifier}+bracketleft" = "workspace prev";
     "${modifier}+bracketright" = "workspace next";
 
+    ## Navigate // Focus windows  (see i3-focus-marker.sh)
+    "${modifier}+comma" = "[con_mark=_prevFocus0] focus";
+    "${modifier}+ctrl+comma" = "[con_mark=_prevFocus2] focus";
+
     ## Navigate // Focus output
     "${modifier}+Ctrl+Left" = "workspace prev_on_output";
     "${modifier}+Ctrl+Right" = "workspace next_on_output";
@@ -296,6 +300,23 @@
       always = true;
       notification = false;
     }
+    {
+      command = "${./i3-focus-marker.sh}";
+      always = true;
+      notification = false;
+    }
+    # {
+    #   command = editor;
+    #   workspace = "1";
+    # }
+    # {
+    #   command = terminal;
+    #   workspace = "2";
+    # }
+    # {
+    #   command = browser;
+    #   workspace = "3";
+    # }
   ];
 
   defaultWorkspace = "workspace number 1";
