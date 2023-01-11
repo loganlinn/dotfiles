@@ -1,4 +1,0 @@
-## See sources.list(5) for more information, especialy
-# Remember that you can only use http, ftp or file URIs
-# CDROMs are managed through the apt-cdrom tool.
-# deb cdrom:[Pop_OS 21.04 _Hirsute Hippo_ - Release amd64 (20210920)]/ hirsute main restricted

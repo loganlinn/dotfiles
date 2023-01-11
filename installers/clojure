@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -euo pipefail
-
-latest="$(curl -s 'https://api.github.com/repos/clojure/brew-install/tags' | jq -r '.[1].name')"
-
-curl -s "https://download.clojure.org/install/linux-install-${latest}.sh" \
-  | sed -e 's:/usr/local:$HOME/.local:g' \
-  | bash

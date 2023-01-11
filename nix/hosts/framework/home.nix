@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   imports = [
     ../../home/common.nix
     ../../home/dev
@@ -36,4 +36,8 @@
     gcolor3 # Color picker
     gnome-feeds # RSS/Atom reader
   ];
+
+  home.file.".xinitrc".text = ''
+    setxkbmap us -option ctrl:nocaps &
+  '';
 }

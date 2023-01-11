@@ -15,6 +15,7 @@ in {
     ../../home/fonts.nix
     ../../home/git.nix
     ../../home/i3
+    ../../home/jetbrains/idea.nix
     ../../home/kitty
     ../../home/nnn.nix
     ../../home/pretty.nix
@@ -51,7 +52,6 @@ in {
     ark
     font-manager
     google-cloud-sdk
-    jetbrains.idea-community
     libnotify
     obsidian
     pango
