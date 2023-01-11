@@ -30,6 +30,7 @@ with lib;
       "....."="../../../..";
       "......"="../../../../.." ;
     };
+    sessionVariables = lib.mkOptionDefault config.home.sessionVariables;
     dirHashes = {
       cfg = config.xdg.configHome;
       dls = config.xdg.userDirs.download;

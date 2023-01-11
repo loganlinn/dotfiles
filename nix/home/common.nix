@@ -24,6 +24,7 @@ in {
       coreutils-full # installs gnu versions
       curl
       du-dust
+      dtrx # Do The Right Extraction
       fd
       gawk
       gnugrep
@@ -83,7 +84,11 @@ in {
     enableCompletion = true;
   };
 
+  programs.btop.enable = true;
+
   programs.command-not-found.enable = !config.programs.nix-index.enable;
+
+  programs.nix-index.enable = lib.mkDefault false;
 
   programs.direnv = {
     enable = true;
@@ -96,7 +101,7 @@ in {
 
   programs.gpg.enable = true;
 
-  # programs.helix.enable = true;
+  programs.fzf.enable = true;
 
   programs.htop = {
     enable = true;

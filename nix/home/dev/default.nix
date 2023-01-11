@@ -18,7 +18,6 @@
     graphviz
     gnuplot
     nodePackages.vscode-langservers-extracted # LSP (HTML/CSS/JSON/ESLint)
-    yaml-language-server
 
     # version control
     pre-commit
@@ -40,6 +39,7 @@
     nixfmt
     nixpkgs-fmt
     rnix-lsp
+    nurl
 
     # c/c++
     ccls
@@ -73,6 +73,9 @@
     # vim
     nodePackages.vim-language-server
 
+    # yaml
+    yaml-language-server
+
     # protocol buffers
     protobuf
     buf
@@ -80,6 +83,4 @@
     # markdown
     mdsh
   ];
-
-  programs.nix-index.enable = lib.mkDefault false;
 }

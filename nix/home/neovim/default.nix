@@ -30,10 +30,6 @@
     vimAlias = true;
     viAlias = true;
 
-    extraConfig = ''
-      colorscheme catppuccin " catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
-    '';
-
     plugins = with pkgs.vimPlugins; [
       vim-commentary
       vim-dispatch
@@ -53,10 +49,6 @@
       vim-speeddating
       vim-surround
       vim-unimpaired
-
-      # Themes
-      catppuccin-nvim
-      tokyonight-nvim
 
       # Core
       bufferline-nvim
@@ -121,6 +113,12 @@
       #     hash = "sha256-dOz55kUIsrRIuT7UBZaGy8fxpI2zzQL875ooUmZwoY4=";
       #   };
       # }
+
+      # Theme
+      {
+        plugin = onedarkpro-nvim;
+        config = "colorscheme onedark";
+      }
     ];
 
     extraPython3Packages = ps: with ps; [pynvim];

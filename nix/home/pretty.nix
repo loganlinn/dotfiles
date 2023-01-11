@@ -13,8 +13,6 @@
       enable = true;
     };
 
-    htop.enable = true;
-
     lsd = {
       enable = true;
       enableAliases = true;

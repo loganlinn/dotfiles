@@ -3,6 +3,7 @@
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
+  # TODO clone https://github.com/adi1090x/polybar-themes to ~/.config/polybar
   services.polybar = {
     enable = true;
     package = pkgs.polybar.override {
