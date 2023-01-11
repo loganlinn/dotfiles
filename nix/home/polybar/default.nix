@@ -73,7 +73,7 @@
         module-margin = 0;
         modules-left = [ "i3" ];
         modules-center = [ "time" ];
-        modules-right = [ "memory" "cpu" "temperature" "volume" ];
+        modules-right = [ "memory" "gpu" "cpu" "temperature" "volume" ];
         monitor = "\${env:MONITOR:}";
         # tray-padding = 2;
         # tray-maxsize = 512;
@@ -120,6 +120,8 @@
       "module/temperature" = rec {
         type = "internal/temperature";
         interval = 5;
+        thermal-zone = "x86_pkg_temp";
+        hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
         base-temperature = 40;
         warn-temperature = 70;
         units = true;
@@ -145,17 +147,13 @@
         label = "RAM %percentage_used%%";
         # label = "RAM %gb_used%/%gb_free%";
       };
-      # "module/gpu" = {
-      #   type = "custom/script";
-      #   exec = pkgs.writeShellApplication {
-      #     name = "polybar-system-nvidia-smi.sh";
-      #     runtimeInputs = [pkgs.gawk];
-      #     text = ''
-      #       nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | awk '{ print "GPU",""$1"","%"}'
-      #     '';
-      #   };
-      #   interval = 5;
-      # };
+      "module/gpu" = {
+        type = "custom/script";
+        exec = ''
+          /run/current-system/sw/bin/nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | /run/current-system/sw/bin/awk '{ print "GPU " $1 "%"}'
+        '';
+        interval = 5;
+      };
       "module/network_eno3" = {
         type = "internal/network";
         interface = "eno3";

@@ -5,5 +5,5 @@
     jetbrains.idea-community
   ];
 
-  home.files.".ideavimrc" = ./ideavimrc;
+  # home.files.".ideavimrc" = ./ideavimrc;
 }

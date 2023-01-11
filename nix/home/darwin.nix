@@ -7,7 +7,7 @@
     ./fonts.nix
     ./gh.nix
     ./pretty.nix
-    ./zsh.nix
+    ./zsh
   ];
 
   home.stateVersion = "22.11";

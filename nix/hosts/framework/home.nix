@@ -8,7 +8,7 @@
     ../../home/git.nix
     ../../home/pretty.nix
     ../../home/sync.nix
-    ../../home/zsh.nix
+    ../../home/zsh
     ../../home/xdg.nix
   ];
 

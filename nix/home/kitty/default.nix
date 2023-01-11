@@ -52,6 +52,10 @@
       inactive_text_alpha = "0.75";
       disable_ligatures = "cursor"; # disable ligatures when cursor is on them
 
+      # Behavior
+      shell_integration = "enabled";
+      confirm_os_window_close = -1;
+
       # Links
       url_style = "curly";
       detect_urls = true;

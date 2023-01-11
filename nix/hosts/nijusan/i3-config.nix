@@ -13,6 +13,14 @@
   editor ? "emacs",
   messenger ? "slack",
   backgroundImage ? "~/.background-image",
+  audioIncrease ? "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+  audioDecrease ? "pactl set-sink-volume @DEFAULT_SINK@ -5%",
+  audioToggle ? "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+  audioPlay ? "playerctl play",
+  audioPause ? "playerctl pause",
+  audioPrev ? "playerctl previous",
+  audioNext ? "playerctl next",
+  micMute ? "pactl set-source-mute @DEFAULT_SOURCE@ toggle",
   ...
 }: rec {
   inherit modifier terminal menu;
@@ -26,6 +34,15 @@
     "${modifier}+Escape" = "exec ${sessionLocker}";
     "${modifier}+F5" = "exec ${sessionRefresher}";
     "${modifier}+Shift+e" = "exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'";
+
+    "XF86AudioRaiseVolume" = "exec ${audioIncrease}";
+    "XF86AudioLowerVolume" = "exec ${audioDecrease}";
+    "XF86AudioMute" = "exec ${audioToggle}";
+    "XF86AudioPlay" = "exec ${audioPlay}";
+    "XF86AudioPause" = "exec ${audioPause}";
+    "XF86AudioNext" = "exec ${audioNext}";
+    "XF86AudioPrev" = "exec ${audioPrev}";
+    "Scroll_Lock"   = "exec ${micMute}";
 
     ## Modes
     "${modifier}+r" = "mode resize";
@@ -231,10 +248,6 @@
     vertical = 5;
     inner = 5;
     outer = 5;
-    left = 5;
-    right = 5;
-    top = 5;
-    bottom = 5;
     smartBorders = "no_gaps";
     smartGaps = true;
   };
@@ -255,6 +268,7 @@
       {class = "zoom";}
       {window_role = "pop-up";}
       {window_role = "prefwindow";}
+      {title = "Event Tester";} # i.e. xev
     ];
   };
 
@@ -286,5 +300,36 @@
 
   defaultWorkspace = "workspace number 1";
   workspaceLayout = "default";
-  workspaceAutoBackAndForth = false;
+
+  # colors = {
+  #   background = "#${colorscheme.Black}";
+  #   focused = {
+  #     background = "#${colorscheme.Blue}";
+  #     border = "#${colorscheme.Blue}";
+  #     childBorder = "#${colorscheme.Blue}";
+  #     indicator = "#${colorscheme.Blue}";
+  #     text = "#${colorscheme.Black}";
+  #   };
+  #   focusedInactive = {
+  #     background = "#${colorscheme.BrightBlack}";
+  #     border = "#${colorscheme.BrightBlack}";
+  #     childBorder = "#${colorscheme.BrightBlack}";
+  #     indicator = "#${colorscheme.Black}";
+  #     text = "#${colorscheme.Black}";
+  #   };
+  #   unfocused = {
+  #     background = "#${colorscheme.Black}";
+  #     border = "#${colorscheme.BrightBlack}";
+  #     childBorder = "#${colorscheme.BrightBlack}";
+  #     indicator = "#${colorscheme.Black}";
+  #     text = "#${colorscheme.Blue}";
+  #   };
+  #   urgent = {
+  #     background = "#${colorscheme.Red}";
+  #     border = "#${colorscheme.Red}";
+  #     childBorder = "#${colorscheme.Red}";
+  #     indicator = "#${colorscheme.Red}";
+  #     text = "#${colorscheme.Black}";
+  #   };
+  # };
 }

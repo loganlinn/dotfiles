@@ -14,17 +14,18 @@ in {
     ../../home/emacs.nix
     ../../home/fonts.nix
     ../../home/git.nix
-    ../../home/i3
+    ../../home/polybar
     ../../home/jetbrains/idea.nix
     ../../home/kitty
     ../../home/nnn.nix
     ../../home/pretty.nix
     ../../home/sync.nix
     ../../home/tray.nix
+    ../../home/urxvt.nix
     ../../home/vpn.nix
     ../../home/vscode.nix
     ../../home/xdg.nix
-    ../../home/zsh.nix
+    ../../home/zsh
     ./desktop.nix
     ./theme.nix
   ];
@@ -55,6 +56,7 @@ in {
     libnotify
     obsidian
     pango
+    ponymix
     python3
     slack
     trash-cli

@@ -10,10 +10,16 @@ with lib; {
     enable = true;
     config = import ./i3-config.nix {
       inherit config lib pkgs;
-      backgroundImage = ./background.jpg;
+      backgroundImage = ./background.png;
     };
   };
-  home.file.".background-image".source = ./background.jpg;
+
+  home.file.".background-image".source = ./background.png;
+  home.packages = with pkgs; [
+    hacksaw
+    shotgun # xll
+
+  ];
 
   programs.feh.enable = true;
 
@@ -66,18 +72,17 @@ with lib; {
   };
 
   services.dunst.enable = true;
-  services.dunst.settings = {
+  services.dunst.settings = rec {
     global = {
-      browser = getExe config.programs.google-chrome.package;
-      dmenu = "${getExe config.programs.rofi.package} -dmenu";
-      follow = "mouse";
-      font = "Droid Sans 10";
+      browser = "${pkgs.xdg-utils}/bin/xdg-open";
+      dmenu = "${config.programs.rofi.package}/bin/rofi -dmenu -p dunst:";
+      monitor = 0;
+      follow = "none";
+      font = "DejaVu Sans Mono 9";
       format = "<b>%s</b>\\n%b";
-      foreground = "#ECEFF4"; # nord6
-      background = "#5E81AC"; # nord10
-      frame_color = "#3B4252"; # nord1
-      # frame_color = "#282a36";
-      frame_width = 2;
+      frame_color = "#282a36";
+      icon_theme = config.gtk.iconTheme.name;
+      frame_width = 1;
       gap_size = 2;
       width = 300;
       height = 300;
@@ -91,20 +96,17 @@ with lib; {
       progress_bar_frame_width = 1;
       progress_bar_min_width = 150;
       progress_bar_max_width = 300;
-      # progress_bar_corner_radius = 0;
       indicate_hidden = true;
       notification_limit = 8;
       min_icon_size = 0;
       max_icon_size = 18;
-      icon_position = "off";
-      line_height = 0;
       markup = "full";
       separator_color = "frame";
       separator_height = 2;
       transparency = 0;
-      alignment = "left";
       vertical_alignment = "center";
       show_age_threshold = 60;
+      alignment = "left";
       ellipsize = "middle";
       ignore_newline = false;
       word_wrap = true;
@@ -112,7 +114,7 @@ with lib; {
       history_length = 50;
       stack_duplicates = true;
       hide_duplicate_count = false;
-      show_indicators = true;
+      show_indicators = false;
       title = "Dunst";
       class = "Dunst";
       mouse_left_click = "do_action, close_current";
@@ -139,9 +141,6 @@ with lib; {
     };
 
     urgency_critical = {
-      # background = "#ff5555";
-      # foreground = "#f8f8f2";
-      # frame_color = "#ff5555";
       foreground = "#3B4252"; # nord1
       background = "#B48EAD"; # nord15
       timeout = 0;
@@ -237,5 +236,9 @@ with lib; {
   services.clipmenu = {
     enable = true;
     launcher = getExe config.programs.rofi.package;
+  };
+
+  services.flameshot = {
+    enable = true;
   };
 }
