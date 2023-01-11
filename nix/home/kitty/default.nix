@@ -43,7 +43,7 @@
       "kitty_mod+y > w" = "kitten hints --type word --program @";
       "shift+super+w" = "close_os_window";
       "kitty_mod+m" = "create_marker";
-      "kitty_mod+alt" = "create_marker";
+      "kitty_mod+alt+m" = "remove_marker";
     };
 
     settings = {
