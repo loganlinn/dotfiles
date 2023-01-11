@@ -60,6 +60,7 @@ in {
     ++ lib.optional isLinux sysz;
 
   home.sessionVariables = {
+    EDITOR = "vim";
     DOCKER_SCAN_SUGGEST = "false";
     DO_NOT_TRACK = "1";
     HOMEBREW_NO_ANALYTICS = "1";
