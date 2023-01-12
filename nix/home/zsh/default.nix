@@ -56,6 +56,10 @@ with lib;
 
       ${builtins.readFile ./clipboard.zsh}
 
+      # Old habbits die hard
+      (( ''${+commands[pbcopy]}  )) || alias pbcopy=clipcopy;
+      (( ''${+commands[pbpaste]} )) || alias pbpaste=clippaste;
+
       ${optionalString
         config.programs.kitty.enable
         "kitty + complete setup zsh | source /dev/stdin"}

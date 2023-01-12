@@ -56,6 +56,7 @@
 
     # python
     python3
+    python3Packages.ptpython
     pyright
 
     # ruby

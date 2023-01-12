@@ -5,6 +5,13 @@
   ...
 }:
 with lib; {
+  home.packages = with pkgs; [
+    hacksaw
+    shotgun
+    dmenu
+    python3Packages.i3ipc
+  ];
+
   xsession.enable = true;
 
   xsession.windowManager.i3 = {
@@ -14,14 +21,6 @@ with lib; {
       backgroundImage = ./background.png;
     };
   };
-
-  home.file.".background-image".source = ./background.png;
-  home.packages = with pkgs; [
-    hacksaw
-    shotgun
-    dmenu
-    python3Packages.i3ipc
-  ];
 
   programs.feh.enable = true;
 

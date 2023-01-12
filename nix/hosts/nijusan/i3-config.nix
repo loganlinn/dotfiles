@@ -1,3 +1,4 @@
+# xmodmap
 {
   config,
   lib,
@@ -26,7 +27,8 @@
   inherit modifier terminal menu;
 
   keybindings = {
-    ## Session
+
+    ## session
     "${modifier}+Shift+q" = "kill";
     "${modifier}+${alt}+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
     "${modifier}+Shift+c" = "reload";
@@ -34,15 +36,6 @@
     "${modifier}+Escape" = "exec ${sessionLocker}";
     "${modifier}+F5" = "exec ${sessionRefresher}";
     "${modifier}+Shift+e" = "exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'";
-
-    "XF86AudioRaiseVolume" = "exec ${audioIncrease}";
-    "XF86AudioLowerVolume" = "exec ${audioDecrease}";
-    "XF86AudioMute" = "exec ${audioToggle}";
-    "XF86AudioPlay" = "exec ${audioPlay}";
-    "XF86AudioPause" = "exec ${audioPause}";
-    "XF86AudioNext" = "exec ${audioNext}";
-    "XF86AudioPrev" = "exec ${audioPrev}";
-    "Scroll_Lock"   = "exec ${micMute}";
 
     ## Modes
     "${modifier}+r" = "mode resize";
@@ -179,6 +172,16 @@
     ## Scratchpad // Navigate and modify
     "${modifier}+Shift+grave" = "move scratchpad";
     "${modifier}+grave" = "scratchpad show";
+
+    ## Session // Media
+    "XF86AudioRaiseVolume" = "exec ${audioIncrease}";
+    "XF86AudioLowerVolume" = "exec ${audioDecrease}";
+    "XF86AudioMute" = "exec ${audioToggle}";
+    "XF86AudioPlay" = "exec ${audioPlay}";
+    "XF86AudioPause" = "exec ${audioPause}";
+    "XF86AudioNext" = "exec ${audioNext}";
+    "XF86AudioPrev" = "exec ${audioPrev}";
+    "Scroll_Lock"   = "exec ${micMute}";
   };
 
   modes = let

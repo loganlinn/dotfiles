@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   programs.kitty = {
     enable = true;
 
@@ -10,6 +10,7 @@
       size = if pkgs.stdenv.isDarwin then 14 else 12;
     };
 
+    # https://sw.kovidgoyal.net/kitty/actions/
     keybindings = {
       "ctrl+alt+1" = "goto_tab 1";
       "ctrl+alt+2" = "goto_tab 2";
@@ -21,9 +22,6 @@
       "ctrl+alt+8" = "goto_tab 8";
       "ctrl+alt+9" = "goto_tab 9";
       "ctrl+alt+enter" = "launch --cwd=current";
-      "f1" = "launch --stdin-source=@screen_scrollback --stdin-add-formatting --type=overlay less +G -R";
-      "f5" = "launch --location=hsplit";
-      "f6" = "launch --location=vsplit";
       "kitty_mod+;" = "next_layout";
       "kitty_mod+down" = "neighboring_window down";
       "kitty_mod+enter" = "new_window_with_cwd";

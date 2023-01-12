@@ -1,0 +1,10 @@
+
+    二十三
+
+  ca. Q4'22
+
+MB:  ASUS ROG STRIX Z790-I
+CPU: Intel i9-13900K
+GPU: NVIDIA RTX A4000
+RAM: G.SKILL Ripjaws S5 64GB
+ENC: FormD T1-SW v2

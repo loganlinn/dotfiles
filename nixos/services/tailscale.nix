@@ -4,9 +4,7 @@
   # Tailscale
   # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/tailscale.nix
 
-  environment.systemPackages = with pkgs; [
-    tailscale
-  ];
+  environment.systemPackages = [ pkgs.tailscale ];
 
   services.tailscale.enable = true;
 
@@ -14,4 +12,3 @@
   networking.firewall.checkReversePath = "loose";
   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port ];
 }
-

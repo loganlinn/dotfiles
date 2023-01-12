@@ -7,6 +7,11 @@ let
   emacsDir = "${config.home.homeDirectory}/.emacs.d";
   doomDir = "${config.home.homeDirectory}/.doom.d";
 in {
+
+  imports = [
+
+  ];
+
   programs.emacs = {
     enable = true;
     package = pkgs.emacsNativeComp;
@@ -34,6 +39,7 @@ in {
     # :lang latex & :lang org (latex previews)
     texlive.combined.scheme-medium
   ];
+
 
   home.sessionPath = [
     "${emacsDir}/bin" # doom CLI
