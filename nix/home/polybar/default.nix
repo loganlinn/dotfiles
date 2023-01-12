@@ -58,16 +58,11 @@
         foreground = "\${colors.fg}";
         radius = 0;
         font-size = "12";
-        # font-0 = ":style=Regular:size=${font-size};5";
-        # font-1 = "emoji:style=Regular:scale=10;4";
-        # font-0 = "Hack Nerd Font:pixelsize=14:antialias=true;2.5";
-        # font-1 = "Hack Nerd Font:style=Regular:pixelsize=24:antialias=true;3";
-        font-0 = "DejaVu Sans:size=10;3";
-        font-1 = "DejaVu Sans:size=10:style=Bold;3";
-        font-2 = "FontAwesome:pixelsize=10;3";
-        # font-3 = "Font Awesome 5 Free Regular:pixelsize=10;3";
-        # font-4 = "Font Awesome 5 Free Solid:pixelsize=10;3";
-        # font-5 = "Font Awesome 5 Brands:pixelsize=10;3";
+        font-0 = "DejaVuSans Nerd Font:size=10;3";
+        font-1 = "DejaVuSans Nerd Font:size=10:style=Bold;3";
+        font-2 = "DejaVuSansMono Nerd Font:size=10;3";
+        font-3 = "DejaVuSansMono Nerd Font:size=10:style=Bold;3";
+        font-5 = "FontAwesome:pixelsize=10;3";
         padding = 3;
         # https://en.wikipedia.org/wiki/Thin_space
         separator = " ";
@@ -89,24 +84,41 @@
       "module/i3" = {
         type = "internal/i3";
         enable-click = true;
+        enable-scroll= false;
         index-sort = true;
         pin-workspaces = false; # only show workspaces on the current monitor
         reverse-scroll = false;
         show-urgent = true;
-        strip-wsnumbers = true;
+        strip-wsnumbers = false;
         wrapping-scroll = false;
+        fuzzy-match = true;
+        # ws-icon-0 = "1;♚";
+        # ws-icon-1 = "2;♛";
+        # ws-icon-2 = "3;♜";
+        # ws-icon-3 = "4;♝";
+        # ws-icon-4 = "5;♞";
+        # ws-icon-default = "♟";
 
         label-visible = "%name%";
         label-urgent = "%name%";
         label-focused = "%name%";
         label-unfocused = "%name%";
-        label-focused-foreground = "\${colors.fg-alt}";
+        label-focused-foreground = "\${colors.white}";
         label-focused-background = "\${colors.bg-alt}";
+        label-focused-font = 2;
         label-urgent-background = "\${colors.alert}";
         label-focused-padding = 2;
+        label-unfocused-foreground = "\${colors.white}";
         label-unfocused-padding = 2;
         label-visible-padding = 2;
         label-urgent-padding = 2;
+
+        label-separator-padding = 0;
+        label-separator-foreground = "\${colors.bg-alt}";
+
+        label-mode = "%mode%";
+        label-mode-padding = 2;
+        label-mode-background = "\${colors.alert}";
       };
       "module/time" = {
         type = "internal/date";
@@ -114,7 +126,7 @@
         format-padding = 3;
         time = "%I:%M %p";
         date = "%a %b %d";
-        label = "%date%, %time%";
+        label = "%date% %time%";
         label-padding = 2;
         label-font = 2;
       };

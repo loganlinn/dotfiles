@@ -97,8 +97,8 @@
     "${modifier}+Ctrl+Shift+Tab" = "workspace prev_on_output";
 
     ## Navigate // Focus application
-    "${modifier}+Control+e" = ''[class="${editor}"] focus'';
-    "${modifier}+Control+s" = ''[class="${messenger}"] focus'';
+    "${modifier}+Control+e" = ''[class="Emacs"] focus'';
+    "${modifier}+Control+s" = ''[class="Slack"] focus'';
     "${modifier}+Control+d" = ''[title="Linear"] focus'';
     "${modifier}+Control+f" = ''[class="kitty"] focus'';
     "${modifier}+Control+g" = ''[class="Chromium"] focus'';

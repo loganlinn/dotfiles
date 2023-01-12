@@ -6,6 +6,7 @@
 }:
 with lib; {
   xsession.enable = true;
+
   xsession.windowManager.i3 = {
     enable = true;
     config = import ./i3-config.nix {
@@ -19,6 +20,7 @@ with lib; {
     hacksaw
     shotgun
     dmenu
+    python3Packages.i3ipc
   ];
 
   programs.feh.enable = true;
