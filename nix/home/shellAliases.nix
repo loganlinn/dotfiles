@@ -37,6 +37,7 @@ in
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";
     hm = "home-manager";
+    nixpkgs = "nix repl '<nixpkgs>'";
 
     k = "kubectl";
     kctx = "kubectx";
@@ -46,5 +47,6 @@ in
     s = "kitty +kitten ssh";
 
     bb = "rlwrap bb";
+
   };
 }
