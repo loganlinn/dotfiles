@@ -8,6 +8,7 @@ with lib; {
     hacksaw
     shotgun
     dmenu
+    epick
     python3Packages.i3ipc
   ];
 
