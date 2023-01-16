@@ -1,4 +1,13 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+let
+  # polybar-scripts = pkgs.fetchFromGitHub {
+  #   owner = "polybar";
+  #   repo = "polybar-scripts";
+  #   rev = "51f1c580a166b33196cf51d3f142fdf89547f765";
+  #   hash = "sha256-tK6VhozHWpgQCW1KqBDaeWzJ1PIWVIFRt5fO7ggj5B8=";
+  # };
+in
+{
   systemd.user.services.polybar = {
     Install.WantedBy = [ "graphical-session.target" ];
   };
@@ -37,13 +46,24 @@
         white = "\${xrdb:color7}";
         bwhite = "\${xrdb:color15}";
         bg = "\${xrdb:background}";
-        # fg = "\${colors.magenta}";
         fg = "\${xrdb.foreground}";
         bg-alt = "#1E2029";
         fg-alt = "#373844";
         bg-dark = "#181a23";
         alert = "\${colors.yellow}";
         accent = "#604c7e";
+
+        # background = "#2f343f";
+        # background-alt = "#f72f343f";
+        # foreground = "#f3f4f5";
+        # foreground-alt = "#f3f4f5";
+        # foreground-dim = "#676e7d";
+        # primary = "#ffb52a";
+        # secondary = "#e60053";
+        # alert = "#ff6600";
+
+        # high = "#268bd2";
+        # high-alt = "#0c2b41";
       };
       bar = {
         fill = "⏽";
@@ -84,7 +104,7 @@
       "module/i3" = {
         type = "internal/i3";
         enable-click = true;
-        enable-scroll= false;
+        enable-scroll = false;
         index-sort = true;
         pin-workspaces = false; # only show workspaces on the current monitor
         reverse-scroll = false;
@@ -149,8 +169,9 @@
         type = "internal/cpu";
         interval = 2;
         # format-prefix = " ";
+        format-prefix = "%{T6}%{T-}";
         format-padding = 2;
-        label = "CPU %percentage%%";
+        label = "%percentage%%";
       };
       "module/memory" = {
         type = "internal/memory";
@@ -226,7 +247,6 @@
         label-muted-text = "🔇";
         label-muted-foreground = "#666";
         ramp-volume = [ "🔈" "🔉" "🔊" ];
-        click-right = "pavucontrol &";
         # click-right = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
         # scroll-up = "pactl set-sink-volume @DEFAULT_SINK@ +1%";
         # scroll-down = "pactl set-sink-volume @DEFAULT_SINK@ -1%";

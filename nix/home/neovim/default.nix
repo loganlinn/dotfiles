@@ -1,9 +1,8 @@
-{
-  config,
-  pkgs,
-  self,
-  lib,
-  ...
+{ config
+, pkgs
+, self
+, lib
+, ...
 }: {
   # LSP servers
   home.packages = with pkgs; [
@@ -121,6 +120,6 @@
       }
     ];
 
-    extraPython3Packages = ps: with ps; [pynvim];
+    extraPython3Packages = ps: with ps; [ pynvim ];
   };
 }

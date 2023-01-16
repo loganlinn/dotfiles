@@ -1,14 +1,15 @@
 { config, lib, pkgs, ... }:
 with lib;
 let cfg = config.modules.desktops.i3;
-in {
+in
+{
   options.modules.desktops.i3 = {
     enable = mkEnableOption "Enable i3 desktop environment";
     thunbar.enable = mkEnableOption "Enable thunbar file manager";
   };
 
   config = mkIf cfg.enable {
-    services.xserver.enable = true;
+    services.xserver.enable = mkDefault true;
     services.xserver.autorun = true;
     services.xserver.displayManager = {
       lightdm.enable = true;

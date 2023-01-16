@@ -1,7 +1,12 @@
-{ conf, lib, pkgs, ... }: {
-  home.shellAliases = let
-    inherit (pkgs.stdenv.targetPlatform) isDarwin;
-  in rec {
+{ conf, lib, pkgs, ... }:
+
+with lib;
+
+let
+  inherit (pkgs.stdenv.targetPlatform) isDarwin;
+in
+{
+  home.shellAliases = rec {
     "'..'" = "cd ..";
     "'...'" = "cd ...";
     "'?'" = "which";
