@@ -29,8 +29,17 @@ with builtins;
 with lib;
 
 let
-  isSome = x: !isNull x;
-  toKeysym = x: concatStringsSep "+" (flatten x);
+  concatKeysyms = concatStringsSep "+";
+
+  keybindStr = keysyms: concatKeysyms (map toString (flatten keysyms));
+
+  sizeStr = { px, ppt ? null }: optionalString (!isNull px) (
+    "${toString px} px" + (
+      optionalString (!isNull ppt) "or ${toString ppt} ppt")
+  );
+
+  colorStr = {}: "${colorclass} ${border} ${background} ${text}";
+
   resizeKeybinds =
     { wider
     , narrower
@@ -257,8 +266,6 @@ rec {
   modes =
     let
       inherit (builtins) isString;
-      resizeSmall = "2 px or 2 ppt";
-      resizeLarge = "30 px or 6 ppt";
       quitModeKeybinds = {
         "Escape" = "mode default";
         "Ctrl+c" = "mode default";
@@ -272,14 +279,7 @@ rec {
           taller = "j";
           shorter = "k";
           narrower = "l";
-          size = "1 px or 1 ppt";
-        } // resizeKeybinds
-        {
-          wider = "Left";
-          taller = "Up";
-          shorter = "Down";
-          narrower = "Right";
-          size = "1 px or 1 ppt";
+          size = "10 px or 10 ppt";
         } // resizeKeybinds
         {
           wider = "h";
@@ -288,15 +288,13 @@ rec {
           narrower = "l";
           size = "3 px or 3 ppt";
           modifier = "Shift";
-        } // resizeKeybinds
-        {
-          wider = "Left";
-          taller = "Up";
-          shorter = "Down";
-          narrower = "Right";
-          size = "3 px or 3 ppt";
-          modifier = "Shift";
-        } // quitModeKeybinds;
+        } // quitModeKeybinds // {
+        "${modifier}+r" = "mode resize";
+        "${modifier}+h" = "focus left";
+        "${modifier}+j" = "focus down";
+        "${modifier}+k" = "focus up";
+        "${modifier}+l" = "focus right";
+      };
 
       # TODO
       # gaps = {
@@ -320,6 +318,7 @@ rec {
 
   focus = {
     followMouse = false;
+    # wrapping = "no";
     forceWrapping = false;
     mouseWarping = true;
     newWindow = "focus";
