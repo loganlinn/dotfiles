@@ -5,11 +5,12 @@
 }:
 with lib; {
   home.packages = with pkgs; [
-    hacksaw
-    shotgun
     dmenu
     epick
+    hacksaw
+    pavucontrol
     python3Packages.i3ipc
+    shotgun
   ];
 
   xsession.enable = true;

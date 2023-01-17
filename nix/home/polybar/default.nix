@@ -1,20 +1,70 @@
-{ pkgs, ... }:
+{ config
+, lib
+, pkgs
+, ...
+}:
+
+with lib;
+
 let
-  # polybar-scripts = pkgs.fetchFromGitHub {
-  #   owner = "polybar";
-  #   repo = "polybar-scripts";
-  #   rev = "51f1c580a166b33196cf51d3f142fdf89547f765";
-  #   hash = "sha256-tK6VhozHWpgQCW1KqBDaeWzJ1PIWVIFRt5fO7ggj5B8=";
-  # };
+  awk = "${pkgs.gawk}/bin/awk";
+  cut = "${pkgs.coreutils-full}/bin/cut";
+  nvidia-smi = "/run/current-system/sw/bin/nvidia-smi";
+  pactl = "${pkgs.pulseaudio}/bin/pactl";
+  pavucontrol = "${pkgs.pavucontrol}/bin/pavucontrol";
+  polybar = "${config.services.polybar.package}/bin/polybar";
+  polybar-msg = "${config.services.polybar.package}/bin/polybar-msg";
+  dunst-snooze = pkgs.writeShellApplication
+    {
+      name = "dunst-snooze";
+      runtimeInputs = [ config.services.dunst.package ];
+      text = ''
+        case "$1" in
+        --toggle)
+          dunstctl set-paused toggle
+          ;;
+        *)
+          if [ "$(dunstctl is-paused)" = "true" ]; then
+            echo ""
+          else
+            echo ""
+          fi
+          ;;
+        esac
+      '';
+    };
+
+  # https://github.com/joshdick/onedark.vim/blob/main/autoload/onedark.vim
+  onedark = rec {
+    black = "#282C34";
+    white = "#ABB2BF";
+    background = black;
+    foreground = white;
+    lightRed = "#E06C75";
+    darkRed = "#BE5046";
+    green = "#98C379";
+    lightYellow = "#E5C07B";
+    darkYellow = "#D19A66";
+    blue = "#61AFEF";
+    magenta = "#C678DD";
+    cyan = "#56B6C2";
+    gutterGrey = "#4B5263";
+    commentGrey = "#5C6370";
+    cursorGrey = "#2C323C";
+    visualGrey = "#3E4452";
+    menuGrey = "#3E4452";
+    specialGrey = "#3B4048";
+    vertSplit = "#3E4452";
+  };
 in
 {
   systemd.user.services.polybar = {
     Install.WantedBy = [ "graphical-session.target" ];
   };
 
-  # TODO clone https://github.com/adi1090x/polybar-themes to ~/.config/polybar
   services.polybar = {
-    enable = true;
+    enable = mkDefault true;
+
     package = pkgs.polybar.override {
       i3GapsSupport = true;
       alsaSupport = true;
@@ -24,262 +74,227 @@ in
       mpdSupport = true;
       githubSupport = true;
     };
-    config = {
-      "settings" = {
-        screenchange-reload = true;
-      };
-      colors = {
-        black = "\${xrdb:color0}";
-        bblack = "\${xrdb:color8}";
-        red = "\${xrdb:color1}";
-        bred = "\${xrdb:color9}";
-        green = "\${xrdb:color2}";
-        bgreen = "\${xrdb:color10}";
-        yellow = "\${xrdb:color3}";
-        byellow = "\${xrdb:color11}";
-        blue = "\${xrdb:color4}";
-        bblue = "\${xrdb:color12}";
-        magenta = "\${xrdb:color5}";
-        bmagenta = "\${xrdb:color13}";
-        cyan = "\${xrdb:color6}";
-        bcyan = "\${xrdb:color14}";
-        white = "\${xrdb:color7}";
-        bwhite = "\${xrdb:color15}";
-        bg = "\${xrdb:background}";
-        fg = "\${xrdb.foreground}";
-        bg-alt = "#1E2029";
-        fg-alt = "#373844";
-        bg-dark = "#181a23";
-        alert = "\${colors.yellow}";
-        accent = "#604c7e";
 
-        # background = "#2f343f";
-        # background-alt = "#f72f343f";
-        # foreground = "#f3f4f5";
-        # foreground-alt = "#f3f4f5";
-        # foreground-dim = "#676e7d";
-        # primary = "#ffb52a";
-        # secondary = "#e60053";
-        # alert = "#ff6600";
+    config =
+      let
+        module = name: config: {
+          name = "module/${name}";
+          value = {
+            type =
+              if (hasAttr "exec" config)
+              then "custom/script"
+              else "internal/${name}";
 
-        # high = "#268bd2";
-        # high-alt = "#0c2b41";
-      };
-      bar = {
-        fill = "⏽";
-        empty = "⏽";
-        indicator = "⏽";
-      };
-      "bar/top" = rec {
-        width = "100%";
-        height = "36";
-        enable-ipc = true;
-        background = "\${colors.bg}";
-        foreground = "\${colors.fg}";
-        radius = 0;
-        font-size = "12";
-        font-0 = "DejaVuSans Nerd Font:size=10;3";
-        font-1 = "DejaVuSans Nerd Font:size=10:style=Bold;3";
-        font-2 = "DejaVuSansMono Nerd Font:size=10;3";
-        font-3 = "DejaVuSansMono Nerd Font:size=10:style=Bold;3";
-        font-5 = "FontAwesome:pixelsize=10;3";
-        padding = 3;
-        # https://en.wikipedia.org/wiki/Thin_space
-        separator = " ";
-        module-margin = 0;
-        modules-left = [ "i3" ];
-        modules-center = [ "time" ];
-        modules-right = [ "memory" "gpu" "cpu" "temperature" "volume" ];
-        monitor = "\${env:MONITOR:}";
-        # tray-padding = 2;
-        # tray-maxsize = 512;
-        tray-position = "right";
-        tray-detached = false;
-        tray-maxsize = 16;
-        # scroll-up = "${pkgs.brillo}/bin/brillo -e -A 0.5";
-        # scroll-down = "${pkgs.brillo}/bin/brillo -e -U 0.5";
-        # override-redirect = true;
-        # wm-restack = "i3";
-      };
-      "module/i3" = {
-        type = "internal/i3";
-        enable-click = true;
-        enable-scroll = false;
-        index-sort = true;
-        pin-workspaces = false; # only show workspaces on the current monitor
-        reverse-scroll = false;
-        show-urgent = true;
-        strip-wsnumbers = false;
-        wrapping-scroll = false;
-        fuzzy-match = true;
-        # ws-icon-0 = "1;♚";
-        # ws-icon-1 = "2;♛";
-        # ws-icon-2 = "3;♜";
-        # ws-icon-3 = "4;♝";
-        # ws-icon-4 = "5;♞";
-        # ws-icon-default = "♟";
+            format-padding = 1;
+            format-prefix-foreground = onedark.commentGrey;
+          } // config;
+        };
+      in
+      {
+        # Application settings (https://github.com/polybar/polybar/wiki/Configuration#application-settings)
+        settings = {
+          screenchange-reload = true;
+        };
+        # Custom variables (https://github.com/polybar/polybar/wiki/Configuration#custom-variables)
+        colors = {
+          # black = "\${xrdb:color0}";
+          # red = "\${xrdb:color1}";
+          # green = "\${xrdb:color2}";
+          # yellow = "\${xrdb:color3}";
+          # blue = "\${xrdb:color4}";
+          # magenta = "\${xrdb:color5}";
+          # cyan = "\${xrdb:color6}";
+          # white = "\${xrdb:color7}";
+          # bblack = "\${xrdb:color8}";
+          # bred = "\${xrdb:color9}";
+          # bgreen = "\${xrdb:color10}";
+          # byellow = "\${xrdb:color11}";
+          # bblue = "\${xrdb:color12}";
+          # bmagenta = "\${xrdb:color13}";
+          # bcyan = "\${xrdb:color14}";
+          # bwhite = "\${xrdb:color15}";
+          background = onedark.background;
+          foreground = onedark.foreground;
+          focused-background = onedark.visualGrey;
+          focused-foreground = onedark.blue;
+          mode-background = onedark.darkYellow;
+          mode-foreground = onedark.black;
+          separator-background = onedark.background;
+          separator-foreground = onedark.vertSplit;
+          unfocused-background = onedark.background;
+          unfocused-foreground = onedark.commentGrey;
+          urgent-background = onedark.background;
+          urgent-foreground = onedark.lightRed;
+          visible-background = onedark.background;
+          visible-foreground = onedark.foreground;
+        };
+        # Bar settings (https://github.com/polybar/polybar/wiki/Configuration#bar-settings)
+        bar = {
+          fill = "⏽";
+          empty = "⏽";
+          indicator = "⏽";
+        };
+        "bar/top" = {
+          monitor = "\${env:MONITOR:}"; # see script
+          width = "100%";
+          height = "36";
+          bottom = false;
+          enable-ipc = true;
+          radius = 0;
+          font-size = "12";
+          # font-0 = "DejaVuSansMono Nerd Font:size=10;3";
+          # font-1 = "DejaVuSansMono Nerd Font:size=10:style=Bold;3";
+          font-0 = "JetBrainsMono Nerd Font:size=10;3";
+          font-1 = "JetBrainsMono Nerd Font:size=10:style=Bold;3";
+          font-2 = "FontAwesome:pixelsize=10;3";
+          font-5 = "JetBrainsMono Nerd Font:size=19;5";
+          font-6 = "JetBrainsMono Nerd Font:style=Normal:size=12;3";
+          font-7 = "Material Icons:size=11;4";
+          font-8 = "JetBrainsMono Nerd Font:style=Medium Italic:size=15;4"; # round icons
+          padding = 3;
+          separator = " ";
+          module-margin = 0;
+          modules-left = [ "i3" ];
+          modules-center = [ "date" ];
+          modules-right = [ "memory" "gpu" "cpu" "temperature" "pusleaudio" ];
+          tray-position = "right";
+          tray-detached = false;
+          tray-maxsize = 16;
+          background = "\${colors.background}";
+          foreground = "\${colors.foreground}";
+        };
+      } // listToAttrs [
+        # Module settings (https://github.com/polybar/polybar/wiki/Configuration#module-settings)
+        (module "i3" {
+          enable-click = true;
+          enable-scroll = false;
+          index-sort = true;
+          pin-workspaces = false; # only show workspaces on the current monitor
+          reverse-scroll = false;
+          show-urgent = true;
+          strip-wsnumbers = false;
+          wrapping-scroll = false;
+          fuzzy-match = true;
+          label-focused = "%name%";
+          label-focused-background = "\${colors.focused-background}";
+          label-focused-font = 2;
+          label-focused-foreground = "\${colors.focused-foreground}";
+          label-focused-padding = 2;
+          label-mode = "%mode%";
+          label-mode-background = "\${colors.mode-background}";
+          label-mode-font = 1;
+          label-mode-foreground = "\${colors.mode-foreground}";
+          label-mode-padding = 2;
+          label-separator-background = "\${colors.separator-background}";
+          label-separator-font = 1;
+          label-separator-foreground = "\${colors.separator-foreground}";
+          label-separator-padding = 0;
+          label-unfocused = "%name%";
+          label-unfocused-background = "\${colors.unfocused-background}";
+          label-unfocused-font = 1;
+          label-unfocused-foreground = "\${colors.unfocused-foreground}";
+          label-unfocused-padding = 2;
+          label-urgent = "%name%";
+          label-urgent-background = "\${colors.urgent-background}";
+          label-urgent-font = 1;
+          label-urgent-foreground = "\${colors.urgent-foreground}";
+          label-urgent-padding = 2;
+          label-visible = "%name%";
+          label-visible-background = "\${colors.urgent-foreground}";
+          label-visible-foreground = "\${colors.urgent-foreground}";
+          label-visible-padding = 2;
+        })
+        (module "date" {
+          interval = 1;
+          time = "%I:%M %p";
+          date = "%a %b %d";
+          format-prefix = " ";
+          label = "%date% %time%";
+          label-font = 6;
+        })
+        (module "memory" {
+          interval = 2;
+          label = "%percentage_used%%";
+          # format-prefix = "%{T7} %{T-}";
+          format-prefix = "RAM ";
+        })
+        (module "gpu" {
+          exec = ''
+            ${nvidia-smi} --query-gpu=utilization.gpu --format=csv,noheader,nounits | ${awk} '{ print $1 "%"}'
+          '';
+          interval = 5;
+          # format-prefix = "%{T7} %{T-}";
+          format-prefix = "GPU ";
+        })
+        (module "cpu" {
+          interval = 2;
+          label = "%percentage%%";
+          # format-prefix = "%{T7} %{T-}";
+          format-prefix = "CPU ";
+        })
+        (module "temperature" {
+          interval = 5;
+          thermal-zone = "x86_pkg_temp";
+          hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
+          base-temperature = 50;
+          warn-temperature = 75;
+          units = true;
+          format = "<ramp> <label>";
+          label = "%temperature-c%";
+          format-warn = "<ramp> <label-warn>";
+          ramp-0 = "";
+          ramp-1 = "";
+          ramp-2 = "";
+          ramp-0-foreground = onedark.white;
+          ramp-1-foreground = onedark.lightYellow;
+          ramp-2-foreground = onedark.lightRed;
+        })
+        (module "pulseaudio" {
+          interval = 5;
+          format-volume = "<ramp-volume> <label-volume>";
+          use-ui-max = false; # use PA_VOLUME_NORM (100%)
+          label-muted = "%{T7}婢 %{T-} Mute";
+          ramp-volume-0 = "%{T7}奄%{T-}";
+          ramp-volume-1 = "%{T7}奔%{T-}";
+          ramp-volume-2 = "%{T7}奔%{T-}";
+          ramp-volume-3 = "%{T7}墳%{T-}";
+          click-right = "${pavucontrol} &";
+        })
+        (module "powermenu" {
+          type = "custom/menu";
+          expand-right = true;
+          format-spacing = 1;
+          format-margin = 0;
+          label-open = "";
+          label-close = "";
+          label-separator = "|";
+          #; reboot
+          menu-0-1 = "";
+          menu-0-1-exec = "menu-open-2";
+          #; poweroff
+          menu-0-2 = "";
+          menu-0-2-exec = "menu-open-3";
+          #; logout
+          menu-0-0 = "";
+          menu-0-0-exec = "menu-open-1";
+          menu-2-0 = "";
+          menu-2-0-exec = "reboot";
+          menu-3-0 = "";
+          menu-3-0-exec = "poweroff";
+          menu-1-0 = "";
+          menu-1-0-exec = "";
+        })
+        (module "dunst-snooze" {
+          exec = "${dunst-snooze}";
+          interval = 5;
+          click-left = "${dunst-snooze} --toggle &";
+        })
+      ];
 
-        label-visible = "%name%";
-        label-urgent = "%name%";
-        label-focused = "%name%";
-        label-unfocused = "%name%";
-        label-focused-foreground = "\${colors.white}";
-        label-focused-background = "\${colors.bg-alt}";
-        label-focused-font = 2;
-        label-urgent-background = "\${colors.alert}";
-        label-focused-padding = 2;
-        label-unfocused-foreground = "\${colors.white}";
-        label-unfocused-padding = 2;
-        label-visible-padding = 2;
-        label-urgent-padding = 2;
-
-        label-separator-padding = 0;
-        label-separator-foreground = "\${colors.bg-alt}";
-
-        label-mode = "%mode%";
-        label-mode-padding = 2;
-        label-mode-background = "\${colors.alert}";
-      };
-      "module/time" = {
-        type = "internal/date";
-        interval = 1;
-        format-padding = 3;
-        time = "%I:%M %p";
-        date = "%a %b %d";
-        label = "%date% %time%";
-        label-padding = 2;
-        label-font = 2;
-      };
-      "module/temperature" = rec {
-        type = "internal/temperature";
-        interval = 5;
-        thermal-zone = "x86_pkg_temp";
-        hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
-        base-temperature = 40;
-        warn-temperature = 70;
-        units = true;
-        format = "<ramp><label>";
-        label = "%temperature-c%";
-        format-warn = "<ramp><label-warn>";
-        ramp-0 = " ";
-        ramp-1 = " ";
-        ramp-2 = " ";
-      };
-      "module/cpu" = {
-        type = "internal/cpu";
-        interval = 2;
-        # format-prefix = " ";
-        format-prefix = "%{T6}%{T-}";
-        format-padding = 2;
-        label = "%percentage%%";
-      };
-      "module/memory" = {
-        type = "internal/memory";
-        interval = 2;
-        format-padding = 2;
-        # format-prefix = " ";
-        label = "RAM %percentage_used%%";
-        # label = "RAM %gb_used%/%gb_free%";
-      };
-      "module/gpu" = {
-        type = "custom/script";
-        exec = ''
-          /run/current-system/sw/bin/nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | /run/current-system/sw/bin/awk '{ print "GPU " $1 "%"}'
-        '';
-        interval = 5;
-      };
-      "module/network_eno3" = {
-        type = "internal/network";
-        interface = "eno3";
-        interval = 5;
-        # format-connected = " <label-connected>";
-        # format-connected-background = background;
-        # format-connected-padding = 2;
-        # format-disconnected = "<label-disconnected>";
-        # format-disconnected-background = alert;
-        # format-disconnected-padding = 2;
-        # label-connected = "%essid% %signal%%";
-        # label-disconnected = "⚠ Disconnected";
-      };
-      "module/network_wlo1" = {
-        type = "internal/network";
-        interface = "wlo1";
-        interval = 5;
-        # format-connected = " <label-connected>";
-        # format-disconnected = "<label-disconnected>";
-        # format-disconnected-padding = 2;
-        # label-connected = "%essid% %signal%%";
-        # label-disconnected = "⚠ Disconnected";
-      };
-      # "module/pulseaudio" = {
-      #   type = "internal/pulseaudio";
-      #   format-volume = "<ramp-volume> <label-volume>";
-      #   format-volume-padding = 2;
-      #   format-muted = "<label-muted>";
-      #   label-volume = "%percentage%%";
-      #   label-muted = "";
-      #   ramp-volume-0 = "";
-      #   ramp-volume-1 = "";
-      #   ramp-volume-2 = "";
-      #   click-right = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
-      #   scroll-up = "pactl set-sink-volume @DEFAULT_SINK@ +1%";
-      #   scroll-down = "pactl set-sink-volume @DEFAULT_SINK@ -1%";
-      # };
-      # "module/pulseaudio" = {
-      #   type = "internal/alsa";
-      #   master-mixer = "Master";
-      #   # headphone-id = 9;
-      #   format-volume-padding = 2;
-      #   format-muted-padding = 2;
-      #   label-muted = "婢 Mute";
-      #   ramp-volume-0 = "";
-      #   ramp-volume-1 = "";
-      #   ramp-volume-2 = "";
-      #   format-volume-margin = 2;
-      #   format-volume = "<ramp-volume> <label-volume>";
-      #   label-volume = "%percentage%%";
-      #   use-ui-max = false;
-      #   interval = 5;
-      # };
-      "module/volume" = {
-        type = "internal/pulseaudio";
-        format-volume = "<ramp-volume> <label-volume>";
-        label-muted-text = "🔇";
-        label-muted-foreground = "#666";
-        ramp-volume = [ "🔈" "🔉" "🔊" ];
-        # click-right = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
-        # scroll-up = "pactl set-sink-volume @DEFAULT_SINK@ +1%";
-        # scroll-down = "pactl set-sink-volume @DEFAULT_SINK@ -1%";
-      };
-      "module/powermenu" = {
-        type = "custom/menu";
-        expand-right = true;
-        format-spacing = 1;
-        format-margin = 0;
-        format-padding = 2;
-        label-open = "";
-        label-close = "";
-        label-separator = "|";
-        #; reboot
-        menu-0-1 = "";
-        menu-0-1-exec = "menu-open-2";
-        #; poweroff
-        menu-0-2 = "";
-        menu-0-2-exec = "menu-open-3";
-        #; logout
-        menu-0-0 = "";
-        menu-0-0-exec = "menu-open-1";
-        menu-2-0 = "";
-        menu-2-0-exec = "reboot";
-        menu-3-0 = "";
-        menu-3-0-exec = "poweroff";
-        menu-1-0 = "";
-        menu-1-0-exec = "";
-      };
-    };
     script = ''
-      for m in $(polybar --list-monitors | ${pkgs.coreutils-full}/bin/cut -d":" -f1); do
-          MONITOR=$m polybar --reload top &
+      ${polybar-msg} cmd quit
+      for m in $(${polybar} --list-monitors | ${cut} -d":" -f1); do
+          MONITOR=$m ${polybar} --reload top | tee -a "/tmp/polybar-top_$m.log" & disown
       done
     '';
   };

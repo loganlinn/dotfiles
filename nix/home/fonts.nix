@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   home.packages = with pkgs; [
     cascadia-code
     dejavu_fonts
@@ -7,6 +7,8 @@
     fira-code-symbols
     font-awesome
     font-awesome_5
+    material-icons
+    material-design-icons # https://materialdesignicons.com/
     hack-font
     iosevka
     jetbrains-mono
