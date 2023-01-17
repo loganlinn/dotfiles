@@ -8,21 +8,23 @@ in {
 
   options.modules.editors.emacs = {
     enable = mkEnableOption "emacs editor";
-    package = mkPackageOption "emacs package";
     doom = rec {
       enable = mkEnableOption "doom emacs config";
+      repoUrl = mkOption {
+        type = types.str;
+      };
     };
   };
 
   config = mkIf cfg.enable {
 
     programs.emacs = {
-      enable = true;
-      package = pkgs.emacsNativeComp;
+      enable = mkDefault true;
+      package = mkDefault pkgs.emacsNativeComp;
       extraPackages = epkgs: [ epkgs.vterm ];
     };
 
-    services.emacs.enable = true;
+    services.emacs.enable = mkDefault true;
 
     home.packages = with pkgs; [
       binutils # for native-comp
