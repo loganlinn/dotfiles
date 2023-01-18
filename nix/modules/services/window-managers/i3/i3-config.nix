@@ -5,6 +5,7 @@
 , modifier ? "Mod4"
 , alt ? "Mod1"
 , terminal ? "kitty"
+, terminalFloating ? "kitty --title kitty-floating"
 , menu ? "rofi -show drun"
 , fileManager ? "thunar"
 , sessionLocker ? "dm-tool lock"
@@ -64,6 +65,7 @@ rec {
 
         apps = {
           "${modifier}+Return" = "exec ${terminal}";
+          "${modifier}+${alt}+Return" = "exec ${terminalFloating}";
           "${modifier}+Shift+Return" = "exec ${browser}";
           "${modifier}+e" = "exec ${editor}";
           "${modifier}+n" = "exec ${fileManager}";
