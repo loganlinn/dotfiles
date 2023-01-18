@@ -12,7 +12,6 @@
 , browser ? "google-chrome-stable"
 , editor ? "emacs"
 , messenger ? "slack"
-, backgroundImage ? "~/.background-image"
 , audioIncrease ? "pactl set-sink-volume @DEFAULT_SINK@ +5%"
 , audioDecrease ? "pactl set-sink-volume @DEFAULT_SINK@ -5%"
 , audioToggle ? "pactl set-sink-mute @DEFAULT_SINK@ toggle"
@@ -56,6 +55,12 @@ let
       "${m}${shorter}" = "resize shrink height ${size}";
       "${m}${wider}" = "resize grow width ${size}";
     };
+
+  modeQuitKeybinds = {
+    "Escape" = "mode default";
+    "Ctrl+c" = "mode default";
+    "Ctrl+g" = "mode default";
+  };
 in
 rec {
   inherit modifier terminal menu;
@@ -263,58 +268,55 @@ rec {
     in
     foldl' mergeAttrs { } (attrValues groups);
 
-  modes =
-    let
-      inherit (builtins) isString;
-      quitModeKeybinds = {
-        "Escape" = "mode default";
-        "Ctrl+c" = "mode default";
-        "Ctrl+g" = "mode default";
-      };
-    in
-    {
-      resize = resizeKeybinds
-        {
-          wider = "h";
-          taller = "j";
-          shorter = "k";
-          narrower = "l";
-          size = "10 px or 10 ppt";
-        } // resizeKeybinds
-        {
-          wider = "h";
-          taller = "j";
-          shorter = "k";
-          narrower = "l";
-          size = "3 px or 3 ppt";
-          modifier = "Shift";
-        } // quitModeKeybinds // {
-        "${modifier}+r" = "mode resize";
-        "${modifier}+h" = "focus left";
-        "${modifier}+j" = "focus down";
-        "${modifier}+k" = "focus up";
-        "${modifier}+l" = "focus right";
-      };
+  modes = {
+    resize = {
+      "h" = "resize shrink width 8 px or 1 ppt";
+      "j" = "resize grow height 8 px or 1 ppt";
+      "k" = "resize shrink height 8 px or 1 ppt";
+      "l" = "resize grow width 8 px or 1 ppt";
 
-      # TODO
-      # gaps = {
-      #     o      "mode mode_gaps_outer"
-      #     i      "mode mode_gaps_inner"
-      #     h      "mode mode_gaps_horiz"
-      #     v      "mode mode_gaps_verti"
-      #     t      "mode mode_gaps_top"
-      #     r      "mode mode_gaps_right"
-      #     b      "mode mode_gaps_bottom"
-      #     l      "mode mode_gaps_left"
-      #     Return "mode gaps"
-      # };
+      "Shift+h" = "resize shrink width 24 px or 3 ppt";
+      "Shift+j" = "resize grow height 24 px or 3 ppt";
+      "Shift+k" = "resize shrink height 24 px or 3 ppt";
+      "Shift+l" = "resize grow width 24 px or 3 ppt";
+
+      "${modifier}+h" = "focus left";
+      "${modifier}+j" = "focus down";
+      "${modifier}+k" = "focus up";
+      "${modifier}+l" = "focus right";
+
+      # Move position by mouse
+      "button1" = "move position mouse"; # move container to current position of mouse cursor
+      "button2" = "exec i3-draw"; # move container to current position of mouse cursor
+      "button4" = "move up 1 ppt"; # scroll wheel up
+      "button5" = "move down 1 ppt"; # scroll wheel down
+      "button6" = "move right 1 ppt"; # scroll wheel right
+      "button7" = "move left 1 ppt"; # scroll wheel right
+
+      "${modifier}+r" = "mode default";
+      "Escape" = "mode default";
+      "Ctrl+c" = "mode default";
+      "Ctrl+g" = "mode default";
     };
+    # TODO
+    # gaps = {
+    #     o      "mode mode_gaps_outer"
+    #     i      "mode mode_gaps_inner"
+    #     h      "mode mode_gaps_horiz"
+    #     v      "mode mode_gaps_verti"
+    #     t      "mode mode_gaps_top"
+    #     r      "mode mode_gaps_right"
+    #     b      "mode mode_gaps_bottom"
+    #     l      "mode mode_gaps_left"
+    #     Return "mode gaps"
+    # };
+  };
 
-  bars = [ ];
+  bars = [ ]; # disable for polybar
 
-  fonts.names = [ config.gtk.font.name "FontAwesome" ];
-  fonts.size =
-    mkIf (config.gtk.font.size != null) (builtins.toFloat config.gtk.font.size);
+  # fonts.names = [ config.gtk.font.name "FontAwesome" ];
+  # fonts.size =
+  #   mkIf (config.gtk.font.size != null) (builtins.toFloat config.gtk.font.size);
 
   focus = {
     followMouse = false;
@@ -368,11 +370,11 @@ rec {
   };
 
   startup = [
-    {
-      command = "feh --bg-scale ${backgroundImage}";
+    (mkIf (!isNull config.modules.theme.wallpaper) {
+      command = "feh --bg-scale ${config.modules.theme.wallpaper}";
       always = true;
       notification = false;
-    }
+    })
     {
       command = "systemctl --user restart polybar";
       always = true;

@@ -32,7 +32,7 @@
 
       lib = nixpkgs.lib.extend (self: super: {
         my = import ./nix/lib {
-          inherit pkgs inputs darwin;
+          inherit pkgs inputs;
           lib = self;
         };
       });

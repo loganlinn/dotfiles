@@ -18,7 +18,7 @@
       golang.go
       hashicorp.terraform
       kamadorueda.alejandra
-      ms-vscode.cpptools
+      # ms-vscode.cpptools
       ms-kubernetes-tools.vscode-kubernetes-tools
       ms-pyright.pyright
       ms-python.python
