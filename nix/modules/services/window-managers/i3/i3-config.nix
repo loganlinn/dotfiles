@@ -21,6 +21,8 @@
 , audioNext ? "playerctl next"
 , micMute ? "pactl set-source-mute @DEFAULT_SOURCE@ toggle"
 , exit ? "exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'"
+, screenshot ? "${config.services.flameshot.package}/bin/flameshot gui"
+, i3-input ? "i3-input -f 'pango:Victor Mono 12'"
 , ...
 }:
 
@@ -77,6 +79,8 @@ rec {
           "Ctrl+${alt}+Delete" = "exec ${sessionLocker}";
           "${modifier}+F5" = "exec ${sessionRefresher}";
           "${modifier}+Shift+e" = exit;
+          "${modifier}+Shift+semicolon" = "exec ${i3-input} -P 'i3-msg: '";
+          "${modifier}+F2;" = ''exec ${i3-input} -F 'rename workspace to "%s"' -P 'New name: ''''';
         };
 
         focusWindow = {
@@ -263,6 +267,10 @@ rec {
           "XF86AudioNext" = "exec ${audioNext}";
           "XF86AudioPrev" = "exec ${audioPrev}";
           "Scroll_Lock" = "exec ${micMute}";
+        };
+
+        screenshot = {
+          "Print" = "exec ${screenshot}";
         };
       };
     in
