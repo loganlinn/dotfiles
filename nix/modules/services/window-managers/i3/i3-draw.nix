@@ -10,9 +10,9 @@ pkgs.writeShellApplication {
         w=$((w + w % 2))
         h=$((h + h % 2))
 
-        i3-msg floating enable
-        i3-msg resize set width "$w" px height "$h" px
-        i3-msg move position "$x" px "$y" px
+        i3-msg -q floating enable
+        i3-msg -q resize set width "$w" px height "$h" px
+        i3-msg -q move position "$x" px "$y" px
     }
   '';
 }
