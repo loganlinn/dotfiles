@@ -30,4 +30,5 @@ rec {
       "${keybindStr [modifier wider]}" = "resize grow width ${sizeStr size}";
     };
 
+  colorStr = { colorclass, border, background, text }: "${colorclass} ${border} ${background} ${text}";
 }

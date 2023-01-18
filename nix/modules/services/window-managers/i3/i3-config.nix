@@ -21,7 +21,6 @@
 , audioNext ? "playerctl next"
 , micMute ? "pactl set-source-mute @DEFAULT_SOURCE@ toggle"
 , exit ? "exec i3-nagbar -t warning -m 'Do you want to exit i3?' -b 'Yes' 'i3-msg exit'"
-, screenshot ? "${config.services.flameshot.package}/bin/flameshot gui"
 , i3-input ? "i3-input -f 'pango:Victor Mono 12'"
 , ...
 }:
@@ -30,39 +29,7 @@ with builtins;
 with lib;
 
 let
-  concatKeysyms = concatStringsSep "+";
-
-  keybindStr = keysyms: concatKeysyms (map toString (flatten keysyms));
-
-  sizeStr = { px, ppt ? null }: optionalString (!isNull px) (
-    "${toString px} px" + (
-      optionalString (!isNull ppt) "or ${toString ppt} ppt")
-  );
-
-  colorStr = {}: "${colorclass} ${border} ${background} ${text}";
-
-  resizeKeybinds =
-    { wider
-    , narrower
-    , taller
-    , shorter
-    , modifier ? null
-    , size ? "1 px or 1 ppt"
-    }:
-    let m = if (!isNull modifier) then "${modifier}+" else "";
-    in
-    {
-      "${m}${narrower}" = "resize shrink width ${size}";
-      "${m}${taller}" = "resize grow height ${size}";
-      "${m}${shorter}" = "resize shrink height ${size}";
-      "${m}${wider}" = "resize grow width ${size}";
-    };
-
-  modeQuitKeybinds = {
-    "Escape" = "mode default";
-    "Ctrl+c" = "mode default";
-    "Ctrl+g" = "mode default";
-  };
+  i3-balance-workspace = import ./i3-balance-workspace.nix { inherit pkgs; };
 in
 rec {
   inherit modifier terminal menu;
@@ -90,9 +57,9 @@ rec {
           "${modifier}+l" = "focus right";
         };
 
-        modes = {
+        resize = {
           "${modifier}+r" = "mode resize";
-          "${modifier}+${alt}+r" = "mode gaps ";
+          "${modifier}+equal" = "exec ${i3-balance-workspace}/bin/i3_balance_workspace";
         };
 
         apps = {
@@ -269,9 +236,15 @@ rec {
           "Scroll_Lock" = "exec ${micMute}";
         };
 
-        screenshot = {
-          "Print" = "exec ${screenshot}";
-        };
+        screenshot =
+          let
+            flameshot = getExe config.services.flameshot.package;
+          in
+          {
+            "Print" = "exec ${flameshot} gui";
+          };
+
+
       };
     in
     foldl' mergeAttrs { } (attrValues groups);
