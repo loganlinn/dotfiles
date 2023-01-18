@@ -1,12 +1,10 @@
-{ config
-, lib
-, pkgs
-, ...
-}:
+{ config, lib, pkgs, ... }:
 
 with lib;
 
 let
+  onedark = import ../../modules/themes/colors/onedark.nix;
+  dunst-snooze = import ./dunst-snooze.nix { inherit pkgs; dunst = config.services.dunst.package; };
   awk = "${pkgs.gawk}/bin/awk";
   cut = "${pkgs.coreutils-full}/bin/cut";
   nvidia-smi = "/run/current-system/sw/bin/nvidia-smi";
@@ -14,48 +12,6 @@ let
   pavucontrol = "${pkgs.pavucontrol}/bin/pavucontrol";
   polybar = "${config.services.polybar.package}/bin/polybar";
   polybar-msg = "${config.services.polybar.package}/bin/polybar-msg";
-  dunst-snooze = pkgs.writeShellApplication
-    {
-      name = "dunst-snooze";
-      runtimeInputs = [ config.services.dunst.package ];
-      text = ''
-        case "$1" in
-        --toggle)
-          dunstctl set-paused toggle
-          ;;
-        *)
-          if [ "$(dunstctl is-paused)" = "true" ]; then
-            echo ""
-          else
-            echo ""
-          fi
-          ;;
-        esac
-      '';
-    };
-
-  # https://github.com/joshdick/onedark.vim/blob/main/autoload/onedark.vim
-  onedark = rec {
-    black = "#282C34";
-    white = "#ABB2BF";
-    background = black;
-    foreground = white;
-    lightRed = "#E06C75";
-    darkRed = "#BE5046";
-    green = "#98C379";
-    lightYellow = "#E5C07B";
-    darkYellow = "#D19A66";
-    blue = "#61AFEF";
-    magenta = "#C678DD";
-    cyan = "#56B6C2";
-    gutterGrey = "#4B5263";
-    commentGrey = "#5C6370";
-    cursorGrey = "#2C323C";
-    visualGrey = "#3E4452";
-    menuGrey = "#3E4452";
-    specialGrey = "#3B4048";
-    vertSplit = "#3E4452";
-  };
 in
 {
   systemd.user.services.polybar = {
@@ -65,15 +21,16 @@ in
   services.polybar = {
     enable = mkDefault true;
 
-    package = pkgs.polybar.override {
-      i3GapsSupport = true;
-      alsaSupport = true;
-      pulseSupport = true;
-      nlSupport = false;
-      iwSupport = true;
-      mpdSupport = true;
-      githubSupport = true;
-    };
+    package = pkgs.polybarFull;
+    # package = pkgs.polybar.override {
+    #   i3GapsSupport = config.xsession.windowManager.i3.enable;
+    #   alsaSupport = true;
+    #   pulseSupport = true;
+    #   nlSupport = false;
+    #   iwSupport = true;
+    #   mpdSupport = true;
+    #   githubSupport = true;
+    # };
 
     config =
       let
@@ -81,9 +38,10 @@ in
           name = "module/${name}";
           value = {
             type =
-              if (hasAttr "exec" config)
-              then "custom/script"
-              else "internal/${name}";
+              if (hasAttr "exec" config) then
+                "custom/script"
+              else
+                "internal/${name}";
 
             format-padding = 1;
             format-prefix-foreground = onedark.commentGrey;
@@ -92,42 +50,32 @@ in
       in
       {
         # Application settings (https://github.com/polybar/polybar/wiki/Configuration#application-settings)
-        settings = {
-          screenchange-reload = true;
-        };
+        settings = { screenchange-reload = true; };
+
         # Custom variables (https://github.com/polybar/polybar/wiki/Configuration#custom-variables)
-        colors = {
-          # black = "\${xrdb:color0}";
-          # red = "\${xrdb:color1}";
-          # green = "\${xrdb:color2}";
-          # yellow = "\${xrdb:color3}";
-          # blue = "\${xrdb:color4}";
-          # magenta = "\${xrdb:color5}";
-          # cyan = "\${xrdb:color6}";
-          # white = "\${xrdb:color7}";
-          # bblack = "\${xrdb:color8}";
-          # bred = "\${xrdb:color9}";
-          # bgreen = "\${xrdb:color10}";
-          # byellow = "\${xrdb:color11}";
-          # bblue = "\${xrdb:color12}";
-          # bmagenta = "\${xrdb:color13}";
-          # bcyan = "\${xrdb:color14}";
-          # bwhite = "\${xrdb:color15}";
-          background = onedark.background;
-          foreground = onedark.foreground;
-          focused-background = onedark.visualGrey;
-          focused-foreground = onedark.blue;
-          mode-background = onedark.darkYellow;
-          mode-foreground = onedark.black;
-          separator-background = onedark.background;
-          separator-foreground = onedark.vertSplit;
-          unfocused-background = onedark.background;
-          unfocused-foreground = onedark.commentGrey;
-          urgent-background = onedark.background;
-          urgent-foreground = onedark.lightRed;
-          visible-background = onedark.background;
-          visible-foreground = onedark.foreground;
-        };
+        colors =
+          # Xresources
+          listToAttrs
+            (forEach (range 0 15) (n: {
+              name = "color${toString n}";
+              value = "\${xrdb:color${toString n}}";
+            })) // {
+            background = onedark.background;
+            foreground = onedark.foreground;
+            focused-background = onedark.visualGrey;
+            focused-foreground = onedark.blue;
+            mode-background = onedark.darkYellow;
+            mode-foreground = onedark.black;
+            separator-background = onedark.background;
+            separator-foreground = onedark.vertSplit;
+            unfocused-background = onedark.background;
+            unfocused-foreground = onedark.commentGrey;
+            urgent-background = onedark.background;
+            urgent-foreground = onedark.lightRed;
+            visible-background = onedark.background;
+            visible-foreground = onedark.foreground;
+          };
+
         # Bar settings (https://github.com/polybar/polybar/wiki/Configuration#bar-settings)
         bar = {
           fill = "⏽";
@@ -150,13 +98,14 @@ in
           font-5 = "JetBrainsMono Nerd Font:size=19;5";
           font-6 = "JetBrainsMono Nerd Font:style=Normal:size=12;3";
           font-7 = "Material Icons:size=11;4";
-          font-8 = "JetBrainsMono Nerd Font:style=Medium Italic:size=15;4"; # round icons
+          font-8 =
+            "JetBrainsMono Nerd Font:style=Medium Italic:size=15;4"; # round icons
           padding = 3;
           separator = " ";
           module-margin = 0;
           modules-left = [ "i3" ];
           modules-center = [ "date" ];
-          modules-right = [ "memory" "gpu" "cpu" "temperature" "pusleaudio" ];
+          modules-right = [ "memory" "gpu" "cpu" "temperature" "pusleaudio" "dunst-snooze" ];
           tray-position = "right";
           tray-detached = false;
           tray-maxsize = 16;
@@ -235,7 +184,8 @@ in
         (module "temperature" {
           interval = 5;
           thermal-zone = "x86_pkg_temp";
-          hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
+          hwmon-path =
+            "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
           base-temperature = 50;
           warn-temperature = 75;
           units = true;
@@ -260,6 +210,23 @@ in
           ramp-volume-3 = "%{T7}墳%{T-}";
           click-right = "${pavucontrol} &";
         })
+        (module "dunst-snooze" {
+          type = "custom/ipc";
+          hook-0 = "${dunst-snooze}/bin/dunst-snooze";
+          hook-1 = "${dunst-snooze}/bin/dunst-snooze --toggle";
+          initial = 1;
+          click-left = "#dunst-snooze.hook.1";
+        })
+        # (module "demo" {
+        #   type = "custom/ipc";
+        #   hook-0 = "echo foobar";
+        #   hook-1 = "date +%s";
+        #   hook-2 = "whoami";
+        #   initial = 1;
+        #   click-left = "#demo.hook.0";
+        #   click-right = "#demo.hook.1";
+        #   double-click-left = "#demo.hook.2";
+        # })
         (module "powermenu" {
           type = "custom/menu";
           expand-right = true;
@@ -283,11 +250,6 @@ in
           menu-3-0-exec = "poweroff";
           menu-1-0 = "";
           menu-1-0-exec = "";
-        })
-        (module "dunst-snooze" {
-          exec = "${dunst-snooze}";
-          interval = 5;
-          click-left = "${dunst-snooze} --toggle &";
         })
       ];
 
