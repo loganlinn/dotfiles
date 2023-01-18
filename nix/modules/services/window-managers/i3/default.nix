@@ -19,6 +19,19 @@ in
 
     home.packages = with pkgs; [
       (import ./i3-draw.nix { inherit pkgs; })
-    ];
+    ] ++ (forEach [
+      "get_config"
+      "get_marks"
+      "get_outputs"
+      "get_tree"
+      "get_workspaces"
+    ]
+      (msgType: writeShellApplication {
+        name = "i3-" + (replaceStrings [ "get_" ] [ "" ] msgType);
+        runtimeInputs = [ cfg.package ];
+        text = ''
+          exec i3-msg -t ${msgType} "$@"
+        '';
+      }));
   };
 }
