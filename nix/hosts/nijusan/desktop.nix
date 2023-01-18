@@ -19,6 +19,11 @@ with lib; {
 
   programs.feh.enable = true;
 
+  programs.eww = {
+    enable = true;
+    configDir = "${config.xdg.configHome}/eww";
+  };
+
   services.clipmenu = {
     enable = true;
     launcher = getExe config.programs.rofi.package;
