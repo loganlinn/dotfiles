@@ -12,6 +12,114 @@ let
   pavucontrol = "${pkgs.pavucontrol}/bin/pavucontrol";
   polybar = "${config.services.polybar.package}/bin/polybar";
   polybar-msg = "${config.services.polybar.package}/bin/polybar-msg";
+
+  # https://fontawesome.com/v6/icons
+  fa = {
+    alarm-clock = "";
+    alient-8bit = "";
+    arrow-down-to-line = "";
+    backward = "";
+    bell = "";
+    bolt = "";
+    bookmark = "";
+    bug = "";
+    calendar = "";
+    camera = "";
+    caret-up = "";
+    check = "";
+    circle = "";
+    circle-down = "";
+    circle-exclamation = "";
+    circle-half-stroke = "";
+    circle-info = "";
+    circle-up = "";
+    circle-user = "";
+    circle-xmark = "";
+    clock = "";
+    cloud = "";
+    code = "";
+    comment = "";
+    comments = "";
+    desktop = "";
+    docker = "";
+    download = "";
+    expand = "";
+    film = "";
+    flag = "";
+    folder = "";
+    folder-open = "";
+    font = "";
+    forward = "";
+    gamepad = "";
+    gauge = "";
+    gear = "";
+    gears = "";
+    ghost = "";
+    github = "";
+    grid-2 = "";
+    headphones = "";
+    house = "";
+    inbox = "";
+    info = "";
+    joystick = "";
+    key = "";
+    laptop = "";
+    lock = "";
+    minus = "";
+    money-bill = "";
+    moon = "";
+    moon-stars = "";
+    mug-hot = "";
+    mug-saucer = "";
+    network-wired = "";
+    paperclip = "";
+    pause = "";
+    pen = "";
+    pen-fancy = "";
+    pen-to-square = "";
+    phone-volume = "";
+    plane = "";
+    plane-up = "";
+    plane-up-slash = "";
+    play = "";
+    playpause = "";
+    plus = "+";
+    power-off = "";
+    print = "";
+    quote-left = "";
+    right-to-bracket = "";
+    rocket-launch = "";
+    server = "";
+    share = "";
+    share-from-square = "";
+    slack = "";
+    sliders = "";
+    sparkles = "";
+    star = "";
+    tags = "";
+    text = "";
+    thumbs-down = "";
+    thumbs-up = "";
+    toggle-large-off = "";
+    toggle-large-on = "";
+    toggle-off = "";
+    toggle-on = "";
+    trash = "";
+    umbrella = "";
+    upload = "";
+    user = "";
+    video = "";
+    volume-high = "";
+    volume-low = "";
+    volume-off = "";
+    volume-xmark = "";
+    wifi = "";
+    wifi-exclamation = "";
+    wifi-fair = "";
+    wifi-slash = "";
+    wifi-weak = "";
+    xmark = "";
+  };
 in
 {
   systemd.user.services.polybar = {
@@ -101,16 +209,18 @@ in
           font-8 =
             "JetBrainsMono Nerd Font:style=Medium Italic:size=15;4"; # round icons
           padding = 3;
-          separator = " ";
+          separator = " ";
           module-margin = 0;
           modules-left = [ "i3" ];
           modules-center = [ "date" ];
-          modules-right = [ "memory" "gpu" "cpu" "temperature" "pusleaudio" "dunst-snooze" ];
+          modules-right = [ "memory" "gpu" "cpu" "temperature" "pulseaudio" "dunst-snooze" ];
           tray-position = "right";
           tray-detached = false;
           tray-maxsize = 16;
           background = "\${colors.background}";
           foreground = "\${colors.foreground}";
+          cursor-click = "pointer"; # hand
+          cursor-scroll = "ns-resize"; # arrows
         };
       } // listToAttrs [
         # Module settings (https://github.com/polybar/polybar/wiki/Configuration#module-settings)
@@ -203,11 +313,17 @@ in
           interval = 5;
           format-volume = "<ramp-volume> <label-volume>";
           use-ui-max = false; # use PA_VOLUME_NORM (100%)
-          label-muted = "%{T7}婢 %{T-} Mute";
-          ramp-volume-0 = "%{T7}奄%{T-}";
-          ramp-volume-1 = "%{T7}奔%{T-}";
-          ramp-volume-2 = "%{T7}奔%{T-}";
-          ramp-volume-3 = "%{T7}墳%{T-}";
+          # label-muted = "%{T7}婢 %{T-} Mute";
+          # ramp-volume-0 = "%{T7}奄%{T-}";
+          # ramp-volume-1 = "%{T7}奔%{T-}";
+          # ramp-volume-2 = "%{T7}奔%{T-}";
+          # ramp-volume-3 = "%{T7}墳%{T-}";
+          # label-muted = ""; # fa-volume-xmark
+          label-muted = ""; # fa-volume-slash
+          ramp-volume-0 = " ";
+          ramp-volume-1 = " ";
+          ramp-volume-2 = " ";
+          ramp-volume-3 = " ";
           click-right = "${pavucontrol} &";
         })
         (module "dunst-snooze" {
@@ -256,7 +372,7 @@ in
     script = ''
       ${polybar-msg} cmd quit
       for m in $(${polybar} --list-monitors | ${cut} -d":" -f1); do
-          MONITOR=$m ${polybar} --reload top | tee -a "/tmp/polybar-top_$m.log" & disown
+          MONITOR=$m ${polybar} --reload top 2>&1 >"/tmp/polybar-top_$m.log" &
       done
     '';
   };
