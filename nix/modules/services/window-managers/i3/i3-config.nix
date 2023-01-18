@@ -42,7 +42,7 @@ rec {
           "${modifier}+Shift+q" = "kill";
           "${modifier}+${alt}+q" =
             "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
-          "${modifier}+Ctrl+q" = "exec ${pkgs.xkill}/bin/xkill";
+          "${modifier}+Ctrl+q" = "exec ${pkgs.xorg.xkill}/bin/xkill";
           "${modifier}+Shift+c" = "reload";
           "${modifier}+Ctrl+c" = "restart";
           "Ctrl+${alt}+Delete" = "exec ${sessionLocker}";
