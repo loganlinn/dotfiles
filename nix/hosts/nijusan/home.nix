@@ -1,11 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ config
+, lib
+, pkgs
+, ...
+}:
+let
   inherit (lib) getExe;
-in {
+in
+{
   imports = [
     ../../home/3d-graphics.nix
     ../../home/browser.nix
@@ -14,10 +15,10 @@ in {
     ../../home/emacs.nix
     ../../home/fonts.nix
     ../../home/git.nix
-    ../../home/polybar
     ../../home/jetbrains/idea.nix
     ../../home/kitty
     ../../home/nnn.nix
+    ../../home/polybar
     ../../home/pretty.nix
     ../../home/sync.nix
     ../../home/tray.nix
@@ -26,9 +27,31 @@ in {
     ../../home/vscode.nix
     ../../home/xdg.nix
     ../../home/zsh
-    ./desktop.nix
+    ../../modules/programs/eww
+    ../../modules/services/dunst.nix
+    ../../modules/services/picom.nix
+    ../../modules/services/window-managers/i3
+    ../../modules/themes
     ./theme.nix
   ];
+
+  modules.services.picom.enable = true;
+  modules.services.dunst.enable = true;
+  modules.programs.eww.enable = true;
+
+  xsession = {
+    enable = true;
+    windowManager.i3.enable = true;
+  };
+
+  programs.feh.enable = true;
+
+  services.clipmenu = {
+    enable = true;
+    launcher = getExe config.programs.rofi.package;
+  };
+
+  services.flameshot.enable = true;
 
   services.network-manager-applet.enable = true;
 
@@ -50,13 +73,18 @@ in {
   home.username = "logan";
   home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
+    dmenu
+    epick
     font-manager
     google-cloud-sdk
+    hacksaw
     libnotify
     obsidian
     pango
+    pavucontrol
     ponymix
     python3
+    shotgun
     slack
     trash-cli
     vlc
