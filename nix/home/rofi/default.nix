@@ -17,16 +17,34 @@ mkIf pkgs.stdenv.targetPlatform.isLinux {
     ];
   };
 
-  home.packages = with pkgs; [
-    (writeShellApplication {
-      name = "powermenu";
-      runtimeInputs = with pkgs; [
-        config.programs.rofi.finalPackage
-        rofi-power-menu
-      ];
-      text = ''
-        rofi -show p -modi p:rofi-power-menu -width 20 -lines 6
-      '';
-    })
-  ];
+  xdg.configFile."rofi/colors.rasi".source = ./colors.rasi;
+  xdg.configFile."rofi/launcher.rasi".source = ./launcher.rasi;
+  xdg.configFile."rofi/notifications.rasi".source = ./notifications.rasi;
+
+  home.packages = with pkgs;
+    [
+      (writeShellApplication {
+        name = "powermenu";
+        runtimeInputs = with pkgs; [
+          config.programs.rofi.finalPackage
+          rofi-power-menu
+        ];
+        text = ''
+          rofi -show p -modi p:rofi-power-menu -width 20 -lines 6
+        '';
+      })
+      (writeShellApplication {
+        name = "launcher";
+        runtimeInputs = with pkgs; [
+          config.programs.rofi.finalPackage
+        ];
+        text = ''
+          rofi -no-lazy-grab \
+          -disable-history \
+          -modi "drun" \
+          -show drun \
+          -theme ${config.xdg.configHome}/rofi/launcher.rasi
+        '';
+      })
+    ];
 }
