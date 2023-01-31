@@ -20,8 +20,8 @@
       kamadorueda.alejandra
       # ms-vscode.cpptools
       ms-kubernetes-tools.vscode-kubernetes-tools
-      ms-pyright.pyright
-      ms-python.python
+      # ms-pyright.pyright
+      # ms-python.python
       ms-vscode-remote.remote-ssh
       kahole.magit
       redhat.java

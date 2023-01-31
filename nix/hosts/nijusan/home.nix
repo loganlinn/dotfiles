@@ -74,10 +74,12 @@ in
   home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
     dmenu
+    conky
     epick
     font-manager
     google-cloud-sdk
     hacksaw
+    inkscape
     libnotify
     obsidian
     pango

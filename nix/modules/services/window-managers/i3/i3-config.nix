@@ -30,7 +30,7 @@ with builtins;
 with lib;
 
 let
-  i3-balance-workspace = import ./i3-balance-workspace.nix { inherit pkgs; };
+  # i3-balance-workspace = import ./i3-balance-workspace.nix { inherit pkgs; };
 in
 rec {
   inherit modifier terminal menu;
@@ -61,7 +61,7 @@ rec {
 
         resize = {
           "${modifier}+r" = "mode resize";
-          "${modifier}+equal" = "exec ${i3-balance-workspace}/bin/i3_balance_workspace";
+          # "${modifier}+equal" = "exec ${i3-balance-workspace}/bin/i3_balance_workspace";
         };
 
         apps = {
