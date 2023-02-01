@@ -73,8 +73,8 @@ in
   home.username = "logan";
   home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
-    dmenu
     conky
+    dmenu
     epick
     font-manager
     google-cloud-sdk
@@ -86,6 +86,7 @@ in
     pavucontrol
     ponymix
     python3
+    qalculate-gtk
     shotgun
     slack
     trash-cli
