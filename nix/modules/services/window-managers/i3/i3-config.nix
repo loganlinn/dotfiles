@@ -337,6 +337,7 @@ rec {
       { window_role = "pop-up"; }
       { window_role = "prefwindow"; }
       { title = "Event Tester"; } # i.e. xev
+      { class = "qalculate-gtk"; }
     ];
   };
 
