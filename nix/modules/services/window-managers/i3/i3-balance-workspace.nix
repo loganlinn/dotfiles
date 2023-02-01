@@ -6,7 +6,7 @@ python3Packages.buildPythonPackage rec {
   pname = "i3-balance-workspace";
   version = "1.8.6";
   format = "pyproject";
-  nativeBuildInputs = [ poetry python3Packages.poetry ];
+  nativeBuildInputs = [ poetry python3Packages.poetry-core ];
   propagatedBuildInputs = with python3.pkgs; [ i3ipc ];
   src = python3Packages.fetchPypi {
     inherit pname version;
