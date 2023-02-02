@@ -7,7 +7,6 @@
     ./crystal.nix
     ./kube.nix
     ./gh.nix
-    ./the-way.nix
   ];
 
   home.packages = with pkgs; [
@@ -86,5 +85,9 @@
     mdsh
   ];
 
-  programs.the-way.enable = true;
+  programs.the-way = {
+    enable = true;
+    enableZshIntegration = true;
+    enableBashIntegration = true;
+  };
 }
