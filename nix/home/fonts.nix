@@ -25,9 +25,18 @@
       fonts = [
         "DejaVuSansMono"
         "DroidSansMono"
+        "Inconsolata"
+        "InconsolataGo"
         "FiraCode"
-        "JetBrainsMono"
         "Hack"
+        "MesloLG"
+        "Noto"
+        "JetBrainsMono"
+        "Roboto"
+        "SauceCodePro"
+        "Lekton"
+        "LiberationMono"
+        "Lilex"
       ];
     })
   ];
