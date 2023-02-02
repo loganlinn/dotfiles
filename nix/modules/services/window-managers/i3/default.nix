@@ -6,6 +6,20 @@ let
 
   cfg = config.xsession.windowManager.i3;
 
+  i3-draw = import ./i3-draw.nix { inherit pkgs; };
+
+  # Create shell script for each i3-msg message type
+  # i.e. `i3-config`, `i3-marks`, `i3-outputs`, etc
+  i3-utils = let types = [ "config" "marks" "outputs" "tree" "workspaces" ]; in
+    map
+      (type: pkgs.writeShellApplication {
+        name = "i3-${type}";
+        runtimeInputs = [ cfg.package ];
+        text = ''
+          exec i3-msg -t get_${type} "$@"
+        '';
+      })
+      types;
 in
 {
   # options.xsession.windowManager.i3 = { };
@@ -18,20 +32,8 @@ in
     };
 
     home.packages = with pkgs; [
-      (import ./i3-draw.nix { inherit pkgs; })
-    ] ++ (forEach [
-      "get_config"
-      "get_marks"
-      "get_outputs"
-      "get_tree"
-      "get_workspaces"
-    ]
-      (msgType: writeShellApplication {
-        name = "i3-" + (replaceStrings [ "get_" ] [ "" ] msgType);
-        runtimeInputs = [ cfg.package ];
-        text = ''
-          exec i3-msg -t ${msgType} "$@"
-        '';
-      }));
+      i3-draw
+      xdotool
+    ] ++ i3-utils;
   };
 }

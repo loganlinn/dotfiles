@@ -1,11 +1,11 @@
-{ pkgs, ... }: {
+{ pkgs, lib, ... }: {
   programs.vscode = {
-    enable = true;
-    package = pkgs.vscode; # TODO pkgs.vscodium
+    enable = lib.mkDefault true;
+    package = lib.mkDefault pkgs.vscode; # TODO pkgs.vscodium
 
-    enableUpdateCheck = false;
-    enableExtensionUpdateCheck = false;
-    mutableExtensionsDir = false;
+    enableUpdateCheck = true;
+    enableExtensionUpdateCheck = true;
+    mutableExtensionsDir = true;
 
     # https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/editors/vscode/extensions
     extensions = with pkgs.vscode-extensions; [
@@ -15,21 +15,26 @@
       bungcip.better-toml
       coolbear.systemd-unit-file
       # davidanson.vscode-markdownlint
+      dracula-theme.theme-dracula
+      eamodio.gitlens
       editorconfig.editorconfig
       golang.go
+      github.github-vscode-theme
+      # github.vscode-pull-request-github
       hashicorp.terraform
       kahole.magit
       kamadorueda.alejandra
+      # mskelton.one-dark-theme
       ms-kubernetes-tools.vscode-kubernetes-tools
       ms-python.python
       ms-vscode-remote.remote-ssh
       redhat.java
       redhat.vscode-yaml
-      skellock.just
+      # skellock.just
       # sumneko.lua
       timonwong.shellcheck
       vscodevim.vim
-      zhuangtongfa.material-theme # One Dark Pro
+      # zhuangtongfa.material-theme # One Dark Pro
       zxh404.vscode-proto3
     ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
       {
@@ -38,30 +43,47 @@
         version = "2022.8.0";
         sha256 = "l7mXTKdAE56DdnSaY1cs7sajhG6Yzz0XlZLtHY2saB0=";
       }
+      {
+        name = "intellij-idea-keybindings";
+        publisher = "k--kato";
+        version = "1.5.5";
+        # nix-prefetch-url https://vscodevim.gallery.vsassets.io/_apis/public/gallery/publisher/k--kato/extension/intellij-idea-keybindings/1.5.5/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage
+        sha256 = "1l5fs47wnc0mfl95ibv823zlrzij99a7m5v7i2bgm5b7krwf9p4n";
+      }
     ];
 
     userSettings = {
       # Appearance
-      "editor.fontFamily" = "'JetBrainsMono Nerd Font', 'Victor Mono', Hack, 'Ubuntu Mono', monospace";
+      "editor.fontFamily" = "JetBrainsMono Nerd Font, JetBrains Mono";
+      "editor.fontWeight" = "normal";
+      # "editor.fontSize" = 13;
+      "editor.highlightActiveIndentGuide" = true;
+      # "editor.lineHeight" = 24;
       "editor.ligatures" = true;
       "editor.lineNumbers" = "relative";
       "editor.minimap.enabled" = false;
+      "editor.renderControlCharacters" = true;
       "editor.rulers" = [ 99 ];
+      "editor.zenMode.hideTabs" = true;
+      "editor.zenMode.singleFile" = true;
       "terminal.integrated.tabs.location" = "left";
       "window.newWindowDimensions" = "inherit";
       "window.openFilesInNewWindow" = "default";
       "workbench.activityBar.visible" = true;
-      "workbench.colorTheme" = "One Dark Pro";
-      "workbench.preferredDarkColorTheme" = "One Dark Pro";
+      "workbench.colorTheme" = "Nord";
+      # "workbench.colorTheme" = "Dracula";
+      # "workbench.colorTheme" = "GitHub Dark Dimmed";
       "workbench.sideBar.location" = "right";
       "workbench.startupEditor" = "newUntitledFile";
 
       # Behavior
       "editor.formatOnSaveMode" = "modifications";
+      "editor.hover.delay" = 100;
+      "editor.largeFileOptimizations" = true;
       "explorer.confirmDelete" = false;
       "explorer.confirmDragAndDrop" = false;
-      "workbench.editor.revealIfOpen" = true;
       "explorer.incrementalNaming" = "smart";
+      "workbench.editor.revealIfOpen" = true;
 
       # Privacy
       "Lua.telemetry.enable" = false;
@@ -77,14 +99,14 @@
         "*.hcl" = "terraform";
         "*.variant" = "terraform";
       };
+      "files.exclude" = { "**/node_modules" = true; };
 
       # "git.autofetch" = true;
 
+      # eamodio.gitlens
+      "gitlens.codeLens.enabled" = true;
 
-      "files.exclude" = { "**/node_modules" = true; };
-
-      # markdown
-      "markdownlint.ignore" = [ "MD033" ];
+      "typescript.updateImportsOnFileMove.enabled" = "always";
 
       # timonwong.shellcheck
       "shellcheck.ignorePatterns" = {
@@ -107,9 +129,10 @@
       "shellcheck.customArgs" = [ "-x" ];
       "shellcheck.useWorkspaceRootAsCwd" = true;
 
-      "tms.autoRefresh" = false;
+      # davidanson.vscode-markdownlint
+      "markdownlint.ignore" = [ "MD033" ];
 
-      "typescript.updateImportsOnFileMove.enabled" = "always";
+      "tms.autoRefresh" = false;
 
       # betterthantomorrow.calva
       "calva.paredit.defaultKeyMap" = "strict";
@@ -122,7 +145,7 @@
 
       # vscodevim.vim
       "vim.easymotion" = true;
-      "vim.enableNeovim" = true;
+      # "vim.enableNeovim" = true;
       "vim.hlsearch" = true;
       "vim.incsearch" = true;
       "vim.smartRelativeLine" = true;
@@ -157,7 +180,9 @@
         }
       ];
 
+      # ms-kubernetes-tools.vscode-kubernetes-tools
       "vs-kubernetes" = { "vs-kubernetes.crd-code-completion" = "disabled"; };
+
     };
     keybindings = [
       # https://github.com/kahole/edamagit/blob/916a4c808d213407233d68b2c814c82ca5dedb9d/README.md#vim-support-vscodevim

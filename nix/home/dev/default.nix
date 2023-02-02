@@ -56,8 +56,23 @@
     gopls
 
     # python
-    python3
-    python3Packages.ptpython
+    (python3.withPackages (ps: with ps; [
+      black
+      dbus-python
+      ipython
+      isort
+      jupyterlab
+      notebook
+      numpy
+      pandas
+      pipx
+      ptpython
+      pygobject3
+      pynvim
+      requests
+      setuptools
+    ]))
+    poetry
     pyright
 
     # ruby

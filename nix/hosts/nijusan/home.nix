@@ -86,7 +86,6 @@ in
     pango
     pavucontrol
     ponymix
-    python3
     qalculate-gtk
     shotgun
     slack

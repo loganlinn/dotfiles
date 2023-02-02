@@ -59,7 +59,9 @@ in
           '';
       })
     ]
-    ++ lib.optional isLinux sysz;
+    ++ lib.optionals isLinux [
+      sysz
+    ];
 
   home.sessionVariables = {
     EDITOR = "vim";
