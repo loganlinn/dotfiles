@@ -17,6 +17,7 @@ in
     ../../home/git.nix
     ../../home/jetbrains/idea.nix
     ../../home/kitty
+    ../../home/mpv.nix
     ../../home/nnn.nix
     ../../home/polybar
     ../../home/pretty.nix
