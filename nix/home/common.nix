@@ -1,11 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ config
+, lib
+, pkgs
+, ...
+}:
+let
   inherit (pkgs.stdenv.targetPlatform) isDarwin isLinux;
-in {
+in
+{
   imports = [
     ./accounts.nix
     ./git.nix
@@ -51,10 +52,10 @@ in {
         text =
           if isDarwin
           then ''
-            darwin-rebuild switch --impure --flake ~/.dotfiles#"$(whoami)@$(hostname -s)"
+            darwin-rebuild switch --impure --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
           ''
           else ''
-            home-manager switch --flake ~/.dotfiles#"$(whoami)@$(hostname -s)"
+            home-manager switch --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
           '';
       })
     ]
@@ -129,7 +130,7 @@ in {
   services.gpg-agent = {
     enable = true;
     enableSshSupport = true;
-    defaultCacheTtl  = lib.mkDefault 86400;
+    defaultCacheTtl = lib.mkDefault 86400;
     maxCacheTtl = lib.mkDefault 86400;
     pinentryFlavor = lib.mkDefault "gtk2";
     extraConfig = ''
