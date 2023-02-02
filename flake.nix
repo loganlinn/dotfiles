@@ -47,7 +47,7 @@
       forAllSystems = f: genAttrs systems (system: f system);
 
       mkPkgs = pkgs: system:
-        import nixpkgs {
+        import pkgs {
           inherit system;
           overlays = [ self.overlay ] ++ (attrValues self.overlays);
           config.allowUnfree = true;
@@ -77,6 +77,7 @@
       lib = lib.my;
 
       # packages = forAllSystems (system: import ./nix/pkgs self system);
+      # defaultPackage = forAllSystems (system: self.packages.${system}.TODO)
 
       overlay = final: prev: { };
       # overlay = forAllSystems (system: _final: _prev: pkgs."${system}");
@@ -93,18 +94,22 @@
       #   ]
       # );
 
-      homeConfigurations."logan@nijusan" = homeManagerConfiguration {
-        pkgs = pkgs."x86_64-linux";
-        modules = [
-          ./nix/modules
-          ./nix/hosts/nijusan/home.nix
-        ];
-        extraSpecialArgs = { unstable = pkgs'."x86_64-linux"; };
-      };
+      homeConfigurations."logan@nijusan" = let system = "x86_64-linux"; in
+        homeManagerConfiguration {
+          pkgs = pkgs.${system};
+          modules = [
+            ./nix/modules
+            ./nix/hosts/nijusan/home.nix
+          ];
+          extraSpecialArgs = {
+            unstable = pkgs'.${system};
+          };
+        };
 
-      homeConfigurations."logan@framework" = homeManagerConfiguration {
+      homeConfigurations." logan@framework" = homeManagerConfiguration {
         pkgs = pkgs."x86_64-linux";
         modules = [
+          # ./nix/modules
           # ./nix/home/framework.nix
           ./nix/hosts/framework/home.nix
         ];
@@ -130,7 +135,7 @@
         modules = [ ./nix/hosts/patchbook/darwin.nix ];
       };
 
-      devShell = forAllSystems (system: import ./shell.nix { pkgs = pkgs."${system}"; });
+      devShell = forAllSystems (system: import ./shell.nix { pkgs = pkgs.${system}; });
 
       formatter = forAllSystems (system: pkgs.${system}.alejandra);
 
