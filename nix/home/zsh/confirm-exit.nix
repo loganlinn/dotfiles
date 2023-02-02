@@ -1,15 +1,13 @@
-{ lib, pkgs, ... }:
-
-with lib;
+{ pkgs ? import <nixpkgs> { }, ... }:
 
 ''
-setopt ignore_eof
+  setopt ignore_eof
 
-exit_interactive() {
-  ${getExe pkgs.gum} confirm "Exit zsh?" && exit
-}
+  exit_interactive() {
+    ${pkgs.gum}/bin/gum confirm "Exit zsh?" && exit
+  }
 
-zle -N exit_interactive
+  zle -N exit_interactive
 
-bindkey '^D' exit_interactive
+  bindkey '^D' exit_interactive
 ''
