@@ -5,15 +5,17 @@
 }:
 with lib; {
   home.packages = with pkgs; [
+    fira-code
+    fira-code-symbols
+    font-awesome
     noto-fonts
     noto-fonts-cjk
     noto-fonts-emoji
-    fira-code
-    fira-code-symbols
     open-sans
-    font-awesome
-    siji # iconic bitmap font
     paper-icon-theme # for rofi
+    pywal
+    wpgtk # gui for pywal ('wpg' command)
+    siji # iconic bitmap font
   ];
 
   home.pointerCursor = {
