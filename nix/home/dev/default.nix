@@ -1,4 +1,4 @@
-{lib, pkgs, ...}:
+{ lib, pkgs, ... }:
 
 {
   imports = [
@@ -33,6 +33,7 @@
     shellharden
     mdsh
     nodePackages.bash-language-server
+    the-way
 
     # nix
     alejandra
