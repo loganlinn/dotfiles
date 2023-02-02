@@ -13,6 +13,7 @@
     # misc
     hey
     dive
+    dtrx # do the right extraction (extract archives)
     jless
     hyperfine
     graphviz
