@@ -52,7 +52,7 @@
 
       # Behavior
       shell_integration = "enabled";
-      allow_remote_control = true; # i.e. kitty @close-window
+      allow_remote_control = false;
       confirm_os_window_close = 0;
 
       # Links
