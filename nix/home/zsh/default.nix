@@ -7,6 +7,11 @@
 with builtins;
 with lib;
 
+let
+
+  cfg = config.programs.zsh;
+
+in
 {
   programs.zsh = {
     enable = true;
@@ -42,9 +47,7 @@ with lib;
       src = "$HOME/src";
     };
     initExtra = ''
-      # Allow kill word and moving forward/backword by word to behave like bash (e.g. stop at / chars)
-      autoload -U select-word-style
-      select-word-style bash
+      ${readFile ./editor.zsh}
 
       # Make color constants available
       autoload -U colors
@@ -52,7 +55,6 @@ with lib;
 
       ${import ./confirm-exit.nix { inherit lib pkgs; }}
 
-      ${readFile ./keybindings.zsh}
 
       ${readFile ./clipboard.zsh}
 
