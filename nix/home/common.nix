@@ -55,7 +55,7 @@ in
             darwin-rebuild switch --impure --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
           ''
           else ''
-            home-manager switch --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
+            home-manager switch -b backup --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
           '';
       })
     ]
