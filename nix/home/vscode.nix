@@ -1,10 +1,11 @@
 { pkgs, ... }: {
   programs.vscode = {
     enable = true;
-    package = pkgs.vscode;
-    enableUpdateCheck = true;
-    enableExtensionUpdateCheck = true;
-    mutableExtensionsDir = true;
+    package = pkgs.vscode; # TODO pkgs.vscodium
+
+    enableUpdateCheck = false;
+    enableExtensionUpdateCheck = false;
+    mutableExtensionsDir = false;
 
     # https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/editors/vscode/extensions
     extensions = with pkgs.vscode-extensions; [
