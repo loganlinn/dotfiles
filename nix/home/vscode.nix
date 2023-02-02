@@ -11,44 +11,81 @@
       arcticicestudio.nord-visual-studio-code
       bbenoist.nix
       betterthantomorrow.calva
-      # betterthantomorrow.joyride
       bungcip.better-toml
       coolbear.systemd-unit-file
+      # davidanson.vscode-markdownlint
       editorconfig.editorconfig
       golang.go
       hashicorp.terraform
-      kamadorueda.alejandra
-      # ms-vscode.cpptools
-      ms-kubernetes-tools.vscode-kubernetes-tools
-      # ms-pyright.pyright
-      # ms-python.python
-      ms-vscode-remote.remote-ssh
       kahole.magit
+      kamadorueda.alejandra
+      ms-kubernetes-tools.vscode-kubernetes-tools
+      ms-python.python
+      ms-vscode-remote.remote-ssh
       redhat.java
       redhat.vscode-yaml
       skellock.just
-      sumneko.lua
+      # sumneko.lua
       timonwong.shellcheck
       vscodevim.vim
+      zhuangtongfa.material-theme # One Dark Pro
       zxh404.vscode-proto3
+    ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+      {
+        name = "isort";
+        publisher = "ms-python";
+        version = "2022.8.0";
+        sha256 = "l7mXTKdAE56DdnSaY1cs7sajhG6Yzz0XlZLtHY2saB0=";
+      }
     ];
 
     userSettings = {
-      "workbench.colorTheme" = "Nord";
-      "aws.telemetry" = false;
-      "redhat.telemetry.enabled" = false;
-      "editor.formatOnSaveMode" = "modifications";
+      # Appearance
+      "editor.fontFamily" = "'JetBrainsMono Nerd Font', 'Victor Mono', Hack, 'Ubuntu Mono', monospace";
+      "editor.ligatures" = true;
       "editor.lineNumbers" = "relative";
       "editor.minimap.enabled" = false;
+      "editor.rulers" = [ 99 ];
+      "terminal.integrated.tabs.location" = "left";
+      "window.newWindowDimensions" = "inherit";
+      "window.openFilesInNewWindow" = "default";
+      "workbench.activityBar.visible" = true;
+      "workbench.colorTheme" = "One Dark Pro";
+      "workbench.preferredDarkColorTheme" = "One Dark Pro";
+      "workbench.sideBar.location" = "right";
+      "workbench.startupEditor" = "newUntitledFile";
+
+      # Behavior
+      "editor.formatOnSaveMode" = "modifications";
       "explorer.confirmDelete" = false;
       "explorer.confirmDragAndDrop" = false;
+      "workbench.editor.revealIfOpen" = true;
+      "explorer.incrementalNaming" = "smart";
+
+      # Privacy
+      "Lua.telemetry.enable" = false;
+      "aws.telemetry" = false;
+      "go.survey.prompt" = false;
+      "redhat.telemetry.enabled" = false;
+      "telemetry.telemetryLevel" = "off";
+      "typescript.surveys.enabled" = false;
+      "workbench.enableExperiments" = false;
+
       "files.associations" = {
         "*.config" = "shellscript";
         "*.hcl" = "terraform";
         "*.variant" = "terraform";
       };
-      "git.autofetch" = true;
+
+      # "git.autofetch" = true;
+
+
+      "files.exclude" = { "**/node_modules" = true; };
+
+      # markdown
       "markdownlint.ignore" = [ "MD033" ];
+
+      # timonwong.shellcheck
       "shellcheck.ignorePatterns" = {
         "**/*.config" = true;
         "**/*.env" = true;
@@ -66,24 +103,14 @@
         "**/zshenv" = true;
         "**/zshrc" = true;
       };
-      "telemetry.enableCrashReporter" = false;
-      "telemetry.enableTelemetry" = false;
-      "tms.autoRefresh" = false;
-      "typescript.updateImportsOnFileMove.enabled" = "always";
-      "workbench.activityBar.visible" = true;
-      "workbench.editor.revealIfOpen" = true;
-      "workbench.enableExperiments" = false;
-      "workbench.sideBar.location" = "right";
-      "workbench.preferredDarkColorTheme" = "Nord";
       "shellcheck.customArgs" = [ "-x" ];
-      "window.openFilesInNewWindow" = "default";
-      "explorer.incrementalNaming" = "smart";
       "shellcheck.useWorkspaceRootAsCwd" = true;
-      "files.exclude" = { "**/node_modules" = true; };
-      "workbench.startupEditor" = "newUntitledFile";
-      "window.newWindowDimensions" = "inherit";
-      "terminal.integrated.tabs.location" = "left";
-      "telemetry.telemetryLevel" = "off";
+
+      "tms.autoRefresh" = false;
+
+      "typescript.updateImportsOnFileMove.enabled" = "always";
+
+      # betterthantomorrow.calva
       "calva.paredit.defaultKeyMap" = "strict";
       "calva.prettyPrintingOptions" = {
         "enabled" = true;
@@ -91,9 +118,8 @@
         "maxLength" = 50;
         "printEngine" = "pprint";
       };
-      "editor.fontFamily" =
-        "'FiraCode Nerd Font', 'UbuntuMono Nerd Font', 'Ubuntu Mono', 'monospace', monospace, 'Droid Sans Fallback'";
-      "editor.rulers" = [ 99 ];
+
+      # vscodevim.vim
       "vim.easymotion" = true;
       "vim.enableNeovim" = true;
       "vim.hlsearch" = true;
@@ -129,6 +155,7 @@
           "commands" = [ "editor.action.outdentLines" ];
         }
       ];
+
       "vs-kubernetes" = { "vs-kubernetes.crd-code-completion" = "disabled"; };
     };
     keybindings = [
