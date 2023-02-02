@@ -1,0 +1,6 @@
+{
+  imports = [
+    ./eww
+    ./the-way
+  ];
+}

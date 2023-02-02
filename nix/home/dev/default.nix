@@ -7,6 +7,7 @@
     ./crystal.nix
     ./kube.nix
     ./gh.nix
+    ./the-way.nix
   ];
 
   home.packages = with pkgs; [
@@ -33,7 +34,6 @@
     shellharden
     mdsh
     nodePackages.bash-language-server
-    the-way
 
     # nix
     alejandra
@@ -85,4 +85,6 @@
     # markdown
     mdsh
   ];
+
+  programs.the-way.enable = true;
 }

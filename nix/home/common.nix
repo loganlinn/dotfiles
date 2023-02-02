@@ -102,7 +102,12 @@ in
 
   programs.gpg.enable = true;
 
-  programs.fzf.enable = true;
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+    enableFishIntegration = true;
+    tmux.enableShellIntegration = config.programs.tmux.enable;
+  };
 
   programs.htop = {
     enable = true;

@@ -1,10 +1,10 @@
-{
-  lib,
-  config,
-  pkgs,
-  ...
+{ lib
+, config
+, pkgs
+, ...
 }:
 
+with builtins;
 with lib;
 
 {
@@ -25,17 +25,17 @@ with lib;
       save = 100000;
     };
     shellGlobalAliases = {
-      "..."="../..";
-      "...."="../../..";
-      "....."="../../../..";
-      "......"="../../../../.." ;
+      "..." = "../..";
+      "...." = "../../..";
+      "....." = "../../../..";
+      "......" = "../../../../..";
     };
     sessionVariables = lib.mkOptionDefault config.home.sessionVariables;
     dirHashes = {
       cfg = config.xdg.configHome;
       dls = config.xdg.userDirs.download;
       docs = config.xdg.userDirs.documents;
-      pics= config.xdg.userDirs.pictures;
+      pics = config.xdg.userDirs.pictures;
       music = config.xdg.userDirs.music;
       vids = config.xdg.userDirs.videos;
       dot = "$HOME/.dotfiles";
@@ -52,9 +52,9 @@ with lib;
 
       ${import ./confirm-exit.nix { inherit lib pkgs; }}
 
-      ${builtins.readFile ./keybindings.zsh}
+      ${readFile ./keybindings.zsh}
 
-      ${builtins.readFile ./clipboard.zsh}
+      ${readFile ./clipboard.zsh}
 
       # Old habbits die hard
       (( ''${+commands[pbcopy]}  )) || alias pbcopy=clipcopy;

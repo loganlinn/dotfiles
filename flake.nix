@@ -63,6 +63,7 @@
           modules = [
             home-manager.darwinModules.home-manager
             ./nix/darwin/configuration.nix
+            ./nix/modules
             {
               home-manager.users.logan = import ./nix/home/darwin.nix;
               home-manager.useGlobalPkgs = true;
@@ -95,6 +96,7 @@
       homeConfigurations."logan@nijusan" = homeManagerConfiguration {
         pkgs = pkgs."x86_64-linux";
         modules = [
+          ./nix/modules
           ./nix/hosts/nijusan/home.nix
         ];
         extraSpecialArgs = { unstable = pkgs'."x86_64-linux"; };
