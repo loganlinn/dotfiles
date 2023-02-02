@@ -76,6 +76,7 @@ in
   home.packages = with pkgs; [
     conky
     dmenu
+    discord
     epick
     font-manager
     google-cloud-sdk
