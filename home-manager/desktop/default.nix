@@ -3,38 +3,37 @@
 , pkgs
 , ...
 }:
-let
-  inherit (lib) getExe;
-in
+
 {
   imports = [
-    ../../home/3d-graphics.nix
-    ../../home/browser.nix
-    ../../home/common.nix
-    ../../home/dev
-    ../../home/emacs.nix
-    ../../home/fonts.nix
-    ../../home/git.nix
-    ../../home/jetbrains/idea.nix
-    ../../home/kitty
-    ../../home/mpv.nix
-    ../../home/nnn.nix
-    ../../home/polybar
-    ../../home/pretty.nix
-    ../../home/sync.nix
-    ../../home/tray.nix
-    ../../home/urxvt.nix
-    ../../home/vpn.nix
-    ../../home/vscode.nix
-    ../../home/xdg.nix
-    ../../home/zsh
-    ../../modules/programs/eww
-    ../../modules/services/dunst.nix
-    ../../modules/services/picom.nix
-    ../../modules/services/window-managers/i3
-    ../../modules/themes
+    ../common.nix
+    ../../nix/home/3d-graphics.nix
+    ../../nix/home/browser.nix
+    ../../nix/home/dev
+    ../../nix/home/emacs.nix
+    ../../nix/home/fonts.nix
+    ../../nix/home/git.nix
+    ../../nix/home/jetbrains/idea.nix
+    ../../nix/home/kitty
+    ../../nix/home/mpv.nix
+    ../../nix/home/nnn.nix
+    ../../nix/home/polybar
+    ../../nix/home/pretty.nix
+    ../../nix/home/sync.nix
+    ../../nix/home/tray.nix
+    ../../nix/home/urxvt.nix
+    ../../nix/home/vpn.nix
+    ../../nix/home/vscode.nix
+    ../../nix/home/xdg.nix
+    ../../nix/home/zsh
+    ../../nix/modules/services/dunst.nix
+    ../../nix/modules/services/picom.nix
+    ../../nix/modules/services/window-managers/i3
+    ../../nix/modules/themes
     ./theme.nix
   ];
+
+  programs.eww.enable = true;
 
   modules.services.picom.enable = true;
   modules.services.dunst.enable = true;
@@ -49,7 +48,7 @@ in
 
   services.clipmenu = {
     enable = true;
-    launcher = getExe config.programs.rofi.package;
+    launcher = lib.getExe config.programs.rofi.package;
   };
 
   services.flameshot.enable = true;
@@ -71,8 +70,6 @@ in
     };
   };
 
-  home.username = "logan";
-  home.homeDirectory = "/home/logan";
   home.packages = with pkgs; [
     conky
     dmenu
@@ -80,6 +77,7 @@ in
     epick
     font-manager
     google-cloud-sdk
+    gtk3
     hacksaw
     inkscape
     libnotify
@@ -97,6 +95,5 @@ in
     xorg.xprop
     zoom-us
   ];
-  home.stateVersion = "22.11";
-  home.enableDebugInfo = false;
+
 }

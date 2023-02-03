@@ -4,7 +4,7 @@
 , ...
 }:
 let
-  inherit (pkgs.stdenv.targetPlatform) isDarwin isLinux;
+  inherit (pkgs.stdenv.targetPlatform) isLinux;
 in
 {
   imports = [
@@ -47,17 +47,7 @@ in
       tree
       xh
       zenith
-      (writeShellApplication {
-        name = "switch";
-        text =
-          if isDarwin
-          then ''
-            darwin-rebuild switch --impure --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
-          ''
-          else ''
-            home-manager switch -b backup --flake ~/.dotfiles#"$(whoami)@$(hostname -s)" "$@"
-          '';
-      })
+      # (import ../pkgs/switch.nix { })
     ]
     ++ lib.optionals isLinux [
       sysz

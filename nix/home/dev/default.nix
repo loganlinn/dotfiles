@@ -25,6 +25,9 @@
     nodePackages_latest.graphite-cli
     delta
 
+    # scripting
+    gum
+
     # clients
     doctl
 
@@ -32,7 +35,6 @@
     shfmt
     shellcheck
     shellharden
-    mdsh
     nodePackages.bash-language-server
 
     # nix
@@ -99,6 +101,7 @@
 
     # markdown
     mdsh
+    glow
   ];
 
   programs.the-way = {
