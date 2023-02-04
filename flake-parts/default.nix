@@ -1,6 +1,6 @@
 {
   imports = [
-    # ./apps.nix
+    ./apps.nix
     ./devshell.nix
     ./home-manager.nix
     ./lib
