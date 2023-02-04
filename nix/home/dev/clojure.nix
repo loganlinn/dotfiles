@@ -1,9 +1,11 @@
-{
-  pkgs,
-  ...
-}: let
+{ pkgs
+, ...
+}:
+
+let
   jdk = pkgs.jdk11;
-in {
+in
+{
 
   programs.java = {
     enable = true;

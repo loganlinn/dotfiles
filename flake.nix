@@ -22,16 +22,12 @@
     # utils
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    devshell.url = "github:numtide/devshell";
+    devshell.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-
-    debug = true;
-
-    imports = [
-      ./home-manager/flake-module.nix
-      # ./nix/modules/dev/flake-module.nix # TODO
-    ];
+    imports = [ ./flake-parts ];
 
     systems = [
       "x86_64-linux"
@@ -40,40 +36,17 @@
       # "aarch64-linux"
     ];
 
-    perSystem = { self', inputs', config, pkgs, system, ... }: rec {
-      formatter = pkgs.alejandra;
-    };
+    # flake = {
+    # options.mySystem = lib.mkOption { default = config.allSystems.${builtins.currentSystem}; };
 
-    flake = {
-      # options.mySystem = lib.mkOption { default = config.allSystems.${builtins.currentSystem}; };
 
-      # homeConfigurations." logan@framework" = home-manager.lib.homeManagerConfiguration {
-      #   pkgs = pkgs."x86_64-linux";
-      #   modules = [
-      #     # ./nix/modules
-      #     # ./nix/home/framework.nix
-      #     ./nix/hosts/framework/home.nix
-      #   ];
-      #   extraSpecialArgs = { unstable = pkgs'."x86_64-linux"; };
-      # };
 
-      # nixosConfigurations.nijusan = nixosSystem {
-      #   system = "x86_64-linux";
-      #   modules = [
-      #     nixos-hardware.nixosModules.common-cpu-intel
-      #     nixos-hardware.nixosModules.common-gpu-nvidia-nonprime
-      #     nixos-hardware.nixosModules.common-pc-ssd
-      #     ./nixos/machines/nijusan
-      #   ];
-      #   specialArgs = { inherit inputs; };
-      # };
-
-      # darwinConfigurations."logan@patchbook" = darwin.lib.darwinSystem {
-      #   inherit inputs;
-      #   system = "aarch64-darwin";
-      #   pkgs = pkgs."aarch64-darwin";
-      #   modules = [ ./nix/hosts/patchbook/darwin.nix ];
-      # };
-    };
+    # darwinConfigurations."logan@patchbook" = darwin.lib.darwinSystem {
+    #   inherit inputs;
+    #   system = "aarch64-darwin";
+    #   pkgs = pkgs."aarch64-darwin";
+    #   modules = [ ./nix/hosts/patchbook/darwin.nix ];
+    # };
+    # };
   };
 }

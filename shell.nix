@@ -1,23 +1,9 @@
-{ pkgs ? import <nixpkgs> { } }:
-
-with pkgs;
-
 let
-
-  nixBin =
-    writeShellScriptBin "nix" ''
-      ${nixFlakes}/bin/nix --option experimental-features "nix-command flakes" "$@"
-    '';
-
+  lock = builtins.fromJSON (builtins.readFile ./flake.lock);
 in
-mkShell {
-  buildInputs = [
-    git
-    nix-zsh-completions
-    rcm
-  ];
-  shellHook = ''
-    export FLAKE="$(pwd)"
-    export PATH="$FLAKE/bin:${nixBin}/bin:$PATH"
-  '';
-}
+(import
+  (fetchTarball {
+    url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+    sha256 = lock.nodes.flake-compat.locked.narHash;
+  })
+  { src = ./.; }).shellNix
