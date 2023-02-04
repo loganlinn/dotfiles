@@ -216,6 +216,10 @@ rec {
           "${modifier}+Shift+f" = "floating toggle";
         };
 
+        sticky = {
+          "${modifier}+s" = "floating toggle; sticky toggle; exec --no-startup-id hover left";
+        };
+
         ## Modify // Window layout
         layout = {
           "${modifier}+t" = "focus mode_toggle";
@@ -224,7 +228,7 @@ rec {
 
         scratchpad = {
           "${modifier}+Shift+grave" = "move scratchpad";
-          "${modifier}+grave" = "scratchpad show";
+          "${modifier}+grave" = "[class=.*] scratchpad show";
         };
 
         media = {
@@ -238,14 +242,16 @@ rec {
           "Scroll_Lock" = "exec ${micMute}";
         };
 
-        screenshot =
-          let
-            flameshot = getExe config.services.flameshot.package;
-          in
-          {
-            "Print" = "exec ${flameshot} gui";
-          };
+        resize = {
+          "${modifier}+${alt}+h" = "resize shrink width 18 px or 2 ppt";
+          "${modifier}+${alt}+j" = "resize grow height 18 px or 2 ppt";
+          "${modifier}+${alt}+k" = "resize shrink height 18 px or 2 ppt";
+          "${modifier}+${alt}+l" = "resize grow width 18 px or 2 ppt";
+        };
 
+        capture = {
+          "Print" = "exec ${config.services.flameshot.package}/bin/flameshot gui";
+        };
 
       };
     in
