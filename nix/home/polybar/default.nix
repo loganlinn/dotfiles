@@ -211,9 +211,19 @@ in
           padding = 3;
           separator = " ";
           module-margin = 0;
+
           modules-left = [ "i3" ];
           modules-center = [ "date" ];
-          modules-right = [ "memory" "gpu" "cpu" "temperature" "pulseaudio" "dunst-snooze" ];
+          modules-right = [
+            "memory"
+            "gpu"
+            "cpu"
+            "temperature"
+            "pulseaudio"
+            "dunst-snooze"
+            # "powermenu"
+          ];
+
           tray-position = "right";
           tray-detached = false;
           tray-maxsize = 16;
@@ -333,40 +343,15 @@ in
           initial = 1;
           click-left = "#dunst-snooze.hook.1";
         })
-        # (module "demo" {
-        #   type = "custom/ipc";
-        #   hook-0 = "echo foobar";
-        #   hook-1 = "date +%s";
-        #   hook-2 = "whoami";
-        #   initial = 1;
-        #   click-left = "#demo.hook.0";
-        #   click-right = "#demo.hook.1";
-        #   double-click-left = "#demo.hook.2";
-        # })
-        (module "powermenu" {
-          type = "custom/menu";
-          expand-right = true;
-          format-spacing = 1;
-          format-margin = 0;
-          label-open = "";
-          label-close = "";
-          label-separator = "|";
-          #; reboot
-          menu-0-1 = "";
-          menu-0-1-exec = "menu-open-2";
-          #; poweroff
-          menu-0-2 = "";
-          menu-0-2-exec = "menu-open-3";
-          #; logout
-          menu-0-0 = "";
-          menu-0-0-exec = "menu-open-1";
-          menu-2-0 = "";
-          menu-2-0-exec = "reboot";
-          menu-3-0 = "";
-          menu-3-0-exec = "poweroff";
-          menu-1-0 = "";
-          menu-1-0-exec = "";
-        })
+        {
+          name = "module/powermenu";
+          value = {
+            type = "custom/text";
+            content = "";
+            click-left = "rofi-powermenu &";
+            click-right = "rofi-powermenu &";
+          };
+        }
       ];
 
     script = ''

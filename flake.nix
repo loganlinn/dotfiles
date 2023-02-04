@@ -20,8 +20,6 @@
     # eww.inputs.nixpkgs.follows = "nixpkgs";
 
     # utils
-    flake-utils.url = "github:numtide/flake-utils";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
   };
@@ -32,8 +30,7 @@
 
     imports = [
       ./home-manager/flake-module.nix
-      # ./nix/modules/dev/flake-module.nix
-      inputs.treefmt-nix.flakeModule
+      # ./nix/modules/dev/flake-module.nix # TODO
     ];
 
     systems = [
@@ -44,9 +41,6 @@
     ];
 
     perSystem = { self', inputs', config, pkgs, system, ... }: rec {
-      # make pkgs available to all `perSystem` functions (TODO needed?)
-      _module.args.pkgs = inputs'.nixpkgs.legacyPackages;
-
       formatter = pkgs.alejandra;
     };
 

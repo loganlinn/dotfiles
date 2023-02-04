@@ -6,7 +6,6 @@
 
 {
   imports = [
-    ./apps
     ../../home/common.nix
     ../../home/dev
     ../../home/emacs.nix
@@ -28,12 +27,15 @@
     ../../modules/services/dunst.nix
     ../../modules/services/picom.nix
     ../../modules/themes
+    ./apps
+    ./rofi
     ./theme.nix
   ];
 
   config = {
 
     programs.eww.enable = true;
+
     programs.feh.enable = true;
 
     modules.programs.eww.enable = true;

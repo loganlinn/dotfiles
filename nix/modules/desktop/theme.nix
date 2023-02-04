@@ -101,6 +101,7 @@ with lib; {
 
   # https://github.com/davatorium/rofi/tree/next/themes
   programs.rofi.theme = "Arc-Dark";
+  # programs.rofi.theme = "onedark";
   # programs.rofi.theme = pkgs.fetchFromGitHub {
   #   owner = "dracula";
   #   repo = "rofi";
@@ -108,7 +109,7 @@ with lib; {
   #   hash = "sha256-raoJ3ndKtpEpsN3yN4tMt5Kn1PrqVzlakeCZMETmItw=";
   # }
   # + "/theme/config1.rasi";
-  programs.rofi.font = "JetBrainsMono Nerd Font 14";
+  programs.rofi.font = "Noto 16";
 
   services.dunst.iconTheme = config.gtk.iconTheme;
 
