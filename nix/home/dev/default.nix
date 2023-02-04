@@ -9,100 +9,120 @@
     ./gh.nix
   ];
 
-  home.packages = with pkgs; [
-    # misc
-    hey
-    dive
-    dtrx # do the right extraction (extract archives)
-    jless
-    hyperfine
-    graphviz
-    gnuplot
-    nodePackages.vscode-langservers-extracted # LSP (HTML/CSS/JSON/ESLint)
+  home.packages = with pkgs;
+    [
+      # misc
+      hey
+      dive
+      dtrx # do the right extraction (extract archives)
+      jless
+      hyperfine
+      graphviz
+      gnuplot
+      gum # fancy scripting
+      taplo # toml toolkit
 
-    # version control
-    pre-commit
-    nodePackages_latest.graphite-cli
-    delta
+      # protocols
+      protobuf
+      buf
+      grpcurl
 
-    # scripting
-    gum
+      # version control
+      pre-commit
+      nodePackages_latest.graphite-cli
+      delta
 
-    # clients
-    doctl
+      # cloud
+      doctl # digital ocean
 
-    # shell
-    shfmt
-    shellcheck
-    shellharden
-    nodePackages.bash-language-server
+      # markdown
+      mdsh
+      glow
 
-    # nix
-    alejandra
-    nixfmt
-    nixpkgs-fmt
-    rnix-lsp
-    nurl
+      # shell
+      shfmt
+      shellcheck
+      shellharden
 
-    # c/c++
-    ccls
-    clang-tools
+      # nix
+      alejandra
+      nixfmt
+      nixpkgs-fmt
+      nurl
 
-    # rust
-    rustc
-    cargo
-    rustfmt
-    rust-analyzer
+      # c/c++
+      ccls
+      clang-tools
 
-    # golang
-    gopls
+      # rust
+      rustc
+      cargo
+      rustfmt
+      rust-analyzer
 
-    # python
-    (python3.withPackages (ps: with ps; [
-      black
-      dbus-python
-      ipython
-      isort
-      jupyterlab
-      notebook
-      numpy
-      pandas
-      pipx
-      ptpython
-      pygobject3
-      pynvim
-      requests
-      setuptools
-    ]))
-    poetry
-    pyright
+      # golang
+      gopls
 
-    # ruby
-    ruby
+      # java
+      java-language-server
+      visualvm
 
-    # javascript
-    yarn
-    deno
-    nodePackages.typescript
-    nodePackages.typescript-language-server
+      # python
+      (python3.withPackages (ps:
+        with ps; [
+          black
+          dbus-python
+          ipython
+          isort
+          jupyterlab
+          javaproperties
+          javaobj-py3
+          notebook
+          numpy
+          pandas
+          pipx
+          ptpython
+          pygobject3
+          pynvim
+          requests
+          setuptools
+        ] ++ [
+          # click
+          # click-command-tree
+          # click-completion
+          # click-configfile
+          # click-defaultgroup
+          # click-datetime
+          # click-didyoumean
+          # click-log
+          # click-repl
+          # click-shell
+          # click-spinner
+          # click-threading
+          # clickgen
+        ]))
+      poetry
 
-    # lua
-    sumneko-lua-language-server
+      # ruby
+      ruby
 
-    # vim
-    nodePackages.vim-language-server
+      # javascript
+      yarn
+      deno
+      nodePackages.typescript
 
-    # yaml
-    yaml-language-server
-
-    # protocol buffers
-    protobuf
-    buf
-
-    # markdown
-    mdsh
-    glow
-  ];
+    ] ++ [
+      # language servers
+      nodePackages.bash-language-server
+      nodePackages.typescript-language-server
+      nodePackages.vim-language-server
+      nodePackages.vscode-langservers-extracted
+      pyright
+      rnix-lsp
+      sumneko-lua-language-server
+      yaml-language-server
+      java-language-server
+    ];
 
   programs.the-way = {
     enable = true;

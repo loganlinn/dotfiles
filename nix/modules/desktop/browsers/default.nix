@@ -1,19 +1,18 @@
 { config, lib, pkgs, ... }:
 
-let
-  chromeExtensions = [
-    "aeblfdkhhhdcdjpifhhbdiojplfjncoa" # 1Password
-    "kcabmhnajflfolhelachlflngdbfhboe" # Spoof Timezone
-    "edibdbjcniadpccecjdfdjjppcpchdlm" # I still don't care about cookies
-    "cfohepagpmnodfdmjliccbbigdkfcgia" # Location Guard
-    "cjpalhdlnbpafiamejdnhcphjbkeiagm" # uBlock Origin
-    "ldpochfccmkkmhdbclfhpagapcfdljkj" # Decentraleyes
-    "cimiefiiaegbelhefglklhhakcgmhkai" # Plasma integration
-  ];
-in {
+with lib;
+{
   programs.chromium = {
-    enable = true;
-    extensions = chromeExtensions;
+    enable = mkDefault true;
+    extensions = [
+      "aeblfdkhhhdcdjpifhhbdiojplfjncoa" # 1Password
+      "kcabmhnajflfolhelachlflngdbfhboe" # Spoof Timezone
+      "edibdbjcniadpccecjdfdjjppcpchdlm" # I still don't care about cookies
+      "cfohepagpmnodfdmjliccbbigdkfcgia" # Location Guard
+      "cjpalhdlnbpafiamejdnhcphjbkeiagm" # uBlock Origin
+      "ldpochfccmkkmhdbclfhpagapcfdljkj" # Decentraleyes
+      "cimiefiiaegbelhefglklhhakcgmhkai" # Plasma integration
+    ];
   };
 
   programs.google-chrome.enable = true;

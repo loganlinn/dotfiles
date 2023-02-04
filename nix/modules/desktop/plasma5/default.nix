@@ -1,12 +1,12 @@
-{
-  pkgs,
-  lib,
-  ...
+{ pkgs
+, lib
+, ...
 }:
 with lib; let
-  cfg = config.modules.desktops.kde;
-in {
-  options.modules.desktops.kde = {
+  cfg = config.modules.desktop.kde;
+in
+{
+  options.modules.desktop.kde = {
     enable = mkEnableOption "Enable KDE (Plasma5) desktop";
   };
 

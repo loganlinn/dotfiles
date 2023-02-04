@@ -1,8 +1,8 @@
 {
   imports = [
     # ./window-managers
-    # ./dunst.nix
-    # ./picom.nix
+    ./dunst.nix
+    ./picom.nix
     # ./ssh.nix
   ];
 }

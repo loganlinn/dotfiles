@@ -24,8 +24,8 @@ in
       cmake
       coreutils-full # installs gnu versions
       curl
-      du-dust
       dtrx # Do The Right Extraction
+      du-dust
       fd
       gawk
       gnugrep
@@ -45,9 +45,11 @@ in
       silver-searcher
       sops
       tree
+      unrar
+      unzip
       xh
       zenith
-      # (import ../pkgs/switch.nix { })
+      zip
     ]
     ++ lib.optionals isLinux [
       sysz

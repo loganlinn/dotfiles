@@ -1,67 +1,97 @@
 { self, inputs, withSystem, ... }:
 
+let
+
+  hmFor = pkgs: pkgs.writeShellApplication {
+    name = "hm";
+    runtimeInputs = with pkgs; [
+      git
+      coreutils
+      nix
+      jq
+      unixtools.hostname
+      inputs.home-manager.packages.${pkgs.system}.home-manager
+    ];
+    text = builtins.readFile ./hm.sh;
+  };
+
+in
 {
-  perSystem = { pkgs, lib, ... }:
+  perSystem = { config, pkgs, lib, inputs', ... }:
     let
-      username = "logan";
-
-      hm = pkgs.writeShellApplication {
-        name = "hm";
-        runtimeInputs = with pkgs; [
-          git
-          coreutils
-          nix
-          jq
-          unixtools.hostname
-          inputs.home-manager.packages.${pkgs.system}.home-manager
-        ];
-        text = builtins.readFile ./hm.sh;
-      };
-
-      homeConfiguration = module:
-        inputs.home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-
-          modules = [
-            {
-              _module.args.self = self;
-              _module.args.inputs = self.inputs;
-
-              imports = [
-                ../nix/modules
-                module
-              ];
-
-              home.username = username;
-              home.homeDirectory = "/home/${username}";
-              home.packages = [ hm ];
-              home.sessionVariables.HM_CONFIG = "${toString module}";
-              home.stateVersion = "22.11";
-            }
-          ];
-        };
-
+      hm = hmFor pkgs;
     in
     {
-      apps.hm = {
-        type = "app";
-        program = "${hm}/bin/hm";
-      };
+      apps.hm.program = "${hm}/bin/hm";
 
       legacyPackages = {
         homeConfigurations = {
-          common = homeConfiguration ./common.nix;
 
-          "logan@nijusan" = withSystem "x86_64-linux" (_: homeConfiguration ./desktop);
+          common = inputs.home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            modules = [
+              {
+                _module.args.self = self;
+                _module.args.inputs = self.inputs;
+                imports = [ ./common.nix ];
+                home.username = "logan";
+                home.homeDirectory = "/home/logan";
+                home.packages = [ hm ];
+              }
+            ];
+          };
 
-          # framework = withSystem "x86_64-linux" (ctx@{ pkgs, ... }:
-          #   homeConfiguration {
-          #     extraModules = [./framework.nix];
-          #   }
-          # );
+        } // lib.optionalAttrs (pkgs.hostPlatform.system == "x86_64-linux") {
 
+          "logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            modules = [
+              {
+                _module.args.self = self;
+                _module.args.inputs = self.inputs;
+                imports = [ ./nijusan.nix ];
+                home.username = "logan";
+                home.homeDirectory = "/home/logan";
+                home.packages = [ hm ];
+                home.stateVersion = "22.11";
+              }
+            ];
+          };
         };
+      };
+
+      # devShells.default = inputs'.devshell.legacyPackages.mkShell {
+      #   packages = [
+      #     pkgs.alejandra
+      #     pkgs.git
+      #     config.packages.repl
+      #   ];
+      #   name = "dots";
+      # };
+    };
+
+  flake = {
+    legacyPackages = {
+      homeConfigurations = {
+
+        "logan@nijusan" = withSystem "x86_64-linux"
+          ({ config, pkgs, ... }:
+            inputs.home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              modules = [
+                {
+                  _module.args.self = self;
+                  _module.args.inputs = self.inputs;
+                  imports = [ ./nijusan.nix ];
+                  home.username = "logan";
+                  home.homeDirectory = "/home/logan";
+                  home.packages = [ config.packages.hm ];
+                  home.stateVersion = "22.11";
+                }
+              ];
+            });
 
       };
     };
+  };
 }

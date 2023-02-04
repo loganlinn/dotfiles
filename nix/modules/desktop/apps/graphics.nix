@@ -5,6 +5,7 @@
   home.packages = with pkgs; [
     blender
     fstl
+    inkscape
   ];
 
   xdg.desktopEntries.fstl = {

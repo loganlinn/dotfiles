@@ -1,4 +1,3 @@
-# xmodmap
 { config
 , lib
 , pkgs
