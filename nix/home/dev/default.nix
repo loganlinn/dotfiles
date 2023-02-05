@@ -4,7 +4,6 @@
   imports = [
     ./azure.nix
     ./clojure.nix
-    ./crystal.nix
     ./kube.nix
     ./gh.nix
   ];
@@ -105,6 +104,11 @@
 
       # ruby
       ruby
+
+      # crystal
+      crystal
+      icr
+      shards
 
       # javascript
       yarn
