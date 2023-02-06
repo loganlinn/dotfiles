@@ -25,6 +25,13 @@ in
     xfce.tumbler # thunar thumbnails
     xfce.xfce4-volumed-pulse
     xfce.xfconf # thunar save settings
+
+    # one of the following needed for thunar-archive-plugin
+    # see: https://docs.xfce.org/xfce/thunar/archive
+    xarchiver
+    # gnome.file-roller # Gnome
+    # libsForQt5.ark    # KDE
+    # mate.engrampa     # MATE
   ] ++ thunarPlugins;
 
   xdg.configFile.thunar_actions = {
