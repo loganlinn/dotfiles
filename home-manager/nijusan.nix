@@ -12,6 +12,6 @@
   modules.services.dunst.enable = true;
   # modules.dev.enable = true;
 
-  home.sessionVariables.BROWSER = "${config.programs.google-chrome.package}/bin/google-chrome";
+  home.sessionVariables.BROWSER = "${lib.getExe config.programs.google-chrome.package}";
   home.sessionVariables.TERMINAL = "${config.programs.kitty.package}/bin/kitty";
 }
