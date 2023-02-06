@@ -1,10 +1,15 @@
 { system ? builtins.currentSystem }:
 let
-  self = builtins.getFlake (toString ./.);
+  inherit (builtins) getFlake mapAttrs attrValues;
+  inherit (self.inputs.flake-parts.lib) evalFlakeModule;
+  inherit (self.inputs.nixpkgs) lib;
+  inherit (lib) fold recursiveUpdate;
 
-  flakeModule = self.inputs.flake-parts.lib.evalFlakeModule { inherit (self) inputs; } { };
+  self = getFlake (toString ./.);
 
-  inputs' = builtins.mapAttrs (_: flakeModule.config.perInput system) self.inputs;
+  flakeModule = evalFlakeModule { inherit (self) inputs; } { };
+
+  inputs' = mapAttrs (_: flakeModule.config.perInput system) self.inputs;
 
   inputs = lib.fold lib.recursiveUpdate { } [ self.inputs inputs' ];
 
@@ -12,10 +17,11 @@ let
 
   pkgs = import self.inputs.nixpkgs {
     inherit system;
-    overlays = builtins.attrValues self.overlays;
+    overlays = attrValues self.overlays;
   };
 
-  inherit (self.inputs.nixpkgs) lib;
 in
 
-builtins // self // { inherit config self inputs system pkgs lib; }
+builtins // self // {
+  inherit config self inputs system pkgs lib;
+}

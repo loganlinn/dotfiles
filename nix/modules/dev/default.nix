@@ -38,7 +38,7 @@ in
 {
   options = {
     modules.dev = {
-      enable = mkEnableOption "jack in?";
+      enable = mkEnableOption "dev";
     };
   };
 

@@ -15,30 +15,29 @@ let
     text = builtins.readFile ../home-manager/hm.sh;
   };
 
-  withHomeConfiguration =
-    { name
-    , system ? "x86_64-linux"
-    , extraModules ? [ ]
-    }: {
-      legacyPackages.homeManagerConfiguration.${name} = withSystem system
-        ({ pkgs, lib, ... }: inputs.home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [
-            {
-              _module.args.self = self;
-              _module.args.inputs = self.inputs;
-              imports = [ ../home-manager/common.nix ] ++ (lib.toList extraModules);
-            }
-            ({ config, ... }: {
-              home.username = "logan";
-              home.homeDirectory = "/home/logan";
-              home.sessionVariables = {
-                FLAKE_CONFIG_URI = "~/.dotfiles#${name}";
-              };
-            })
-          ];
-        });
+  homeModules = [
+    ../home-manager/common.nix
+  ];
+
+  homeConfiguration = extraModules: { config, pkgs, lib, ... }:
+    inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      modules = [
+        {
+          _module.args.self = self;
+          _module.args.inputs = self.inputs;
+          imports = homeModules ++ (lib.toList extraModules);
+          home.username = config.user.name;
+          home.homeDirectory = config.user.home;
+        }
+      ];
     };
+
+  withHomeConfiguration = name: system: extraModules: {
+    legacyPackages = {
+      homeManagerConfiguration.${name} = withSystem system homeConfiguration;
+    };
+  };
 
 in
 {
@@ -49,21 +48,25 @@ in
 
       legacyPackages.homeConfigurations = {
 
-        common = inputs.home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [
-            {
-              _module.args.self = self;
-              _module.args.inputs = self.inputs;
-              imports = [ ../home-manager/common.nix ];
-              home.username = "logan";
-              home.homeDirectory = "/home/logan";
-              home.packages = [ hm ];
-            }
-          ];
-        };
+        # common = homeConfiguration ../home-manager/common.nix;
+
+        # common = inputs.home-manager.lib.homeManagerConfiguration {
+        #   inherit pkgs;
+        #   modules = [
+        #     {
+        #       _module.args.self = self;
+        #       _module.args.inputs = self.inputs;
+        #       imports = [ ../home-manager/common.nix ];
+        #       home.username = "logan";
+        #       home.homeDirectory = "/home/logan";
+        #       home.packages = [ hm ];
+        #     }
+        #   ];
+        # };
 
       } // lib.optionalAttrs (pkgs.hostPlatform.system == "x86_64-linux") {
+
+        # "logan@nijusan" = homeConfiguration ../home-manager/nijusan.nix;
 
         "logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs;

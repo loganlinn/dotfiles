@@ -1,14 +1,13 @@
-{ config, self, flake-parts-lib, lib, options, getSystem, extendModules, ... }:
+{ config, self, inputs, flake-parts-lib, lib, options, getSystem, extendModules, ... }:
 let
   inherit (lib)
-    pipe
     genAttrs
     mapAttrs
     mkIf
     mkOption
     optionalAttrs
-    types
     removePrefix
+    types
     ;
   inherit (flake-parts-lib)
     mkPerSystemOption
@@ -22,37 +21,29 @@ in
 {
   options = {
     user = {
-      username = mkOption {
+      name = mkOption {
         type = types.str;
         default = "logan";
       };
 
       home = mkOption {
         type = types.str;
-        default = "/home/${config.user.username}";
+        default = "/home/${config.user.user}";
       };
-
-      dotfiles = {
-        repository = mkOption {
-          type = types.str;
-          default = "https://github.com/loganlinn/.dotfiles";
-        };
-
-        directory = mkOption {
-          type = types.str;
-          default = toString ./.;
-        };
-
-      };
-      #   (removePrefix "/mnt"
-      #     (findFirst pathExists (toString ../.) [
-      #       "/home/${options.user}"
-      #       "/mnt/etc/dotfiles"
-      #       "/etc/dotfiles"
-      #     ]));
-
     };
 
+    dotfiles = {
+      repository = mkOption {
+        type = types.str;
+        default = "https://github.com/loganlinn/.dotfiles";
+      };
+
+      directory = mkOption {
+        type = types.str;
+        default = "${config.user.home}/.dotfiles";
+      };
+    };
   };
 
+  config = { };
 }
