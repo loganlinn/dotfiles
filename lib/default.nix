@@ -12,6 +12,15 @@ rec {
     inherit (home-manager.lib.hm.types) fontType;
   };
 
+  # Searches Nix path by prefix
+  # Example: findNixPath "nixos-config"
+  findNixPath = prefix: lib.pipe builtins.nixPath [
+    (lib.findFirst (p: p.prefix == prefix) null)
+    (lib.mapNullable (p: p.path))
+  ];
+
+  importNixosConfig = lib.mapNullable import (findNixPath "nixos-config");
+
   /* Replace strings by attrset
     Type: substitueStrings :: AttrSet -> String -> String
   */

@@ -29,10 +29,9 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake
       { inherit inputs; }
-      rec {
+      {
         imports = [ ./flake-modules ];
         systems = [ "x86_64-linux" "aarch64-darwin" ];
-
         debug = true;
       };
 }
