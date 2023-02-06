@@ -37,6 +37,7 @@
       # markdown
       mdsh
       glow
+      nodePackages_latest.mermaid-cli
 
       # shell
       shfmt
