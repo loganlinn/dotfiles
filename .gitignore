@@ -23,3 +23,8 @@ node_modules/
 **/*.qcow*
 
 /.direnv
+
+# Devenv
+.devenv*
+devenv.local.nix
+

@@ -42,9 +42,15 @@ rcm_exclude 'installers/*'
 rcm_exclude 'moredots.gif'
 rcm_exclude 'result' # i.e. nix build
 rcm_exclude 'src'
-rcm_exclude 'home-manager'
+
+# nix config
 rcm_exclude 'nix'
+rcm_exclude 'home-manager'
 rcm_exclude 'nixos'
+rcm_exclude 'lib'
+rcm_exclude 'overlays'
+rcm_exclude 'packages'
+rcm_exclude 'flake*'
 
 rcm_symlink '^bin$'
 rcm_symlink 'com.github.gitalias'
@@ -52,7 +58,6 @@ rcm_symlink 'node_modules'
 rcm_symlink 'zgenom'
 rcm_symlink 'zsh'
 
-rcm_undotted '*.nix' # flake.nix, shell.nix, etc
 rcm_undotted Desktop
 rcm_undotted Documents
 rcm_undotted Downloads

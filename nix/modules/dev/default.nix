@@ -36,9 +36,11 @@ let
 
 in
 {
-  options.modules.dev = {
-    enable = mkEnableOption "jack in?";
-  } // submoduleOptions;
+  options = {
+    modules.dev = {
+      enable = mkEnableOption "jack in?";
+    };
+  };
 
   config = mkIf cfg.enable {
 

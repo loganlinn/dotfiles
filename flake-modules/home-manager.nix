@@ -15,6 +15,31 @@ let
     text = builtins.readFile ../home-manager/hm.sh;
   };
 
+  withHomeConfiguration =
+    { name
+    , system ? "x86_64-linux"
+    , extraModules ? [ ]
+    }: {
+      legacyPackages.homeManagerConfiguration.${name} = withSystem system
+        ({ pkgs, lib, ... }: inputs.home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [
+            {
+              _module.args.self = self;
+              _module.args.inputs = self.inputs;
+              imports = [ ../home-manager/common.nix ] ++ (lib.toList extraModules);
+            }
+            ({ config, ... }: {
+              home.username = "logan";
+              home.homeDirectory = "/home/logan";
+              home.sessionVariables = {
+                FLAKE_CONFIG_URI = "~/.dotfiles#${name}";
+              };
+            })
+          ];
+        });
+    };
+
 in
 {
   perSystem = { config, pkgs, lib, inputs', ... }:

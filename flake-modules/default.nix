@@ -1,11 +1,15 @@
+{ lib, ... }:
+
 {
   imports = [
     ./apps.nix
-    ./devshell.nix
+    ./dev.nix
     ./home-manager.nix
-    ./lib
     ./nixos.nix
+    ./options.nix
     ./overlays.nix
     ./packages.nix
   ];
+
+  flake.lib = import ../lib { inherit lib; };
 }

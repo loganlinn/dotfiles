@@ -22,31 +22,17 @@
     # utils
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-    devshell.url = "github:numtide/devshell";
-    devshell.inputs.nixpkgs.follows = "nixpkgs";
+    devenv.url = "github:cachix/devenv";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-    imports = [ ./flake-parts ];
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake
+      { inherit inputs; }
+      {
+        imports = [ ./flake-modules ];
+        systems = [ "x86_64-linux" "aarch64-darwin" ];
 
-    systems = [
-      "x86_64-linux"
-      "aarch64-darwin"
-      # "x86_64-darwin"
-      # "aarch64-linux"
-    ];
-
-    # flake = {
-    # options.mySystem = lib.mkOption { default = config.allSystems.${builtins.currentSystem}; };
-
-
-
-    # darwinConfigurations."logan@patchbook" = darwin.lib.darwinSystem {
-    #   inherit inputs;
-    #   system = "aarch64-darwin";
-    #   pkgs = pkgs."aarch64-darwin";
-    #   modules = [ ./nix/hosts/patchbook/darwin.nix ];
-    # };
-    # };
-  };
+        debug = true;
+      };
 }

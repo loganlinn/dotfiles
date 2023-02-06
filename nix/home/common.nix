@@ -89,6 +89,16 @@ in
     enableZshIntegration = true;
     enableBashIntegration = true;
     nix-direnv.enable = true;
+    config = {
+      global = {
+        warn_timeout = "10s";
+      };
+      whitelist = {
+        prefix = [
+          "${config.home.homeDirectory}/.dotfiles"
+        ];
+      };
+    };
   };
 
   programs.go.enable = true;
