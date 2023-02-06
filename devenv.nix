@@ -20,9 +20,4 @@
   scripts."hm".exec = ''exec home-manager $HOME_MANAGER_OPTS "$@"'';
 
   scripts."reload".exec = ''direnv reload'';
-
-  pre-commit.hooks = {
-    shellcheck.enable = true;
-  };
-
 }
