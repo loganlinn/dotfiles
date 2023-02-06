@@ -1,6 +1,8 @@
 { system ? builtins.currentSystem }:
+
+with builtins;
+
 let
-  inherit (builtins) getFlake mapAttrs attrValues;
   inherit (self.inputs.flake-parts.lib) evalFlakeModule;
   inherit (self.inputs.nixpkgs) lib;
   inherit (lib) fold recursiveUpdate;
@@ -20,8 +22,17 @@ let
     overlays = attrValues self.overlays;
   };
 
+  user = getEnv "USER";
+  hostname =
+    if pathExists "/etc/hostname"
+    then head (match "([a-zA-Z0-9\\-]+)\n" (readFile "/etc/hostname"))
+    else "";
 in
 
-builtins // self // {
-  inherit config self inputs system pkgs lib;
+builtins // self // rec {
+  inherit config self inputs system pkgs lib user hostname;
+
+  homeConfigurations = self.outputs.legacyPackages.${system}.homeConfigurations;
+
+  hm = homeConfigurations."${user}@${hostname}";
 }
