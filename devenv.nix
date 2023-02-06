@@ -1,3 +1,4 @@
+{ pkgs, ... }:
 {
   env = {
     NIX_USER_CONF_FILES = toString ../../nix.conf;
@@ -5,8 +6,6 @@
   };
 
   languages.nix.enable = true;
-
-  packages = [ pkgs.git ];
 
   enterShell = ''
     devenv started.
@@ -24,7 +23,6 @@
 
   pre-commit.hooks = {
     shellcheck.enable = true;
-    hooks.nixpkgs-fmt.enable = true;
   };
 
 }
