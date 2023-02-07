@@ -29,6 +29,17 @@ with lib;
 
 let
   inherit (config.xdg) configHome;
+
+  # modes = {
+  #   apps = {
+  #     "Enter" = ''[class="kitty"] focus'';
+  #     "Space" = ''[class="Chromium"] focus'';
+  #     "e" = ''[class="Emacs"] focus'';
+  #     "s" = ''[class="Slack"] focus'';
+  #     "l" = ''[class="Linear.*"] focus'';
+  #   };
+  # };
+
 in
 {
   enable = true;
@@ -118,14 +129,6 @@ in
             "${modifier}+Ctrl+Shift+Tab" = "workspace prev_on_output";
           };
 
-          focusApp = {
-            "${modifier}+Ctrl+e" = ''[class="Emacs"] focus'';
-            "${modifier}+Ctrl+s" = ''[class="Slack"] focus'';
-            "${modifier}+Ctrl+d" = ''[title="Linear"] focus'';
-            "${modifier}+Ctrl+f" = ''[class="kitty"] focus'';
-            "${modifier}+Ctrl+g" = ''[class="Chromium"] focus'';
-          };
-
           moveWindowPosition = {
             "${modifier}+Shift+h" = "move left";
             "${modifier}+Shift+j" = "move down";
@@ -212,7 +215,7 @@ in
           };
 
           scratchpad = {
-            "${modifier}+Shift+grave" = "move scratchpad";
+            "${modifier}+Shift+grave" = "scratchpad hide; move scratchpad";
             "${modifier}+grave" = "[class=.*] scratchpad show ";
           };
 
@@ -314,11 +317,11 @@ in
       "1" = [ ];
       "2" = [ ];
       "3" = [ ];
-      "4: Linear" = [{ title = "Linear"; }];
+      "4" = [ ];
       "5" = [ ];
       "6" = [ ];
       "7" = [ ];
-      "8: Email" = [{ class = "Geary"; }];
+      "8" = [ ];
       "9: Chat" = [{ class = "Slack"; }];
       "0" = [ ];
     };
@@ -391,5 +394,23 @@ in
   extraConfig = ''
     # Only enable outer gaps when there is exactly one window or split container on the workspace.
     smart_gaps inverse_outer
+
+    # Notification menu
+    set $mode_notify dunst: [RET] action [+RET] context  [k|n] close [K] close-all [p] history-pop [t] (un)pause [q] exit
+    mode --pango_markup "$mode_notify" {
+        bindsym Return       exec "dunstctl action 0"       ; mode "default"
+        bindsym Shift+Return exec dunstctl context          ; mode "default"
+        bindsym k            exec dunstctl close            ; mode "default"
+        bindsym Shift+k      exec dunstctl close-all        ; mode "default"
+        bindsym n            exec dunstctl close
+        bindsym p            exec dunstctl history-pop
+        bindsym t            exec dunstctl set-paused toggle; mode "default"
+
+        bindsym q mode "default"
+        bindsym Escape mode "default"
+        bindsym Ctrl+c mode "default"
+        bindsym Ctrl+g mode "default"
+    }
+    bindsym ${modifier}+period mode "$mode_notify"
   '';
 }
