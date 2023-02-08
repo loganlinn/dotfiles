@@ -215,7 +215,7 @@ in
           };
 
           scratchpad = {
-            "${modifier}+Shift+grave" = "scratchpad hide; move scratchpad";
+            "${modifier}+Shift+grave" = "move scratchpad";
             "${modifier}+grave" = "[class=.*] scratchpad show ";
           };
 
@@ -289,7 +289,7 @@ in
       # };
     };
 
-    bars = [ ]; # disable for polybar
+    bars = lib.mkIf config.services.polybar.enable [ ]; # disable for polybar
 
     # fonts.names = [ config.gtk.font.name "FontAwesome" ];
     # fonts.size =
@@ -303,13 +303,14 @@ in
       newWindow = "focus";
     };
 
-    gaps = {
-      horizontal = 5;
-      vertical = 5;
-      inner = 5;
-      outer = 5;
-      smartBorders = "no_gaps";
-    };
+    gaps = let x = 6; in
+      {
+        horizontal = x;
+        vertical = x;
+        inner = x;
+        outer = x;
+        smartBorders = "no_gaps";
+      };
 
     floating = import ./floating.nix;
 

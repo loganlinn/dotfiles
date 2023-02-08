@@ -30,6 +30,7 @@ in
         type = types.str;
         default = "/home/${config.user.user}";
       };
+
     };
 
     dotfiles = {
@@ -43,6 +44,7 @@ in
         default = "${config.user.home}/.dotfiles";
       };
     };
+
   };
 
   config = { };

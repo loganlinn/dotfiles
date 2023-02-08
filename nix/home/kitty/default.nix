@@ -44,7 +44,7 @@
 
     settings = {
       # Appearance
-      window_padding_width = "1";
+      window_padding_width = "6";
       hide_window_decorations = "titlebar-only";
       dim_opacity = "0.75";
       inactive_text_alpha = "0.75";

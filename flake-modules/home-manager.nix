@@ -19,23 +19,23 @@ let
     ../home-manager/common.nix
   ];
 
-  homeConfiguration = extraModules: { config, pkgs, lib, ... }:
+  homeConfiguration = module: { config, pkgs, lib, ... }:
     inputs.home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
         {
           _module.args.self = self;
           _module.args.inputs = self.inputs;
-          imports = homeModules ++ (lib.toList extraModules);
+          imports = homeModules ++ (lib.toList module);
           home.username = config.user.name;
           home.homeDirectory = config.user.home;
         }
       ];
     };
 
-  withHomeConfiguration = name: system: extraModules: {
+  withHomeConfiguration = name: system: module: {
     legacyPackages = {
-      homeManagerConfiguration.${name} = withSystem system homeConfiguration;
+      homeManagerConfiguration.${name} = withSystem system (homeConfiguration module);
     };
   };
 
@@ -65,8 +65,6 @@ in
         # };
 
       } // lib.optionalAttrs (pkgs.hostPlatform.system == "x86_64-linux") {
-
-        # "logan@nijusan" = homeConfiguration ../home-manager/nijusan.nix;
 
         "logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs;

@@ -1,16 +1,48 @@
-{ lib, ... }:
+{ lib
+, system ? builtins.currentSystem
+, inputs ? (builtins.getFlake (toString ./.)).inputs
+, ...
+}:
 
 let
 
-  inherit (builtins) getFlake replaceStrings;
+  inherit (builtins)
+    getFlake
+    isAttrs
+    replaceStrings
+    toString
+    ;
 
-  home-manager = (getFlake (toString ./.)).inputs.home-manager;
+  inherit (lib) mkOption;
+
+  pkgs = import inputs.nixpkgs { inherit system; };
 
 in
 rec {
   types = {
-    inherit (home-manager.lib.hm.types) fontType;
+    inherit (inputs.home-manager.lib.hm.types) fontType;
+
+    script = with lib.types; submodule {
+      options = {
+        text = mkOption {
+          type = str;
+          description = "Shell code to execute when the script is ran.";
+        };
+        runtimeInputs = mkOption {
+          type = listOf package;
+          default = [ ];
+        };
+        checkPhase = mkOption {
+          type = nullOr string;
+          default = null;
+        };
+      };
+    };
   };
+
+  mkScript = name: value:
+    let attrs = if isAttrs value then value else { text = toString value; }; in
+    pkgs.writeShellApplication ({ inherit name; } // attrs);
 
   # Searches Nix path by prefix
   # Example: findNixPath "nixos-config"

@@ -341,6 +341,7 @@ in
           hook-0 = "${dunst-snooze}/bin/dunst-snooze";
           hook-1 = "${dunst-snooze}/bin/dunst-snooze --toggle";
           initial = 1;
+          interval = 5;
           click-left = "#dunst-snooze.hook.1";
         })
         {

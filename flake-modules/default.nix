@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ system, inputs, lib, ... }:
 
 {
   imports = [
@@ -11,5 +11,6 @@
     ./packages.nix
   ];
 
-  flake.lib = import ../lib { inherit lib; };
+  flake.lib = import ../lib { inherit lib inputs system; };
+
 }

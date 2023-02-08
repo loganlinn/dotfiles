@@ -7,4 +7,6 @@
       modules = [ ../devenv.nix ];
     };
   };
+
+  flake = { };
 }

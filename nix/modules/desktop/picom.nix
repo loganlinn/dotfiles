@@ -13,7 +13,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.picom = mkOptionDefault {
+    services.picom = {
+      enable = true;
       backend = "glx";
       vSync = true;
       opacityRules = [
@@ -33,6 +34,7 @@ in
         "99:_NET_WM_STATE@:32a = '_NET_WM_STATE_FULLSCREEN'"
       ];
       shadow = true;
+      fade = false;
       shadowExclude = [
         "!I3_FLOATING_WINDOW@:c && !class_g = 'Rofi' && !class_g = 'dmenu' && !class_g = 'Dunst'"
       ];

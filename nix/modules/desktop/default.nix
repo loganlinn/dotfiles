@@ -1,96 +1,123 @@
 { config
+, options
 , lib
 , pkgs
 , ...
 }:
 
+let
+
+  inherit (lib)
+    mkEnableOption
+    mkIf
+    mkMerge
+    mkOption
+    types;
+
+  cfg = config.modules.desktop;
+
+in
 {
+
   imports = [
-    ../../home/common.nix
-    ../../home/dev
-    ../../home/emacs.nix
     ../../home/fonts.nix
-    ../../home/jetbrains/idea.nix
-    ../../home/kitty
-    ../../home/mpv.nix
-    ../../home/nnn.nix
     ../../home/polybar
-    ../../home/pretty.nix
-    ../../home/sync.nix
     ../../home/thunar.nix
     ../../home/tray.nix
-    ../../home/urxvt.nix
-    ../../home/vpn.nix
-    ../../home/vscode.nix
     ../../home/xdg.nix
-    ../../home/zsh
-    ../../modules/services/dunst.nix
-    ../../modules/services/picom.nix
-    ../../modules/themes
+    ../themes
     ./apps
     ./rofi
-    ./theme.nix
+    ./picom.nix
+    ./notifications/dunst.nix
   ];
 
-  config = {
+  options.modules.desktop = with types; {
 
-    programs.eww.enable = true;
-
-    programs.feh.enable = true;
-
-    modules.programs.eww.enable = true;
-
-    services.clipmenu = {
-      enable = true;
-      launcher = lib.getExe config.programs.rofi.package;
+    bookmarks = mkOption {
+      type = listOf str;
+      default = [
+        "file://${config.xdg.userDirs.download}"
+        "file://${config.xdg.userDirs.documents}"
+        "file://${config.xdg.userDirs.pictures}"
+        "file://${config.xdg.userDirs.music}"
+        "file://${config.xdg.userDirs.videos}"
+        "file://${config.home.homeDirectory}/Sync"
+        "file://${config.home.homeDirectory}/.dotfiles"
+        "file://${config.home.homeDirectory}/src"
+        "file://${config.home.homeDirectory}/src/github.com/patch-tech"
+      ];
     };
 
-    services.flameshot.enable = true;
-
-    services.network-manager-applet.enable = true;
-
-    # needs ./tray.nix
-    services.syncthing = {
-      enable = true;
-      tray = {
-        enable = true;
-        package = pkgs.syncthingtray.override {
-          webviewSupport = true;
-          jsSupport = true;
-          plasmoidSupport = false;
-          kioPluginSupport = false;
-        };
-        command = "syncthingtray --wait";
-      };
-    };
-
-    home.packages = with pkgs; [
-      xdotool
-      conky
-      discord
-      dmenu
-      epick
-      font-manager
-      google-cloud-sdk
-      gtk3
-      hacksaw
-      inkscape
-      libnotify
-      obsidian
-      pango
-      pavucontrol
-      ponymix
-      qalculate-gtk
-      shotgun
-      slack
-      trash-cli
-      vlc
-      xclip
-      xorg.xev
-      xorg.xkill
-      xorg.xprop
-      zoom-us
-    ];
+    media.graphics.enable = mkEnableOption "Graphics editing";
 
   };
+
+  config = mkMerge [
+    {
+      programs.eww.enable = true;
+
+      programs.feh.enable = true;
+
+      modules.programs.eww.enable = true;
+
+      services.clipmenu = {
+        enable = true;
+        launcher = lib.getExe config.programs.rofi.package;
+      };
+
+      services.flameshot.enable = true;
+
+      services.network-manager-applet.enable = true;
+
+      # needs ./tray.nix
+      services.syncthing = {
+        enable = true;
+        tray = {
+          enable = true;
+          package = pkgs.syncthingtray.override {
+            webviewSupport = true;
+            jsSupport = true;
+            plasmoidSupport = false;
+            kioPluginSupport = false;
+          };
+          command = "syncthingtray --wait";
+        };
+      };
+
+      home.packages = with pkgs; [
+        xdotool
+        conky
+        desktop-file-utils # update-desktop-database
+        dmenu
+        epick
+        font-manager
+        gtk3
+        hacksaw
+        libnotify
+        obsidian
+        pango
+        pavucontrol
+        ponymix
+        qalculate-gtk
+        shotgun
+        slack
+        trash-cli
+        vlc
+        xclip
+        xorg.xev
+        xorg.xkill
+        xorg.xprop
+        zoom-us
+      ];
+
+      gtk.gtk3.bookmarks = cfg.bookmarks;
+
+    }
+    (mkIf cfg.media.graphics.enable {
+      home.packages = with pkgs; [
+        inkscape
+      ];
+    })
+  ];
 }
