@@ -5,24 +5,17 @@
 , ...
 }:
 
+
 with lib;
 
-let
-
-  cfg = config.modules.desktop.rofi;
-
-in
 {
-  options.modules.desktop.rofi = {
-    enable = (mkEnableOption "rofi") // { default = true; };
-  };
-
-  config = mkIf cfg.enable {
+  config = mkIf config.programs.rofi.enable {
 
     programs.rofi = {
-      enable = true;
-      pass.enable = mkIf config.programs.password-store.enable true;
-      font = mkDefault "DejaVu Sans Mono";
+
+      font = config.modules.theme.fonts.mono.name;
+
+      pass.enable = true;
 
       plugins = mkDefault (with pkgs; [
         rofi-calc

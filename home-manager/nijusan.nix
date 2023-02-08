@@ -20,18 +20,20 @@
     ../nix/modules/desktop/i3
   ];
 
-  # matrix chat app
-  programs.nheko.enable = true;
+  programs.rofi.enable = true;
+
+  services.dunst.enable = true;
+
+  services.picom.enable = true;
 
   modules.desktop.i3.enable = true;
-  modules.services.picom.enable = true;
-  modules.services.dunst.enable = true;
-  # modules.dev.enable = true;
 
   # TODO define option for default browser
   home.sessionVariables.BROWSER = "${lib.getExe config.programs.google-chrome.package}";
-  home.sessionVariables.TERMINAL = "${config.programs.kitty.package}/bin/kitty";
 
+  modules.theme = {
+    active = "arc";
+  };
 
   home.packages = with pkgs; [
     google-cloud-sdk

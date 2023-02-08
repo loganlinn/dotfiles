@@ -99,6 +99,7 @@ in
         pango
         pavucontrol
         ponymix
+        libqalculate
         qalculate-gtk
         shotgun
         slack
@@ -108,10 +109,15 @@ in
         xorg.xev
         xorg.xkill
         xorg.xprop
-        zoom-us
+        xorg.xwininfo
       ];
 
       gtk.gtk3.bookmarks = cfg.bookmarks;
+
+      # # Try really hard to get QT to respect my GTK theme.
+      # env.GTK_DATA_PREFIX = [ "${config.system.path}" ];
+      # env.QT_QPA_PLATFORMTHEME = "gnome";
+      # env.QT_STYLE_OVERRIDE = "kvantum";
 
     }
     (mkIf cfg.media.graphics.enable {

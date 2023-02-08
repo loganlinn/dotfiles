@@ -2,26 +2,16 @@
 
 with lib;
 
-let
-
-  cfg = config.modules.services.dunst;
-
-in
 {
-  options.modules.services.dunst = {
-    enable = mkEnableOption "the dunst notification daemon";
-  };
-
-  config = mkIf cfg.enable {
+  config = lib.mkIf config.services.dunst.enable {
     services.dunst = {
-      enable = true;
       settings = rec {
         global = {
           browser = "${pkgs.xdg-utils}/bin/xdg-open";
           dmenu = "${config.programs.rofi.package}/bin/rofi -dmenu -p dunst:";
           monitor = 0;
           follow = "none";
-          font = "DejaVu Sans Mono 9";
+          font = with config.modules.theme.fonts.mono; "${name} ${toString size}";
           format = "<b>%s</b>\\n%b";
           frame_color = "#282a36";
           icon_theme = config.gtk.iconTheme.name;

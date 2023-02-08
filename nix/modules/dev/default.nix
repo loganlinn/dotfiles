@@ -36,10 +36,8 @@ let
 
 in
 {
-  options = {
-    modules.dev = {
-      enable = mkEnableOption "dev";
-    };
+  options.modules.dev = {
+    enable = mkEnableOption "dev";
   };
 
   config = mkIf cfg.enable {

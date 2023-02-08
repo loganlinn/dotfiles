@@ -1,4 +1,4 @@
-{ system, inputs, lib, ... }:
+{ system, inputs, lib, ... }@args:
 
 {
   imports = [
@@ -11,6 +11,7 @@
     ./packages.nix
   ];
 
-  flake.lib = import ../lib { inherit lib inputs system; };
+  flake.lib = args.callPackage ../lib;
+  # flake.lib.types.fontType = inputs.home-manager.lib.hm.types.fontType;
 
 }

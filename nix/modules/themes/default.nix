@@ -3,15 +3,12 @@
 with lib;
 
 let
-
-  inherit (lib) mkOption types;
   inherit (inputs.home-manager.lib.hm.types) fontType;
 
   cfg = config.modules.theme;
 
 in
 {
-
   imports = [
     ./dracula
     ./arc
@@ -104,13 +101,17 @@ in
     ];
 
     home.pointerCursor = {
+      package = pkgs.paper-gtk-theme;
+      name = "Paper";
       x11.enable = true;
       gtk.enable = true;
     };
 
-    gtk = {
-      enable = true;
-      gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+    gtk.enable = true;
+    gtk.gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+    gtk.iconTheme = mkOptionDefault {
+      package = pkgs.paper-gtk-theme;
+      name = "Paper";
     };
 
     # Workaround for apps that use libadwaita which does locate GTK settings via XDG.

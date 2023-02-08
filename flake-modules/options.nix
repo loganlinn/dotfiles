@@ -19,18 +19,22 @@ let
 in
 
 {
-  options = {
+  options = with types; {
     user = {
       name = mkOption {
-        type = types.str;
+        type = str;
         default = "logan";
       };
 
       home = mkOption {
-        type = types.str;
+        type = str;
         default = "/home/${config.user.user}";
       };
 
+      packages = mkOption {
+        types = listOf package;
+        default = [ ];
+      };
     };
 
     dotfiles = {

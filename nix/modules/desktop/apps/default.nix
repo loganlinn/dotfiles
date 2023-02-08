@@ -13,4 +13,7 @@
     vlc
     zoom-us
   ];
+
+  programs.nheko.enable = false; # matrix chat app
+
 }

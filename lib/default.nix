@@ -1,48 +1,20 @@
-{ lib
-, system ? builtins.currentSystem
-, inputs ? (builtins.getFlake (toString ./.)).inputs
-, ...
-}:
+{ lib }:
 
-let
-
-  inherit (builtins)
-    getFlake
-    isAttrs
-    replaceStrings
-    toString
-    ;
-
-  inherit (lib) mkOption;
-
-  pkgs = import inputs.nixpkgs { inherit system; };
-
-in
+let mkMyLib = import ./.; in
 rec {
-  types = {
-    inherit (inputs.home-manager.lib.hm.types) fontType;
 
-    script = with lib.types; submodule {
-      options = {
-        text = mkOption {
-          type = str;
-          description = "Shell code to execute when the script is ran.";
-        };
-        runtimeInputs = mkOption {
-          type = listOf package;
-          default = [ ];
-        };
-        checkPhase = mkOption {
-          type = nullOr string;
-          default = null;
-        };
-      };
-    };
-  };
+  my = (lib.extend (self: super: {
+    my = mkMyLib { lib = self; };
+  })).my
 
-  mkScript = name: value:
-    let attrs = if isAttrs value then value else { text = toString value; }; in
-    pkgs.writeShellApplication ({ inherit name; } // attrs);
+    inherit (lib)
+    optional optionalAttrs optionalString optionals
+
+    mkAssert mkAfter mkBefore mkDefault mkIf mkMerge mkForce mkOrder mkOverride
+    mkOption mkOptionType mkEnableOption mkOptionDefault mkPackageOption
+    mkRenamedOptionModuleWith mkRenamedOptionModule mkMergedOptionModule mkRemovedOptionModule mkAliasOptionModule
+    mkDerivedConfig mkAliasAndWrapDefinitions mkAliasDefinitions
+  ;
 
   # Searches Nix path by prefix
   # Example: findNixPath "nixos-config"

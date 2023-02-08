@@ -1,8 +1,8 @@
-{ pkgs, ... }: {
+{ config, pkgs, lib, ... }:
+
+{
   programs.kitty = {
     enable = true;
-
-    # darwinLaunchOptions = {};
 
     font = {
       package = pkgs.victor-mono;
@@ -49,6 +49,8 @@
       dim_opacity = "0.75";
       inactive_text_alpha = "0.75";
       disable_ligatures = "cursor"; # disable ligatures when cursor is on them
+      cursor_shape = "Underline";
+      cursor_underline_thickness = 1;
 
       # Behavior
       shell_integration = "enabled";
@@ -78,8 +80,7 @@
       macos_option_as_alt = "yes";
     };
 
-    extraConfig = ''
-      ${builtins.readFile ./theme.conf}
-    '';
+    extraConfig = builtins.readFile ../../../config/kitty/current-theme.conf;
+
   };
 }
