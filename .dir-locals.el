@@ -1,1 +1,3 @@
-((nil . ((compile-command . "switch "))))
+((nil . ((compile-command . "switch ")
+         ;;(nix-repl-executable-args . '())
+         )))
