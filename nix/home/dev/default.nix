@@ -124,7 +124,7 @@
       nodePackages.vim-language-server
       nodePackages.vscode-langservers-extracted
       pyright
-      rnix-lsp
+      rnix-lsp # alt? https://github.com/oxalica/nil
       sumneko-lua-language-server
       yaml-language-server
       java-language-server

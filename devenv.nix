@@ -7,7 +7,7 @@
   languages.nix.enable = true;
 
   scripts = {
-    "repl".exec = ''exec nix repl repl.nix "$@"'';
+    "repl".exec = ''exec nix repl --file repl.nix "$@"'';
     "switch".exec = ''hm switch "$@"'';
     "option".exec = ''home-manager option "$@"'';
     "reload".exec = ''direnv reload'';

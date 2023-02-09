@@ -26,6 +26,8 @@
 
   services.picom.enable = true;
 
+  modules.spellcheck.enable = true;
+
   modules.desktop.i3.enable = true;
 
   # TODO define option for default browser
