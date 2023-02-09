@@ -42,21 +42,21 @@ in
       mono = mkOption {
         type = fontType;
         default = {
-          name = "Monospace";
+          name = "Fira Code";
           size = 12;
         };
       };
       sans = mkOption {
         type = fontType;
         default = {
-          name = "Sans";
+          name = "Fira Sans";
           size = 12;
         };
       };
     };
 
     colors =
-      let mkOpt = default: mkOption { type = type.str; inherit default; };
+      let mkOpt = default: mkOption { type = types.str; inherit default; };
       in
       {
         black = mkOpt "#000000"; # 0
