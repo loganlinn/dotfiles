@@ -213,6 +213,21 @@
         "type": "github"
       }
     },
+    "nixlib": {
+      "locked": {
+        "lastModified": 1675558495,
+        "narHash": "sha256-7jwOfNefWeqUk5i8yOVRWrm4klglVOubtGXU11ZId2o=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "c8c50fd1c544dad4f590c3b91c5d65c5ba6aff77",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1674550793,
@@ -325,6 +340,7 @@
         "emacs": "emacs",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
+        "nixlib": "nixlib",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable"

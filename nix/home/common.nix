@@ -1,8 +1,5 @@
-{ config
-, lib
-, pkgs
-, ...
-}:
+{ config, lib, pkgs, ... }:
+
 let
   inherit (pkgs.stdenv.targetPlatform) isLinux;
 in
@@ -20,6 +17,7 @@ in
   home.packages = with pkgs;
     [
       binutils
+      cached-nix-shell
       cmake
       coreutils-full # installs gnu versions
       curl
@@ -55,7 +53,6 @@ in
     ];
 
   home.sessionVariables = {
-    EDITOR = "vim";
     DOCKER_SCAN_SUGGEST = "false";
     DO_NOT_TRACK = "1";
     HOMEBREW_NO_ANALYTICS = "1";

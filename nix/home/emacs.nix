@@ -6,7 +6,8 @@ let
   doomRepoUrl = "https://github.com/loganlinn/.doom.d";
   emacsDir = "${config.home.homeDirectory}/.emacs.d";
   doomDir = "${config.home.homeDirectory}/.doom.d";
-in {
+in
+{
 
   imports = [
 

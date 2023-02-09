@@ -11,7 +11,7 @@
   home.packages = with pkgs;
     [
       # misc
-      hey
+      # hey
       dive
       dtrx # do the right extraction (extract archives)
       jless
@@ -49,6 +49,7 @@
       nixfmt
       nixpkgs-fmt
       nurl
+      nix-init
 
       # c/c++
       ccls

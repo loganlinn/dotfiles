@@ -28,7 +28,7 @@ in
 
       home = mkOption {
         type = str;
-        default = "/home/${config.user.user}";
+        default = "/home/${config.user.name}";
       };
 
       packages = mkOption {
@@ -48,8 +48,5 @@ in
         default = "${config.user.home}/.dotfiles";
       };
     };
-
   };
-
-  config = { };
 }

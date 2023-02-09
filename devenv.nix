@@ -6,7 +6,11 @@
 
   languages.nix.enable = true;
 
-  scripts."repl".exec = ''exec nix repl repl.nix "$@"'';
-
-  scripts."reload".exec = ''direnv reload'';
+  scripts = {
+    "repl".exec = ''exec nix repl repl.nix "$@"'';
+    "switch".exec = ''hm switch "$@"'';
+    "option".exec = ''home-manager option "$@"'';
+    "reload".exec = ''direnv reload'';
+    # "config".exec = ''hm config'';
+  };
 }

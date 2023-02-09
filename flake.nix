@@ -2,12 +2,12 @@
   description = "loganlinn's (highly indecisive) flake";
 
   inputs = {
-    # package repos
+    # packages
     nixpkgs.url = "nixpkgs/nixos-unstable";
     nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
-
-    # system mangement
     nixos-hardware.url = "github:nixos/nixos-hardware";
+
+    # builders
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:lnl7/nix-darwin";
@@ -19,11 +19,16 @@
     # eww.url = "github:elkowar/eww";
     # eww.inputs.nixpkgs.follows = "nixpkgs";
 
-    # utils
+    # libs
+    nixlib.url = "github:nix-community/nixpkgs.lib";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+
+    # shells
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
+    # devshellurl = "github:numtide/devshell";
+    # devshell.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs:

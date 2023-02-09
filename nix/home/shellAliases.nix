@@ -36,7 +36,6 @@ in
 
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";
-    switch = "hm switch --verbose";
     nixpkgs = "nix repl --expr 'let pkgs = import <nixpkgs> {}; in builtins // pkgs.lib // { inherit pkgs; }'";
 
     k = "kubectl";
