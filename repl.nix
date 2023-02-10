@@ -35,4 +35,5 @@ builtins // self // rec {
   homeConfigurations = self.outputs.legacyPackages.${system}.homeConfigurations;
 
   hm = homeConfigurations."${user}@${hostname}";
+
 }

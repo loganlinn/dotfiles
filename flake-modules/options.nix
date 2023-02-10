@@ -1,4 +1,4 @@
-{ config, self, inputs, flake-parts-lib, lib, options, getSystem, extendModules, ... }:
+{ config, self, inputs, flake-parts-lib, lib, getSystem, extendModules, ... }:
 let
   inherit (lib)
     genAttrs
@@ -12,41 +12,59 @@ let
   inherit (flake-parts-lib)
     mkPerSystemOption
     ;
-  inherit (builtins)
-    removeAttrs
-    ;
-
 in
 
 {
-  options = with types; {
-    user = {
-      name = mkOption {
-        type = str;
-        default = "logan";
-      };
+  options = {
 
-      home = mkOption {
-        type = str;
-        default = "/home/${config.user.name}";
-      };
-
-      packages = mkOption {
-        types = listOf package;
-        default = [ ];
-      };
+    my.systems = mkOption {
+      type = with types; attrsOf (types.submodule {
+        system = mkOption {
+          type = str;
+        };
+      });
     };
 
-    dotfiles = {
-      repository = mkOption {
-        type = types.str;
-        default = "https://github.com/loganlinn/.dotfiles";
-      };
 
-      directory = mkOption {
-        type = types.str;
-        default = "${config.user.home}/.dotfiles";
+    perSystem = mkPerSystemOption ({ config, pkgs, ... }: {
+
+      options = {
+
+        my.user = {
+          name = mkOption {
+            type = types.str;
+            default = "logan";
+          };
+
+          home = mkOption {
+            type = types.str;
+            default = "/home/${config.my.user.name}";
+          };
+
+          packages = mkOption {
+            type = with types; listOf package;
+            default = [ ];
+          };
+
+          email = mkOption {
+            type = types.str;
+            default = "logan@llinn.dev";
+          };
+
+          github = mkOption {
+            type = types.str;
+            default = "loganlinn";
+          };
+
+          # TODO public keys
+        };
+
+        my.systemPackages = mkOption {
+          type = with types; listOf package;
+          default = [ ];
+        };
+
       };
-    };
+    });
   };
 }
