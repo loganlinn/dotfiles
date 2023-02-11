@@ -20,11 +20,10 @@ in
 
     xsession.windowManager.i3 = import ./i3.nix ctx;
 
-    # i3 scripts
     home.packages = with pkgs;
       [
         i3-layout-manager
-        (import ../../../pkgs/i3-balance-workspace.nix pkgs)
+        (pkgs.callPackage ../../../pkgs/i3-balance-workspace.nix { })
       ] ++ (
         # Create shell script for each i3-msg message type
         # i.e. `i3-config`, `i3-marks`, `i3-outputs`, etc

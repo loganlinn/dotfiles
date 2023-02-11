@@ -5,14 +5,26 @@ with lib;
 let
   inherit (inputs.home-manager.lib.hm.types) fontType;
 
+  inherit (lib)
+    mkAliasDefinitions
+    mkAliasOptionModule;
+
   cfg = config.modules.theme;
 
+  colorCfg = config.colorScheme.colors;
 in
 {
   imports = [
     ./dracula
     ./arc
   ];
+
+  # Convenience for nix-colors
+  options.colorScheme.colorsHex = mkOption {
+    type = with types; attrsOf str;
+    readOnly = true;
+    default = (mapAttrs (name: value: "#${value}") colorCfg);
+  };
 
   options.modules.theme = with types; {
 
@@ -56,51 +68,115 @@ in
     };
 
     colors =
-      let mkOpt = default: mkOption { type = types.str; inherit default; };
+      let
+        mkColorSchemeAlias = name: mkOption {
+          type = types.str;
+          default = "#${config.colorScheme.colors.${name}}";
+          readOnly = true;
+        };
       in
       {
-        black = mkOpt "#000000"; # 0
-        red = mkOpt "#FF0000"; # 1
-        green = mkOpt "#00FF00"; # 2
-        yellow = mkOpt "#FFFF00"; # 3
-        blue = mkOpt "#0000FF"; # 4
-        magenta = mkOpt "#FF00FF"; # 5
-        cyan = mkOpt "#00FFFF"; # 6
-        silver = mkOpt "#BBBBBB"; # 7
-        grey = mkOpt "#888888"; # 8
-        brightred = mkOpt "#FF8800"; # 9
-        brightgreen = mkOpt "#00FF80"; # 10
-        brightyellow = mkOpt "#FF8800"; # 11
-        brightblue = mkOpt "#0088FF"; # 12
-        brightmagenta = mkOpt "#FF88FF"; # 13
-        brightcyan = mkOpt "#88FFFF"; # 14
-        white = mkOpt "#FFFFFF"; # 15
+        # black = mkColorSchemeAlias "base00";
+        # red = mkColorSchemeAlias "base01";
+        # green = mkColorSchemeAlias "base02";
+        # yellow = mkColorSchemeAlias "base03";
+        # blue = mkColorSchemeAlias "base04";
+        # magenta = mkColorSchemeAlias "base05";
+        # cyan = mkColorSchemeAlias "base06";
+        # silver = mkColorSchemeAlias "base07";
+        # grey = mkColorSchemeAlias "base08";
+        # brightred = mkColorSchemeAlias "base09";
+        # brightgreen = mkColorSchemeAlias "base0A";
+        # brightyellow = mkColorSchemeAlias "base0B";
+        # brightblue = mkColorSchemeAlias "base0C";
+        # brightmagenta = mkColorSchemeAlias "base0D";
+        # brightcyan = mkColorSchemeAlias "base0E";
+        # white = mkColorSchemeAlias "base0F";
+
+        # https://github.com/chriskempson/base16/blob/main/styling.md
+        # base00 - Default Background
+        # base01 - Lighter Background (Used for status bars, line number and folding marks)
+        # base02 - Selection Background
+        # base03 - Comments, Invisibles, Line Highlighting
+        # base04 - Dark Foreground (Used for status bars)
+        # base05 - Default Foreground, Caret, Delimiters, Operators
+        # base06 - Light Foreground (Not often used)
+        # base07 - Light Background (Not often used)
+        # base08 - Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
+        # base09 - Integers, Boolean, Constants, XML Attributes, Markup Link Url
+        # base0A - Classes, Markup Bold, Search Text Background
+        # base0B - Strings, Inherited Class, Markup Code, Diff Inserted
+        # base0C - Support, Regular Expressions, Escape Characters, Markup Quotes
+        # base0D - Functions, Methods, Attribute IDs, Headings
+        # base0E - Keywords, Storage, Selector, Markup Italic, Diff Changed
+        # base0F - Deprecated, Opening/Closing Embedded Language Tags, e.g.
 
         # Color classes
-        types = {
-          bg = mkOpt cfg.colors.black;
-          fg = mkOpt cfg.colors.white;
-          panelbg = mkOpt cfg.colors.types.bg;
-          panelfg = mkOpt cfg.colors.types.fg;
-          border = mkOpt cfg.colors.types.bg;
-          error = mkOpt cfg.colors.red;
-          warning = mkOpt cfg.colors.yellow;
-          highlight = mkOpt cfg.colors.white;
-        };
+        types = let mkColorOpt = color: mkOption { type = types.str; default = colorCfg.${color}; }; in
+          {
+            bg = mkColorOpt "base00";
+            panelbg = mkColorOpt "base01";
+            selectionbg = mkColorOpt "base02";
+            comment = mkColorOpt "base03";
+            invisible = mkColorOpt "base03";
+            fgdark = mkColorOpt "base04";
+            panelfg = mkColorOpt "base04";
+            fg = mkColorOpt "base05";
+            caret = mkColorOpt "base05";
+            operator = mkColorOpt "base05";
+            delimiter = mkColorOpt "base05";
+            fglight = mkColorOpt "base06";
+            bglight = mkColorOpt "base07";
+            variable = mkColorOpt "base07";
+            xmltag = mkColorOpt "base08";
+            markuplinktxt = mkColorOpt "base08";
+            markuplists = mkColorOpt "base08";
+            diffdeleted = mkColorOpt "base08";
+            integer = mkColorOpt "base09";
+            boolean = mkColorOpt "base09";
+            const = mkColorOpt "base09";
+            xmlattr = mkColorOpt "base09";
+            linkurl = mkColorOpt "base09";
+            classes = mkColorOpt "base0A";
+            markupbold = mkColorOpt "base0A";
+            searchtextbg = mkColorOpt "base0A";
+            diffadded = mkColorOpt "base0B";
+            markupcode = mkColorOpt "base0B";
+            support = mkColorOpt "base0C";
+            regex = mkColorOpt "base0C";
+            escapechar = mkColorOpt "base0C";
+            markupquote = mkColorOpt "base0C";
+            function = mkColorOpt "base0D";
+            method = mkColorOpt "base0D";
+            attrname = mkColorOpt "base0D";
+            heading = mkColorOpt "base0D";
+            keyword = mkColorOpt "base0E";
+            storage = mkColorOpt "base0E";
+            selector = mkColorOpt "base0E";
+            markupitalic = mkColorOpt "base0E";
+            diffchanged = mkColorOpt "base0E";
+            deprecated = mkColorOpt "base0F";
+            openclose = mkColorOpt "base0F";
+
+
+            border = mkColorOpt "base02";
+            error = mkColorOpt "base08";
+            warning = mkColorOpt "base0E";
+            highlight = mkColorOpt "base03";
+          };
       };
   };
 
-
   config = {
-
     home.packages = with pkgs; [
       paper-icon-theme # for rofi
       pywal
       wpgtk # gui for pywal ('wpg' command)
       siji # iconic bitmap font
+      # base16-universal-manager
     ];
 
-    home.pointerCursor = {
+    home.pointerCursor = mkOptionDefault {
       package = pkgs.paper-gtk-theme;
       name = "Paper";
       x11.enable = true;

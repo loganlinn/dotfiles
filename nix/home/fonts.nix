@@ -70,6 +70,7 @@ in
     cascadia-code
     dejavu_fonts
     fantasque-sans-mono
+    fira # sans
     fira-code
     fira-code-symbols
     font-awesome

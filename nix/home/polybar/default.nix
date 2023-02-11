@@ -167,7 +167,9 @@ in
             (forEach (range 0 15) (n: {
               name = "color${toString n}";
               value = "\${xrdb:color${toString n}}";
-            })) // {
+            })) //
+
+          {
             background = onedark.background;
             foreground = onedark.foreground;
             focused-background = onedark.visualGrey;
@@ -337,12 +339,14 @@ in
           click-right = "${pavucontrol} &";
         })
         (module "dunst-snooze" {
-          type = "custom/ipc";
-          hook-0 = "${dunst-snooze}/bin/dunst-snooze";
-          hook-1 = "${dunst-snooze}/bin/dunst-snooze --toggle";
-          initial = 1;
+          type = "custom/script";
+          exec = "${dunst-snooze}/bin/dunst-snooze";
+          click-left = "${dunst-snooze}/bin/dunst-snooze toggle";
           interval = 5;
-          click-left = "#dunst-snooze.hook.1";
+          # env-COLOR_RUNNING_FG = config.colorScheme.colors.base0E;
+          # env-COLOR_RUNNING_BG = config.colorScheme.colors.base0E;
+          env-COLOR_PAUSED_BG = config.colorScheme.colors.base0E;
+          env-COLOR_PAUSED_FG = config.colorScheme.colors.base01;
         })
         {
           name = "module/powermenu";

@@ -8,18 +8,16 @@ pkgs.writeShellApplication {
   name = "dunst-snooze";
   runtimeInputs = [ dunst dbus ];
   text = ''
-
     case "''${1-}" in
-    --toggle)
+    toggle)
       dunstctl set-paused toggle
       ;;
     esac
 
     if [[ $(dunstctl is-paused) = "true" ]]; then
-      echo ""
+      echo "%{B#$COLOR_PAUSED_BG}%{F#$COLOR_PAUSED_FG}   %{B- F-}"
     else
-      echo ""
+      echo "  "
     fi
-
   '';
 }

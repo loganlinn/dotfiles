@@ -9,18 +9,19 @@ let
       (homeManagerConfiguration {
         inherit pkgs;
         modules = [
-          ../nix
+          ../home-manager/common.nix
           inputs.nix-colors.homeManagerModule
           {
             _module.args.self = self;
             _module.args.inputs = inputs;
 
-            imports = [ ../home-manager/common.nix ] ++ (lib.toList module);
+            imports = [ ../home-manager/common.nix ];
             home.username = config.my.user.name;
             home.homeDirectory = config.my.user.home;
             home.packages = [ self'.packages.hm ] ++ config.my.user.packages;
+
           }
-        ];
+        ] ++ (lib.toList module);
       });
 
 in

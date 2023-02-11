@@ -304,12 +304,12 @@ bindkey -M emacs "$key_info[Control]X$key_info[Control]]" vi-match-bracket
 # Edit command in an external editor.
 bindkey -M emacs "$key_info[Control]X$key_info[Control]E" edit-command-line
 
-if (( $+widgets[history-incremental-pattern-search-backward] )); then
-  bindkey -M emacs "$key_info[Control]R" \
-    history-incremental-pattern-search-backward
-  bindkey -M emacs "$key_info[Control]S" \
-    history-incremental-pattern-search-forward
-fi
+# if (( $+widgets[history-incremental-pattern-search-backward] )); then
+#   bindkey -M emacs "$key_info[Control]R" \
+#     history-incremental-pattern-search-backward
+#   bindkey -M emacs "$key_info[Control]S" \
+#     history-incremental-pattern-search-forward
+# fi
 
 # Toggle comment at the start of the line. Note that we use pound-toggle which
 # is similar to pount insert, but meant to work around some issues that were

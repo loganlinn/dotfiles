@@ -1,5 +1,9 @@
 { lib, pkgs, ... }:
 
+let
+  inherit (lib) optionals;
+  inherit (pkgs.stdenv.targetPlatform) isLinux;
+in
 {
   imports = [
     ./azure.nix
@@ -10,18 +14,34 @@
 
   home.packages = with pkgs;
     [
-      # misc
-      # hey
-      dive
-      dtrx # do the right extraction (extract archives)
-      jless
+      # benchmarking
+      hey
       hyperfine
+
+      # gfx
       graphviz
       gnuplot
-      gum # fancy scripting
-      taplo # toml toolkit
 
-      # protocols
+      # filesystem
+      as-tree
+      du-dust
+      dua # View disk space usage and delete unwanted data, fast.
+      ranger
+      watchexec
+
+      # containers
+      dive
+
+      # terminal
+      lazycli
+      gum
+      asciinema
+      asciinema-scenario # https://github.com/garbas/asciinema-scenario/
+
+      # toml
+      taplo
+
+      # data
       protobuf
       buf
       grpcurl
@@ -30,9 +50,6 @@
       pre-commit
       nodePackages_latest.graphite-cli
       delta
-
-      # cloud
-      doctl # digital ocean
 
       # markdown
       mdsh
@@ -50,6 +67,8 @@
       nixpkgs-fmt
       nurl
       nix-init
+      deadnix
+      statix
 
       # c/c++
       ccls
@@ -117,7 +136,24 @@
       deno
       nodePackages.typescript
 
+      # json
+      jq
+      jless
+
+      # yaml
+      yamllint
+
+      # apis
+      doctl
+      python3Packages.datadog
+      # google-cloud-sdk
+
+      # tools/utils
+      xxd # make a hexdump or do the reverse.
+      cloc
+
     ] ++ [
+
       # language servers
       nodePackages.bash-language-server
       nodePackages.typescript-language-server
@@ -128,6 +164,11 @@
       sumneko-lua-language-server
       yaml-language-server
       java-language-server
+
+    ] ++ optionals isLinux [
+
+      # system76-keyboard-configurator
+
     ];
 
   programs.the-way = {

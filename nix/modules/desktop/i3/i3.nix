@@ -3,14 +3,8 @@
 , pkgs
 , modifier ? "Mod4"
 , alt ? "Mod1"
-, terminal ? "kitty"
-, terminalFloating ? "kitty --title kitty-floating"
-, fileManager ? "thunar"
 , sessionLocker ? "dm-tool lock"
 , sessionRefresher ? "switch"
-, browser ? "google-chrome-stable"
-, editor ? "emacs"
-, messenger ? "slack"
 , audioIncrease ? "pactl set-sink-volume @DEFAULT_SINK@ +5%"
 , audioDecrease ? "pactl set-sink-volume @DEFAULT_SINK@ -5%"
 , audioToggle ? "pactl set-sink-mute @DEFAULT_SINK@ toggle"
@@ -30,24 +24,27 @@ with lib;
 let
   inherit (config.xdg) configHome;
 
-  # modes = {
-  #   apps = {
-  #     "Enter" = ''[class="kitty"] focus'';
-  #     "Space" = ''[class="Chromium"] focus'';
-  #     "e" = ''[class="Emacs"] focus'';
-  #     "s" = ''[class="Slack"] focus'';
-  #     "l" = ''[class="Linear.*"] focus'';
-  #   };
-  # };
+  kitty-alt-command = pkgs.writeShellScript "kitty-alt" ''
+    env -C "$(zoxide query --list --all | gum filter --limit 1 || echo $HOME)" ''${SHELL-zsh}
+  '';
+
+  unionOfDisjoint = x: y:
+    let
+      intersection = builtins.intersectAttrs x y;
+      collisions = lib.concatStringsSep " " (builtins.attrNames intersection);
+      mask = builtins.mapAttrs
+        (name: value: builtins.throw
+          "unionOfDisjoint: collision on ${name}; complete list: ${collisions}")
+        intersection;
+    in
+    (x // y) // mask;
 
 in
 {
   enable = true;
 
   config = lib.mkOptionDefault rec {
-
-    inherit modifier terminal;
-
+    inherit modifier;
     keybindings =
       let
         groups = {
@@ -58,7 +55,7 @@ in
             "${modifier}+Ctrl+q" = "exec ${pkgs.xorg.xkill}/bin/xkill";
             "${modifier}+Ctrl+c" = "restart";
             "${modifier}+Shift+c" = "reload";
-            "${modifier}+Shift+e" = exit;
+            "${modifier}+Shift+p" = exit;
             "${modifier}+Shift+semicolon" = "exec ${i3-input} -P 'i3-msg: '";
             "Ctrl+${alt}+Delete" = "exec ${sessionLocker}";
             "${modifier}+F2;" = ''exec ${i3-input} -F 'rename workspace to "%s "' -P 'New name: ''''';
@@ -77,13 +74,27 @@ in
             "${modifier}+equal" = "exec i3_balance_workspace";
           };
 
-          apps = {
-            "${modifier}+Return" = "exec ${terminal}";
-            "${modifier}+${alt}+Return" = "exec ${terminalFloating}";
-            "${modifier}+Shift+Return" = "exec ${browser}";
-            "${modifier}+e" = "exec ${editor}";
-            "${modifier}+n" = "exec ${fileManager}";
-            "${modifier}+s" = "exec ${messenger}";
+          browser = let chrome = "google-chrome-stable"; in
+            {
+              "${modifier}+Shift+Return" = ''exec ${chrome} "--profile-directory=Profile 1"''; # work
+              "${modifier}+Shift+Ctrl+Return" = ''exec ${chrome} "--profile-directory=Profile 1" --app-id=bgdbmehlmdmddlgneophbcddadgknlpm''; # linear
+              "${modifier}+${alt}+Return" = ''exec ${chrome} "--profile-directory=Default"''; # personal
+            };
+
+          explorer = {
+            "${modifier}+f" = ''exec kitty --class file-manager sh -c '${pkgs.ranger} "$(zoxide query --interactive || echo "$HOME")"'';
+            "${modifier}+Shift+f" = ''exec thunar'';
+          };
+
+          editor = {
+            "${modifier}+e" = ''exec emacs'';
+            "${modifier}+Shift+e" = ''[class="emacs"] focus'';
+            "${modifier}+${alt}+e" = ''exec emacsclient -a "" -c'';
+          };
+
+          terminal = {
+            "${modifier}+Return" = "exec kitty";
+            "${modifier}+Ctrl+Return" = "exec kitty --title kitty-one --single-instance";
           };
 
           menus = {
@@ -92,6 +103,11 @@ in
             "${modifier}+w" = "exec --no-startup-id rofi-window";
             "${modifier}+p" = "exec --no-startup-id rofi-powermenu";
             "${modifier}+a" = "exec --no-startup-id rofi-volume";
+          };
+
+          notifications = {
+            "${modifier}+n" = ''mode "$mode_notify"'';
+            "${modifier}+Shift+n" = ''exec dunstctl set-paused toggle'';
           };
 
           focusWorkspaceAbsolute = {
@@ -200,8 +216,7 @@ in
 
           ## Modify // Window space
           fullscreen = {
-            "${modifier}+f" = "fullscreen toggle";
-            "${modifier}+Shift+f" = "floating toggle";
+            "${modifier}+m" = "fullscreen toggle";
           };
 
           sticky = {
@@ -210,17 +225,17 @@ in
 
           ## Modify // Window layout
           layout = {
-            "${modifier}+t" = "focus mode_toggle";
+            "${modifier}+t" = "floating toggle";
             "${modifier}+Shift+t" = "layout toggle tabbed splith splitv";
           };
 
           scratchpad = {
             "${modifier}+Shift+grave" = "move scratchpad";
-            "${modifier}+grave" = "[class=.*] scratchpad show ";
+            "${modifier}+grave" = "[class = . * ] scratchpad show ";
           };
 
           media = {
-            "XF86AudioRaiseVolume " = "exec --no-startup-id ${audioIncrease}";
+            "XF86AudioRaiseVolume " = "exec - -no-startup-id ${audioIncrease}";
             "XF86AudioLowerVolume" = "exec --no-startup-id ${audioDecrease}";
             "XF86AudioMute" = "exec --no-startup-id ${audioToggle}";
             "XF86AudioPlay" = "exec --no-startup-id ${audioPlay}";
@@ -243,7 +258,7 @@ in
 
         };
       in
-      foldl' mergeAttrs { } (attrValues groups);
+      foldl' unionOfDisjoint { } (attrValues groups);
 
     modes = {
       resize = {
@@ -312,7 +327,31 @@ in
         smartBorders = "no_gaps";
       };
 
-    floating = import ./floating.nix;
+    floating = {
+      criteria = [
+        { class = "kitty-one"; }
+        { class = "kitty-panel"; }
+        { class = "1Password.*"; }
+        { class = "Qalculate.*"; }
+        { class = "System76 Keyboard Configurator"; }
+        { class = "blueman-manager"; }
+        { class = "nm-connection-editor"; }
+        { class = "obs"; }
+        { class = "pavucontrol"; }
+        { class = "syncthingtray"; }
+        { class = "thunar"; }
+        { class = "zoom"; }
+        { title = "Artha"; }
+        { title = "Calculator"; }
+        { title = "Event Tester"; } # i.e. xev
+        { title = "Steam.*"; }
+        { title = "doom-capture"; }
+        # https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html
+        { window_role = "pop-up"; }
+        { window_role = "utility"; }
+        { window_role = "prefwindow"; }
+      ];
+    };
 
     assigns = {
       "1" = [ ];
@@ -393,6 +432,8 @@ in
     # };
   };
   extraConfig = ''
+    for_window [class="kitty-one"] move position center
+
     # Only enable outer gaps when there is exactly one window or split container on the workspace.
     smart_gaps inverse_outer
 
@@ -412,6 +453,5 @@ in
         bindsym Ctrl+c mode "default"
         bindsym Ctrl+g mode "default"
     }
-    bindsym ${modifier}+period mode "$mode_notify"
   '';
 }

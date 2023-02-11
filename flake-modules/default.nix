@@ -10,11 +10,11 @@
 
   flake.lib = import ../lib lib; # TODO push into perSystem
 
-  perSystem = { inputs', pkgs, ... }: {
+  perSystem = { pkgs, ... }: {
 
     formatter = pkgs.alejandra;
 
-    devShells.default = inputs'.devenv.lib.mkShell {
+    devShells.default = inputs.devenv.lib.mkShell {
       inherit inputs pkgs;
       modules = [ ../devenv.nix ];
     };

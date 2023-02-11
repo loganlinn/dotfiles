@@ -6,6 +6,7 @@ in
 {
   imports = [
     ./accounts.nix
+    ./clipboard.nix
     ./git.nix
     ./neovim
     ./security.nix
@@ -50,6 +51,8 @@ in
     ]
     ++ lib.optionals isLinux [
       sysz
+      (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
+      (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
     ];
 
   home.sessionVariables = {

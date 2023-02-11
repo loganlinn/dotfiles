@@ -29,6 +29,9 @@ in
       size = 100000;
       save = 100000;
     };
+    shellAliases = {
+      sudo = "sudo ";
+    };
     shellGlobalAliases = {
       "..." = "../..";
       "...." = "../../..";
@@ -43,33 +46,53 @@ in
       pics = config.xdg.userDirs.pictures;
       music = config.xdg.userDirs.music;
       vids = config.xdg.userDirs.videos;
-      dot = "$HOME/.dotfiles";
+      sync = "$HOME/Sync";
+      dots = "$HOME/.dotfiles";
       src = "$HOME/src";
+      gh = "$HOME/src/github.com";
+      pat = "$HOME/src/github.com/patch-tech/patch";
+      be = "$HOME/src/github.com/patch-tech/patch/backend";
     };
-    initExtra = ''
+
+    initExtraFirst = ''
+      # Stop TRAMP (in Emacs) from hanging or term/shell from echoing back commands
+      if [[ $TERM == dumb || -n $INSIDE_EMACS ]]; then
+        unsetopt zle prompt_cr prompt_subst
+        whence -w precmd >/dev/null && unfunction precmd
+        whence -w preexec >/dev/null && unfunction preexec
+        PS1='$ '
+      fi
+    '';
+
+    initExtraBeforeCompInit = ''
       ${readFile ./editor.zsh}
+    '';
 
-      # Make color constants available
-      autoload -U colors
-      colors
+    initExtra = ''
+      setopt EXTENDED_GLOB        # Use extended globbing syntax.
+      setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
+      setopt EQUALS               # Expansion of =command expands into full pathname of command
+      setopt LONG_LIST_JOBS       # List jobs in the long format by default.
+      setopt AUTO_RESUME          # Attempt to resume existing job before creating a new process.
+      setopt NOTIFY               # Report status of background jobs immediately.
+      unsetopt BG_NICE            # Don't run all background jobs at a lower priority.
+      unsetopt HUP                # Don't kill jobs on shell exit.
+      setopt AUTO_PUSHD           # Push the old directory onto the stack on cd.
+      setopt PUSHD_IGNORE_DUPS    # Do not store duplicates in the stack.
+      setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
 
-      ${import ./confirm-exit.nix { inherit lib pkgs; }}
-
+      DIRSTACKSIZE=9
 
       ${readFile ./clipboard.zsh}
 
-      # Old habbits die hard
-      (( ''${+commands[pbcopy]}  )) || alias pbcopy=clipcopy;
-      (( ''${+commands[pbpaste]} )) || alias pbpaste=clippaste;
+      ${readFile ./funcs.zsh}
 
-      ${optionalString
-        config.programs.kitty.enable
+      ${optionalString config.programs.kitty.enable
         "kitty + complete setup zsh | source /dev/stdin"}
 
-      # Fix IntelliJ terminal issue where every keypress was accompanied by 'tmux' or 'tmux;'
-      if [[ "$TERMINAL_EMULATOR" -eq "JetBrains-JediTerm" ]]; then
-        unset TMUX
-      fi
+      ${optionalString config.programs.tmux.enable
+        # Fix IntelliJ terminal issue where every keypress was accompanied by 'tmux' or 'tmux;'
+        ''[[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX''}
 
       source ${./../../../bin/src-get}
 

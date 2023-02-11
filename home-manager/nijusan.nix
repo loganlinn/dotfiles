@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./common.nix
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
     ../nix/home/emacs.nix # TODO module
@@ -38,8 +39,11 @@
   };
 
   home.packages = with pkgs; [
+    btrfs-progs
     google-cloud-sdk
+    # nemo
   ];
 
   home.stateVersion = "22.11";
+
 }
