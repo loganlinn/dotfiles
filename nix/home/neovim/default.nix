@@ -22,11 +22,53 @@ in
     yamllint
   ];
 
+  # home.configFile."nvim".source = fetchFromGitHub {
+  #   owner = "NvChad";
+  #   repo = "NvChad";
+  #   rev = "32b0a00";
+  #   hash = "sha256-IfVcysO6LTm7xFv5m7+GExmplj0P+IVGSeoMCT9qvBY=";
+  # };
+
   programs.neovim = {
     enable = true;
 
+    extraPackages = with pkgs;[
+      gcc
+      zig
+    ];
+
+    withNodeJs = true;
+    withPython3 = true;
+
     vimAlias = true;
     viAlias = true;
+
+    coc = mkOptionDefault {
+      enable = false;
+      settings = {
+        "suggest.noselect" = true;
+        "suggest.enablePreview" = true;
+        "suggest.enablePreselect" = false;
+        "suggest.disableKind" = true;
+        languageserver = {
+          haskell = {
+            command = "haskell-language-server-wrapper";
+            args = [ "--lsp" ];
+            rootPatterns = [
+              "*.cabal"
+              "stack.yaml"
+              "cabal.project"
+              "package.yaml"
+              "hie.yaml"
+            ];
+            filetypes = [ "haskell" "lhaskell" ];
+          };
+        };
+      };
+
+
+    };
+
 
     # plugins = with pkgs.vimPlugins; [
     #   vim-commentary

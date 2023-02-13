@@ -34,6 +34,8 @@
   # TODO define option for default browser
   home.sessionVariables.BROWSER = "${lib.getExe config.programs.google-chrome.package}";
 
+  gtk.enable = true;
+
   modules.theme = {
     active = "arc";
   };

@@ -42,6 +42,8 @@ in
         "file://${config.xdg.userDirs.pictures}"
         "file://${config.xdg.userDirs.music}"
         "file://${config.xdg.userDirs.videos}"
+        "file://${config.xdg.configHome}"
+        "file://${config.xdg.dataHome}"
         "file://${config.home.homeDirectory}/Sync"
         "file://${config.home.homeDirectory}/.dotfiles"
         "file://${config.home.homeDirectory}/src"
@@ -86,30 +88,45 @@ in
       };
 
       home.packages = with pkgs; [
-        xdotool
-        conky
-        desktop-file-utils # update-desktop-database
-        dmenu
-        epick
-        font-manager
         gtk3
-        hacksaw
+        desktop-file-utils # update-desktop-database
         libnotify
-        obsidian
         pango
-        pavucontrol
-        ponymix
+
+        conky # Advanced, highly configurable system monitor based on torsmo
+        font-manager
+        gcolor3
+        epick # Simple color picker that lets the user create harmonic palettes with ease
+
+        hacksaw # Lightweight selection tool for usage in screenshot scripts etc
+        shotgun # Minimal X screenshot utility
+
+        pavucontrol # PulseAudio Volume Control
+        ponymix # CLI PulseAudio Volume Control
+        ncpamixer # An ncurses mixer for PulseAudio inspired by pavucontrol
+
         libqalculate
         qalculate-gtk
-        shotgun
-        slack
-        trash-cli
+
         vlc
+      ] ++ [
+
+        # x11
+        xdotool # Fake keyboard/mouse input, window management, etc
         xclip
-        xorg.xev
+
+        xorg.xev # Event viewer
         xorg.xkill
         xorg.xprop
         xorg.xwininfo
+        xorg.xrandr
+        xorg.xkbevd
+        xorg.xmodmap
+      ] ++ [
+
+        obsidian
+        slack
+
       ];
 
       gtk.gtk3.bookmarks = cfg.bookmarks;

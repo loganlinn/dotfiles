@@ -38,4 +38,15 @@ rec {
       }))
       listToAttrs
     ];
+
+  unionOfDisjoint = x: y:
+    let
+      intersection = builtins.intersectAttrs x y;
+      collisions = lib.concatStringsSep " " (builtins.attrNames intersection);
+      mask = builtins.mapAttrs
+        (name: value: builtins.throw
+          "unionOfDisjoint: collision on ${name}; complete list: ${collisions}")
+        intersection;
+    in
+    (x // y) // mask;
 }

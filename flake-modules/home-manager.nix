@@ -18,7 +18,7 @@ let
             imports = [ ../home-manager/common.nix ];
             home.username = config.my.user.name;
             home.homeDirectory = config.my.user.home;
-            home.packages = [ self'.packages.hm ] ++ config.my.user.packages;
+            home.packages = config.my.user.packages;
 
           }
         ] ++ (lib.toList module);
@@ -34,24 +34,5 @@ in
       "logan@framework" = hmConfigForSystem "x86_64-linux" ../home-manager/framework.nix ctx;
     };
 
-  } // (
-    let
-      hm = pkgs.writeShellApplication {
-        name = "hm";
-        runtimeInputs = with pkgs; [
-          git
-          coreutils
-          nix
-          jq
-          unixtools.hostname
-          inputs.home-manager.packages.${pkgs.system}.home-manager
-        ];
-        text = builtins.readFile ../home-manager/hm.sh;
-      };
-    in
-    {
-      apps.hm.program = "${hm}/bin/hm";
-      packages.hm = hm;
-    }
-  );
+  };
 }

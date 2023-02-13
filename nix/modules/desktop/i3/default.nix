@@ -8,17 +8,17 @@ let
 
 in
 {
+  imports = [ ./i3.nix ];
+
   options.modules.desktop.i3 = {
-
     enable = mkEnableOption "i3 window manager";
-
   };
 
   config = mkIf cfg.enable {
 
     xsession.enable = true;
 
-    xsession.windowManager.i3 = import ./i3.nix ctx;
+    xsession.windowManager.i3.enable = true;
 
     home.packages = with pkgs;
       [

@@ -51,6 +51,7 @@ in
     ]
     ++ lib.optionals isLinux [
       sysz
+      trash-cli
       (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
       (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
     ];

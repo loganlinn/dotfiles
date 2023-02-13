@@ -3,7 +3,13 @@
 with lib;
 
 let
-  inherit (inputs.home-manager.lib.hm.types) fontType;
+  inherit (inputs.home-manager.lib.hm.types)
+    fontType;
+
+  inherit (inputs.nix-colors.lib-contrib)
+    gtkThemeFromScheme
+    shellThemeFromScheme
+    nixWallpaperFromScheme;
 
   inherit (lib)
     mkAliasDefinitions
@@ -12,19 +18,14 @@ let
   cfg = config.modules.theme;
 
   colorCfg = config.colorScheme.colors;
+
 in
 {
   imports = [
     ./dracula
     ./arc
+    ../../home/fonts.nix
   ];
-
-  # Convenience for nix-colors
-  options.colorScheme.colorsHex = mkOption {
-    type = with types; attrsOf str;
-    readOnly = true;
-    default = (mapAttrs (name: value: "#${value}") colorCfg);
-  };
 
   options.modules.theme = with types; {
 
@@ -45,136 +46,40 @@ in
       default = null;
     };
 
-    # loginWallpaper = mkOpt (either path null)
-    #   (if cfg.wallpaper != null
-    #   then toFilteredImage cfg.wallpaper "-gaussian-blur 0x2 -modulate 70 -level 5%"
-    #   else null);
-
     fonts = {
       mono = mkOption {
         type = fontType;
         default = {
-          name = "Fira Code";
+          name = "FiraCode Nerd Font Mono";
+          size = 12;
+        };
+      };
+      serif = mkOption {
+        type = fontType;
+        default = {
+          name = "NotoSerif Nerd Font";
           size = 12;
         };
       };
       sans = mkOption {
         type = fontType;
         default = {
-          name = "Fira Sans";
+          name = "NotoSans Nerd Font";
           size = 12;
         };
       };
     };
-
-    colors =
-      let
-        mkColorSchemeAlias = name: mkOption {
-          type = types.str;
-          default = "#${config.colorScheme.colors.${name}}";
-          readOnly = true;
-        };
-      in
-      {
-        # black = mkColorSchemeAlias "base00";
-        # red = mkColorSchemeAlias "base01";
-        # green = mkColorSchemeAlias "base02";
-        # yellow = mkColorSchemeAlias "base03";
-        # blue = mkColorSchemeAlias "base04";
-        # magenta = mkColorSchemeAlias "base05";
-        # cyan = mkColorSchemeAlias "base06";
-        # silver = mkColorSchemeAlias "base07";
-        # grey = mkColorSchemeAlias "base08";
-        # brightred = mkColorSchemeAlias "base09";
-        # brightgreen = mkColorSchemeAlias "base0A";
-        # brightyellow = mkColorSchemeAlias "base0B";
-        # brightblue = mkColorSchemeAlias "base0C";
-        # brightmagenta = mkColorSchemeAlias "base0D";
-        # brightcyan = mkColorSchemeAlias "base0E";
-        # white = mkColorSchemeAlias "base0F";
-
-        # https://github.com/chriskempson/base16/blob/main/styling.md
-        # base00 - Default Background
-        # base01 - Lighter Background (Used for status bars, line number and folding marks)
-        # base02 - Selection Background
-        # base03 - Comments, Invisibles, Line Highlighting
-        # base04 - Dark Foreground (Used for status bars)
-        # base05 - Default Foreground, Caret, Delimiters, Operators
-        # base06 - Light Foreground (Not often used)
-        # base07 - Light Background (Not often used)
-        # base08 - Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
-        # base09 - Integers, Boolean, Constants, XML Attributes, Markup Link Url
-        # base0A - Classes, Markup Bold, Search Text Background
-        # base0B - Strings, Inherited Class, Markup Code, Diff Inserted
-        # base0C - Support, Regular Expressions, Escape Characters, Markup Quotes
-        # base0D - Functions, Methods, Attribute IDs, Headings
-        # base0E - Keywords, Storage, Selector, Markup Italic, Diff Changed
-        # base0F - Deprecated, Opening/Closing Embedded Language Tags, e.g.
-
-        # Color classes
-        types = let mkColorOpt = color: mkOption { type = types.str; default = colorCfg.${color}; }; in
-          {
-            bg = mkColorOpt "base00";
-            panelbg = mkColorOpt "base01";
-            selectionbg = mkColorOpt "base02";
-            comment = mkColorOpt "base03";
-            invisible = mkColorOpt "base03";
-            fgdark = mkColorOpt "base04";
-            panelfg = mkColorOpt "base04";
-            fg = mkColorOpt "base05";
-            caret = mkColorOpt "base05";
-            operator = mkColorOpt "base05";
-            delimiter = mkColorOpt "base05";
-            fglight = mkColorOpt "base06";
-            bglight = mkColorOpt "base07";
-            variable = mkColorOpt "base07";
-            xmltag = mkColorOpt "base08";
-            markuplinktxt = mkColorOpt "base08";
-            markuplists = mkColorOpt "base08";
-            diffdeleted = mkColorOpt "base08";
-            integer = mkColorOpt "base09";
-            boolean = mkColorOpt "base09";
-            const = mkColorOpt "base09";
-            xmlattr = mkColorOpt "base09";
-            linkurl = mkColorOpt "base09";
-            classes = mkColorOpt "base0A";
-            markupbold = mkColorOpt "base0A";
-            searchtextbg = mkColorOpt "base0A";
-            diffadded = mkColorOpt "base0B";
-            markupcode = mkColorOpt "base0B";
-            support = mkColorOpt "base0C";
-            regex = mkColorOpt "base0C";
-            escapechar = mkColorOpt "base0C";
-            markupquote = mkColorOpt "base0C";
-            function = mkColorOpt "base0D";
-            method = mkColorOpt "base0D";
-            attrname = mkColorOpt "base0D";
-            heading = mkColorOpt "base0D";
-            keyword = mkColorOpt "base0E";
-            storage = mkColorOpt "base0E";
-            selector = mkColorOpt "base0E";
-            markupitalic = mkColorOpt "base0E";
-            diffchanged = mkColorOpt "base0E";
-            deprecated = mkColorOpt "base0F";
-            openclose = mkColorOpt "base0F";
-
-
-            border = mkColorOpt "base02";
-            error = mkColorOpt "base08";
-            warning = mkColorOpt "base0E";
-            highlight = mkColorOpt "base03";
-          };
-      };
   };
 
   config = {
     home.packages = with pkgs; [
-      paper-icon-theme # for rofi
+      paper-icon-theme
       pywal
       wpgtk # gui for pywal ('wpg' command)
       siji # iconic bitmap font
-      # base16-universal-manager
-    ];
+    ]
+    ++ optional (!isNull cfg.fonts.mono.package) cfg.fonts.mono.package
+    ++ optional (!isNull cfg.fonts.sans.package) cfg.fonts.sans.package;
 
     home.pointerCursor = mkOptionDefault {
       package = pkgs.paper-gtk-theme;
@@ -183,16 +88,44 @@ in
       gtk.enable = true;
     };
 
-    gtk.enable = true;
-    gtk.gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
-    gtk.iconTheme = mkOptionDefault {
-      package = pkgs.paper-gtk-theme;
-      name = "Paper";
+    # fonts.fontconfig.defaultFonts = {
+    #   sansSerif = [ cfg.fonts.sans.name ];
+    #   monospace = [ cfg.fonts.mono.name ];
+    # };
+
+    gtk = mkIf config.gtk.enable {
+      font = cfg.fonts.sans;
+
+      iconTheme = mkOptionDefault {
+        package = pkgs.paper-gtk-theme;
+        name = "Paper";
+      };
+
+      # https://docs.gtk.org/gtk4
+      # gtk4.extraConfig = { };
+
+      # https://docs.gtk.org/gtk3
+      gtk3.extraConfig = {
+        gtk-xft-antialias = 1;
+        gtk-xft-hinting = 1;
+        gtk-xft-hintstyle = "hintslight";
+        gtk-xft-rgba = "rgb"; # The type of subpixel antialiasing to use. The possible values are none, rgb, bgr, vrgb, vbgr.
+        gtk-decoration-layout = "menu:";
+      };
+
+      # https://docs.gtk.org/gtk2
+      gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+      gtk2.extraConfig = ''
+        gtk-xft-antialias=1
+        gtk-xft-hinting=1
+        gtk-xft-hintstyle="hintslight"
+        gtk-xft-rgba="rgb"
+      '';
     };
 
     # Workaround for apps that use libadwaita which does locate GTK settings via XDG.
     # https://www.reddit.com/r/swaywm/comments/qodk20/gtk4_theming_not_working_how_do_i_configure_it/hzrv6gr/?context=3
-    home.sessionVariables.GTK_THEME = config.gtk.theme.name;
+    home.sessionVariables.GTK_THEME = mkIf config.gtk.enable config.gtk.theme.name;
 
     qt.platformTheme = "gtk";
 
@@ -207,6 +140,29 @@ in
         "Gtk/CursorThemeName" = config.xsession.pointerCursor.name;
       };
     };
+
+    programs.fzf.defaultOptions = with config.colorScheme.colors; [
+      "--height 40%"
+      "--layout=reverse"
+      "--border"
+      "--inline-info"
+      "--color 'fg:#${base05}'" # Text
+      "--color 'bg:#${base00}'" # Background
+      "--color 'preview-fg:#${base05}'" # Preview window text
+      "--color 'preview-bg:#${base00}'" # Preview window background
+      "--color 'hl:#${base0A}'" # Highlighted substrings
+      "--color 'fg+:#${base0D}'" # Text (current line)
+      "--color 'bg+:#${base02}'" # Background (current line)
+      "--color 'gutter:#${base02}'" # Gutter on the left (defaults to bg+)
+      "--color 'hl+:#${base0E}'" # Highlighted substrings (current line)
+      "--color 'info:#${base0E}'" # Info line (match counters)
+      "--color 'border:#${base0D}'" # Border around the window (--border and --preview)
+      "--color 'prompt:#${base05}'" # Prompt
+      "--color 'pointer:#${base0E}'" # Pointer to the current line
+      "--color 'marker:#${base0E}'" # Multi-select marker
+      "--color 'spinner:#${base0E}'" # Streaming input indicator
+      "--color 'header:#${base05}'" # Header
+    ];
 
     # config = mkIf (cfg.active != null) (mkMerge [
     #   # Read xresources files in ~/.config/xtheme/* to allow modular configuration
@@ -307,10 +263,6 @@ in
     #       '';
     #     };
 
-    #     fonts.fontconfig.defaultFonts = {
-    #       sansSerif = [ cfg.fonts.sans.name ];
-    #       monospace = [ cfg.fonts.mono.name ];
-    #     };
     #   }
 
     #   (mkIf (cfg.wallpaper != null)

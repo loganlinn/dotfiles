@@ -2,8 +2,10 @@
 
 with lib;
 
-# test colors using https://tests.peter.sh/notification-generator/
-let inherit (config.modules.theme) fonts colors;
+# test using https://tests.peter.sh/notification-generator/
+let
+  inherit (config.modules.theme) fonts;
+  inherit (config.colorScheme) colors;
 in
 {
   config = lib.mkIf config.services.dunst.enable {
@@ -14,10 +16,19 @@ in
           dmenu = "${config.programs.rofi.package}/bin/rofi -dmenu -p dunst:";
           monitor = 0;
           follow = "none";
-          font = "${fonts.mono.name} 10";
+          font = "${fonts.mono.name} Light 10";
+          # For a complete markup reference, see <https://docs.gtk.org/Pango/pango_markup.html>.
+          # %a appname
+          # %s summary
+          # %b body
+          # %i iconname (including its path)
+          # %I iconname (without its path)
+          # %p progress value ([ 0%] to [100%])
+          # %n progress value without any extra characters
+          # %% Literal %
           format = "<b>%s</b>\\n%b";
-          icon_theme = config.gtk.iconTheme.name;
-          frame_width = 1;
+          icon_theme = "${config.gtk.iconTheme.name}, Adwaita";
+          frame_width = 2;
           gap_size = 2;
           width = 440;
           height = "(24, 320)";
@@ -53,60 +64,30 @@ in
           history_length = 50;
           stack_duplicates = true;
           hide_duplicate_count = false;
-          show_indicators = true;
-          title = "Dunst";
-          class = "Dunst";
-          mouse_left_click = "do_action, close_current";
-          # mouse_middle_click = "context";
-          mouse_middle_click = "do_action";
-          mouse_right_click = "close_current";
+          show_indicators = true; # Show an indicator if a notification contains actions and/or open-able URLs. See ACTIONS below for further details.
 
-          # frame_color = colors.types.border;
-          # separator_color = "auto";
-          separator_color = "frame";
+          mouse_left_click = "open_url, close_current";
+          mouse_middle_click = "close_all";
+          mouse_right_click = "close_curent";
 
-          frame_color = "${colors.types.border}";
-          background = "${colors.types.panelbg}";
-          foreground = "${colors.types.panelfg}";
+          frame_color = "#${colors.base01}";
+          separator_color = "auto";
+
+          background = "#${colors.base00}";
+          foreground = "#${colors.base05}";
         };
 
         urgency_low = {
-          # frame_color = "#3B7C87";
-          # foreground = "#3B7C87";
-          # background = "#191311";
-          # background = "#282a36";
-          # foreground = "#6272a4";
-          # foreground = "#D8DEE9"; # nord4
-          # background = "#4C566A"; # nord3
-          # background = "${colors.types.bg}";
-          # foreground = "${colors.types.fg}";
+          background = "#${colors.base03}";
           timeout = 10;
         };
 
         urgency_normal = {
-          # frame_color = "#5B8234";
-          # foreground = "#5B8234";
-          # background = "#191311";
-          # background = "#1d1f21";
-          # foreground = "#70a040";
-          # foreground = "#ECEFF4"; # nord6
-          # background = "#5E81AC"; # nord10
-          # frame_color = "#3B4252"; # nord1
-          frame_color = "${colors.types.highlight}";
-          # background = "${colors.types.panelbg}";
-          # foreground = "${colors.types.panelfg}";
           timeout = 60;
         };
 
         urgency_critical = {
-          # frame_color = "#B7472A";
-          # foreground = "#B7472A";
-          # background = "#191311";
-          # foreground = "#3B4252"; # nord1
-          # background = "#B48EAD"; # nord15
-          # background = "#cc6666";
-          # foreground = "${colors.types.panelbg}";
-          frame_color = "${colors.types.warning}";
+          frame_color = "#${colors.base08}";
           timeout = 0;
         };
 
