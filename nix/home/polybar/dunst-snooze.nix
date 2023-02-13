@@ -15,9 +15,14 @@ pkgs.writeShellApplication {
     esac
 
     if [[ $(dunstctl is-paused) = "true" ]]; then
-      echo "%{B#$COLOR_PAUSED_BG}%{F#$COLOR_PAUSED_FG}   %{B- F-}"
+      label=""
+      waiting=$(dunstctl count waiting)
+      if [[ $waiting -gt 0 ]]; then
+        label="$label x$waiting"
+      fi
+      echo "%{B#$COLOR_PAUSED_BG}%{F#$COLOR_PAUSED_FG}$label%{B- F-}"
     else
-      echo "  "
+      echo ""
     fi
   '';
 }

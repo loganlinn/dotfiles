@@ -3,7 +3,7 @@
 with lib;
 
 let
-  colorsHex = mapAttrs (k: v: "#${v}") config.colorScheme.colors;
+
 in
 {
   systemd.user.services.polybar = {
@@ -25,9 +25,8 @@ in
                 "custom/script"
               else
                 "internal/${name}";
-
             format-padding = 1;
-            format-prefix-foreground = colorsHex.base06;
+            format-prefix-foreground = "\${colors.base04}";
           } // config;
         };
       in
@@ -36,26 +35,7 @@ in
         settings = { screenchange-reload = true; };
 
         # Custom variables (https://github.com/polybar/polybar/wiki/Configuration#custom-variables)
-        colors = colorsHex // {
-          background = colorsHex.base00;
-          foreground = colorsHex.base05;
-          focused-background = colorsHex.base02;
-          focused-foreground = colorsHex.base0A;
-          focused-underline = colorsHex.base0A;
-          mode-background = colorsHex.base0E;
-          mode-foreground = colorsHex.base02;
-          separator-background = colorsHex.base00;
-          separator-foreground = colorsHex.base01;
-          unfocused-background = colorsHex.base00;
-          unfocused-foreground = colorsHex.base03;
-          urgent-background = colorsHex.base00;
-          urgent-foreground = colorsHex.base08;
-          visible-background = colorsHex.base02;
-          visible-foreground = colorsHex.base0C;
-          warning-foreground = colorsHex.base0E;
-          error-foreground = colorsHex.base08;
-          muted-foreground = colorsHex.base0E;
-        };
+        colors = mapAttrs (k: v: "#${v}") config.colorScheme.colors;
 
         # Bar settings (https://github.com/polybar/polybar/wiki/Configuration#bar-settings)
         bar = {
@@ -64,19 +44,16 @@ in
           indicator = "⏽";
         };
         "bar/top" = {
-          monitor = "\${env:MONITOR:}"; # see script
           width = "100%";
           height = "36";
           bottom = false;
           enable-ipc = true;
-          radius = 0;
           font-size = "12";
           font-0 = "${config.modules.theme.fonts.mono.name}:size=10;3";
           font-1 = "${config.modules.theme.fonts.mono.name}:size=10:style=Bold;3";
-          font-2 = "Font Awesome:size=12;2";
+          font-2 = "Font Awesome:size=11;2";
           font-3 = "Symbols-Nerd-Font:size=20;3";
           padding = 3;
-          # separator = " ";
           module-margin = 1;
 
           modules-left = [ "i3" ];
@@ -101,19 +78,19 @@ in
           use-ui-max = false; # use PA_VOLUME_NORM (100%)
           format-volume = "<ramp-volume> <label-volume>";
           format-muted = "<label-muted>";
-          format-muted-prefix = "  ";
+          format-muted-prefix = "";
           format-muted-prefix-font = 3;
-          format-muted-background = "\${colors.background}";
+          format-muted-background = "\${colors.base00}";
           format-muted-padding = 1;
           format-muted-prefix-foreground = "\${colors.base0E}";
           label-muted = " Muted";
           label-muted-foreground = "\${colors.base0E}";
           label-volume = "%percentage%%";
           label-volume-foreground = "\${colors.base05}";
-          ramp-volume-0 = "  ";
-          ramp-volume-1 = "  ";
-          ramp-volume-2 = "  ";
-          ramp-volume-3 = "  ";
+          ramp-volume-0 = "";
+          ramp-volume-1 = "";
+          ramp-volume-2 = "";
+          ramp-volume-3 = "";
           ramp-volume-0-font = 3;
           ramp-volume-1-font = 3;
           ramp-volume-2-font = 3;
@@ -188,9 +165,10 @@ in
           interval = 1;
           time = "%I:%M %p";
           date = "%a %b %d";
+          time-alt = "%H:%M";
+          date-alt = " %Y-%m-%d%";
           format-prefix = " ";
           label = "%date% %time%";
-          label-font = 6;
         })
         (module "memory" {
           interval = 2;
@@ -302,7 +280,12 @@ in
           module "dunst-snooze" {
             type = "custom/script";
             exec = "${dunst-snooze}/bin/dunst-snooze";
+            format = "<label>";
+            label = "%output:3%";
+            label-font = 3;
             click-left = "${dunst-snooze}/bin/dunst-snooze toggle";
+            scroll-up = "dunstctl close";
+            scroll-down = "dunstctl history-pop";
             interval = 5;
             env-COLOR_PAUSED_BG = config.colorScheme.colors.base0E;
             env-COLOR_PAUSED_FG = config.colorScheme.colors.base01;
