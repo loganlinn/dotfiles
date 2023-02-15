@@ -31,6 +31,10 @@
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     # devshellurl = "github:numtide/devshell";
     # devshell.inputs.nixpkgs.follows = "nixpkgs";
+
+    # data
+    fzf-git.url = "github:junegunn/fzf-git.sh";
+    fzf-git.flake = false;
   };
 
   outputs = inputs:
