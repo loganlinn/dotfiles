@@ -94,6 +94,11 @@ in
 
       source ${fzf-git.outPath}/fzf-git.sh
 
+      gco() {
+        local selected=$(_fzf_git_each_ref --no-multi)
+        [ -n "$selected" ] && git checkout "$selected"
+      }
+
       ${readFile ./clipboard.zsh}
 
       ${readFile ./funcs.zsh}
