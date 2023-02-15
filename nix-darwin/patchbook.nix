@@ -1,12 +1,13 @@
-{pkgs, lib, ...}: {
+{ inputs, pkgs, lib, ... }: {
 
   imports = [
-    ./system.nix
-    ./security.nix
-    ./homebrew.nix
-    ./skhd.nix
-    ./yabai.nix
-    ./tailscale.nix
+    inputs.home-manager.darwinModules.home-manager
+    ./modules/system.nix
+    ./modules/security.nix
+    ./modules/homebrew.nix
+    ./modules/skhd.nix
+    ./modules/yabai.nix
+    ./modules/tailscale.nix
   ];
 
   users.users.logan = {
@@ -16,28 +17,23 @@
     home = "/Users/logan";
   };
 
-  environment = {
-    darwinConfig = "$HOME/.dotfiles/nix/darwin/configuration.nix";
-
-    systemPackages = with pkgs; [
-      curl
-      du-dust
-      fd
-      fzf
-      htop
-      lsd
-      moreutils
-      nixfmt
-      ripgrep
-      tree
-      vim_configurable
-      wget
+  home-manager.users.logan = {
+    imports = [
+      ../nix/home/common.nix
+      ../nix/home/dev
+      ../nix/home/fonts.nix
+      ../nix/home/pretty.nix
+      ../nix/home/zsh
     ];
-    # profiles = [];
-    # extraInit = "";
-    # etc = {};
+  };
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
+  home-manager.home.stateVersion = "22.11";
+
+  environment = {
+    darwinConfig = ./patchbook.nix;
+    # darwinConfig = "$HOME/.dotfiles/nix-darwin/patchbook.nix";
     variables = {
-      # EDITOR = "vim";
       LANG = "en_US.UTF-8";
     };
   };
@@ -46,18 +42,6 @@
     enable = true;
     enableCompletion = true;
   };
-
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    enableBashCompletion = true;
-    enableFzfCompletion = true;
-    enableFzfGit = true;
-    enableFzfHistory = true;
-    enableSyntaxHighlighting = true;
-  };
-
-  programs.nix-index.enable = true;
 
   services.nix-daemon.enable = true;
 

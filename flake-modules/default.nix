@@ -4,6 +4,7 @@
   imports = [
     ./home-manager.nix
     ./nixos.nix
+    ./darwin.nix
     ./options.nix
     ./overlays
   ];

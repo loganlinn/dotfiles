@@ -142,7 +142,6 @@ in
     };
 
     programs.fzf.defaultOptions = with config.colorScheme.colors; [
-      "--height 40%"
       "--layout=reverse"
       "--border"
       "--inline-info"
