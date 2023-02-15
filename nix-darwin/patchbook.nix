@@ -1,7 +1,6 @@
 { inputs, pkgs, lib, ... }: {
 
   imports = [
-    inputs.home-manager.darwinModules.home-manager
     ./modules/system.nix
     ./modules/security.nix
     ./modules/homebrew.nix
@@ -19,16 +18,17 @@
 
   home-manager.users.logan = {
     imports = [
+      ../nix/modules
       ../nix/home/common.nix
       ../nix/home/dev
       ../nix/home/fonts.nix
       ../nix/home/pretty.nix
       ../nix/home/zsh
     ];
+    home.stateVersion = "22.11";
   };
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
-  home-manager.home.stateVersion = "22.11";
 
   environment = {
     darwinConfig = ./patchbook.nix;

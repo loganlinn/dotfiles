@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
+  inherit (lib) mkIf;
   inherit (pkgs.stdenv.targetPlatform) isLinux;
 in
 {
@@ -13,48 +14,42 @@ in
     ./readline.nix
     ./secrets.nix
     ./shellAliases.nix
+    (mkIf isLinux ./linux.nix)
   ];
 
-  home.packages = with pkgs;
-    [
-      binutils
-      cached-nix-shell
-      cmake
-      coreutils-full # installs gnu versions
-      curl
-      dtrx # Do The Right Extraction
-      du-dust
-      fd
-      gawk
-      gnugrep
-      gnumake
-      gnused
-      gnutar
-      gnutls
-      gzip
-      moreutils
-      neofetch
-      pinentry
-      procs
-      rcm
-      ripgrep
-      rlwrap
-      sd
-      silver-searcher
-      sops
-      tree
-      unrar
-      unzip
-      xh
-      zenith
-      zip
-    ]
-    ++ lib.optionals isLinux [
-      sysz
-      trash-cli
-      (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
-      (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
-    ];
+  home.packages = with pkgs; [
+    binutils
+    cached-nix-shell
+    cmake
+    coreutils-full # installs gnu versions
+    curl
+    dtrx # Do The Right Extraction
+    du-dust
+    fd
+    gawk
+    gnugrep
+    gnumake
+    gnused
+    gnutar
+    gnutls
+    gzip
+    moreutils
+    neofetch
+    pinentry
+    procs
+    rcm
+    ripgrep
+    rlwrap
+    sd
+    silver-searcher
+    sops
+    tree
+    unrar
+    unzip
+    xh
+    zenith
+    zip
+  ];
 
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
@@ -135,16 +130,4 @@ in
   };
 
   programs.tealdeer.enable = true; # tldr command
-
-  services.gpg-agent = {
-    enable = true;
-    enableSshSupport = true;
-    defaultCacheTtl = lib.mkDefault 86400;
-    maxCacheTtl = lib.mkDefault 86400;
-    pinentryFlavor = lib.mkDefault "gtk2";
-    extraConfig = ''
-      allow-emacs-pinentry
-      allow-loopback-pinentry
-    '';
-  };
 }

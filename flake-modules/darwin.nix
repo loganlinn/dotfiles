@@ -3,23 +3,25 @@
 let
 
 
-  darwinSystem = system: modules: ctx@{ config, pkgs, ... }:
-    lib.optionalAttrs (system == ctx.system) (inputs.darwin.lib.darwinSystem {
-      inherit inputs system pkgs;
-      modules = [{
-        _module.args.self = self;
-        _module.args.inputs = inputs;
-        _module.args.lib = ctx.lib.extend { my = self.lib; };
-        imports = [ ../nix-darwin/common.nix ] ++ lib.toList modules;
-      }];
-    });
+  darwinSystem = modules: ctx@{ options, config, self', inputs', pkgs, system, ... }:
+    inputs.darwin.lib.darwinSystem {
+      inherit system;
+      modules = [
+        inputs.home-manager.darwinModules.home-manager
+        {
+          _module.args.self = self;
+          # _module.args.lib = ctx.lib.extend { my = self.lib; };
+          imports = [
+          ] ++ lib.toList modules;
+        }
+      ];
+    };
 in
 {
-  perSystem = ctx: {
-    legacyPackages.darwinConfigurations = {
-
-      "logan@patchbook" = darwinSystem "aarch64-darwin" ../nix-darwin/patchbook.nix ctx;
-
-    };
+  perSystem = ctx@{ options, config, self', inputs', pkgs, system, ... }: {
+    legacyPackages.darwinConfigurations =
+      lib.optionalAttrs (system == "aarch64-darwin") {
+        "logan@patchbook" = darwinSystem ../nix-darwin/patchbook.nix ctx;
+      };
   };
 }
