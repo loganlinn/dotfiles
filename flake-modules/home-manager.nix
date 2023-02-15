@@ -25,8 +25,6 @@ let
 in
 {
 
-  flake.lib.homeManagerConfiguration = { inherit homeManagerConfiguration; };
-
   perSystem = ctx: {
 
     legacyPackages.homeConfigurations = {

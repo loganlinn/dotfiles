@@ -11,8 +11,7 @@ let
         {
           _module.args.self = self;
           # _module.args.lib = ctx.lib.extend { my = self.lib; };
-          imports = [
-          ] ++ lib.toList modules;
+          imports = lib.toList modules;
         }
       ];
     };
