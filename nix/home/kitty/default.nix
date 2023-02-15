@@ -44,7 +44,7 @@
 
     settings = {
       # Appearance
-      window_padding_width = "6";
+      window_padding_width = 5;
       hide_window_decorations = "titlebar-only";
       dim_opacity = "0.75";
       inactive_text_alpha = "0.75";
@@ -80,7 +80,13 @@
       macos_option_as_alt = "yes";
     };
 
-    extraConfig = builtins.readFile ../../../config/kitty/current-theme.conf;
 
+    extraConfig = ''
+
+      ${builtins.readFile ../../../config/kitty/current-theme.conf}
+
+      globinclude kitty.d/**/*.conf
+
+    '';
   };
 }
