@@ -31,7 +31,7 @@
   home-manager.useUserPackages = true;
 
   environment = {
-    darwinConfig = ./patchbook.nix;
+    # darwinConfig = "${./patchbook.nix}";
     # darwinConfig = "$HOME/.dotfiles/nix-darwin/patchbook.nix";
     variables = {
       LANG = "en_US.UTF-8";

@@ -170,10 +170,4 @@ in
       # system76-keyboard-configurator
 
     ];
-
-  programs.the-way = {
-    enable = true;
-    enableZshIntegration = true;
-    enableBashIntegration = true;
-  };
 }

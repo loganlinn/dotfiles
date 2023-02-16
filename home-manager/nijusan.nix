@@ -23,6 +23,12 @@
 
   programs.rofi.enable = true;
 
+  programs.the-way = {
+    enable = true;
+    enableZshIntegration = true;
+    enableBashIntegration = true;
+  };
+
   services.dunst.enable = true;
 
   services.picom.enable = true;

@@ -1,25 +1,25 @@
-{ config, lib, pkgs, ... }:
-
-let
-  inherit (lib) mkIf;
-  inherit (pkgs.stdenv.targetPlatform) isLinux;
-in
 {
-  imports = [
-    ./accounts.nix
-    ./clipboard.nix
-    ./git.nix
-    ./neovim
-    ./security.nix
-    ./readline.nix
-    ./secrets.nix
-    ./shellAliases.nix
-    (mkIf isLinux ./linux.nix)
-  ];
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  inherit (lib) optional;
+in {
+  imports =
+    [
+      ./accounts.nix
+      ./clipboard.nix
+      ./git.nix
+      ./neovim
+      ./security.nix
+      ./readline.nix
+      ./secrets.nix
+      ./shellAliases.nix
+    ];
 
   home.packages = with pkgs; [
     binutils
-    cached-nix-shell
     cmake
     coreutils-full # installs gnu versions
     curl
@@ -44,7 +44,6 @@ in
     silver-searcher
     sops
     tree
-    unrar
     unzip
     xh
     zenith
@@ -130,4 +129,33 @@ in
   };
 
   programs.tealdeer.enable = true; # tldr command
+
 }
+// (lib.mkIf pkgs.stdenv.isLinux {
+
+  home.packages = with pkgs; [
+    cached-nix-shell
+    sysz
+    trash-cli
+    (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
+    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
+  ];
+
+  # requires systemd
+  services.gpg-agent = {
+    enable = true;
+    enableSshSupport = true;
+    defaultCacheTtl = lib.mkDefault 86400;
+    maxCacheTtl = lib.mkDefault 86400;
+    pinentryFlavor = lib.mkDefault "gtk2";
+    extraConfig = ''
+      allow-emacs-pinentry
+      allow-loopback-pinentry
+    '';
+  };
+
+})
+// (lib.mkIf pkgs.stdenv.isDarwin {
+
+
+})
