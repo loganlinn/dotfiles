@@ -9,6 +9,7 @@ let
     inherit type;
     format-padding = 2;
     format-prefix-foreground = "\${colors.base04}";
+    format-suffix-foreground = "\${colors.base04}";
     format-background = "\${colors.base00}";
     format-foreground = "\${colors.base06}";
     radius = 4;
@@ -104,13 +105,13 @@ in
         format-volume = "<ramp-volume> <label-volume>";
         format-volume-background = "\${colors.base00}";
         format-volume-foreground = "\${colors.base06}";
-        format-volume-padding = 2;
+        format-volume-padding = 3;
         format-muted = "<label-muted>";
         format-muted-prefix = "";
         format-muted-prefix-font = 3;
         format-muted-background = "\${colors.base09}";
         format-muted-foreground = "\${colors.base01}";
-        format-muted-padding = 1;
+        format-muted-padding = 3;
         label-muted = " MUTED";
         label-volume = "%percentage%%";
         ramp-volume-0 = "";
@@ -183,7 +184,7 @@ in
         time-alt = "%H:%M";
         date-alt = " %Y-%m-%d%";
         format = "<label>";
-        format-prefix = " ";
+        # format-prefix = " ";
         label = "%date% %time%";
       };
 
@@ -192,7 +193,7 @@ in
         format = "<label> <bar-used>";
         label = "%percentage_used%%";
         format-prefix = "RAM ";
-        bar-used-width = 8;
+        bar-used-width = 6;
         bar-used-foreground-0 = "\${colors.base0B}";
         bar-used-foreground-1 = "\${colors.base0B}";
         bar-used-foreground-2 = "\${colors.base0B}";
@@ -201,9 +202,9 @@ in
         bar-used-foreground-5 = "\${colors.base08}";
         bar-used-indicator = "|";
         bar-used-indicator-foreground = "#ff";
-        bar-used-fill = "─";
-        bar-used-empty = "─";
-        bar-used-empty-foreground = "#444444";
+        bar-used-fill = "┅";
+        bar-used-empty = "┅";
+        bar-used-empty-foreground = "\${colors.base04}";
       };
 
       "module/gpu" = module "custom/script" {
@@ -220,7 +221,7 @@ in
         format = "<label> <bar-load>";
         # format = "<label> <bar-load>";
         label = "%percentage%%";
-        bar-load-width = 8;
+        bar-load-width = 6;
         bar-load-foreground-0 = "\${colors.base0B}";
         bar-load-foreground-1 = "\${colors.base0B}";
         bar-load-foreground-2 = "\${colors.base0B}";
@@ -229,9 +230,9 @@ in
         bar-load-foreground-5 = "\${colors.base08}";
         bar-load-indicator = "|";
         bar-load-indicator-foreground = "#ff";
-        bar-load-fill = "─";
-        bar-load-empty = "─";
-        bar-load-empty-foreground = "#444444";
+        bar-load-fill = "┅";
+        bar-load-empty = "┅";
+        bar-load-empty-foreground = "\${colors.base04}";
         ramp-load-spacing = 0;
         ramp-load-0-foreground = "\${colors.base0B}";
         ramp-load-1-foreground = "\${colors.base0B}";
@@ -259,10 +260,12 @@ in
         warn-temperature = 75;
         units = true;
         format-prefix = "TEMP ";
-        format = "<ramp> <label>";
+        format = "<label> <ramp>";
         format-warn = "<label-warn> <ramp>";
-        label-warn-foreground = "\${colors.base06}";
+        format-warn-background = "\${colors.base00}";
+        format-warn-foreground = "\${colors.base06}";
         label = "%temperature-c%";
+        label-warn = "%temperature-c%";
         ramp-0 = "";
         ramp-1 = "";
         ramp-2 = "";
