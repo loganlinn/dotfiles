@@ -33,46 +33,17 @@ in
     enable = true;
 
     defaultEditor = true;
+    withNodeJs = true;
+    withPython3 = true;
+    vimAlias = true;
+    viAlias = true;
 
     extraPackages = with pkgs;[
       gcc
       zig
     ];
 
-    withNodeJs = true;
-    withPython3 = true;
-
-    vimAlias = true;
-    viAlias = true;
-
-    coc = mkOptionDefault {
-      enable = false;
-      settings = {
-        "suggest.noselect" = true;
-        "suggest.enablePreview" = true;
-        "suggest.enablePreselect" = false;
-        "suggest.disableKind" = true;
-        languageserver = {
-          haskell = {
-            command = "haskell-language-server-wrapper";
-            args = [ "--lsp" ];
-            rootPatterns = [
-              "*.cabal"
-              "stack.yaml"
-              "cabal.project"
-              "package.yaml"
-              "hie.yaml"
-            ];
-            filetypes = [ "haskell" "lhaskell" ];
-          };
-        };
-      };
-
-
-    };
-
-
-    # plugins = with pkgs.vimPlugins; [
+    plugins = with pkgs.vimPlugins; [
     #   vim-commentary
     #   vim-dispatch
     #   vim-easy-align
@@ -123,8 +94,8 @@ in
     #   nvim-lspconfig
     #   nvim-navic
     #   nvim-notify
-    #   nvim-treesitter-textobjects
-    #   nvim-treesitter.withAllGrammars
+      nvim-treesitter-textobjects
+      nvim-treesitter.withAllGrammars
     #   nvim-web-devicons
     #   nvim_context_vt
     #   playground
@@ -140,29 +111,47 @@ in
     #   vim-visual-multi
 
     #   # Language support
-    #   vim-nix
-    #   vim-markdown
-    #   vim-clojure-static
-    #   vim-shellcheck
-    #   yuck-vim
-    #   # vim-kitty-navigator
-    #   # pkgs.vimUtils.buildVimPlugin {
-    #   #   name = "vim-kitty";
-    #   #   src = fetchFromGitHub {
-    #   #     owner = "fladson";
-    #   #     repo = "vim-kitty";
-    #   #     rev = "d4c60f096b751c1462c80cbf42550e29c8cd2983";
-    #   #     hash = "sha256-dOz55kUIsrRIuT7UBZaGy8fxpI2zzQL875ooUmZwoY4=";
-    #   #   };
-    #   # }
-
-    #   # Theme
-    #   {
-    #     plugin = onedarkpro-nvim;
-    #     config = "colorscheme onedark";
-    #   }
-    # ];
+      vim-nix
+      vim-markdown
+      vim-clojure-static
+      vim-shellcheck
+      yuck-vim
+      # vim-kitty-navigator
+      # pkgs.vimUtils.buildVimPlugin {
+      #   name = "vim-kitty";
+      #   src = fetchFromGitHub {
+      #     owner = "fladson";
+      #     repo = "vim-kitty";
+      #     rev = "d4c60f096b751c1462c80cbf42550e29c8cd2983";
+      #     hash = "sha256-dOz55kUIsrRIuT7UBZaGy8fxpI2zzQL875ooUmZwoY4=";
+      #   };
+      # }
+    ];
 
     extraPython3Packages = ps: with ps; [ pynvim ];
+
+    coc = mkOptionDefault {
+      enable = false;
+      settings = {
+        "suggest.noselect" = true;
+        "suggest.enablePreview" = true;
+        "suggest.enablePreselect" = false;
+        "suggest.disableKind" = true;
+        languageserver = {
+          haskell = {
+            command = "haskell-language-server-wrapper";
+            args = [ "--lsp" ];
+            rootPatterns = [
+              "*.cabal"
+              "stack.yaml"
+              "cabal.project"
+              "package.yaml"
+              "hie.yaml"
+            ];
+            filetypes = [ "haskell" "lhaskell" ];
+          };
+        };
+      };
+    };
   };
 }
