@@ -93,7 +93,13 @@ in
         libnotify
         pango
 
-        conky # Advanced, highly configurable system monitor based on torsmo
+        (conky.override {
+          x11Support = true;
+          curlSupport = true;
+          nvidiaSupport = lib.pathExists "/run/current-system/sw/bin/nvidia-smi";
+          pulseSupport = true;
+        })
+
         font-manager
         gcolor3
         epick # Simple color picker that lets the user create harmonic palettes with ease
@@ -122,6 +128,8 @@ in
         xorg.xrandr
         xorg.xkbevd
         xorg.xmodmap
+
+        nsxiv # simple image viewer
       ] ++ [
 
         obsidian

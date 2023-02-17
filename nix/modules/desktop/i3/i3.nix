@@ -11,12 +11,18 @@ with lib;
 let
 
   cfg = config.modules.desktop.i3;
-  themeCfg = config.modules.theme;
 
-  inherit (config.xdg) configHome;
+  barHeight = 36; # TODO option shared w/ (poly)bar config
 
   super = "Mod4";
   alt = "Mod1";
+  leftMouseButton = "button1";
+  middleMouseButton = "button2";
+  rightMouseButton = "button2";
+  scrollWheelUp = "button4";
+  scrollWheelDown = "button5";
+  scrollWheelRight = "button6";
+  scrollWheelLeft = "button7";
 
   pactl = args: "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl ${args}";
   playerctl = args: "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl ${args}";
@@ -46,7 +52,6 @@ in
                 "${super}+Shift+q" = "kill";
                 "${super}+${alt}+q" =
                   "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
-                "${super}+Ctrl+q" = "exec ${pkgs.xorg.xkill}/bin/xkill";
                 "${super}+Ctrl+c" = "restart";
                 "${super}+Shift+c" = "reload";
                 "${super}+Shift+p" = ''exec --no-startup-id i3-msg exit, mode "default"'';
@@ -66,7 +71,6 @@ in
               resize = {
                 "${super}+r" = "mode resize";
                 "${super}+equal" = "exec i3_balance_workspace";
-                "${super}+Shift+r" = "mode $mode_gaps";
               };
 
               browser = let chrome = "google-chrome-stable"; in
@@ -101,7 +105,7 @@ in
               };
 
               notifications = {
-                "${super}+n" = ''mode "$mode_notify"'';
+                "${super}+n" = ''mode "$mode_notification"'';
                 "${super}+Shift+n" = ''exec dunstctl set-paused toggle'';
               };
 
@@ -124,6 +128,10 @@ in
                 "${super}+Right" = "workspace next";
                 "${super}+bracketleft" = "workspace prev";
                 "${super}+bracketright" = "workspace next";
+                "${super}+${scrollWheelUp}" = "workspace next";
+                "${super}+${scrollWheelDown}" = "workspace prev";
+                "${super}+${scrollWheelLeft}" = "move workspace to output next";
+                "${super}+${scrollWheelRight}" = "move workspace to output prev";
               };
 
               jumpWindow = {
@@ -145,6 +153,7 @@ in
                 "${super}+Shift+j" = "move down";
                 "${super}+Shift+k" = "move up";
                 "${super}+Shift+l" = "move right";
+                "${super}+${leftMouseButton}" = "move mouse";
               };
 
               moveWindowToWorkspace = {
@@ -230,10 +239,6 @@ in
               };
 
               media = {
-                # "XF86AudioRaiseVolume " = pactl "set-sink-volume @DEFAULT_SINK@ +5%";
-                # "XF86AudioLowerVolume" = pactl "set-sink-volume @DEFAULT_SINK@ -5%";
-                # "XF86AudioMute" = pactl "set-sink-mute @DEFAULT_SINK@ toggle";
-                # "Scroll_Lock" = pactl "set-source-mute @DEFAULT_SOURCE@ toggle";
                 "XF86AudioRaiseVolume " = ponymix "increase 5";
                 "XF86AudioLowerVolume" = ponymix "decrease 5";
                 "XF86AudioMute" = ponymix "--sink toggle";
@@ -242,13 +247,6 @@ in
                 "XF86AudioPause" = playerctl "pause";
                 "XF86AudioNext" = playerctl "next";
                 "XF86AudioPrev" = playerctl "previous";
-              };
-
-              resize = {
-                "${super}+${alt}+h" = "resize shrink width 18 px or 2 ppt";
-                "${super}+${alt}+j" = "resize grow height 18 px or 2 ppt";
-                "${super}+${alt}+k" = "resize shrink height 18 px or 2 ppt";
-                "${super}+${alt}+l" = "resize grow width 18 px or 2 ppt";
               };
 
               capture = {
@@ -295,8 +293,8 @@ in
 
         fonts = {
           names = [
-            "pango:${themeCfg.fonts.mono.name}"
-            "pango:${themeCfg.fonts.sans.name}"
+            "pango:${config.modules.theme.fonts.mono.name}"
+            "pango:${config.modules.theme.fonts.sans.name}"
             "FontAwesome"
           ];
           size = 10.0;
@@ -321,23 +319,23 @@ in
 
         floating = {
           criteria = [
-            { class = "notify"; }
-            { class = "pop-up"; }
-            { class = "kitty-one"; }
-            { class = "kitty-floating"; }
             { class = "1Password.*"; }
-            { class = "Qalculate.*"; }
-            { class = "System76 Keyboard Configurator"; }
-            { class = "blueman-manager"; }
-            { class = "nm-connection-editor"; }
-            { class = "obs"; }
-            { class = "Pavucontrol"; }
-            { class = "syncthingtray"; }
-            { class = "Thunar"; }
-            { class = "file-manager"; }
             { class = "Gcolor*"; }
-            { class = "zoom"; }
+            { class = "Pavucontrol"; }
+            { class = "Qalculate.*"; }
             { class = "Ranger"; }
+            { class = "System76 Keyboard Configurator"; }
+            { class = "Thunar"; }
+            { class = "blueman-manager"; }
+            { class = "file-manager"; }
+            { class = "kitty-floating"; }
+            { class = "kitty-one"; }
+            { class = "nm-connection-editor"; }
+            { class = "notification*"; }
+            { class = "obs"; }
+            { class = "pop-up"; }
+            { class = "syncthingtray"; }
+            { class = "zoom"; }
             { title = "Artha"; }
             { title = "Calculator"; }
             { title = "Event Tester"; } # i.e. xev
@@ -365,11 +363,11 @@ in
             always = true;
             notification = false;
           })
-          {
+          (mkIf config.services.polybar.enable {
             command = "systemctl --user restart polybar";
             always = true;
             notification = false;
-          }
+          })
           {
             command = "${./i3-focus-marker.sh}";
             always = true;
@@ -382,22 +380,38 @@ in
       };
 
       extraConfig = ''
-        for_window [class="kitty-one"] move position center
+        set $mod ${super}
+        set $alt ${alt}
+        set $bar_height ${toString barHeight}
 
         # Only enable outer gaps when there is exactly one window or split container on the workspace.
         smart_gaps inverse_outer
 
-        # Notification menu
-        set $mode_notify dunst: [RET] action [+RET] context  [k|n] close [K] close-all [p] history-pop [t] (un)pause [q] exit
+        default_orientation auto
 
-        mode --pango_markup "$mode_notify" {
-            bindsym Return       exec "dunstctl action 0"       ; mode "default"
-            bindsym Shift+Return exec dunstctl context          ; mode "default"
-            bindsym k            exec dunstctl close            ; mode "default"
-            bindsym Shift+k      exec dunstctl close-all        ; mode "default"
+        for_window [class="kitty-one"] move position center
+
+        for_window [window_type="dialog,utility,toolbar,splash,menu,dropdown_menu,popup_menu,tooltip,notification,dock,prefwindow"] floating enable, border pixel 1
+
+        for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
+
+        for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
+
+        for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, move position center
+
+        for_window [class="(?i)pavucontrol"] floating enable, move position mouse
+
+        # Notification menu
+        set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
+
+        mode --pango_markup "$mode_notifications" {
+            bindsym Return       exec "dunstctl action 0"        , mode "default"
+            bindsym Shift+Return exec dunstctl context           , mode "default"
+            bindsym k            exec dunstctl close             , mode "default"
+            bindsym Shift+k      exec dunstctl close-all         , mode "default"
+            bindsym z            exec dunstctl set-paused toggle , mode "default"
             bindsym n            exec dunstctl close
             bindsym p            exec dunstctl history-pop
-            bindsym t            exec dunstctl set-paused toggle; mode "default"
 
             bindsym q mode "default"
             bindsym Escape mode "default"
@@ -449,10 +463,12 @@ in
 
         bindsym ${super}+Shift+g mode "$mode_gaps"
 
-        for_window [window_type="dialog,utility,toolbar,splash,menu,dropdown_menu,popup_menu,tooltip,notification,dock,prefwindow"] floating enable border pixel 1
-        for_window [class="Lxappearance"] floating enable sticky enable border normal
-        for_window [class="Nitrogen"] floating enable sticky enable border normal
+        # The middle button and a modifier over any part of the window kills the window
+        bindsym --whole-window $mod+${middleMouseButton} kill
 
+        # The side buttons move the window around
+        bindsym button9 move left
+        bindsym button8 move right
       '';
     };
   };

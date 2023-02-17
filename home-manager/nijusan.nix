@@ -21,6 +21,15 @@
     ../nix/modules/desktop/i3
   ];
 
+
+  modules.spellcheck.enable = true;
+
+  modules.desktop.i3.enable = true;
+
+  modules.theme = {
+    active = "arc";
+  };
+
   programs.rofi.enable = true;
 
   programs.the-way = {
@@ -31,20 +40,14 @@
 
   services.dunst.enable = true;
 
+  services.polybar.enable = true;
+
   services.picom.enable = true;
-
-  modules.spellcheck.enable = true;
-
-  modules.desktop.i3.enable = true;
 
   # TODO define option for default browser
   home.sessionVariables.BROWSER = "${lib.getExe config.programs.google-chrome.package}";
 
   gtk.enable = true;
-
-  modules.theme = {
-    active = "arc";
-  };
 
   home.packages = with pkgs; [
     btrfs-progs
@@ -53,5 +56,4 @@
   ];
 
   home.stateVersion = "22.11";
-
 }

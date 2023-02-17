@@ -136,6 +136,9 @@ in
       deno
       nodePackages.typescript
 
+      # graphql
+      nodePackages.graphql-language-service-cli
+
       # json
       jq
       jless
