@@ -137,7 +137,6 @@
     enableSshSupport = true;
     defaultCacheTtl = lib.mkDefault 86400;
     maxCacheTtl = lib.mkDefault 86400;
-    pinentryFlavor = lib.mkDefault "gtk2";
     extraConfig = ''
       allow-emacs-pinentry
       allow-loopback-pinentry
