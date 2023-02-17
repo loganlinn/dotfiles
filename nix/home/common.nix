@@ -1,11 +1,6 @@
+{ config, lib, pkgs, ... }:
+
 {
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
-  inherit (lib) optional;
-in {
   imports =
     [
       ./accounts.nix
@@ -48,6 +43,12 @@ in {
     xh
     zenith
     zip
+  ] ++ lib.options pkgs.stdenv.isLinux [
+    cached-nix-shell
+    sysz
+    trash-cli
+    (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
+    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
   ];
 
   home.sessionVariables = {
@@ -130,20 +131,9 @@ in {
 
   programs.tealdeer.enable = true; # tldr command
 
-}
-// (lib.mkIf pkgs.stdenv.isLinux {
-
-  home.packages = with pkgs; [
-    cached-nix-shell
-    sysz
-    trash-cli
-    (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
-    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
-  ];
-
   # requires systemd
   services.gpg-agent = {
-    enable = true;
+    enable = pkgs.stdenv.isLinux;
     enableSshSupport = true;
     defaultCacheTtl = lib.mkDefault 86400;
     maxCacheTtl = lib.mkDefault 86400;
@@ -154,8 +144,4 @@ in {
     '';
   };
 
-})
-// (lib.mkIf pkgs.stdenv.isDarwin {
-
-
-})
+}
