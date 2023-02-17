@@ -43,7 +43,7 @@
     xh
     zenith
     zip
-  ] ++ lib.options pkgs.stdenv.isLinux [
+  ] ++ lib.optionals pkgs.stdenv.isLinux [
     cached-nix-shell
     sysz
     trash-cli
