@@ -12,7 +12,7 @@ let
 
   cfg = config.modules.desktop.i3;
 
-  barHeight = 36; # TODO option shared w/ (poly)bar config
+  barHeight = 40; # TODO option shared w/ (poly)bar config
 
   super = "Mod4";
   alt = "Mod1";
@@ -66,11 +66,6 @@ in
                 "${super}+j" = "focus down";
                 "${super}+k" = "focus up";
                 "${super}+l" = "focus right";
-              };
-
-              resize = {
-                "${super}+r" = "mode resize";
-                "${super}+equal" = "exec i3_balance_workspace";
               };
 
               browser = let chrome = "google-chrome-stable"; in
@@ -391,8 +386,6 @@ in
 
         for_window [class="kitty-one"] move position center
 
-        for_window [window_type="dialog,utility,toolbar,splash,menu,dropdown_menu,popup_menu,tooltip,notification,dock,prefwindow"] floating enable, border pixel 1
-
         for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
 
         for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
@@ -424,44 +417,105 @@ in
         set $mode_gaps_inner Inner Gaps (k/Up) grow locally, (K/Shift+Up) grow globally
 
         mode "$mode_gaps" {
-                bindsym o           mode "$mode_gaps_outer"
-                bindsym i           mode "$mode_gaps_inner"
-                bindsym Return      mode "$mode_gaps"
-                bindsym Escape      mode "default"
+            bindsym o           mode "$mode_gaps_outer"
+            bindsym i           mode "$mode_gaps_inner"
+            bindsym Return      mode "$mode_gaps"
+            bindsym Escape      mode "default"
+            bindsym Ctrl+c      mode "default"
+            bindsym Ctrl+g      mode "default"
         }
-
         mode "$mode_gaps_outer" {
-                bindsym k           gaps outer current plus 5
-                bindsym j           gaps outer current minus 5
-                bindsym Up          gaps outer current plus 5
-                bindsym Down        gaps outer current minus 5
+            bindsym k           gaps outer current plus 5
+            bindsym j           gaps outer current minus 5
+            bindsym Up          gaps outer current plus 5
+            bindsym Down        gaps outer current minus 5
 
-                bindsym Shift+k     gaps outer all plus 5
-                bindsym Shift+j     gaps outer all minus 5
-                bindsym Shift+Up    gaps outer all plus 5
-                bindsym Shift+Down  gaps outer all minus 5
+            bindsym Shift+k     gaps outer all plus 5
+            bindsym Shift+j     gaps outer all minus 5
+            bindsym Shift+Up    gaps outer all plus 5
+            bindsym Shift+Down  gaps outer all minus 5
 
-                bindsym Return      mode "$mode_gaps"
-                bindsym Escape      mode "default"
+            bindsym Tab         mode "$mode_gaps_inner"
+            bindsym Return      mode "$mode_gaps"
+            bindsym Escape      mode "default"
+            bindsym Ctrl+c      mode "default"
+            bindsym Ctrl+g      mode "default"
         }
         mode "$mode_gaps_inner" {
-                bindsym k          gaps inner current plus 5
-                bindsym j          gaps inner current minus 5
-                # same bindings, but for the arrow keys
-                bindsym Up         gaps inner current plus 5
-                bindsym Down       gaps inner current minus 5
+            bindsym k          gaps inner current plus 5
+            bindsym j          gaps inner current minus 5
+            # same bindings, but for the arrow keys
+            bindsym Up         gaps inner current plus 5
+            bindsym Down       gaps inner current minus 5
 
-                bindsym Shift+k    gaps inner all plus 5
-                bindsym Shift+j    gaps inner all minus 5
-                # same keybindings, but for the arrow keys
-                bindsym Shift+Up   gaps inner all plus 5
-                bindsym Shift+Down gaps inner all minus 5
+            bindsym Shift+k    gaps inner all plus 5
+            bindsym Shift+j    gaps inner all minus 5
+            # same keybindings, but for the arrow keys
+            bindsym Shift+Up   gaps inner all plus 5
+            bindsym Shift+Down gaps inner all minus 5
 
-                bindsym Return     mode "$mode_gaps"
-                bindsym Escape     mode "default"
+            bindsym Tab         mode "$mode_gaps_outer"
+            bindsym Return      mode "$mode_gaps"
+            bindsym Escape      mode "default"
+            bindsym Ctrl+c      mode "default"
+            bindsym Ctrl+g      mode "default"
+        }
+        bindsym $mod+Shift+g mode "$mode_gaps"
+
+        set $mode_resize Resize (w)ider, (n)arrower, (s)horter, (t)aller, (=) balance, (g)aps,
+        mode "$mode_resize" {
+            bindsym w resize grow width 8 px or 1 ppt
+            bindsym n resize shrink width 8 px or 1 ppt
+            bindsym s resize shrink height 8 px or 1 ppt
+            bindsym t resize grow height 8 px or 1 ppt
+
+            bindsym Shift+w resize grow width 24 px or 3 ppt
+            bindsym Shift+n resize shrink width 24 px or 3 ppt
+            bindsym Shift+t resize grow height 24 px or 3 ppt
+            bindsym Shift+s resize shrink height 24 px or 3 ppt
+
+            bindsym h resize grow width 8 px or 1 ppt
+            bindsym j resize shrink height 8 px or 1 ppt
+            bindsym k resize grow height 8 px or 1 ppt
+            bindsym l resize shrink width 8 px or 1 ppt
+
+            bindsym Shift+h resize shrink width 24 px or 3 ppt
+            bindsym Shift+j resize grow height 24 px or 3 ppt
+            bindsym Shift+k resize shrink height 24 px or 3 ppt
+            bindsym Shift+l resize grow width 24 px or 3 ppt
+
+            bindsym $mod+h focus left
+            bindsym $mod+j focus down
+            bindsym $mod+k focus up
+            bindsym $mod+l focus right
+
+            bindsym # Move position by mouse
+            bindsym button1 move position mouse
+            bindsym button2 exec ${./scripts/draw-resize.sh}
+            bindsym button4 move up 1 ppt
+            bindsym button5 move down 1 ppt
+            bindsym button6 move right 1 ppt
+            bindsym button7 move left 1 ppt
+
+            bindsym g mode "$mode_gaps"
+            bindsym = exec i3_balance_workspace;
+
+            bindsym plus resize grow width 10 px or 1 ppt, resize grow height 10px or 1 ppt
+            bindsym minus resize shrink width 10 px or 1 ppt, resize shrink height 10px or 1 ppt
+            bindsym 0 floating enable, resize set width 50 ppt height 50 ppt, move position center, mode "default"
+            bindsym 1 floating enable, resize set width 33 ppt height 97 ppt, move position 0 ppt $bar_height px, mode "default"
+            bindsym 2 floating enable, resize set width 33 ppt height 97 ppt, move position 33 ppt $bar_height px, mode "default"
+            bindsym 3 floating enable, resize set width 33 ppt height 97 ppt, move position 67 ppt $bar_height px, mode "default"
+
+            bindsym $mod+r mode default
+            bindsym Escape mode default
+            bindsym Ctrl+c mode default
+            bindsym Ctrl+g mode default
         }
 
-        bindsym ${super}+Shift+g mode "$mode_gaps"
+        bindsym $mod+r mode "$mode_resize"
+
+        bindsym $mod+equal exec i3_balance_workspace;
 
         # The middle button and a modifier over any part of the window kills the window
         bindsym --whole-window $mod+${middleMouseButton} kill
