@@ -40,7 +40,14 @@ in
               echo $i
             }
 
-            i3-msg workspace "$(next_workspace_num)"
+            ws="$(next_workspace_num)"
+            case "$1" in
+            focus) i3-msg "workspace number $ws" ;;
+            move)  i3-msg "move container to workspace number $ws" ;;
+            carry) i3-msg "move container to workspace number $ws, workspace number $ws" ;;
+            *) echo "usage: $(basename "$0") <focus|move|carry>" >&2; exit 1 ;;
+            esac
+
           '';
         })
       ] ++ (

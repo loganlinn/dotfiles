@@ -119,6 +119,7 @@ in
                 "${super}+Tab" = "workspace back_and_forth";
                 "${super}+Left" = "workspace prev";
                 "${super}+Right" = "workspace next";
+                "${super}+minus" = "exec --no-startup-id i3-next-workspace focus";
                 "${super}+bracketleft" = "workspace prev";
                 "${super}+bracketright" = "workspace next";
                 "${super}+${scrollWheelUp}" = "workspace next";
@@ -170,6 +171,7 @@ in
                 "${super}+Shift+Ctrl+8" = "move container to workspace number 18";
                 "${super}+Shift+Ctrl+9" = "move container to workspace number 19";
                 "${super}+Shift+Ctrl+0" = "move container to workspace number 20";
+                "${super}+Shift+minus" = "exec --no-startup-id i3-next-workspace move";
               };
 
               carryWindowToWorkspace = {
@@ -192,6 +194,7 @@ in
                 "${super}+${alt}+Ctrl+7" = "move container to workspace number 17; workspace number 17";
                 "${super}+${alt}+Ctrl+8" = "move container to workspace number 18; workspace number 18";
                 "${super}+${alt}+Ctrl+9" = "move container to workspace number 19; workspace number 19";
+                "${super}+${alt}+minus" = "exec --no-startup-id i3-next-workspace carry";
               };
 
               modifyWorkspace = {
@@ -224,7 +227,7 @@ in
               layout = {
                 "${super}+f" = "floating toggle";
                 "${super}+t" = "layout toggle split";
-                "${super}+Shift+t" = "layout toggle all";
+                "${super}+Shift+t" = "layout toggle all"; # TODO a mode would be more efficient
               };
 
               scratchpad = {
