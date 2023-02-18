@@ -60,17 +60,16 @@ in
           "dunst-snooze"
         ];
 
-        tray-position = "right";
+        # tray-position = "right";
+        tray-position = "none";
         tray-padding = 2;
         tray-detached = false;
         tray-maxsize = 18;
-        tray-background = "#00${config.colorScheme.colors.base00}";
 
         width = "100%";
         height = "36";
         bottom = false;
         radius = 0;
-
 
         font-size = "10";
         # padding = 1;
