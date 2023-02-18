@@ -264,6 +264,7 @@ in
         format-warn = "<label-warn> <ramp>";
         format-warn-background = "\${colors.base00}";
         format-warn-foreground = "\${colors.base06}";
+        format-warn-padding = 2;
         label = "%temperature-c%";
         label-warn = "%temperature-c%";
         ramp-0 = "";
@@ -311,6 +312,14 @@ in
         env-COLOR_PAUSED_FG = config.colorScheme.colors.base01;
       };
     };
+
+    extraConfig = ''
+
+      ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in
+        lib.optionalString (lib.pathExists extraConfigDir)
+          "include-directory = ${extraConfigDir}"}
+
+    '';
 
     script = ''
       polybar &
