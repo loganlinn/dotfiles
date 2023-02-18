@@ -24,6 +24,25 @@ in
       [
         i3-layout-manager
         (pkgs.callPackage ../../../pkgs/i3-balance-workspace.nix { })
+        (writeShellApplication {
+          name = "i3-next-workspace";
+          runtimeInputs = [ pkgs.jq ];
+          text = ''
+            function next_workspace_num() {
+              local i=1
+              while read -r ws; do
+                if (( i != ws )); then
+                  echo $i
+                  return
+                fi
+                i=$((i+1))
+              done < <(i3-msg -t get_workspaces | jq '.[] | .num')
+              echo $i
+            }
+
+            i3-msg workspace "$(next_workspace_num)"
+          '';
+        })
       ] ++ (
         # Create shell script for each i3-msg message type
         # i.e. `i3-config`, `i3-marks`, `i3-outputs`, etc
