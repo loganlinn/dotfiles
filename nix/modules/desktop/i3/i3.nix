@@ -76,8 +76,7 @@ in
                 };
 
               explorer = {
-                "${super}+f" = ''exec --no-startup-id kitty --class Ranger ${pkgs.ranger}/bin/ranger'';
-                "${super}+Shift+f" = ''exec thunar'';
+                "${super}+Shift+n" = ''exec --no-startup-id kitty --class Ranger ${pkgs.ranger}/bin/ranger'';
               };
 
               editor = {
@@ -101,7 +100,6 @@ in
 
               notifications = {
                 "${super}+n" = ''mode "$mode_notification"'';
-                "${super}+Shift+n" = ''exec dunstctl set-paused toggle'';
               };
 
               focusWorkspaceAbsolute = {
@@ -224,8 +222,9 @@ in
 
               ## Modify // Window layout
               layout = {
-                "${super}+t" = "floating toggle";
-                "${super}+Shift+t" = "layout toggle tabbed splith splitv";
+                "${super}+f" = "floating toggle";
+                "${super}+t" = "layout toggle split";
+                "${super}+Shift+t" = "layout toggle all";
               };
 
               scratchpad = {
@@ -318,7 +317,6 @@ in
             { class = "Gcolor*"; }
             { class = "Pavucontrol"; }
             { class = "Qalculate.*"; }
-            { class = "Ranger"; }
             { class = "System76 Keyboard Configurator"; }
             { class = "Thunar"; }
             { class = "blueman-manager"; }
@@ -500,8 +498,8 @@ in
             bindsym g mode "$mode_gaps"
             bindsym = exec i3_balance_workspace;
 
-            bindsym plus resize grow width 10 px or 1 ppt, resize grow height 10px or 1 ppt
-            bindsym minus resize shrink width 10 px or 1 ppt, resize shrink height 10px or 1 ppt
+            bindsym plus resize grow width 10 px or 2 ppt, resize grow height 10px or 2 ppt
+            bindsym minus resize shrink width 10 px or 2 ppt, resize shrink height 10px or 2 ppt
             bindsym 0 floating enable, resize set width 50 ppt height 50 ppt, move position center, mode "default"
             bindsym 1 floating enable, resize set width 33 ppt height 97 ppt, move position 0 ppt $bar_height px, mode "default"
             bindsym 2 floating enable, resize set width 33 ppt height 97 ppt, move position 33 ppt $bar_height px, mode "default"
