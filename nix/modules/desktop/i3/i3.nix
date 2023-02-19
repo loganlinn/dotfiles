@@ -333,6 +333,7 @@ in
             { class = "syncthingtray"; }
             { class = "zoom"; }
             { title = "Artha"; }
+            { title = "Screen Layout Editor"; } # i.e. arandr
             { title = "Calculator"; }
             { title = "Event Tester"; } # i.e. xev
             { title = "Steam.*"; }

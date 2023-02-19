@@ -88,6 +88,7 @@ in
       };
 
       home.packages = with pkgs; [
+        arandr
         gtk3
         desktop-file-utils # update-desktop-database
         libnotify
