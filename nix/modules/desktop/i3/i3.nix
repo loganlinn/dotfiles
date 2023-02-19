@@ -380,11 +380,24 @@ in
         set $mod ${super}
         set $alt ${alt}
         set $bar_height ${toString barHeight}
+        set $output1 DP-0
+        set $output2 DP-2
 
         # Only enable outer gaps when there is exactly one window or split container on the workspace.
         smart_gaps inverse_outer
 
         default_orientation auto
+
+        workspace 1 output $output1
+        workspace 2 output $output1
+        workspace 3 output $output1
+        workspace 4 output $output1
+        workspace 5 output $output1
+        workspace 6 output $output1
+        workspace 7 output $output1
+        workspace 8 output $output1
+        workspace 9 output $output1
+        workspace 0 output $output2
 
         for_window [class="kitty-one"] move position center
 
