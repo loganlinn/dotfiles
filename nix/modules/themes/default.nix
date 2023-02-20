@@ -51,21 +51,21 @@ in
         type = fontType;
         default = {
           name = "FiraCode Nerd Font Mono";
-          size = 12;
+          size = 11;
         };
       };
       serif = mkOption {
         type = fontType;
         default = {
           name = "NotoSerif Nerd Font";
-          size = 12;
+          size = 11;
         };
       };
       sans = mkOption {
         type = fontType;
         default = {
           name = "NotoSans Nerd Font";
-          size = 12;
+          size = 11;
         };
       };
     };

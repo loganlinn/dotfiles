@@ -3,17 +3,50 @@
 # with lib;
 
 let
+  inherit (builtins)
+    isNull
+    toString
+    ;
+  inherit (lib)
+    optionalString
+    ;
+
+  # Helpers for format tags
+  # - https://github.com/polybar/polybar/wiki/Formatting
+  # - https://github.com/LemonBoy/bar#formatting
+  withBackground = color: text: "%{B${color}}${text}%{B-}";
+  withForeground = color: text: "%{F${color}}${text}%{F-}";
+  withUnderline = color: text: "%{u${color}}%{+u}${text}%{u-}";
+  withOverline = color: text: "%{o${color}}%{+o}${text}%{o-}";
+  withReverse = text: "%{R}${text}%{R}";
+  withFont = index: text: "%{T${index}}${text}%{T-}"; # NOTE: 1-based indexing
+  withOffset = size: text: "%{O${size}}${text}";
+  withRightAlign = text: "%{r}${text}%{r-}";
+  withCenterAlign = text: "%{c}${text}%{c-}";
+  withLeftAlign = text: "%{l}${text}%{l-}";
+  withAction = button: command: text: "%{A${builtins.toString button}:${lib.escape [":"] command}:}${text}%{A}";
+  withLeftClick = withAction 1;
+  withMiddleClick = withAction 2;
+  withRightClick = withAction 3;
+  withScrollUp = withAction 4;
+  withScrollDown = withAction 5;
+  withDoubleLeftClick = withAction 6;
+  withDoubleMiddleClick = withAction 7;
+  withDoubleRightClick = withAction 8;
 
   # common module gen function
   module = type: config: {
     inherit type;
+    background = "\${colors.base00}";
+    foreground = "\${colors.base06}";
     format-padding = 2;
     format-prefix-foreground = "\${colors.base04}";
     format-suffix-foreground = "\${colors.base04}";
     format-background = "\${colors.base00}";
     format-foreground = "\${colors.base06}";
-    radius = 4;
   } // config;
+
+  polybar-msg = "${config.services.polybar.package}/bin/polybar-msg";
 
 in
 {
@@ -26,7 +59,7 @@ in
     package = pkgs.polybarFull;
 
     script = ''
-      polybar "$(${pkgs.nettools}/bin/hostname)" 2>&1 | tee /tmp/polybar.log &
+      polybar --log=trace "$(${pkgs.nettools}/bin/hostname)" 2>&1 | tee /tmp/polybar.log &
     '';
 
     config = {
@@ -84,8 +117,7 @@ in
 
         font-0 = "${config.modules.theme.fonts.mono.name}:size=10;3";
         font-1 = "${config.modules.theme.fonts.mono.name}:size=10:style=Bold;3";
-        font-2 = "Font Awesome:size=11;2";
-        font-3 = "Symbols-Nerd-Font:size=20;3";
+        font-2 = "Font Awesome:size=12;2";
 
         cursor-click = "pointer"; # hand
         cursor-scroll = "ns-resize"; # arrows
@@ -288,40 +320,80 @@ in
         ramp-7-foreground = "\${colors.base08}";
       };
 
-      "module/dunst" = module "custom/script" {
-        exec = "${pkgs.writeShellScript "dunst" ''
-          if [[ $(dunstctl is-paused) = "true" ]]; then
-            label=""
-            waiting=$(dunstctl count waiting)
-            if [[ $waiting -gt 0 ]]; then
-              label="$label x$waiting"
-            fi
-            echo "%{B#$COLOR_PAUSED_BG}%{F#$COLOR_PAUSED_FG}$label%{B- F-}"
-          else
-            echo ""
-          fi
-        ''}";
-        format = "<label>";
-        format-padding = 3;
-        label = "%output:3%";
-        label-font = 3;
-        click-left = "dunstctl set-paused toggle";
-        click-middle = "dunstctl close-all";
-        click-right = "dunstctl context";
-        scroll-up = "dunstctl close";
-        scroll-down = "dunstctl history-pop";
-        interval = 2;
-        env-COLOR_PAUSED_BG = config.colorScheme.colors.base0E;
-        env-COLOR_PAUSED_FG = config.colorScheme.colors.base01;
-      };
+      "module/dunst" =
+        let
+          dunst-module = pkgs.writeShellApplication {
+            name = "dunst-module";
+
+            runtimeInputs = [
+              config.services.polybar.package # polybar-msg
+              config.services.dunst.package # dunstctl
+              pkgs.dbus # dbus-send (needed by dunstctl)
+              pkgs.procps # pgrep
+              pkgs.coreutils # sleep
+            ];
+
+            text = ''
+              readonly SPACER="   "
+
+              function printActive() {
+                echo -n '%{A1:dunstctl set-paused toggle:}' # left click
+                echo -n '%{A2:dunstctl close-all:}'         # middle click
+                echo -n '%{A3:dunstctl context:}'           # right click
+                echo -n '%{A4:dunstctl close:}'             # scroll up
+                echo -n '%{A5:dunstctl history-pop:}'       # scroll down
+                echo -n '%{T3}'
+                echo -n '%{B#${config.colorScheme.colors.base00}}'
+                echo -n '%{F#${config.colorScheme.colors.base06}}'
+                echo -n "$SPACER"
+                echo -n ''
+                echo -n "$SPACER"
+                echo -n '%{A}'
+                echo -n '%{A}'
+                echo -n '%{A}'
+                echo -n '%{A}'
+                echo -n '%{A}'
+              }
+
+              function printPaused() {
+                local num_waiting
+                num_waiting=$(dunstctl count waiting)
+
+                echo -n '%{A1:dunstctl set-paused toggle:}' # left click
+                echo -n '%{T3}'
+                echo -n '%{B#${config.colorScheme.colors.base0E}}'
+                echo -n '%{F#${config.colorScheme.colors.base01}}'
+                echo -n "$SPACER"
+                echo -n ''
+                (( num_waiting == 0 )) || echo -n " ($num_waiting)"
+                echo -n "$SPACER"
+                echo -n '%{A}'
+              }
+
+              while :; do
+                if [[ $(dunstctl is-paused) != "true" ]]; then
+                  printActive
+                else
+                  printPaused
+                fi
+                echo
+                sleep 1
+              done
+            '';
+          };
+        in
+        {
+          type = "custom/script";
+          exec = "${dunst-module}/bin/dunst-module";
+          tail = true;
+          label-alignment = "center";
+        };
     };
-
-    extraConfig = ''
-
-      ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in
-        lib.optionalString (lib.pathExists extraConfigDir)
-          "include-directory = ${extraConfigDir}"}
-
-    '';
   };
+
+  # extraConfig = ''
+  #   ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in
+  #     lib.optionalString (lib.pathExists extraConfigDir)
+  #       "include-directory = ${extraConfigDir}"}
+  # '';
 }

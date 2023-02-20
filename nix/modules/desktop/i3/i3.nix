@@ -39,9 +39,10 @@ in
     };
 
   };
+
   config = {
     xsession.windowManager.i3 = {
-      config = lib.mkOptionDefault rec {
+      config = lib.mkOptionDefault {
 
         modifier = super;
 
@@ -54,7 +55,7 @@ in
                   "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
                 "${super}+Ctrl+c" = "restart";
                 "${super}+Shift+c" = "reload";
-                "${super}+Shift+p" = ''exec --no-startup-id i3-msg exit, mode "default"'';
+                # "${super}+Shift+p" = ''exec --no-startup-id i3-msg exit'';
                 "${super}+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
                 "${super}+F2;" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
               } // optionalAttrs (!isNull cfg.locker) {
@@ -409,7 +410,7 @@ in
 
         for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, move position center
 
-        for_window [class="(?i)pavucontrol"] floating enable, move position mouse
+        for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
 
         # Notification menu
         set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit

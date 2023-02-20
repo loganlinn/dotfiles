@@ -66,9 +66,19 @@ in
           hide_duplicate_count = false;
           show_indicators = true; # Show an indicator if a notification contains actions and/or open-able URLs. See ACTIONS below for further details.
 
+          # | action        | description
+          # |---------------|------------
+          # | none          | Don't do anything.
+          # | do_action     | Invoke the action determined by the action_name rule. If there is no such action, open the context menu.
+          # | open_url      | If the notification has exactly one url, open it. If there are multiple ones, open the context menu.
+          # | close_current | Close current notification.
+          # | close_all     | Close all notifications.
+          # | context       | Open context menu for the notification.
+          # | context_all   | Open context menu for all notifications.
+          #
           mouse_left_click = "open_url, close_current";
-          mouse_middle_click = "close_all";
-          mouse_right_click = "close_curent";
+          mouse_middle_click = "close_current";
+          mouse_right_click = "context";
 
           frame_color = "#${colors.base01}";
           separator_color = "auto";
