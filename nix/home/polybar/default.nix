@@ -25,6 +25,10 @@ in
 
     package = pkgs.polybarFull;
 
+    script = ''
+      polybar "$(${pkgs.nettools}/bin/hostname)" 2>&1 | tee /tmp/polybar.log &
+    '';
+
     config = {
 
       settings = {
@@ -44,20 +48,20 @@ in
         margin-bottom = 2;
       };
 
-      "bar/top" = {
+      "bar/nijusan" = {
         modules-left = [
           "i3"
-          "title"
         ];
         modules-center = [
-          "date"
+          "title"
         ];
         modules-right = [
           "memory"
           "cpu"
           "temperature"
           "pulseaudio"
-          "dunst-snooze"
+          "dunst"
+          "date"
         ];
 
         # tray-position = "right";
@@ -318,10 +322,6 @@ in
         lib.optionalString (lib.pathExists extraConfigDir)
           "include-directory = ${extraConfigDir}"}
 
-    '';
-
-    script = ''
-      polybar &
     '';
   };
 }

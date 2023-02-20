@@ -383,6 +383,8 @@ in
         set $output1 DP-0
         set $output2 DP-2
 
+        include ${config.xdg.configHome}/i3/config.d/*.conf
+
         # Only enable outer gaps when there is exactly one window or split container on the workspace.
         smart_gaps inverse_outer
 
@@ -397,7 +399,7 @@ in
         workspace 7 output $output1
         workspace 8 output $output1
         workspace 9 output $output1
-        workspace 0 output $output2
+        workspace 0 output $output2 $output1
 
         for_window [class="kitty-one"] move position center
 
