@@ -59,7 +59,7 @@ in
     package = pkgs.polybarFull;
 
     script = ''
-      polybar --log=trace "$(${pkgs.nettools}/bin/hostname)" 2>&1 | tee /tmp/polybar.log &
+      polybar --log=info "$(${pkgs.nettools}/bin/hostname)" 2>&1 | tee /tmp/polybar.log &
     '';
 
     config = {
