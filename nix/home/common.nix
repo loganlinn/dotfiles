@@ -103,6 +103,7 @@
       whitelist = {
         prefix = [
           "${config.home.homeDirectory}/.dotfiles"
+          "${config.home.homeDirectory}/src/github.com/loganlinn"
         ];
       };
     };
