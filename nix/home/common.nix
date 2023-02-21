@@ -44,7 +44,7 @@
     tree
     unzip
     xh
-    zenith # htop-like, supports nvidia
+    zenith-nvidia # htop-like, supports nvidia
     zip
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     cached-nix-shell
