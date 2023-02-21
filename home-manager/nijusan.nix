@@ -37,7 +37,7 @@ in
   modules.theme = {
     active = "arc";
 
-    wallpaper = ../wallpaper/wallhaven-kx79w6.png;
+    wallpaper = ../wallpaper/wallhaven-weq8y7.png;
     # wallpaper = nixWallpaperFromScheme {
     #   scheme = config.colorscheme;
     #   width = 3840;

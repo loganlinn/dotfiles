@@ -81,9 +81,9 @@ in
           background-alt = "\${colors.base01}";
           background-selection = "\${colors.base02}";
           background-highlight = "\${colors.base03}";
-          foreground-dark = "\${colors.base03}";
-          foreground = "\${colors.base04}";
-          foreground-light = "\${colors.base05}";
+          foreground-dark = "\${colors.base04}";
+          foreground = "\${colors.base05}";
+          foreground-light = "\${colors.base06}";
           primary = "\${colors.base0D}";
           secondary = "\${colors.base0A}";
           ok = "\${colors.base0B}"; # i.e. diff added
@@ -192,6 +192,7 @@ in
           ramp-volume-1-font = 3;
           ramp-volume-2-font = 3;
           ramp-volume-3-font = 3;
+          ramp-volume-foreground = "\${colors.foreground-dark}";
           click-right = "${pkgs.pavucontrol}/bin/pavucontrol &";
         };
 
@@ -232,6 +233,7 @@ in
           label-unfocused = "%name%";
           # label-unfocused-background = "\${colors.base00}";
           # label-unfocused-foreground = "\${colors.base03}";
+          label-unfocused-foreground = "\${colors.foreground-dark}";
           label-unfocused-padding = 1;
 
           label-urgent = "%name%";
@@ -406,7 +408,7 @@ in
             type = "custom/script";
             exec = "${dunst-module}/bin/dunst-module";
             tail = true;
-            env-ACTIVE_FG = "\${colors.foreground}";
+            env-ACTIVE_FG = "\${colors.foreground-dark}";
             env-ACTIVE_BG = "\${colors.background}";
             env-PAUSED_FG = "\${colors.background-alt}";
             env-PAUSED_BG = "\${colors.warn}";

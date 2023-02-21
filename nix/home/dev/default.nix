@@ -175,4 +175,9 @@ in
       # system76-keyboard-configurator
 
     ];
+
+  xdg.configFile."ranger/rc.conf".text = ''
+    set vcs_aware false
+    map zg set vcs_aware true
+  '';
 }

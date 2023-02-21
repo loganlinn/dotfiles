@@ -161,8 +161,8 @@ in
             base00 = bg-alt;
             base01 = bg;
             base02 = dark-blue;
-            base03 = fg-alt; # dark-cyan
-            base04 = grey;
+            base03 = dark-cyan;
+            base04 = fg-alt;
             base05 = fg;
             base06 = base6;
             base07 = base7;

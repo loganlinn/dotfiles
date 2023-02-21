@@ -367,14 +367,13 @@ in
           newWindow = "focus";
         };
 
-        gaps = let x = 6; in
-          {
-            horizontal = x;
-            vertical = x;
-            inner = x;
-            outer = x;
-            # smartBorders = "no_gaps";
-          };
+        gaps = {
+          # horizontal = 6;
+          # vertical = 6;
+          inner = 6;
+          outer = 36;
+          # smartBorders = "no_gaps";
+        };
 
         floating = {
           border = 2;
