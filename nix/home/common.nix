@@ -30,6 +30,7 @@
     gnused
     gnutar
     gnutls
+    gping
     gzip
     moreutils
     neofetch
