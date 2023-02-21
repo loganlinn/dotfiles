@@ -89,7 +89,7 @@ in
           frame_color = "#${colors.base01}";
           separator_color = "auto";
 
-          background = "#${colors.base00}";
+          background = "#${colors.base01}";
           foreground = "#${colors.base05}";
         };
 

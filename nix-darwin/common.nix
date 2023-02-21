@@ -18,7 +18,7 @@ in
 
     services.nix-daemon.enable = mkOptionDefault true;
 
-    home-manager = mkOptionDefualt {
+    home-manager = mkOptionDefault {
       # By default, Home Manager uses a private pkgs instance that is configured via the home-manager.users.<name>.nixpkgs options.
       # Instead, use the global pkgs that is configured via the system level nixpkgs options.
       # This saves an extra Nixpkgs evaluation, adds consistency, and removes the dependency on NIX_PATH, which is otherwise used for importing Nixpkgs.
