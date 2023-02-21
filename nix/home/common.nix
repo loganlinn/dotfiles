@@ -22,30 +22,31 @@
     dig
     dogdns # dig on steroids
     dtrx # Do The Right Extraction
-    du-dust
-    fd
+    du-dust # du alternative
+    duf # df alternative
+    fd # find alternative
     gawk
     gnugrep
     gnumake
     gnused
     gnutar
     gnutls
-    gping
+    gping # ping alternative
     gzip
     moreutils
     neofetch
     pinentry
-    procs
-    rcm
-    ripgrep
+    procs # ps alternative
+    rcm # TODO no longer used (!)
+    ripgrep # grep alternative
     rlwrap
-    sd
-    silver-searcher
+    sd # sed alternative
+    silver-searcher # grep alternative
     sops
     tree
     unzip
-    xh
-    zenith-nvidia # htop-like, supports nvidia
+    xh # curl alternative
+    zenith-nvidia # htop alternative
     zip
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     cached-nix-shell
