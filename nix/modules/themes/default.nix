@@ -65,24 +65,24 @@ in
         type = fontType;
         default = {
           package = config.modules.fonts.nerdfonts.package;
-          name = "FiraCode Nerd Font Mono";
+          name = "JetBrainsMono Nerd Font Mono";
           size = 11;
         };
       };
       serif = mkOption {
         type = fontType;
         default = {
-          package = config.modules.fonts.nerdfonts.package;
-          name = "NotoSerif Nerd Font";
-          size = 11;
+          package = pkgs.noto-fonts;
+          name = "Noto Serif";
+          size = 10;
         };
       };
       sans = mkOption {
         type = fontType;
         default = {
           package = config.modules.fonts.nerdfonts.package;
-          name = "NotoSans Nerd Font";
-          size = 11;
+          name = "Noto Sans";
+          size = 10;
         };
       };
     };
@@ -197,14 +197,14 @@ in
         gtk.enable = true;
       };
 
-      xresources.properties = {
-        # Type of subpixel antialiasing (none, rgb, bgr, vrgb or vbgr)
-        "Xft.rgba" = "rgb";
-        "Xft.antialias" = "1";
-        "Xft.hinting" = "1";
-        "Xft.autohint" = "0";
-        "Xft.hintstyle" = "hintslight";
-      };
+      # xresources.properties = {
+      #   # Type of subpixel antialiasing (none, rgb, bgr, vrgb or vbgr)
+      #   "Xft.rgba" = "rgb";
+      #   "Xft.antialias" = "1";
+      #   "Xft.hinting" = "1";
+      #   "Xft.autohint" = "0";
+      #   "Xft.hintstyle" = "hintslight";
+      # };
 
       # similar to https://github.com/janoamaral/Xresources-themes
       xresources.extraConfig = ''
