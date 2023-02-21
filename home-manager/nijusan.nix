@@ -1,5 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, lib, nix-colors, ... }:
 
+let
+  inherit (nix-colors.lib-contrib { inherit pkgs; }) nixWallpaperFromScheme;
+in
 {
   imports = [
     ../nix
@@ -33,6 +36,14 @@
 
   modules.theme = {
     active = "arc";
+
+    wallpaper = ../wallpaper/wallhaven-kx79w6.png;
+    # wallpaper = nixWallpaperFromScheme {
+    #   scheme = config.colorscheme;
+    #   width = 3840;
+    #   height = 1600;
+    #   logoScale = 4.0;
+    # };
   };
 
   programs.rofi.enable = true;
@@ -53,6 +64,8 @@
   home.sessionVariables.BROWSER = "${lib.getExe config.programs.google-chrome.package}";
 
   gtk.enable = true;
+
+  # qt.enable = true;
 
   home.packages = with pkgs; [
     btrfs-progs

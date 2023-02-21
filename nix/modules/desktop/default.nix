@@ -121,6 +121,7 @@ in
         # x11
         xdotool # Fake keyboard/mouse input, window management, etc
         xclip
+        xscreensaver
 
         xorg.xev # Event viewer
         xorg.xkill

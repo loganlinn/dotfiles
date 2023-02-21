@@ -10,6 +10,12 @@ in
 {
   config = lib.mkIf config.services.dunst.enable {
     services.dunst = {
+      # configFile = "";
+
+      iconTheme = config.gtk.iconTheme;
+
+      # waylandDisplay = "";
+
       settings = rec {
         global = {
           browser = "${pkgs.xdg-utils}/bin/xdg-open";

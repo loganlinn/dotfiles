@@ -9,9 +9,6 @@ in
 
   config = lib.mkIf (cfg.active == "arc") {
 
-    # colorScheme = inputs.nix-colors.colorSchemes.nord; # ehhh
-    colorScheme = inputs.nix-colors.colorSchemes.onedark;
-
     gtk = {
       theme = {
         name = "Arc-Dark";

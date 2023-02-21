@@ -11,6 +11,7 @@ with lib;
 let
 
   cfg = config.modules.desktop.i3;
+  themeCfg = config.modules.theme;
 
   barHeight = 40; # TODO option shared w/ (poly)bar config
 
@@ -33,11 +34,25 @@ in
     # sessionLocker ?
     # ?
     # i3-input ? "i3-input -f 'pango:Victor Mono 12'"
-    locker = mkOption {
+    locker.exec = mkOption {
       type = with types; nullOr str;
       default = null;
     };
 
+    screenshot.exec = mkOption {
+      type = types.str;
+      default = "${config.services.flameshot.package}/bin/flameshot gui";
+    };
+
+    outputs.primary = mkOption {
+      type = types.str;
+      default = "DP-0";
+    };
+
+    outputs.secondary = mkOption {
+      type = with types; nullOr str;
+      default = "DP-2";
+    };
   };
 
   config = {
@@ -58,8 +73,8 @@ in
                 # "${super}+Shift+p" = ''exec --no-startup-id i3-msg exit'';
                 "${super}+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
                 "${super}+F2;" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
-              } // optionalAttrs (!isNull cfg.locker) {
-                "${super}+Escape" = "exec --no-startup-id ${cfg.locker}";
+              } // optionalAttrs (!isNull cfg.locker.exec) {
+                "${super}+Escape" = "exec --no-startup-id ${cfg.locker.exec}";
               };
 
               focusWindow = {
@@ -224,7 +239,7 @@ in
               layout = {
                 "${super}+f" = "floating toggle";
                 "${super}+t" = "layout toggle split";
-                "${super}+Shift+t" = "layout toggle all"; # TODO a mode would be more efficient
+                "${super}+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
               };
 
               scratchpad = {
@@ -243,8 +258,13 @@ in
                 "XF86AudioPrev" = playerctl "previous";
               };
 
+              backlight = {
+                "XF86MonBrightnessDown" = "exec xbacklight -dec 20";
+                "XF86MonBrightnessUp" = "exec xbacklight -inc 20";
+              };
+
               capture = {
-                "Print" = "exec ${config.services.flameshot.package}/bin/flameshot gui";
+                "Print" = "exec --no-startup-id ${cfg.screenshot.exec}";
               };
 
             };
@@ -287,11 +307,56 @@ in
 
         fonts = {
           names = [
-            "pango:${config.modules.theme.fonts.mono.name}"
-            "pango:${config.modules.theme.fonts.sans.name}"
+            "pango:${themeCfg.fonts.mono.name} ${toString themeCfg.fonts.mono.size}px"
+            "pango:${themeCfg.fonts.sans.name} ${toString themeCfg.fonts.sans.size}px"
             "FontAwesome"
           ];
           size = 10.0;
+        };
+
+        # colors = with config.colorScheme.colors; {
+        #   focused = {
+        #     border = "#${base02}";
+        #     background = "#${base01}";
+        #     text = "#${base05}";
+        #     indicator = "#${base04}";
+        #     childBorder = "#${base03}";
+        #   };
+        #   focusedInactive = {
+        #     border = "#${base02}";
+        #     background = "#${base01}";
+        #     text = "#${base05}";
+        #     indicator = "#${base03}";
+        #     childBorder = "#${base02}";
+        #   };
+        #   unfocused = {
+        #     border = "#${base01}";
+        #     background = "#${base00}";
+        #     text = "#${base04}";
+        #     indicator = "#${base01}";
+        #     childBorder = "#${base01}";
+        #   };
+        #   urgent = {
+        #     border = "#${base08}";
+        #     background = "#${base08}";
+        #     text = "#${base00}";
+        #     indicator = "#${base08}";
+        #     childBorder = "#${base08}";
+        #   };
+        #   placeholder = {
+        #     border = "#${base00}";
+        #     background = "#${base00}";
+        #     text = "#${base05}";
+        #     indicator = "#${base00}";
+        #     childBorder = "#${base00}";
+        #   };
+        #   background = "#${base00}";
+        # };
+
+        window = {
+          border = 2;
+          # commands = [ ];
+          titlebar = false;
         };
 
         focus = {
@@ -308,13 +373,15 @@ in
             vertical = x;
             inner = x;
             outer = x;
-            smartBorders = "no_gaps";
+            # smartBorders = "no_gaps";
           };
 
         floating = {
+          border = 2;
           criteria = [
             { class = "1Password.*"; }
             { class = "Gcolor*"; }
+            { class = "Gpick*"; }
             { class = "Pavucontrol"; }
             { class = "Qalculate.*"; }
             { class = "System76 Keyboard Configurator"; }
@@ -351,9 +418,22 @@ in
           "0" = [ ];
         };
 
+        workspaceOutputAssign = with cfg.outputs; [
+          { workspace = "1"; output = primary; }
+          { workspace = "2"; output = primary; }
+          { workspace = "3"; output = primary; }
+          { workspace = "4"; output = primary; }
+          { workspace = "5"; output = primary; }
+          { workspace = "6"; output = primary; }
+          { workspace = "7"; output = primary; }
+          { workspace = "8"; output = primary; }
+          { workspace = "9"; output = if secondary == null then primary else secondary; }
+          { workspace = "0"; output = if secondary == null then primary else secondary; }
+        ];
+
         startup = [
-          (mkIf (!isNull config.modules.theme.wallpaper) {
-            command = "${programs.feh.package}/bin/feh --bg-scale ${config.modules.theme.wallpaper}";
+          (mkIf (!isNull themeCfg.wallpaper) {
+            command = "${config.programs.feh.package}/bin/feh --no-fehbg --bg-fill ${themeCfg.wallpaper}";
             always = true;
             notification = false;
           })
@@ -377,8 +457,6 @@ in
         set $mod ${super}
         set $alt ${alt}
         set $bar_height ${toString barHeight}
-        set $output1 DP-0
-        set $output2 DP-2
 
         include ${config.xdg.configHome}/i3/config.d/*.conf
 
@@ -386,17 +464,6 @@ in
         smart_gaps inverse_outer
 
         default_orientation auto
-
-        workspace 1 output $output1
-        workspace 2 output $output1
-        workspace 3 output $output1
-        workspace 4 output $output1
-        workspace 5 output $output1
-        workspace 6 output $output1
-        workspace 7 output $output1
-        workspace 8 output $output1
-        workspace 9 output $output1
-        workspace 0 output $output2 $output1
 
         for_window [class="kitty-one"] move position center
 
@@ -537,6 +604,15 @@ in
         # The side buttons move the window around
         bindsym button9 move left
         bindsym button8 move right
+
+        # class                 border  backgr. text    indicator child_border
+        client.focused          #4c7899 #285577 #ffffff #2e9ef4   #285577
+        client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
+        client.unfocused        #333333 #222222 #888888 #292d2e   #222222
+        client.urgent           #2f343a #900000 #ffffff #900000   #900000
+        client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
+
+        client.background       #ffffff
       '';
     };
   };
