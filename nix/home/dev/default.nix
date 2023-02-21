@@ -132,7 +132,9 @@ in
       shards
 
       # javascript
+      # pnpm # Fast, disk space efficient package manager
       yarn
+      yarn-bash-completion
       deno
       nodePackages.typescript
 

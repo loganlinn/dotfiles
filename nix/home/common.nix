@@ -17,6 +17,7 @@
     binutils
     cmake
     coreutils-full # installs gnu versions
+    comma # github.com/nix-community/comma
     curl
     dtrx # Do The Right Extraction
     du-dust

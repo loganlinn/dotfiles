@@ -59,7 +59,8 @@ in
     package = pkgs.polybarFull;
 
     script = ''
-      polybar --log=info "$(${pkgs.nettools}/bin/hostname)" 2>&1 | tee /tmp/polybar.log &
+      touch /tmp/polybar.log
+      polybar --log=info "$(${pkgs.nettools}/bin/hostname)" 2>&1 | ${pkgs.coreutils-full}/bin/tee /tmp/polybar.log &
     '';
 
     config = {
@@ -330,52 +331,49 @@ in
               config.services.dunst.package # dunstctl
               pkgs.dbus # dbus-send (needed by dunstctl)
               pkgs.procps # pgrep
-              pkgs.coreutils # sleep
+              pkgs.coreutils-full # sleep
             ];
 
             text = ''
               readonly SPACER="   "
 
               function printActive() {
-                echo -n '%{A1:dunstctl set-paused toggle:}' # left click
-                echo -n '%{A2:dunstctl close-all:}'         # middle click
-                echo -n '%{A3:dunstctl context:}'           # right click
-                echo -n '%{A4:dunstctl close:}'             # scroll up
-                echo -n '%{A5:dunstctl history-pop:}'       # scroll down
-                echo -n '%{T3}'
                 echo -n '%{B#${config.colorScheme.colors.base00}}'
                 echo -n '%{F#${config.colorScheme.colors.base06}}'
                 echo -n "$SPACER"
                 echo -n ''
                 echo -n "$SPACER"
-                echo -n '%{A}'
-                echo -n '%{A}'
-                echo -n '%{A}'
-                echo -n '%{A}'
-                echo -n '%{A}'
               }
 
               function printPaused() {
                 local num_waiting
                 num_waiting=$(dunstctl count waiting)
 
-                echo -n '%{A1:dunstctl set-paused toggle:}' # left click
-                echo -n '%{T3}'
                 echo -n '%{B#${config.colorScheme.colors.base0E}}'
                 echo -n '%{F#${config.colorScheme.colors.base01}}'
                 echo -n "$SPACER"
                 echo -n ''
                 (( num_waiting == 0 )) || echo -n " ($num_waiting)"
                 echo -n "$SPACER"
-                echo -n '%{A}'
               }
 
               while :; do
+                echo -n '%{A1:dunstctl set-paused toggle:}' # left click
+                echo -n '%{A2:dunstctl close-all:}'         # middle click
+                echo -n '%{A3:dunstctl context:}'           # right click
+                echo -n '%{A4:dunstctl close:}'             # scroll up
+                echo -n '%{A5:dunstctl history-pop:}'       # scroll down
+                # echo -n '%{T3}'
                 if [[ $(dunstctl is-paused) != "true" ]]; then
                   printActive
                 else
                   printPaused
                 fi
+                echo -n '%{A}'
+                echo -n '%{A}'
+                echo -n '%{A}'
+                echo -n '%{A}'
+                echo -n '%{A}'
                 echo
                 sleep 1
               done
@@ -386,7 +384,6 @@ in
           type = "custom/script";
           exec = "${dunst-module}/bin/dunst-module";
           tail = true;
-          label-alignment = "center";
         };
     };
   };

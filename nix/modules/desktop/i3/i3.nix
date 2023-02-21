@@ -99,10 +99,6 @@ in
                 "${super}+a" = "exec --no-startup-id rofi-volume";
               };
 
-              notifications = {
-                "${super}+n" = ''mode "$mode_notification"'';
-              };
-
               focusWorkspaceAbsolute = {
                 "${super}+1" = "workspace number 1";
                 "${super}+2" = "workspace number 2";
@@ -434,7 +430,7 @@ in
         set $mode_gaps_outer Outer Gaps (k/Up) grow locally, (K/Shift+Up) grow globally
         set $mode_gaps_inner Inner Gaps (k/Up) grow locally, (K/Shift+Up) grow globally
 
-        mode "$mode_gaps" {
+        mode --pango_markup "$mode_gaps" {
             bindsym o           mode "$mode_gaps_outer"
             bindsym i           mode "$mode_gaps_inner"
             bindsym Return      mode "$mode_gaps"
@@ -442,7 +438,7 @@ in
             bindsym Ctrl+c      mode "default"
             bindsym Ctrl+g      mode "default"
         }
-        mode "$mode_gaps_outer" {
+        mode --pango_markup "$mode_gaps_outer" {
             bindsym k           gaps outer current plus 5
             bindsym j           gaps outer current minus 5
             bindsym Up          gaps outer current plus 5
@@ -532,7 +528,7 @@ in
         }
 
         bindsym $mod+r mode "$mode_resize"
-
+        bindsym $mod+n mode "$mode_notifications"
         bindsym $mod+equal exec i3_balance_workspace;
 
         # The middle button and a modifier over any part of the window kills the window

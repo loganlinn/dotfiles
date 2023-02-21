@@ -22,9 +22,9 @@ let
 in
 {
   imports = [
+    ../fonts.nix
     ./dracula
     ./arc
-    ../../home/fonts.nix
   ];
 
   options.modules.theme = with types; {
@@ -50,6 +50,7 @@ in
       mono = mkOption {
         type = fontType;
         default = {
+          package = config.modules.fonts.nerdfonts.package;
           name = "FiraCode Nerd Font Mono";
           size = 11;
         };
@@ -57,6 +58,7 @@ in
       serif = mkOption {
         type = fontType;
         default = {
+          package = config.modules.fonts.nerdfonts.package;
           name = "NotoSerif Nerd Font";
           size = 11;
         };
@@ -64,6 +66,7 @@ in
       sans = mkOption {
         type = fontType;
         default = {
+          package = config.modules.fonts.nerdfonts.package;
           name = "NotoSans Nerd Font";
           size = 11;
         };
@@ -87,11 +90,6 @@ in
       x11.enable = true;
       gtk.enable = true;
     };
-
-    # fonts.fontconfig.defaultFonts = {
-    #   sansSerif = [ cfg.fonts.sans.name ];
-    #   monospace = [ cfg.fonts.mono.name ];
-    # };
 
     gtk = mkIf config.gtk.enable {
       font = cfg.fonts.sans;
@@ -122,6 +120,52 @@ in
         gtk-xft-rgba="rgb"
       '';
     };
+
+    xresources.properties = {
+      # Type of subpixel antialiasing (none, rgb, bgr, vrgb or vbgr)
+      "Xft.rgba" = "rgb";
+      "Xft.antialias" = "1";
+      "Xft.hinting" = "1";
+      "Xft.autohint" = "0";
+      "Xft.hintstyle" = "hintslight";
+    };
+
+    # similar to https://github.com/janoamaral/Xresources-themes
+    xresources.extraConfig = ''
+      ${lib.pipe config.colorScheme.colors [
+        (lib.mapAttrsToList (name: value: "#define ${name} #${value}"))
+        (lib.concatStringsSep "\n")
+      ]}
+
+      *.foreground:   base05
+      #ifdef background_opacity
+      *.background:   [background_opacity]base00
+      #else
+      *.background:   base00
+      #endif
+      *.cursorColor:  base05
+
+      ! black
+      *.color0:       base00
+      ! red
+      *.color1:       base08
+      *.color2:       base0B
+      *.color3:       base0A
+      *.color4:       base0D
+      *.color5:       base0E
+      *.color6:       base0C
+      *.color7:       base05
+
+      *.color8:       base03
+      *.color9:       base09
+      *.color10:      base01
+      *.color11:      base02
+      *.color12:      base04
+      *.color13:      base06
+      *.color14:      base0F
+      *.color15:      base07
+    '';
+
 
     # Workaround for apps that use libadwaita which does locate GTK settings via XDG.
     # https://www.reddit.com/r/swaywm/comments/qodk20/gtk4_theming_not_working_how_do_i_configure_it/hzrv6gr/?context=3
@@ -162,7 +206,6 @@ in
       "--color 'spinner:#${base0E}'" # Streaming input indicator
       "--color 'header:#${base05}'" # Header
     ];
-
     # config = mkIf (cfg.active != null) (mkMerge [
     #   # Read xresources files in ~/.config/xtheme/* to allow modular configuration
     #   # of Xresources.

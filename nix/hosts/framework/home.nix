@@ -1,10 +1,9 @@
 { pkgs, ... }: {
   imports = [
+    ../../modules/fonts.nix
     ../../home/common.nix
     ../../home/dev
     ../../home/emacs.nix
-    ../../home/fonts.nix
-    ../../home/gh.nix
     ../../home/git.nix
     ../../home/pretty.nix
     ../../home/sync.nix

@@ -20,7 +20,6 @@ in
 {
 
   imports = [
-    ../../home/fonts.nix
     ../../home/polybar
     ../../home/thunar.nix
     ../../home/tray.nix
@@ -102,6 +101,7 @@ in
         })
 
         font-manager
+        fontpreview
         gcolor3
         epick # Simple color picker that lets the user create harmonic palettes with ease
 

@@ -1,29 +1,31 @@
 { config, lib, pkgs, ... }:
 
+let
+  inherit (builtins) isNull toString;
+  inherit (config.modules.theme) fonts;
+in
 {
   home.packages = with pkgs; [
     material-design-icons
-    roboto
+    fonts.mono.package
   ];
   programs.urxvt = {
     enable = true;
-    iso14755 = false;
+    iso14755 = true; # support for viewing and entering unicode characters
     keybindings = {
       "Shift-Control-C" = "eval:selection_to_clipboard";
       "Shift-Control-V" = "eval:paste_clipboard";
     };
-  };
-  xresources.properties = {
-    "URxvt*boldFont" = [
-      "xft:Roboto Mono:bold:size=12:antialias=true"
-      "xft:Material Design Icons:size=14:minspace=false"
-    ];
-    "URxvt*italicFont" = [
-      "xft:Roboto Mono:italic:size=12:antialias=true"
-      "xft:Material Design Icons:size=14:minspace=false"
-    ];
-    "URxvt*boldItalicFont" = [
-      "xft:Roboto Mono:bold:italic:size=12:antialias=true"
+    transparent = true;
+    shading = 100; # Darken (0 .. 99) or lighten (101 .. 200) the transparent background.
+    scroll = {
+      scrollOnKeystroke = true;
+      scrollOnOutput = false;
+      keepPosition = true;
+      lines = 10000;
+    };
+    fonts = with config.modules.theme; [
+      "xft:${fonts.mono.name}:size=${if (isNull fonts.mono.size) then 12 else (toString fonts.mono.size)}:antialias=true"
       "xft:Material Design Icons:size=14:minspace=false"
     ];
   };

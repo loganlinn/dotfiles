@@ -2,7 +2,7 @@
 
 {
   imports = [
-    ./common.nix
+    ../nix
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
     ../nix/home/emacs.nix # TODO module
@@ -15,12 +15,17 @@
     ../nix/home/vpn.nix
     ../nix/home/vscode.nix
     ../nix/home/zsh
-    ../nix/modules
+    ../nix/modules/programs/eww
+    ../nix/modules/programs/the-way
+    ../nix/modules/services
+    ../nix/modules/spellcheck.nix
+    ../nix/modules/fonts.nix
     ../nix/modules/desktop
     ../nix/modules/desktop/browsers
     ../nix/modules/desktop/i3
   ];
 
+  modules.fonts.enable = true;
 
   modules.spellcheck.enable = true;
 
