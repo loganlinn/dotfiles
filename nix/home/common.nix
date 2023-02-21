@@ -20,7 +20,7 @@
     coreutils-full # installs gnu versions
     curl
     dig
-    dog # dig on steroids
+    dogdns # dig on steroids
     dtrx # Do The Right Extraction
     du-dust
     fd
