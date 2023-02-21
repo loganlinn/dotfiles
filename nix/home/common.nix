@@ -16,9 +16,11 @@
   home.packages = with pkgs; [
     binutils
     cmake
-    coreutils-full # installs gnu versions
     comma # github.com/nix-community/comma
+    coreutils-full # installs gnu versions
     curl
+    dig
+    dog # dig on steroids
     dtrx # Do The Right Extraction
     du-dust
     fd
@@ -42,7 +44,7 @@
     tree
     unzip
     xh
-    zenith
+    zenith # htop-like, supports nvidia
     zip
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     cached-nix-shell
@@ -75,7 +77,13 @@
     enableCompletion = true;
   };
 
-  programs.btop.enable = true;
+  programs.btop = {
+    enable = true;
+    settings = {
+      color_theme = "onedark";
+      theme_background = false;
+    };
+  };
 
   programs.command-not-found.enable = !config.programs.nix-index.enable;
 

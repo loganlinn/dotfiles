@@ -150,7 +150,7 @@ in
 
       # apis
       doctl
-      python3Packages.datadog
+      # python3Packages.datadog # conflicts with dog (dns tool)
       # google-cloud-sdk
 
       # tools/utils
