@@ -3,6 +3,8 @@ lib:
 with lib;
 
 rec {
+  nerdfonts = importDirToAttrs ./nerdfonts;
+
   # Searches Nix path by prefix
   # Example: findNixPath "nixos-config"
   findNixPath = prefix: pipe builtins.nixPath [
