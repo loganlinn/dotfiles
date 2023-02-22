@@ -372,7 +372,7 @@ in
           # horizontal = 6;
           # vertical = 6;
           inner = 6;
-          outer = 36;
+          outer = 12;
           # smartBorders = "no_gaps";
         };
 
