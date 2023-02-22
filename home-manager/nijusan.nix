@@ -34,6 +34,28 @@ in
 
   modules.desktop.i3.enable = true;
 
+  modules.polybar = {
+    enable = true;
+    networks = [
+      { interface = "eno3"; interface-type = "wired"; }
+      { interface = "wlo1"; interface-type = "wireless"; }
+    ];
+    top.center.modules = [ "title" ];
+    top.right.modules = [
+      "memory"
+      "cpu"
+      "temperature"
+      "sep4"
+      "pulseaudio"
+      "sep3"
+      "dunst"
+      "network-eno3"
+      "network-wlo1"
+      "sep1"
+      "date"
+    ];
+  };
+
   modules.theme = {
     active = "arc";
 
@@ -56,8 +78,6 @@ in
 
   services.dunst.enable = true;
 
-  services.polybar.enable = true;
-
   services.picom.enable = true;
 
   # TODO define option for default browser
@@ -71,6 +91,7 @@ in
     btrfs-progs
     google-cloud-sdk
     # nemo
+    minikube
   ];
 
   home.stateVersion = "22.11";

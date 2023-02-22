@@ -1,10 +1,19 @@
 { config, lib, pkgs, nerdfonts, ... }:
 
-# with lib;
+with builtins;
 
 let
-  inherit (builtins) isNull toString;
-  inherit (lib) mkIf optionalString mkOption;
+  cfg = config.modules.polybar;
+
+  inherit (lib)
+    forEach
+    mkEnableOption
+    mkIf
+    mkOption
+    optionalString
+    recursiveUpdate
+    types
+    ;
 
   colors = (lib.mapAttrs (k: v: "#${v}") config.colorScheme.colors) // {
     transparent = "#00000000";
@@ -41,205 +50,206 @@ let
   fonts = {
     font-0 = "JetBrainsMono Nerd Font:size=10;3";
     font-1 = "JetBrainsMono Nerd Font:size=10:style=Bold;3";
-    font-2 = "Font Awesome 6 Free:style=Solid:pixelsize=11;2";
-    font-3 = "Font Awesome 6 Free:style=Regular:pixelsize=11;2";
-    font-4 = "Font Awesome 6 Brands:pixelsize=12;2";
-    font-5 = "Symbols Nerd Font:size=12;3";
-    font-6 = "Symbols Nerd Font:size=16;3";
-    font-7 = "Symbols Nerd Font:style=Medium:size=16;3";
+    font-2 = "Symbols Nerd Font:size=12;3";
+    font-3 = "Symbols Nerd Font:size=16;3";
   };
 
-  nerdfontIcon = text: "%{T6}${text}%{T-}";
-  nerdfontBigIcon = text: "%{T7}${text}%{T-}";
-  symbolsFont = text: "%{T8}${text}%{T-}";
+  nerdfontIcon = text: "%{T3}${text}%{T-}";
+  nerdfontBigIcon = text: "%{T4}${text}%{T-}";
 
   # common module gen function
-  mkModule = type: config: {
-    inherit type;
-    background = "\${colors.background}";
-    foreground = "\${colors.foreground}";
-    format-background = "\${colors.background}";
-    format-foreground = "\${colors.foreground}";
-    format-prefix-foreground = "\${colors.foreground-dark}";
-    format-prefix-padding = 1;
-    format-suffix-foreground = "\${colors.foreground-dark}";
-    format-padding = 2;
-  } // config;
-
-  mkModules = lib.mapAttrs' (name: value: {
-    name = "module/${name}";
-    value = value;
-  });
-
+  mkModule = name: type: settings: {
+    "module/${name}" = {
+      inherit type;
+      background = "\${colors.background}";
+      foreground = "\${colors.foreground}";
+      format-background = "\${colors.background}";
+      format-foreground = "\${colors.foreground}";
+      format-prefix-foreground = "\${colors.foreground-dark}";
+      format-suffix-foreground = "\${colors.foreground-dark}";
+      format-prefix-padding = 1;
+      format-padding = 2;
+    } // settings;
+  };
 in
 {
-  config = mkIf config.services.polybar.enable {
+  options.modules.polybar = {
 
-    services.polybar = {
+    enable = mkEnableOption "polybar";
 
-      package = pkgs.polybarFull;
+    package = mkOption {
+      type = types.package;
+      default = pkgs.polybarFull;
+    };
 
-      script = ''
-        # Terminate all running polybar instances.
-        polybar-msg cmd quit 2>/dev/null || true
+    top.left.modules = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+    };
 
-        monitors=$(polybar --list-monitors)
+    top.center.modules = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+    };
 
-        MONITOR_PRIMARY=$(${pkgs.gnugrep}/bin/grep '\(primary\)' <<<"$monitors" | ${pkgs.coreutils}/bin/cut -d":" -f1)
-        export MONITOR_PRIMARY
+    top.right.modules = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+    };
 
-        for m in $(${pkgs.coreutils}/bin/cut -d":" -f1 <<<"$monitors"); do
-          MONITOR=$m polybar --reload top &
-        done
-      '';
+    networks = mkOption {
+      type = with types; listOf attrs;
+      default = [ ];
+    };
 
-      config = {
-        inherit colors;
+    config = mkOption {
+      type = types.attrs;
+      default = { };
+    };
 
-        settings = {
-          # Reload when the screen configuration changes (XCB_RANDR_SCREEN_CHANGE_NOTIFY event)
-          screenchange-reload = true;
+    colors = mkOption {
+      type = types.attrs;
+      default = { };
+    };
 
-          # Compositing operators
-          # @see: https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-operator-t
-          compositing-background = "source";
-          compositing-foreground = "over";
-          compositing-overline = "over";
-          compositing-underline = "over";
-          compositing-border = "over";
+  };
 
-          # Define fallback values used by all module formats
-          # format-foreground = "";
-          # format-background = "";
-          # format-underline = "";
-          # format-overline = "";
-          # format-spacing = "";
-          # format-padding = "";
-          # format-margin = "";
-          # format-offset = "";
+  config = mkIf cfg.enable {
+    services.polybar.enable = true;
+    services.polybar.package = cfg.package;
+    services.polybar.script = ''
+      # Terminate all running polybar instances.
+      polybar-msg cmd quit 2>/dev/null || true
 
-          pseudo-transparency = !config.services.picom.enable;
-        };
+      monitors=$(polybar --list-monitors)
 
-        "bar/top" = fonts // {
-          monitor = "\${env:MONITOR:}"; # set by script
-          monitor-fallback = "";
-          monitor-strict = false;
-          override-redirect = false;
+      MONITOR_PRIMARY=$(${pkgs.gnugrep}/bin/grep '\(primary\)' <<<"$monitors" | ${pkgs.coreutils}/bin/cut -d":" -f1)
+      export MONITOR_PRIMARY
 
-          modules-left = [
-            "title"
-          ];
+      for m in $(${pkgs.coreutils}/bin/cut -d":" -f1 <<<"$monitors"); do
+        MONITOR=$m polybar --reload top &
+      done
+    '';
 
-          modules-center = [
-            "i3"
-          ];
+    services.polybar.config = lib.mkMerge
+      ([
+        { colors = recursiveUpdate colors cfg.colors; }
+        {
+          settings = {
+            # Reload when the screen configuration changes (XCB_RANDR_SCREEN_CHANGE_NOTIFY event)
+            screenchange-reload = true;
 
-          modules-right = [
-            "memory"
-            "cpu"
-            "temperature"
-            "sep1"
-            "pulseaudio"
-            "sep2"
-            "dunst"
-            "sep3"
-            "date"
-          ];
+            # Compositing operators
+            # @see: https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-operator-t
+            compositing-background = "source";
+            compositing-foreground = "over";
+            compositing-overline = "over";
+            compositing-underline = "over";
+            compositing-border = "over";
 
-          bottom = false;
-          fixed-center = true;
-          width = "100%";
-          height = 36;
-          offset-x = "0%";
-          offset-y = "0%";
+            # Define fallback values used by all module formats
+            # format-foreground = "";
+            # format-background = "";
+            # format-underline = "";
+            # format-overline = "";
+            # format-spacing = "";
+            # format-padding = "";
+            # format-margin = "";
+            # format-offset = "";
 
-          spacing = 0;
-          padding = 0;
+            pseudo-transparency = !config.services.picom.enable;
+          };
 
-          module-margin-left = 0;
-          module-margin-right = 0;
+          "bar/top" = fonts // {
 
-          separator = "";
+            monitor = "\${env:MONITOR:}"; # set by script
+            monitor-fallback = "";
+            monitor-strict = false;
 
-          background = "\${colors.transparent}";
-          foreground = "\${colors.foreground}";
-          dim-value = "1.0";
+            modules-left = cfg.top.left.modules;
+            modules-center = cfg.top.center.modules;
+            modules-right = cfg.top.right.modules;
 
-          line-size = 3;
-          line-color = "\${colors.primary}";
+            bottom = false;
+            fixed-center = true;
+            width = "100%";
+            height = 36;
+            offset-x = "0%";
+            offset-y = "0%";
 
-          # Creates a fake offset (floating bar)
-          border-color = "\${colors.transparent}";
-          border-top-size = 4;
-          border-left-size = 6; # TODO match i3 gaps
-          border-right-size = 6; # TODO match i3 gaps
+            module-margin-left = 0;
+            module-margin-right = 0;
 
-          tray-position = "\${env:TRAY_POSITION:none}";
-          tray-maxsize = 18;
-          tray-padding = 2;
-          tray-scale = "1.0";
-          tray-offset-x = 0;
-          tray-offset-y = 0;
-          tray-detached = false;
-          tray-background = "\${colors.background}";
-          tray-transparent = false;
+            spacing = 0;
+            padding = 0;
 
-          cursor-click = "pointer"; # hand
-          cursor-scroll = "ns-resize"; # arrows
+            separator = "";
 
-          enable-ipc = true;
-        };
+            background = "\${colors.transparent}";
+            foreground = "\${colors.foreground}";
+            dim-value = "1.0";
 
-        # "bar/top-left" = {
-        #   "inherit" = "bar/top";
-        #   modules-right = [ ];
-        #   modules-center = [ ];
-        #   width = "33%";
-        #   radius = "10.0";
-        # };
+            line-size = 3;
+            line-color = "\${colors.primary}";
 
-        # "bar/top-center" = {
-        #   "inherit" = "bar/top";
-        #   modules-left = [ ];
-        #   modules-right = [ ];
-        #   width = "33%";
-        #   radius = "10.0";
-        # };
+            # Creates a fake offset (floating bar)
+            border-color = "\${colors.transparent}";
+            border-top-size = 4;
+            border-left-size = 6; # TODO match i3 gaps
+            border-right-size = 6; # TODO match i3 gaps
 
-        # "bar/top-right" = {
-        #   "inherit" = "bar/top";
-        #   modules-center = [ ];
-        #   modules-left = [ ];
-        #   width = "33%";
-        #   radius = "10.0";
-        # };
-      }
-      // mkModules {
+            tray-position = "\${env:TRAY_POSITION:none}";
+            tray-maxsize = 18;
+            tray-padding = 2;
+            tray-scale = "1.0";
+            tray-offset-x = 0;
+            tray-offset-y = 0;
+            tray-detached = false;
+            tray-background = "\${colors.background}";
+            tray-transparent = false;
 
-        sep1 = {
-          type = "custom/text";
-          content = " ";
-          content-foreground = "\${colors.transparent}";
-          content-background = "\${colors.transparent}";
-        };
+            cursor-click = "pointer"; # hand
+            cursor-scroll = "ns-resize"; # arrows
 
-        sep2 = {
-          type = "custom/text";
-          content = " ";
-          content-foreground = "\${colors.transparent}";
-          content-background = "\${colors.transparent}";
-        };
+            enable-ipc = true;
+          };
 
-        sep3 = {
-          type = "custom/text";
-          content = " ";
-          content-foreground = "\${colors.transparent}";
-          content-background = "\${colors.transparent}";
-        };
+          # "bar/top-left" = {
+          #   "inherit" = "bar/top";
+          #   modules-right = [ ];
+          #   modules-center = [ ];
+          #   width = "33%";
+          #   radius = "10.0";
+          # };
 
+          # "bar/top-center" = {
+          #   "inherit" = "bar/top";
+          #   modules-left = [ ];
+          #   modules-right = [ ];
+          #   width = "33%";
+          #   radius = "10.0";
+          # };
 
-        pulseaudio = mkModule "internal/pulseaudio" {
+          # "bar/top-right" = {
+          #   "inherit" = "bar/top";
+          #   modules-center = [ ];
+          #   modules-left = [ ];
+          #   width = "33%";
+          #   radius = "10.0";
+          # };
+        }
+        (mkModule "date" "internal/date" {
+          interval = 1;
+          time = "%I:%M %p";
+          date = "%a %b %d";
+          time-alt = "%H:%M";
+          date-alt = " %Y-%m-%d%";
+          format = "<label>";
+          format-prefix = nerdfonts.md.calendar_clock;
+          label = "%date% %time%";
+          click-left = "eww open calendar";
+        })
+        (mkModule "pulseaudio" "internal/pulseaudio" {
           interval = 5;
           use-ui-max = false; # uses PA_VOLUME_NORM (maxes at 100%)
 
@@ -265,19 +275,16 @@ in
           label-muted = " MUTED";
 
           click-right = "${pkgs.pavucontrol}/bin/pavucontrol &";
-        };
-
-        title = mkModule "internal/xwindow" {
+        })
+        (mkModule "title" "internal/xwindow" {
           format-prefix = nerdfonts.md.dock_window;
           format = "<label>";
           label = "%{A1:true && rofi -show window:} %title% %{A}";
           label-maxlen = 64;
           label-empty = "Empty";
           label-empty-foreground = "\${colors.foreground-dark}";
-        };
-
-        # Module settings (https://github.com/polybar/polybar/wiki/Configuration#module-settings)
-        i3 = mkModule "internal/i3" {
+        })
+        (mkModule "i3" "internal/i3" {
           enable-click = true;
           enable-scroll = false;
           index-sort = true; # Sort the workspaces by index instead by output
@@ -316,20 +323,8 @@ in
           label-visible-foreground = "\${colors.foreground}";
           label-visible-underline = "\${colors.foreground}";
           label-visible-padding = 2;
-        };
-
-        date = mkModule "internal/date" {
-          interval = 1;
-          time = "%I:%M %p";
-          date = "%a %b %d";
-          time-alt = "%H:%M";
-          date-alt = " %Y-%m-%d%";
-          format = "<label>";
-          format-prefix = nerdfonts.md.calendar_clock;
-          label = "%date% %time%";
-        };
-
-        memory = mkModule "internal/memory" {
+        })
+        (mkModule "memory" "internal/memory" {
           interval = 2;
           format = "<label> <bar-used>";
           label = "%percentage_used%%";
@@ -346,17 +341,15 @@ in
           bar-used-fill = "┅";
           bar-used-empty = "┅";
           bar-used-empty-foreground = "\${colors.base04}";
-        };
-
-        gpu = mkModule "custom/script" {
+        })
+        (mkModule "gpu" "custom/script" {
           exec = ''
             /run/current-system/sw/bin/nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | ${pkgs.gawk}/bin/awk '{ print $1 "%"}'
           '';
           interval = 5;
           format-prefix = "GPU";
-        };
-
-        cpu = mkModule "internal/cpu" {
+        })
+        (mkModule "cpu" "internal/cpu" {
           interval = 2;
           format-prefix = "CPU";
           format = "<label> <bar-load>";
@@ -391,9 +384,8 @@ in
           ramp-load-5 = "▆";
           ramp-load-6 = "▇";
           ramp-load-7 = "█";
-        };
-
-        temperature = mkModule "internal/temperature" {
+        })
+        (mkModule "temperature" "internal/temperature" {
           interval = 5;
           thermal-zone = "x86_pkg_temp";
           hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
@@ -427,194 +419,163 @@ in
           ramp-5-foreground = "\${colors.warn}";
           ramp-6-foreground = "\${colors.warn}";
           ramp-7-foreground = "\${colors.alert}";
-        };
+        })
+        {
+          "module/dunst" = {
+            type = "custom/script";
+            exec =
+              let
+                dunst-module = pkgs.writeShellScriptBin "dunst-module" ''
+                  IS_PAUSED=
+                  declare -i COUNT_WAITING
+                  declare -i COUNT_DISPLAYED
+                  declare -i COUNT_HISTORY
 
-        dunst = {
-          type = "custom/script";
-          exec =
-            let
-              dunst-module = pkgs.writeShellScriptBin "dunst-module" ''
-                IS_PAUSED=
-                declare -i COUNT_WAITING
-                declare -i COUNT_DISPLAYED
-                declare -i COUNT_HISTORY
+                  function is_paused() {
+                    IS_PAUSED=$(dunstctl is-paused)
+                    [[ $IS_PAUSED == "true" ]] || return 1
+                  }
 
-                function is_paused() {
-                  IS_PAUSED=$(dunstctl is-paused)
-                  [[ $IS_PAUSED == "true" ]] || return 1
-                }
+                  function some_waiting() {
+                    COUNT_WAITING=$(dunstctl count waiting)
+                    (( COUNT_WAITING > 0 )) || return 1
+                  }
 
-                function some_waiting() {
-                  COUNT_WAITING=$(dunstctl count waiting)
-                  (( COUNT_WAITING > 0 )) || return 1
-                }
+                  function some_displayed() {
+                    COUNT_DISPLAYED=$(dunstctl count displayed)
+                    (( COUNT_DISPLAYED > 0 )) || return 1
+                  }
 
-                function some_displayed() {
-                  COUNT_DISPLAYED=$(dunstctl count displayed)
-                  (( COUNT_DISPLAYED > 0 )) || return 1
-                }
+                  function some_history() {
+                    COUNT_HISTORY=$(dunstctl count history)
+                    (( COUNT_HISTORY > 0 )) || return 1
+                  }
 
-                function some_history() {
-                  COUNT_HISTORY=$(dunstctl count history)
-                  (( COUNT_HISTORY > 0 )) || return 1
-                }
+                  while :; do
+                    echo -n '%{A1:dunstctl set-paused toggle:}' # left click
+                    echo -n '%{A2:dunstctl close-all:}'         # middle click
+                    echo -n '%{A3:dunstctl context:}'           # right click
+                    echo -n '%{A4:dunstctl close:}'             # scroll up
+                    echo -n '%{A5:dunstctl history-pop:}'       # scroll down
 
-                while :; do
-                  echo -n '%{A1:dunstctl set-paused toggle:}' # left click
-                  echo -n '%{A2:dunstctl close-all:}'         # middle click
-                  echo -n '%{A3:dunstctl context:}'           # right click
-                  echo -n '%{A4:dunstctl close:}'             # scroll up
-                  echo -n '%{A5:dunstctl history-pop:}'       # scroll down
-
-                  if is_paused; then
-                    tags="%{B$PAUSED_BG}%{F$PAUSED_FG}"
-                    if some_waiting; then
-                      text="${nerdfontIcon nerdfonts.md.bell_sleep} ($COUNT_WAITING)"
+                    if is_paused; then
+                      tags="%{B$PAUSED_BG}%{F$PAUSED_FG}"
+                      if some_waiting; then
+                        text="${nerdfontIcon nerdfonts.md.bell_sleep} ($COUNT_WAITING)"
+                      else
+                        text="${nerdfontIcon nerdfonts.md.bell_sleep_outline}"
+                      fi
                     else
-                      text="${nerdfontIcon nerdfonts.md.bell_sleep_outline}"
+                      tags="%{B$ACTIVE_BG}%{F$ACTIVE_FG}"
+                      if some_displayed; then
+                        text='${nerdfontIcon nerdfonts.md.bell_alert}'
+                      else
+                        text='${nerdfontIcon nerdfonts.md.bell}'
+                      fi
                     fi
-                  else
-                    tags="%{B$ACTIVE_BG}%{F$ACTIVE_FG}"
-                    if some_displayed; then
-                      text='${nerdfontIcon nerdfonts.md.bell_alert}'
-                    else
-                      text='${nerdfontIcon nerdfonts.md.bell}'
-                    fi
-                  fi
 
-                  # need to manually pad with whitespace because background is changed dynamically
-                  echo -n "$tags  $text  "
+                    # need to manually pad with whitespace because background is changed dynamically
+                    echo -n "$tags  $text  "
 
-                  echo -n '%{A}'
-                  echo -n '%{A}'
-                  echo -n '%{A}'
-                  echo -n '%{A}'
-                  echo -n '%{A}'
-                  echo
+                    echo -n '%{A}'
+                    echo -n '%{A}'
+                    echo -n '%{A}'
+                    echo -n '%{A}'
+                    echo -n '%{A}'
+                    echo
 
-                  sleep 1
-                done
-              '';
-            in
-            "${dunst-module}/bin/dunst-module";
-          tail = true;
-          env-ACTIVE_FG = "\${colors.foreground-dark}";
-          env-ACTIVE_BG = "\${colors.background}";
-          env-PAUSED_FG = "\${colors.background-alt}";
-          env-PAUSED_BG = "\${colors.warn}";
-        };
+                    sleep 1
+                  done
+                '';
+              in
+              "${dunst-module}/bin/dunst-module";
+            tail = true;
+            env-ACTIVE_FG = "\${colors.foreground-dark}";
+            env-ACTIVE_BG = "\${colors.background}";
+            env-PAUSED_FG = "\${colors.background-alt}";
+            env-PAUSED_BG = "\${colors.warn}";
+          };
+        }
+        (
+          let sep = {
+            type = "custom/text";
+            content = " ";
+            content-foreground = "\${colors.transparent}";
+            content-background = "\${colors.transparent}";
+          };
+          in
+          {
+            "module/sep1" = sep;
+            "module/sep2" = sep;
+            "module/sep3" = sep;
+            "module/sep4" = sep;
+            "module/sep5" = sep;
+          }
+        )
+      ]
+      ++
+      (forEach cfg.networks
+        ({ interface, interface-type, ... }@settings:
+          (mkModule "network-${interface}" "internal/network" ({
+            inherit interface;
 
-        # inspired by https://github.com/sudo-kjp/nu-dotfiles/blob/f39f9190214d998875376e2e4fc1fe738838cec1/polybar/config.ini
-        left-inner = {
-          type = "custom/text";
-          content-background = "\${colors.transparent}";
-          content-foreground = "\${colors.background}";
-          content = symbolsFont "";
-        };
+            format-connected =
+              if interface-type == "wireless"
+              then "<ramp-signal>"
+              else "<label-connected>";
+            format-connected-padding = 2;
+            format-connected-background = "\${colors.background}";
+            format-connected-foreground = "\${colors.foreground-dark}";
+            label-connected = nerdfontIcon nerdfonts.md.network_outline;
 
-        left1 = {
-          type = "custom/text";
-          content-background = "\${colors.shade2}";
-          content-foreground = "\${colors.shade1}";
-          content = symbolsFont "";
-        };
+            format-disconnected = "<label-disconnected>";
+            format-disconnected-padding = 2;
+            format-disconnected-background = "\${colors.background}";
+            format-disconnected-foreground = "\${colors.foreground-dark}";
+            label-disconnected =
+              if interface-type == "wireless"
+              then (nerdfontIcon nerdfonts.md.wifi_off)
+              else (nerdfontIcon nerdfonts.md.network_off);
 
-        left2 = {
-          type = "custom/text";
-          content-background = "\${colors.shade3}";
-          content-foreground = "\${colors.shade2}";
-          content = symbolsFont "";
-        };
+            format-packetloss = "<animation-packetloss> <label-packetloss>";
+            format-packetloss-padding = 2;
+            format-packetloss-background = "\${colors.background}";
+            format-packetloss-foreground = "\${colors.foreground-dark}";
 
-        left3 = {
-          type = "custom/text";
-          content-background = "\${colors.background}";
-          content-foreground = "\${colors.shade3}";
-          content = symbolsFont "";
-        };
+            ramp-signal-0 = nerdfontIcon nerdfonts.md.wifi_strength_1;
+            ramp-signal-1 = nerdfontIcon nerdfonts.md.wifi_strength_2;
+            ramp-signal-2 = nerdfontIcon nerdfonts.md.wifi_strength_3;
+            ramp-signal-3 = nerdfontIcon nerdfonts.md.wifi_strength_4;
+          } // settings))))
+      ++
+      lib.singleton cfg.config);
 
-        right1 = {
-          type = "custom/text";
-          content-background = "\${colors.shade2}";
-          content-foreground = "\${colors.shade1}";
-          content = symbolsFont "";
-        };
-
-        right2 = {
-          type = "custom/text";
-          content-background = "\${colors.shade3}";
-          content-foreground = "\${colors.shade2}";
-          content = symbolsFont "";
-        };
-
-        right3 = {
-          type = "custom/text";
-          content-background = "\${colors.shade4}";
-          content-foreground = "\${colors.shade3}";
-          content = symbolsFont "";
-        };
-
-        right4 = {
-          type = "custom/text";
-          content-background = "\${colors.shade5}";
-          content-foreground = "\${colors.shade4}";
-          content = symbolsFont "";
-        };
-
-        # "right4.5" = {
-        #   type = "custom/text";
-        #   content-background = "\${colors.shade5}";
-        #   content-foreground = "\${colors.shade5}";
-        #   content = nerdfont "";
-        # };
-
-        right5 = {
-          type = "custom/text";
-          content-background = "\${colors.shade6}";
-          content-foreground = "\${colors.shade5}";
-          content = symbolsFont "";
-        };
-
-        right6 = {
-          type = "custom/text";
-          content-background = "\${colors.shade7}";
-          content-foreground = "\${colors.shade6}";
-          content = symbolsFont "";
-        };
-
-        right7 = {
-          type = "custom/text";
-          content-background = "\${colors.background}";
-          content-foreground = "\${colors.shade7}";
-          content = symbolsFont "";
-        };
-
-      };
-      # extraConfig = ''
-      #   ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in
-      #     lib.optionalString (lib.pathExists extraConfigDir)
-      #       "include-directory = ${extraConfigDir}"}
-      # '';
-    };
+    # extraConfig = ''
+    #   ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in
+    #     lib.optionalString (lib.pathExists extraConfigDir)
+    #       "include-directory = ${extraConfigDir}"}
+    # '';
 
     # HACK: setup PATH for scripts
     systemd.user.services.polybar.Service.Environment =
-      let path = lib.makeBinPath [
-        "/run/wrappers"
-        "${config.home.homeDirectory}/.nix-profile"
-        "/etc/profiles/per-user/${config.home.username}"
-        "/nix/var/nix/profiles/default"
-        "/run/current-system/sw"
-        "${config.home.homeDirectory}/.dotfiles"
-        "${config.home.homeDirectory}/.dotfiles/local"
-        "${pkgs.coreutils}"
-        "${pkgs.bash}"
-        "${pkgs.procps}"
-      ];
+      let path = lib.makeBinPath
+        [
+          "/run/wrappers"
+          "${config.home.homeDirectory}/.nix-profile"
+          "/etc/profiles/per-user/${config.home.username}"
+          "/nix/var/nix/profiles/default"
+          "/run/current-system/sw"
+          "${config.home.homeDirectory}/.dotfiles"
+          "${config.home.homeDirectory}/.dotfiles/local"
+          "${pkgs.coreutils}"
+          "${pkgs.bash}"
+          "${pkgs.procps}"
+        ];
       in
-      lib.mkForce "PATH=${path}";
+      lib.mkForce
+        "PATH=${path}";
 
     systemd.user.services.polybar.Install.WantedBy = [ "graphical-session.target" ];
-  };
 
+  };
 }
