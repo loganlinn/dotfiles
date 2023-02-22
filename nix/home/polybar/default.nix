@@ -243,7 +243,7 @@ in
           time = "%I:%M %p";
           date = "%a %b %d";
           time-alt = "%l:%M:%S";
-          date-alt = "";
+          date-alt = " ";
           format = "<label>";
           format-prefix = nerdfonts.md.calendar_clock;
           label = "%date% %time%";
