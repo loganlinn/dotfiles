@@ -28,7 +28,6 @@ in
 
               home.username = "logan";
               home.homeDirectory = "/home/logan";
-              home.packages = config.my.user.packages;
             }
           ];
         };
