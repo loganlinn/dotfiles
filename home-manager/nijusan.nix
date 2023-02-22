@@ -28,6 +28,11 @@ in
     ../nix/modules/desktop/i3
   ];
 
+  sops.defaultSopsFile = ../secrets/default.yaml;
+  sops.age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+  sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
+  sops.secrets.github_token.sopsFile = ../secrets/default.yaml;
+
   modules.fonts.enable = true;
 
   modules.spellcheck.enable = true;

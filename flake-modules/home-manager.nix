@@ -7,8 +7,20 @@ in
   perSystem = ctx@{ options, config, self', inputs', pkgs, system, ... }:
     let
       extraSpecialArgs = {
-        inherit (inputs) home-manager darwin emacs nix-colors fzf-git;
+        inherit (inputs) home-manager darwin emacs nix-colors;
         inherit (self.lib) nerdfonts;
+      };
+      commonModule = {
+        imports = [
+          inputs.nix-colors.homeManagerModule
+          inputs.sops-nix.homeManagerModule
+        ];
+        options.my = ctx.options.my;
+        config = {
+          my = ctx.config.my;
+          home.username = "logan";
+          home.homeDirectory = "/home/logan";
+        };
       };
     in
     {
@@ -16,20 +28,12 @@ in
         homeConfigurations."logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs extraSpecialArgs;
 
-          modules = [
-            inputs.nix-colors.homeManagerModule
-            {
-              _module.args.self = self;
-              _module.args.inputs = inputs;
+          modules = [{
+            _module.args.self = self;
+            _module.args.inputs = inputs;
 
-              imports = [
-                ../home-manager/nijusan.nix
-              ];
-
-              home.username = "logan";
-              home.homeDirectory = "/home/logan";
-            }
-          ];
+            imports = [ commonModule ../home-manager/nijusan.nix ];
+          }];
         };
 
         # homeConfigurations."logan@framework" = ...
@@ -45,6 +49,7 @@ in
               imports = [ ../nix-darwin/patchbook.nix ];
               home-manager = {
                 inherit extraSpecialArgs;
+                imports = [ commonModule ];
               };
             }
           ];

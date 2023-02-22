@@ -242,8 +242,8 @@ in
           interval = 1;
           time = "%I:%M %p";
           date = "%a %b %d";
-          time-alt = "%H:%M";
-          date-alt = " %Y-%m-%d%";
+          time-alt = "%l:%M:%S";
+          date-alt = "";
           format = "<label>";
           format-prefix = nerdfonts.md.calendar_clock;
           label = "%date% %time%";
@@ -419,6 +419,10 @@ in
           ramp-5-foreground = "\${colors.warn}";
           ramp-6-foreground = "\${colors.warn}";
           ramp-7-foreground = "\${colors.alert}";
+        })
+        (mkModule "github" "internal/github" {
+          token = mkIf (config.my.github.oauth-token != null) config.my.github.oauth-token;
+          user = config.my.github.user;
         })
         {
           "module/dunst" = {
