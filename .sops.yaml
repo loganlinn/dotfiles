@@ -1,0 +1,11 @@
+keys:
+  - &llinn 32A48B412F1CA30ADB1B54382C3CDAE023DB6616
+  - &nijusan age1nrxg0qkcqfx5s76x3md2jakwd9tslqry0y2k0lp4u4ngjje4z3dq8v3xyq
+
+creation_rules:
+  - path_regex: secrets/[^/]+\.yaml$
+    key_groups:
+      - pgp:
+          - *llinn
+      - age:
+          - *nijusan
