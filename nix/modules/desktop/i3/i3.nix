@@ -12,6 +12,7 @@ let
 
   cfg = config.modules.desktop.i3;
   themeCfg = config.modules.theme;
+  colors = config.colorScheme.colors;
 
   barHeight = 40; # TODO option shared w/ (poly)bar config
 
@@ -452,7 +453,7 @@ in
         workspaceLayout = "default";
       };
 
-      extraConfig = ''
+      extraConfig = with config.colorScheme.colors; ''
         set $mod ${super}
         set $alt ${alt}
         set $bar_height ${toString barHeight}
@@ -604,14 +605,14 @@ in
         bindsym button9 move left
         bindsym button8 move right
 
-        # class                 border  backgr. text    indicator child_border
-        client.focused          #4c7899 #285577 #ffffff #2e9ef4   #285577
-        client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
-        client.unfocused        #333333 #222222 #888888 #292d2e   #222222
-        client.urgent           #2f343a #900000 #ffffff #900000   #900000
-        client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
+        # class                 border     backgr.    text       indicator  child_border
+        client.focused          #${base02} #${base01} #${base05} #${base0A} #${base02}
+        client.focused_inactive #${base03} #${base04} #${base05} #${base03} #${base01}
+        client.unfocused        #${base03} #${base00} #${base04} #${base03} #${base03}
+        client.urgent           #${base02} #${base0F} #${base05} #${base0F} #${base0F}
+        client.placeholder      #${base00} #${base01} #${base05} #${base00} #${base01}
 
-        client.background       #ffffff
+        client.background       #${base05}
       '';
     };
   };
