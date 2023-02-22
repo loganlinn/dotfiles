@@ -10,7 +10,6 @@ let
     transparent = "#00000000";
     background = "\${colors.base00}";
     background-alt = "\${colors.base01}";
-    background-selection = "\${colors.base02}";
     background-highlight = "\${colors.base03}";
     foreground-dark = "\${colors.base04}";
     foreground = "\${colors.base05}";
@@ -62,6 +61,7 @@ let
     format-background = "\${colors.background}";
     format-foreground = "\${colors.foreground}";
     format-prefix-foreground = "\${colors.foreground-dark}";
+    format-prefix-padding = 1;
     format-suffix-foreground = "\${colors.foreground-dark}";
     format-padding = 2;
   } // config;
@@ -268,10 +268,10 @@ in
         };
 
         title = mkModule "internal/xwindow" {
-          format-prefix = "${nerdfonts.md.dock_window} ";
+          format-prefix = nerdfonts.md.dock_window;
           format = "<label>";
-          label = "%title%";
-          label-maxlen = 50;
+          label = "%{A1:true && rofi -show window:} %title% %{A}";
+          label-maxlen = 64;
           label-empty = "Empty";
           label-empty-foreground = "\${colors.foreground-dark}";
         };
@@ -292,7 +292,7 @@ in
           label-focused = "%name%";
           label-focused-background = "\${colors.background-alt}";
           label-focused-foreground = "\${colors.foreground-light}";
-          label-focused-underline = "\${colors.selection}";
+          label-focused-underline = "\${colors.highlight}";
           label-focused-padding = 2;
 
           label-mode = "%mode%";
@@ -325,7 +325,7 @@ in
           time-alt = "%H:%M";
           date-alt = " %Y-%m-%d%";
           format = "<label>";
-          # format-prefix = " ";
+          format-prefix = nerdfonts.md.calendar_clock;
           label = "%date% %time%";
         };
 
@@ -333,7 +333,7 @@ in
           interval = 2;
           format = "<label> <bar-used>";
           label = "%percentage_used%%";
-          format-prefix = "RAM ";
+          format-prefix = "RAM";
           bar-used-width = 6;
           bar-used-foreground-0 = "\${colors.ok}";
           bar-used-foreground-1 = "\${colors.ok}";
@@ -353,12 +353,12 @@ in
             /run/current-system/sw/bin/nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | ${pkgs.gawk}/bin/awk '{ print $1 "%"}'
           '';
           interval = 5;
-          format-prefix = "GPU ";
+          format-prefix = "GPU";
         };
 
         cpu = mkModule "internal/cpu" {
           interval = 2;
-          format-prefix = "CPU ";
+          format-prefix = "CPU";
           format = "<label> <bar-load>";
           # format = "<label> <bar-load>";
           label = "%percentage%%";
@@ -399,7 +399,7 @@ in
           hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
           base-temperature = 50;
           warn-temperature = 75;
-          format-prefix = "TEMP ";
+          format-prefix = "TEMP";
           format = "<label> <ramp>";
           format-warn = "<label-warn> <ramp>";
           format-warn-background = "\${colors.base00}";

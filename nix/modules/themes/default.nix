@@ -169,7 +169,7 @@ in
             base03 = comments; # Comments, Invisibles, Line Highlighting
             base04 = fg-alt; # Dark foreground (used for status bars)
             base05 = fg; # Default foregrund, caret, delimiters, operators
-            base06 = base6; # Light foreground
+            base06 = base8; # Light foreground
             base07 = base7; # Light background
             base08 = red; # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
             base09 = constants; # Integers, Boolean, Constants, XML Attributes, Markup Link Url
