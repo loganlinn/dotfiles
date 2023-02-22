@@ -37,13 +37,13 @@ in
   modules.theme = {
     active = "arc";
 
-    wallpaper = ../wallpaper/wallhaven-weq8y7.png;
-    # wallpaper = nixWallpaperFromScheme {
-    #   scheme = config.colorscheme;
-    #   width = 3840;
-    #   height = 1600;
-    #   logoScale = 4.0;
-    # };
+    # wallpaper = ../wallpaper/wallhaven-weq8y7.png;
+    wallpaper = nixWallpaperFromScheme {
+      scheme = config.colorscheme;
+      width = 3840;
+      height = 1600;
+      logoScale = 4.0;
+    };
   };
 
   programs.rofi.enable = true;
