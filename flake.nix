@@ -25,16 +25,13 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     nix-colors.url = "github:misterio77/nix-colors";
+    sops-nix.url = "github:Mic92/sops-nix";
 
     # shells
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     # devshellurl = "github:numtide/devshell";
     # devshell.inputs.nixpkgs.follows = "nixpkgs";
-
-    # data
-    fzf-git.url = "github:junegunn/fzf-git.sh";
-    fzf-git.flake = false;
   };
 
   outputs = inputs:

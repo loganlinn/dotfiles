@@ -1,28 +1,30 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   imports = [
     ./readline.nix
     ./starship.nix
   ];
 
-  programs = {
-    bat.enable = true;
+  programs.bat.enable = true;
 
-    bottom.enable = true;
+  programs.bottom.enable = true;
 
-    fzf = {
-      enable = true;
-    };
-
-    lsd = {
-      enable = true;
-      enableAliases = true;
-    };
-
-    tealdeer.enable = true; # tldr command
-
-    zoxide = {
-      enable = true;
-      enableBashIntegration = true;
-    };
+  programs.fzf = {
+    enable = true;
   };
+
+  programs.lsd = {
+    enable = true;
+    enableAliases = true;
+  };
+
+  programs.tealdeer.enable = true; # tldr command
+
+  programs.zoxide = {
+    enable = true;
+    enableBashIntegration = true;
+  };
+
+  home.packages = with pkgs; [
+    fzf-git-sh
+  ];
 }

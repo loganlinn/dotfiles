@@ -1,12 +1,6 @@
 { lib
 , config
 , pkgs
-, fzf-git ? pkgs.fetchFromGitHub {
-    owner = "junegunn";
-    repo = "fzf-git.sh";
-    rev = "f36662f603095a66fd0af83409eca36b94607021";
-    hash = "sha256-ynsPnuJY3wm9EPJKY+8uV30nfWOiq81/JuG526eIoSA=";
-  }
 , ...
 }:
 
@@ -91,8 +85,6 @@ in
 
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
       stty -ixon
-
-      source ${fzf-git.outPath}/fzf-git.sh
 
       gco() {
         local selected=$(_fzf_git_each_ref --no-multi)
