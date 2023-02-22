@@ -91,19 +91,27 @@ in
 
           background = "#${colors.base01}";
           foreground = "#${colors.base05}";
+          highlight = "#${colors.base0A}";
         };
 
         urgency_low = {
-          background = "#${colors.base03}";
+          background = "#${colors.base00}";
+          foreground = "#${colors.base04}";
+          frame_color = "#${colors.base03}";
           timeout = 10;
         };
 
         urgency_normal = {
+          background = "#${colors.base01}";
+          foreground = "#${colors.base05}";
+          frame_color = "#${colors.base02}";
           timeout = 60;
         };
 
         urgency_critical = {
-          frame_color = "#${colors.base08}";
+          background = "#${colors.base01}";
+          foreground = "#${colors.base05}";
+          frame_color = "#${colors.base0E}"; # i.e. vcs-modified
           timeout = 0;
         };
 

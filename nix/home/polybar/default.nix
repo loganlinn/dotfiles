@@ -15,8 +15,13 @@ let
     foreground-dark = "\${colors.base04}";
     foreground = "\${colors.base05}";
     foreground-light = "\${colors.base06}";
+
+    highlight = "\${colors.base0A}";
+    selection = "\${colors.base02}";
+
     primary = "\${colors.base0D}";
     secondary = "\${colors.base0C}";
+
     ok = "\${colors.base0B}"; # i.e. diff added
     warn = "\${colors.base0E}"; # i.e. diff changed
     alert = "\${colors.base08}"; # i.e. diff deleted
@@ -286,8 +291,8 @@ in
 
           label-focused = "%name%";
           label-focused-background = "\${colors.background-alt}";
-          label-focused-foreground = "\${colors.primary}";
-          label-focused-underline = "\${colors.primary}";
+          label-focused-foreground = "\${colors.foreground-light}";
+          label-focused-underline = "\${colors.selection}";
           label-focused-padding = 2;
 
           label-mode = "%mode%";
@@ -594,7 +599,7 @@ in
 
     # HACK: setup PATH for scripts
     systemd.user.services.polybar.Service.Environment =
-      let path = lib.strings.makeBinPath [
+      let path = lib.makeBinPath [
         "/run/wrappers"
         "${config.home.homeDirectory}/.nix-profile"
         "/etc/profiles/per-user/${config.home.username}"

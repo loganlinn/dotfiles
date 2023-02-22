@@ -92,11 +92,17 @@ in
       default = { };
     };
 
+    # colors = with types; submodule {
+    #   options = {
+    #   };
+    # };
   };
 
   config = mkIf (!isNull cfg.active) (mkMerge [
     (
       let
+        # Color Scheme: doom-one
+        # Adapted from https://github.com/doomemacs/themes/blob/master/themes/doom-one-theme.el
         bg = "282c34";
         fg = "bbc2cf";
         bg-alt = "21242b";
@@ -122,6 +128,7 @@ in
         violet = "a9a1e1";
         cyan = "46d9ff";
         dark-cyan = "5699af";
+        muted-blue = "387aa7";
 
         highlight = blue;
         vertical-bar = base1;
@@ -142,9 +149,6 @@ in
         error = red;
         warning = yellow;
         success = green;
-        vc-modified = orange;
-        vc-added = green;
-        vc-deleted = red;
         modeline-fg = fg;
         modeline-fg-alt = base5;
         modeline-bg = bg-alt; # darken 0.1
@@ -157,23 +161,48 @@ in
           name = "doom-one";
           author = "Henrik Lissner (https://github.com/doomemacs/themes/blob/master/themes/doom-one-theme.el)";
           slug = "doom-one";
-          colors = {
-            base00 = bg-alt;
-            base01 = bg;
-            base02 = dark-blue;
-            base03 = dark-cyan;
-            base04 = fg-alt;
-            base05 = fg;
-            base06 = base6;
-            base07 = base7;
-            base08 = red;
-            base09 = violet;
-            base0A = blue;
-            base0B = green;
-            base0C = teal;
-            base0D = cyan;
-            base0E = orange;
-            base0F = yellow;
+          colors = rec {
+            # https://github.com/chriskempson/base16/blob/main/styling.md
+            base00 = bg-alt; # Default background
+            base01 = bg; # Lighter Background (Used for status bars, line number and folding marks)
+            base02 = muted-blue; # Selection Background
+            base03 = comments; # Comments, Invisibles, Line Highlighting
+            base04 = fg-alt; # Dark foreground (used for status bars)
+            base05 = fg; # Default foregrund, caret, delimiters, operators
+            base06 = base6; # Light foreground
+            base07 = base7; # Light background
+            base08 = red; # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
+            base09 = constants; # Integers, Boolean, Constants, XML Attributes, Markup Link Url
+            base0A = highlight; # Classes, Markup Bold, Search Text Background
+            base0B = vc-added; # Strings, Inherited Class, Markup Code, Diff Inserted
+            base0C = dark-cyan; # Support, Regular Expressions, Escape Characters, Markup Quotes
+            base0D = functions; # Functions, Methods, Attribute IDs, Headings
+            base0E = vc-modified; # Keywords, Storage, Selector, Markup Italic, Diff Changed
+            base0F = warning; # Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
+
+            # named colors
+            highlight = blue;
+            vertical-bar = base1;
+            selection = dark-blue;
+            builtin = magenta;
+            comments = base5;
+            doc-comments = base5;
+            constants = violet;
+            functions = magenta;
+            keywords = blue;
+            methods = cyan;
+            operators = blue;
+            type = yellow;
+            strings = green;
+            variables = magenta;
+            numbers = orange;
+            region = bg-alt;
+            error = red;
+            warning = yellow;
+            success = green;
+            vc-modified = orange;
+            vc-added = green;
+            vc-deleted = red;
           };
         };
       }
@@ -209,6 +238,7 @@ in
       # similar to https://github.com/janoamaral/Xresources-themes
       xresources.extraConfig = ''
         ${lib.pipe config.colorScheme.colors [
+          (lib.filterAttrs (name: _: lib.hasPrefix "base" name))
           (lib.mapAttrsToList (name: value: "#define ${name} #${value}"))
           (lib.concatStringsSep "\n")
         ]}
