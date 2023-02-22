@@ -103,7 +103,7 @@ in
         font-manager
         fontpreview
         gcolor3
-        epick # Simple color picker that lets the user create harmonic palettes with ease
+        gpick
 
         hacksaw # Lightweight selection tool for usage in screenshot scripts etc
         shotgun # Minimal X screenshot utility
