@@ -369,10 +369,10 @@ in
         };
 
         gaps = {
-          # horizontal = 6;
-          # vertical = 6;
-          inner = 6;
-          outer = 12;
+          horizontal = 10;
+          vertical = 10;
+          inner = 10;
+          outer = 10;
           # smartBorders = "no_gaps";
         };
 

@@ -118,9 +118,6 @@ in
     services.polybar.enable = true;
     services.polybar.package = cfg.package;
     services.polybar.script = ''
-      # Terminate all running polybar instances.
-      polybar-msg cmd quit 2>/dev/null || true
-
       monitors=$(polybar --list-monitors)
 
       MONITOR_PRIMARY=$(${pkgs.gnugrep}/bin/grep '\(primary\)' <<<"$monitors" | ${pkgs.coreutils}/bin/cut -d":" -f1)

@@ -38,7 +38,7 @@ in
           gap_size = 2;
           width = 440;
           height = "(24, 320)";
-          offset = "-26, +26";
+          offset = "-36, +36";
           origin = "top-right";
           corner_radius = 2;
           padding = 12;

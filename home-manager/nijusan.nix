@@ -45,7 +45,8 @@ in
       { interface = "eno3"; interface-type = "wired"; }
       { interface = "wlo1"; interface-type = "wireless"; }
     ];
-    top.center.modules = [ "title" ];
+    top.left.modules = [ "title" ];
+    top.center.modules = [ "i3" ];
     top.right.modules = [
       "memory"
       "cpu"
