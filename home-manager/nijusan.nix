@@ -37,7 +37,11 @@ in
 
   modules.spellcheck.enable = true;
 
-  modules.desktop.i3.enable = true;
+  modules.desktop.i3 = {
+    enable = true;
+    outputs.primary = "DP0";
+    outputs.secondary = "DP2";
+  };
 
   modules.polybar = {
     enable = true;
@@ -74,6 +78,8 @@ in
     };
   };
 
+  gtk.enable = true;
+
   programs.rofi.enable = true;
 
   programs.the-way = {
@@ -86,10 +92,14 @@ in
 
   services.picom.enable = true;
 
-  # TODO define option for default browser
-  home.sessionVariables.BROWSER = "${lib.getExe config.programs.google-chrome.package}";
+  xresources.properties."Xft.dpi" = "";
 
-  gtk.enable = true;
+  home.sessionVariables = {
+    _JAVA_OPTIONS = lib.mkDefault "-Dsun.java2d.uiScale=2";
+    GDK_SCALE = lib.mkDefault "2";
+    GDK_DPI_SCALE = lib.mkDefault "0.5";
+    BROWSER = "${lib.getExe config.programs.google-chrome.package}"; # TODO use option
+  };
 
   # qt.enable = true;
 

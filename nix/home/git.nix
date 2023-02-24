@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   workEmail = "logan@patch.tech";
@@ -10,9 +9,10 @@ with lib; let
     [user]
     email = ${workEmail}
   '';
-  workDirs = ["~/src/github.com/patch-tech/"];
+  workDirs = [ "~/src/github.com/patch-tech/" ];
   git = getExe pkgs.git;
-in {
+in
+{
   programs.git = {
     enable = true;
     aliases = {
@@ -44,8 +44,8 @@ in {
     };
     includes =
       [
-        {path = "~/.config/git/config.local";}
-        {path = ./git/include/gitalias.txt;}
+        { path = "~/.config/git/config.local"; }
+        { path = ./git/include/gitalias.txt; }
       ]
       ++ forEach workDirs (workDir: {
         path = "${workConfig}";
@@ -81,7 +81,7 @@ in {
       stash.showIncludeUntracked = true;
     };
     # hooks
-    ignores = [".localinn"];
+    ignores = [ ".localinn" ];
     signing.key = null; # let GnuPG decide
     userEmail = "logan@llinn.dev";
     userName = "Logan Linn";

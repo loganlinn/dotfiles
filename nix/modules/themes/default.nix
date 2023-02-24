@@ -112,18 +112,18 @@ in
           base01 = bg; # Lighter Background (Used for status bars, line number and folding marks)
           base02 = muted-blue; # Selection Background
           base03 = comments; # Comments, Invisibles, Line Highlighting
-          base04 = fg-alt; # Dark foreground (used for status bars)
+          base04 = base6; # Dark foreground (used for status bars)
           base05 = fg; # Default foregrund, caret, delimiters, operators
-          base06 = base8; # Light foreground
-          base07 = base7; # Light background
+          base06 = base7; # Light foreground
+          base07 = base8; # Light background
           base08 = red; # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
-          base09 = constants; # Integers, Boolean, Constants, XML Attributes, Markup Link Url
-          base0A = highlight; # Classes, Markup Bold, Search Text Background
-          base0B = vc-added; # Strings, Inherited Class, Markup Code, Diff Inserted
+          base09 = violet; # Integers, Boolean, Constants, XML Attributes, Markup Link Url
+          base0A = blue; # Classes, Markup Bold, Search Text Background
+          base0B = green; # Strings, Inherited Class, Markup Code, Diff Inserted
           base0C = dark-cyan; # Support, Regular Expressions, Escape Characters, Markup Quotes
-          base0D = functions; # Functions, Methods, Attribute IDs, Headings
-          base0E = vc-modified; # Keywords, Storage, Selector, Markup Italic, Diff Changed
-          base0F = warning; # Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
+          base0D = teal; # Functions, Methods, Attribute IDs, Headings
+          base0E = orange; # Keywords, Storage, Selector, Markup Italic, Diff Changed
+          base0F = yellow; # Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
 
           # named colors
           bg = "282c34";
@@ -208,7 +208,7 @@ in
       # similar to https://github.com/janoamaral/Xresources-themes
       xresources.extraConfig = ''
         ${lib.pipe config.colorScheme.colors [
-          (lib.filterAttrs (name: _: lib.hasPrefix "base" name))
+          (lib.filterAttrs (name: _: lib.hasPrefix "base0" name))
           (lib.mapAttrsToList (name: value: "#define ${name} #${value}"))
           (lib.concatStringsSep "\n")
         ]}

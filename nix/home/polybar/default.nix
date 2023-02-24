@@ -118,13 +118,8 @@ in
     services.polybar.enable = true;
     services.polybar.package = cfg.package;
     services.polybar.script = ''
-      monitors=$(polybar --list-monitors)
-
-      MONITOR_PRIMARY=$(${pkgs.gnugrep}/bin/grep '\(primary\)' <<<"$monitors" | ${pkgs.coreutils}/bin/cut -d":" -f1)
-      export MONITOR_PRIMARY
-
-      for m in $(${pkgs.coreutils}/bin/cut -d":" -f1 <<<"$monitors"); do
-        MONITOR=$m polybar --reload top &
+      for m in $(polybar --list-monitors | ${pkgs.coreutils}/bin/cut -d":" -f1); do
+        MONITOR=$m polybar top &
       done
     '';
 

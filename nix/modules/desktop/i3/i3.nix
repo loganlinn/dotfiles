@@ -9,6 +9,11 @@ with builtins;
 with lib;
 
 let
+  inherit (lib)
+    mkDefaultOption
+    mkOption
+    types
+    ;
 
   cfg = config.modules.desktop.i3;
   themeCfg = config.modules.theme;
@@ -29,6 +34,8 @@ let
   pactl = args: "exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl ${args}";
   playerctl = args: "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl ${args}";
   ponymix = args: "exec --no-startup-id ${pkgs.ponymix}/bin/ponymix ${args}";
+
+  execType = with types; oneOf [ path str ];
 in
 {
   options.modules.desktop.i3 = {
@@ -36,23 +43,40 @@ in
     # ?
     # i3-input ? "i3-input -f 'pango:Victor Mono 12'"
     locker.exec = mkOption {
-      type = with types; nullOr str;
+      type = with types; nullOr execType;
       default = null;
     };
 
     screenshot.exec = mkOption {
-      type = types.str;
+      type = execType;
       default = "${config.services.flameshot.package}/bin/flameshot gui";
     };
 
     outputs.primary = mkOption {
       type = types.str;
-      default = "DP-0";
+      default = "primary";
     };
 
     outputs.secondary = mkOption {
       type = with types; nullOr str;
-      default = "DP-2";
+      default = null;
+    };
+
+    terminal.exec = mkOption {
+      type = execType;
+      default = "${config.programs.kitty.package}/bin/kitty";
+    };
+
+    processManager.exec = mkOption {
+      type = types.str;
+      default =
+        if config.programs.btop.enable
+        then "${cfg.terminal.exec} ${config.programs.btop.package}/bin/btop"
+        else if config.programs.bottom.enable
+        then "${cfg.terminal.exec} ${config.programs.bottom.package}/bin/btm"
+        else if config.programs.htop.enable
+        then "${cfg.terminal.exec} ${config.programs.htop.package}/bin/htop"
+        else "${cfg.terminal.exec} ${config.programs.proc.package}/bin/top";
     };
   };
 
@@ -78,6 +102,10 @@ in
                 "${super}+Escape" = "exec --no-startup-id ${cfg.locker.exec}";
               };
 
+              processManager = {
+                "Ctrl+${alt}+Delete" = ''exec ${cfg.processManager.exec}'';
+              };
+
               focusWindow = {
                 "${super}+h" = "focus left";
                 "${super}+j" = "focus down";
@@ -87,7 +115,7 @@ in
 
               browser = let chrome = "google-chrome-stable"; in
                 {
-                  "${super}+Shift+Return" = ''exec ${chrome} "--profile-directory=Profile 1"''; # work
+                  "${super}+Shift+Return" = '' exec ${chrome} "--profile-directory=Profile 1"''; # work
                   "${super}+Shift+Ctrl+Return" = ''exec ${chrome} "--profile-directory=Profile 1" --app-id=bgdbmehlmdmddlgneophbcddadgknlpm''; # linear
                   "${super}+${alt}+Return" = ''exec ${chrome} "--profile-directory=Default"''; # personal
                 };
@@ -369,11 +397,14 @@ in
         };
 
         gaps = {
-          horizontal = 10;
-          vertical = 10;
-          inner = 10;
-          outer = 10;
-          # smartBorders = "no_gaps";
+          # horizontal = 10;
+          # vertical = 10;
+          inner = 5;
+          outer = 5;
+          # Smart borders will draw borders on windows only if there is more than one window in a workspace.
+          # This feature can also be enabled only if the gap size between window and screen edge is 0.
+          # Possible values are: on, off, no_gaps
+          smartBorders = "on";
         };
 
         floating = {
@@ -460,8 +491,12 @@ in
 
         include ${config.xdg.configHome}/i3/config.d/*.conf
 
-        # Only enable outer gaps when there is exactly one window or split container on the workspace.
-        smart_gaps inverse_outer
+        # Enabling “Smart Gaps” means no gaps will be shown when there is
+        # precisely one window or split container on the workspace.
+        #
+        # inverse_outer only enables outer gaps when there is exactly one
+        # window or split container on the workspace.
+        smart_gaps on
 
         default_orientation auto
 
@@ -605,14 +640,36 @@ in
         bindsym button9 move left
         bindsym button8 move right
 
+        #################
+        # client.focused
+        # : A client which currently has the focus.
+        #
+        # client.focused_inactive
+        # : A client which is the focused one of its container, but it does not have the focus at the moment.
+        #
+        # client.focused_tab_title
+        # : Tab or stack container title that is the parent of the focused container but not directly focused. Defaults to focused_inactive if not specified and does not use the indicator and child_border colors.
+        #
+        # client.unfocused
+        # : A client which is not the focused one of its container.
+        #
+        # client.urgent
+        # : A client which has its urgency hint activated.
+        #
+        # client.placeholder
+        # : Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
+        #
+        # client.background
+        # : Background color which will be used to paint the background of the client window on top of which the client will be rendered. Only clients which do not cover the whole area of this window expose the color. Note that this colorclass only takes a single color.
+        #################
         # class                 border     backgr.    text       indicator  child_border
         client.focused          #${base02} #${base01} #${base05} #${base0A} #${base02}
-        client.focused_inactive #${base03} #${base04} #${base05} #${base03} #${base01}
+        client.focused_inactive #${base03} #${base04} #${base05} #${base03} #${base04}
         client.unfocused        #${base03} #${base00} #${base04} #${base03} #${base03}
         client.urgent           #${base02} #${base0F} #${base05} #${base0F} #${base0F}
         client.placeholder      #${base00} #${base01} #${base05} #${base00} #${base01}
-
         client.background       #${base05}
+        #################
       '';
     };
   };
