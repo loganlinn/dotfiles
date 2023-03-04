@@ -139,15 +139,15 @@ local config = {
   lsp = {
     -- enable servers that you already have installed without mason
     servers = {
-      "bash-language-server"
+      "bash-language-server",
       "clojure-lsp",
-      "java-language-server"
-      "lua-language-server"
-      "pyright"
+      "java-language-server",
+      "lua-language-server",
+      "pyright",
       "rnix-lsp",
-      "typescript-language-server"
-      "vim-language-server"
-      "yaml-language-server"
+      "typescript-language-server",
+      "vim-language-server",
+      "yaml-language-server",
     },
     formatting = {
       -- control auto formatting on save
