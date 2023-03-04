@@ -94,6 +94,7 @@ in
       (python3.withPackages (ps:
         with ps; [
           black
+          bpython
           dbus-python
           ipython
           isort
@@ -123,6 +124,8 @@ in
           # click-spinner
           # click-threading
           # clickgen
+        ] ++ lib.optionals config.xsession.windowManager.i3.enable [
+          i3ipc
         ]))
       poetry
 
