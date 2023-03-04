@@ -32,6 +32,9 @@ in
       # containers
       dive
 
+      # processes
+      process-compose
+
       # terminal
       lazycli
       gum
