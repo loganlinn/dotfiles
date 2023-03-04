@@ -1,18 +1,15 @@
-{ config
-, lib
-, pkgs
-, ...
-}:
+{ inputs, config, lib, pkgs, ... }:
+
 let
   enableKDE = false;
 in
 {
   imports = [
     ./hardware-configuration.nix
-    <nixos-hardware/common/cpu/intel>
-    <nixos-hardware/common/gpu/nvidia>
-    <nixos-hardware/common/pc/ssd>
-    ./tailscale.nix
+    inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
+    inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
+    inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
+    ../modules/tailscale.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -23,33 +20,66 @@ in
     # enable wifi power saving (keep uapsd off to maintain low latencies)
     # "options iwlwifi power_save=1 uapsd_disable=1"
   ];
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelParams = [
+    "i915.enable_psr=1"
+    "i915.force_probe=a780"
+  ];
+  boot.kernelModules = [ "kvm-intel" ];
+  boot.extraModulePackages = [ ];
 
   hardware.bluetooth.enable = true;
+
   hardware.pulseaudio = {
     enable = true;
     package = pkgs.pulseaudioFull;
     support32Bit = true;
   };
-  hardware.video.hidpi.enable = lib.mkDefault true;
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport32Bit = true;
-  hardware.opengl.extraPackages = with pkgs; [ vaapiVdpau ];
-  hardware.nvidia.powerManagement.enable = true;
+
+  hardware.video.hidpi.enable = true;
+  # environment.variables._JAVA_OPTIONS = "-Dsun.java2d.uiScale=2";
+  # environment.variables.GDK_SCALE = "2";
+  # environment.variables.GDK_DPI_SCALE = "0.5";
+
+  hardware.opengl = {
+    enable = true;
+    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      vaapiVdpau
+    ];
+  };
+
   # https://wiki.archlinux.org/title/Hardware_video_acceleration#Configuring_VA-API
   environment.variables.LIBVA_DRIVER_NAME = "vdpau";
   environment.variables.VDPAU_DRIVER = "nvidia";
+  # The direct backend is currently required on NVIDIA driver series 525 due to a regression
+  # (see https://github.com/elFarto/nvidia-vaapi-driver/issues/126)
+  environment.variables.NVD_BACKEND = "direct";
+
   # https://github.com/elFarto/nvidia-vaapi-driver/tree/d628720416812b8db9d62519892b3fdb31076ece
   environment.etc."libva.conf".text = ''
     LIBVA_MESSAGING_LEVEL=1
   '';
 
+  powerManagement.cpuFreqGovernor = "powersave";
+
   powerManagement.enable = true;
+
+  hardware.nvidia.powerManagement.enable = true;
+
+  # > With this setting, the NVIDIA GPU driver will allow the GPU to go into its lowest power state when no applications are running that use the nvidia driver stack.
+  # > Whenever an application requiring NVIDIA GPU access is started, the GPU is put into an active state.
+  # > When the application exits, the GPU is put into a low power state.
+  # https://download.nvidia.com/XFree86/Linux-x86_64/460.73.01/README/dynamicpowermanagement.html
+  # hardware.nvidia.powerManagement.finegrained = true;
 
   # TODO https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
   # TODO https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
 
-  networking.hostName = "nijusan";
-  networking.networkmanager.enable = true;
+  networking = {
+    hostName = "nijusan";
+    networkmanager.enable = true;
+  };
 
   time.timeZone = "America/Los_Angeles";
 
@@ -67,6 +97,9 @@ in
       layout = "us";
       xkbOptions = "ctrl:nocaps"; # Make Caps Lock a Control key
       autorun = true;
+      displayManager.setupCommands = ''
+        ${pkgs.xorg.xrandr}/bin/xrandr --dpi DP-1
+      '';
     }
     // (
       if enableKDE
@@ -79,15 +112,16 @@ in
       else {
         displayManager = {
           lightdm.enable = true;
-          lightdm.greeters.mini = {
+          lightdm.greeters.slick = {
             enable = true;
+            # font = { name = ""; package = ""; };
+            # iconTheme = { name = ""; package = ""; };
+            # cursorTheme = { name = ""; package = ""; };
+            # extraConfig = '' '';
+          };
+          lightdm.greeters.mini = {
+            enable = false;
             user = "logan";
-            #             extraConfig = ''
-            #               [greeter]
-            #               show-password-label = false
-            #               [greeter-theme]
-            #               background-image = ""
-            #             '';
           };
           defaultSession = "none+xsession";
           # autoLogin.enable = true;
@@ -116,7 +150,6 @@ in
     ];
   };
 
-  # service discovery
   services.avahi = {
     enable = true;
     nssmdns = true; # resolve .local domains of printers
@@ -125,9 +158,11 @@ in
 
   services.openssh = {
     enable = true;
-    passwordAuthentication = false;
-    kbdInteractiveAuthentication = false;
-    permitRootLogin = "no";
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+    };
   };
 
   services.pcscd.enable = true; # for yubikey smartcard
@@ -188,6 +223,8 @@ in
       wget
       xclip
       yubikey-personalization
+      libva-utils
+      # linuxPackages_latest.perf
     ]
     ++ lib.optionals enableKDE [
       plasma5Packages.plasma-thunderbolt
@@ -232,8 +269,10 @@ in
   virtualisation = {
     docker = {
       enable = true;
+      enableNvidia = (lib.findFirst (x: x == "nvidia") config.services.xserver.videoDrivers) != null;
       autoPrune.enable = true;
       autoPrune.dates = "weekly";
+      # rootless.enable = true;
     };
   };
 
@@ -261,6 +300,7 @@ in
   nixpkgs = {
     config = {
       allowUnfree = true; # NVIDIA drivers, etc
+      allowUnfreePredicate = (pkg: true);
       packageOverrides = pkgs: {
         nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
           inherit pkgs;

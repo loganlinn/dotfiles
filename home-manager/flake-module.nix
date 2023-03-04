@@ -1,8 +1,5 @@
 toplevel@{ self, inputs, lib, ... }:
 
-let
-  inherit (lib) optionalAttrs;
-in
 {
   perSystem = ctx@{ options, config, self', inputs', pkgs, system, ... }:
     let
@@ -24,7 +21,7 @@ in
       };
     in
     {
-      legacyPackages = (optionalAttrs (system == "x86_64-linux") {
+      legacyPackages = (lib.optionalAttrs (system == "x86_64-linux") {
         homeConfigurations."logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs extraSpecialArgs;
 
@@ -38,7 +35,7 @@ in
 
         # homeConfigurations."logan@framework" = ...
 
-      }) // (optionalAttrs (system == "aarch64-darwin") {
+      }) // (lib.optionalAttrs (system == "aarch64-darwin") {
 
         darwinConfigurations."logan@patchbook" = inputs.darwin.lib.darwinSystem {
           inherit system;
