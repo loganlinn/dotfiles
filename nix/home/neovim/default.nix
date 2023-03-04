@@ -7,6 +7,7 @@
 
 let
   inherit (lib) mkOptionDefault;
+  inherit (config.lib.file) mkOutOfStoreSymlink;
 in
 {
   # LSP servers
@@ -22,7 +23,8 @@ in
     yamllint
   ];
 
-  xdg.configFile."astrovim/lua/user".source = ../../../config/astrovim/lua/user;
+  # nvim  --headless -c 'autocmd User PackerComplete quitall'
+  xdg.configFile."astrovim/lua/user".source = mkOutOfStoreSymlink "${config.my.dotfilesDir}/config/astrovim/lua/user";
 
   # home.configFile."nvim".source = fetchFromGitHub {
   #   owner = "NvChad";

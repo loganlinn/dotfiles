@@ -59,7 +59,10 @@ in
 
             homeDir = mkOption {
               type = types.str;
-              default = "/home/${config.my.username}"; # TODO if isDarwin then "/Users" else "/home"
+              default =
+                if pkgs.stdenv.targetPlatform.isLinux
+                then "/home/${config.my.user}"
+                else "/Users/${config.my.user}";
             };
 
             dotfilesDir = mkOption {
