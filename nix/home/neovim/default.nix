@@ -24,7 +24,7 @@ in
   ];
 
   # nvim  --headless -c 'autocmd User PackerComplete quitall'
-  xdg.configFile."astrovim/lua/user".source = mkOutOfStoreSymlink "${config.my.dotfilesDir}/config/astrovim/lua/user";
+  xdg.configFile."astronvim/lua/user".source = mkOutOfStoreSymlink "${config.my.dotfilesDir}/config/astronvim/lua/user";
 
   # home.configFile."nvim".source = fetchFromGitHub {
   #   owner = "NvChad";
