@@ -10,7 +10,7 @@ toplevel@{ self, inputs, lib, ... }:
 
   flake = {
 
-    lib = import ../lib inputs;
+    lib = import ../lib toplevel;
 
     # overlay = final: prev: { };
 

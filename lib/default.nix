@@ -1,11 +1,15 @@
-{ nixpkgs, ... }:
+args@
+{ inputs ? dotfiles.inputs
+, dotfiles ? if args?inputs then inputs.self else builtins.getFlake "git+file://${toString ./..}"
+, lib ? inputs.nixpkgs.lib
+, ...
+}:
 
-with nixpkgs.lib;
+with lib;
 
 let
 
   # Searches Nix path by prefix
-  # Example: findNixPath "nixos-config"
   findNixPath = prefix:
     pipe builtins.nixPath [
       (findFirst (p: p.prefix == prefix) null)
@@ -31,7 +35,6 @@ let
       listToAttrs
     ];
 
-  # Type: kebabCaseToCamelCase :: String -> String
   kebabCaseToCamelCase = replaceStrings (map (s: "-${s}") lowerChars) upperChars;
 
 in
@@ -41,6 +44,12 @@ in
   nerdfonts = importDirToAttrs ./nerdfonts;
 
   font-awesome = import ./font-awesome.nix;
+
+  float = import ./float.nix { inherit lib; };
+
+  hex = import ./hex.nix { inherit lib; };
+
+  color = import ./color.nix { inherit lib; };
 
   importNixosConfig = mapNullable import (findNixPath "nixos-config");
 

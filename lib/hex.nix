@@ -1,11 +1,9 @@
-{ lib
-, ...
-}:
+{ lib, ... }:
 
 let
   inherit (builtins) getAttr hasAttr;
   inherit (lib.lists) foldl;
-  inherit (lib.strings) stringToCharacters toUpper;
+  inherit (lib.strings) stringToCharacters toUpper removePrefix;
   inherit (lib.trivial) toHexString;
 
   # Parse a single hexadecimal digit to an integer
@@ -39,7 +37,7 @@ in
   # Convert an hexadecimal string to an integer
   toDec = s:
     let
-      characters = stringToCharacters s;
+      characters = stringToCharacters (removePrefix "0x" s);
       values = map _parseDigit characters;
     in
     foldl (acc: n: acc * 16 + n) 0 values;

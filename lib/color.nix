@@ -1,15 +1,27 @@
-{ self, lib, pkgs, ... }:
+{ lib, ... }:
+
+with builtins;
 
 # Adapted from https://github.com/bertof/nix-rice/blob/ac810023c1bb3d999ab4295ea4eb261412f4b7c0/color.nix
 let
-  inherit (builtins) add fromJSON getAttr hasAttr sub;
-  inherit (self) float hex;
-  inherit (float) mod' round toFloat;
-  inherit (hex) fromDec;
   inherit (lib.lists) all drop head last tail;
-  inherit (lib.strings) concatMapStrings fixedWidthString match toLower;
+  inherit (lib.strings) splitString concatMapStrings fixedWidthString match toLower;
   inherit (lib.trivial) max min;
-  inherit (self.operators) abs clamp inRange isNumber;
+
+  hex = import ./hex.nix { inherit lib; };
+
+  float = import ./float.nix { inherit lib; };
+
+  # Check if input is a number
+  isNumber = v: isInt v || isFloat v;
+
+  abs = v: if v < 0 then (-v) else v;
+
+  # Check if `v` is between `a` and `b`
+  inRange = a: b: v: (v <= max a b) && (v >=min a b);
+
+  # Clamp `v` between `a` and `b`
+  clamp = a: b: v: min (max v (min a b)) (max a b);
 
   ## 8BIT
   # Check if `v` is in 8Bit format
@@ -35,12 +47,12 @@ let
   _isHue = inRange 0.0 360.0;
 
   # Apply function to hue value and map the result in [0, 360)
-  _tHue = f: v: mod' (f v) 360.0;
+  _tHue = f: v: float.mod' (f v) 360.0;
 
   # Convert 8bit value to a 2 digit hex string without initial #
   _toShortHex = values:
     assert(all _is8Bit values);
-    ''${concatMapStrings (v: fixedWidthString 2 "0" (fromDec (round (toFloat v)))) values}'';
+    ''${concatMapStrings (v: fixedWidthString 2 "0" (hex.fromDec (float.round (0.0 + v)))) values}'';
 
   # Convert 8bit value to a 2 digit hex string
   _toHex = values: "#${_toShortHex values}";
@@ -123,7 +135,7 @@ rec {
 
       hue = (
         if delta == 0.0 then 0.0 else
-        if r == c_max then (mod' (((g - b) / delta) + 6) 6) else
+        if r == c_max then (float.mod' (((g - b) / delta) + 6) 6) else
         if g == c_max then (b - r) / delta + 2 else
           assert b == c_max; (r - g) / delta + 4
       ) * 60;
@@ -136,7 +148,7 @@ rec {
     hsla {
       l = _clampUnary lightness;
       s = _clampUnary saturation;
-      h = mod' hue 360.0;
+      h = float.mod' hue 360.0;
       a = _clampUnary a;
     };
 
@@ -148,7 +160,7 @@ rec {
       # _checkRange = a: b: v: a <= v && v < b;
       inherit (hsla color) h s l a;
       c = (1 - (abs (2 * l - 1))) * s;
-      x = c * (1 - abs ((mod' (h / 60) 2) - 1));
+      x = c * (1 - abs ((float.mod' (h / 60) 2) - 1));
       m = l - (c / 2.0);
 
       r' = if inRange 120 240 h then 0 else
@@ -238,7 +250,7 @@ rec {
       rgbaVal = _match4hex s;
       rgbVal = _match3hex s;
       hex_list = if null == rgbVal then rgbaVal else rgbVal ++ [ "FF" ];
-      values = map (s: toFloat (hex.toDec s)) hex_list;
+      values = map (s: 0.0 + (hex.toDec s)) hex_list;
     in
     rgba {
       r = head values;
