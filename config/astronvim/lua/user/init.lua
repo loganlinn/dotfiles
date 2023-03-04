@@ -72,17 +72,14 @@ local config = {
 
   -- Set dashboard header
   header = {
-    " █████  ███████ ████████ ██████   ██████",
-    "██   ██ ██         ██    ██   ██ ██    ██",
-    "███████ ███████    ██    ██████  ██    ██",
-    "██   ██      ██    ██    ██   ██ ██    ██",
-    "██   ██ ███████    ██    ██   ██  ██████",
-    " ",
-    "    ███    ██ ██    ██ ██ ███    ███",
-    "    ████   ██ ██    ██ ██ ████  ████",
-    "    ██ ██  ██ ██    ██ ██ ██ ████ ██",
-    "    ██  ██ ██  ██  ██  ██ ██  ██  ██",
-    "    ██   ████   ████   ██ ██      ██",
+    "                         ███                 ",
+    "                        ░░░                  ",
+    " ████████   █████ █████ ████  █████████████  ",
+    "░░███░░███ ░░███ ░░███ ░░███ ░░███░░███░░███ ",
+    " ░███ ░███  ░███  ░███  ░███  ░███ ░███ ░███ ",
+    " ░███ ░███  ░░███ ███   ░███  ░███ ░███ ░███ ",
+    " ████ █████  ░░█████    █████ █████░███ █████",
+    "░░░░ ░░░░░    ░░░░░    ░░░░░ ░░░░░ ░░░ ░░░░░ ",
   },
 
   -- Default theme configuration
@@ -122,7 +119,7 @@ local config = {
       ["nvim-web-devicons"] = true,
       rainbow = true,
       symbols_outline = false,
-      telescope = true,
+      telescope = true, -- TODO customize telescope
       treesitter = true,
       vimwiki = false,
       ["which-key"] = true,
@@ -139,15 +136,15 @@ local config = {
   lsp = {
     -- enable servers that you already have installed without mason
     servers = {
-      "bash-language-server",
-      "clojure-lsp",
-      "java-language-server",
-      "lua-language-server",
-      "pyright",
-      "rnix-lsp",
-      "typescript-language-server",
-      "vim-language-server",
-      "yaml-language-server",
+      -- "bash-language-server",
+      -- "clojure-lsp",
+      -- "java-language-server",
+      -- "lua-language-server",
+      -- "pyright",
+      -- "rnix-lsp",
+      -- "typescript-language-server",
+      -- "vim-language-server",
+      -- "yaml-language-server",
     },
     formatting = {
       -- control auto formatting on save
@@ -249,15 +246,31 @@ local config = {
       -- },
 
       {
-        "tpope/vim-fugitive",
-      },
-      {
         "kylechui/nvim-surround",
         config = function()
           require("nvim-surround").setup({})
         end,
       },
-
+      { "elkowar/yuck.vim" },
+      { "Olical/aniseed" },
+      { "Olical/conjure" },
+      { "Olical/nvim-local-fennel" },
+      { "PaterJason/cmp-conjure" },
+      { "PeterRincker/vim-argumentative" },
+      { "clojure-vim/clojure.vim" },
+      { "clojure-vim/vim-jack-in" },
+      { "tpope/vim-abolish" },
+      { "tpope/vim-commentary" },
+      { "tpope/vim-dispatch" },
+      { "tpope/vim-eunuch" },
+      { "tpope/vim-fugitive" },
+      { "tpope/vim-repeat" },
+      { "tpope/vim-sexp-mappings-for-regular-people" },
+      { "tpope/vim-sleuth" },
+      { "tpope/vim-surround" },
+      { "tpope/vim-unimpaired" },
+      { "tpope/vim-vinegar" },
+      { "w0rp/ale" }
     },
     -- All other entries override the require("<key>").setup({...}) call for default plugins
     ["null-ls"] = function(config) -- overrides `require("null-ls").setup(config)`

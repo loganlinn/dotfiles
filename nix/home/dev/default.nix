@@ -153,6 +153,7 @@ in
 
       # yaml
       yamllint
+      yq-go
 
       # apis
       doctl
