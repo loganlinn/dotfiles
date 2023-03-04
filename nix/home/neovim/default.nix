@@ -22,6 +22,8 @@ in
     yamllint
   ];
 
+  xdg.configFile."astrovim/lua/user".source = ../../../config/astrovim/lua/user;
+
   # home.configFile."nvim".source = fetchFromGitHub {
   #   owner = "NvChad";
   #   repo = "NvChad";
@@ -44,73 +46,73 @@ in
     ];
 
     plugins = with pkgs.vimPlugins; [
-    #   vim-commentary
-    #   vim-dispatch
-    #   vim-easy-align
-    #   vim-endwise
-    #   vim-eunuch
-    #   vim-fireplace
-    #   vim-fugitive
-    #   vim-pathogen
-    #   vim-repeat
-    #   vim-rhubarb
-    #   vim-rsi
-    #   vim-salve
-    #   vim-sensible
-    #   vim-sexp-mappings-for-regular-people
-    #   vim-sleuth
-    #   vim-speeddating
-    #   vim-surround
-    #   vim-unimpaired
+      #   vim-commentary
+      #   vim-dispatch
+      #   vim-easy-align
+      #   vim-endwise
+      #   vim-eunuch
+      #   vim-fireplace
+      #   vim-fugitive
+      #   vim-pathogen
+      #   vim-repeat
+      #   vim-rhubarb
+      #   vim-rsi
+      #   vim-salve
+      #   vim-sensible
+      #   vim-sexp-mappings-for-regular-people
+      #   vim-sleuth
+      #   vim-speeddating
+      #   vim-surround
+      #   vim-unimpaired
 
-    #   # Core
-    #   bufferline-nvim
-    #   cmp-buffer
-    #   cmp-cmdline
-    #   cmp-dap
-    #   cmp-nvim-lsp
-    #   cmp-nvim-lsp-document-symbol
-    #   cmp-path
-    #   cmp_luasnip
-    #   comment-nvim
-    #   crates-nvim
-    #   dressing-nvim
-    #   editorconfig-nvim
-    #   gitsigns-nvim
-    #   indent-blankline-nvim
-    #   leap-nvim
-    #   lspkind-nvim
-    #   lualine-nvim
-    #   luasnip
-    #   neo-tree-nvim
-    #   noice-nvim
-    #   null-ls-nvim
-    #   numb-nvim
-    #   nvim-cmp
-    #   nvim-colorizer-lua
-    #   nvim-dap
-    #   nvim-dap-ui
-    #   nvim-jdtls
-    #   nvim-lspconfig
-    #   nvim-navic
-    #   nvim-notify
+      #   # Core
+      #   bufferline-nvim
+      #   cmp-buffer
+      #   cmp-cmdline
+      #   cmp-dap
+      #   cmp-nvim-lsp
+      #   cmp-nvim-lsp-document-symbol
+      #   cmp-path
+      #   cmp_luasnip
+      #   comment-nvim
+      #   crates-nvim
+      #   dressing-nvim
+      #   editorconfig-nvim
+      #   gitsigns-nvim
+      #   indent-blankline-nvim
+      #   leap-nvim
+      #   lspkind-nvim
+      #   lualine-nvim
+      #   luasnip
+      #   neo-tree-nvim
+      #   noice-nvim
+      #   null-ls-nvim
+      #   numb-nvim
+      #   nvim-cmp
+      #   nvim-colorizer-lua
+      #   nvim-dap
+      #   nvim-dap-ui
+      #   nvim-jdtls
+      #   nvim-lspconfig
+      #   nvim-navic
+      #   nvim-notify
       nvim-treesitter-textobjects
       nvim-treesitter.withAllGrammars
-    #   nvim-web-devicons
-    #   nvim_context_vt
-    #   playground
-    #   refactoring-nvim
-    #   ron-vim
-    #   rust-tools-nvim
-    #   telescope-fzf-native-nvim
-    #   telescope-nvim
-    #   trouble-nvim
-    #   which-key-nvim
-    #   vim-lastplace
-    #   vim-startify
-    #   vim-visual-multi
+      #   nvim-web-devicons
+      #   nvim_context_vt
+      #   playground
+      #   refactoring-nvim
+      #   ron-vim
+      #   rust-tools-nvim
+      #   telescope-fzf-native-nvim
+      #   telescope-nvim
+      #   trouble-nvim
+      #   which-key-nvim
+      #   vim-lastplace
+      #   vim-startify
+      #   vim-visual-multi
 
-    #   # Language support
+      #   # Language support
       vim-nix
       vim-markdown
       vim-clojure-static
