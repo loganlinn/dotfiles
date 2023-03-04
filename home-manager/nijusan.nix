@@ -50,7 +50,7 @@ in
       { interface = "wlo1"; interface-type = "wireless"; }
     ];
     top.left.modules = [ "title" ];
-    top.center.modules = [ "i3" ];
+    top.center.modules = [ "i3" "sep1" "i3-scratchpad" ];
     top.right.modules = [
       "memory"
       "cpu"
@@ -91,8 +91,6 @@ in
   services.dunst.enable = true;
 
   services.picom.enable = true;
-
-  xresources.properties."Xft.dpi" = "";
 
   home.sessionVariables = {
     _JAVA_OPTIONS = lib.mkDefault "-Dsun.java2d.uiScale=2";

@@ -316,6 +316,17 @@ in
           label-visible-underline = "\${colors.foreground}";
           label-visible-padding = 2;
         })
+        (mkModule "i3-scratchpad" "custom/script" {
+          exec = ''
+            i3-msg -t get_tree | jq -r '[.. | objects | select(.scratchpad_state? == "fresh")] | length'
+          '';
+
+          format-background = "\${colors.background}";
+          format-foreground = "\${colors.foreground-dark}";
+          format-prefix = "+";
+          format-prefix-padding = 0;
+          interval = 3;
+        })
         (mkModule "memory" "internal/memory" {
           interval = 2;
           format = "<label> <bar-used>";

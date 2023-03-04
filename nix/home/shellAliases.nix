@@ -32,7 +32,7 @@ in
     gsrt = "git rev-parse --show-toplevel";
     gsw = "git stash show --patch";
     gw = "git show";
-    grt = ''cd -- "$(git rev-parse --show-toplevel || echo .)"'';
+    grt = ''cd -- "$(git rev-parse --show-toplevel || echo .)" && pwd'';
 
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";
@@ -46,6 +46,9 @@ in
     s = "kitty +kitten ssh";
 
     bb = "rlwrap bb";
+
+    now = "date +%s";
+    today = "date -Idate";
 
   };
 }

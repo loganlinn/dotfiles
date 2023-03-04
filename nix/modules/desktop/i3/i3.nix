@@ -64,19 +64,28 @@ in
 
     terminal.exec = mkOption {
       type = execType;
-      default = "${config.programs.kitty.package}/bin/kitty";
+      default =
+        if config.programs.kitty.enable then
+          "${config.programs.kitty.package}/bin/kitty"
+        else if config.programs.foot.enable then
+          "${config.programs.foot.package}/bin/foot"
+        else if config.programs.alacritty.enable then
+          "${config.programs.alacritty.package}/bin/alacritty"
+        else
+          "i3-sensible-terminal";
     };
 
     processManager.exec = mkOption {
       type = types.str;
       default =
-        if config.programs.btop.enable
-        then "${cfg.terminal.exec} ${config.programs.btop.package}/bin/btop"
-        else if config.programs.bottom.enable
-        then "${cfg.terminal.exec} ${config.programs.bottom.package}/bin/btm"
-        else if config.programs.htop.enable
-        then "${cfg.terminal.exec} ${config.programs.htop.package}/bin/htop"
-        else "${cfg.terminal.exec} ${config.programs.proc.package}/bin/top";
+        if config.programs.btop.enable then
+          "${cfg.terminal.exec} --class ProcessManager ${config.programs.btop.package}/bin/btop"
+        else if config.programs.bottom.enable then
+          "${cfg.terminal.exec} --class ProcessManager ${config.programs.bottom.package}/bin/btm"
+        else if config.programs.htop.enable then
+          "${cfg.terminal.exec} --class ProcessManager ${config.programs.htop.package}/bin/htop"
+        else
+          "${cfg.terminal.exec} --class ProcessManager ${config.programs.proc.package}/bin/top";
     };
   };
 
@@ -416,6 +425,7 @@ in
             { class = "Pavucontrol"; }
             { class = "Qalculate.*"; }
             { class = "System76 Keyboard Configurator"; }
+            { class = "ProcessManager"; }
             { class = "Thunar"; }
             { class = "blueman-manager"; }
             { class = "file-manager"; }
