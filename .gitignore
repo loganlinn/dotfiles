@@ -14,17 +14,16 @@ node_modules/
 .clj-kondo/
 *.local
 
-.secrets
-
 # NixOS build results.
-**/result
+result
+repl-result-out
 
 # QEMU VMs.
 **/*.qcow*
 
-/.direnv
+# direnv
+.direnv
 
 # Devenv
 .devenv*
 devenv.local.nix
-
