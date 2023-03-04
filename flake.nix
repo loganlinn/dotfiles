@@ -21,7 +21,6 @@
     # nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
 
     # libs
-    nixlib.url = "github:nix-community/nixpkgs.lib";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     nix-colors.url = "github:misterio77/nix-colors";

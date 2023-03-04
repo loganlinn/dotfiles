@@ -190,7 +190,8 @@ in
             border-left-size = 6; # TODO match i3 gaps
             border-right-size = 6; # TODO match i3 gaps
 
-            tray-position = "\${env:TRAY_POSITION:none}";
+            # tray-position = "\${env:TRAY_POSITION:none}";
+            tray-position = "right";
             tray-maxsize = 18;
             tray-padding = 2;
             tray-scale = "1.0";

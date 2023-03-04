@@ -32,7 +32,10 @@ in
     gsrt = "git rev-parse --show-toplevel";
     gsw = "git stash show --patch";
     gw = "git show";
-    grt = ''cd -- "$(git rev-parse --show-toplevel || echo .)" && pwd'';
+    gtl = "git rev-parse --show-toplevel";
+    gtlr = "git rev-parse --show-cdup"; # "toplevel relative"
+    gwd = "git rev-parse --show-prefix"; # "git working directory"
+    grt = ''cd -- "$(gtl || pwd)"''; # "goto root"
 
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";

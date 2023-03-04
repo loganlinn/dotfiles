@@ -1,4 +1,4 @@
-{ withSystem, ... }:
+{ self, inputs, ... }:
 
 {
   # perSystem = ...;

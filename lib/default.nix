@@ -1,29 +1,19 @@
-lib:
+{ nixpkgs, ... }:
 
-with lib;
+with nixpkgs.lib;
 
-rec {
-  nerdfonts = importDirToAttrs ./nerdfonts;
+let
 
   # Searches Nix path by prefix
   # Example: findNixPath "nixos-config"
-  findNixPath = prefix: pipe builtins.nixPath [
-    (findFirst (p: p.prefix == prefix) null)
-    (mapNullable (p: p.path))
-  ];
-
-  importNixosConfig = mapNullable import (findNixPath "nixos-config");
-
-  /* Replace strings by attrset
-    Type: substitueStrings :: AttrSet -> String -> String
-  */
-  substitueStrings = m: replaceStrings (attrNames m) (map toString (attrValues m));
-
-  # Type: kebabCaseToCamelCase :: String -> String
-  kebabCaseToCamelCase = replaceStrings (map (s: "-${s}") lowerChars) upperChars;
+  findNixPath = prefix:
+    pipe builtins.nixPath [
+      (findFirst (p: p.prefix == prefix) null)
+      (mapNullable (p: p.path))
+    ];
 
   # Type: importDirToAttrs :: Path -> AttrSet
-  importDirToAttrs = with lib; root:
+  importDirToAttrs = root:
     pipe root [
       filesystem.listFilesRecursive
       (filter (hasSuffix ".nix"))
@@ -40,6 +30,24 @@ rec {
       }))
       listToAttrs
     ];
+
+  # Type: kebabCaseToCamelCase :: String -> String
+  kebabCaseToCamelCase = replaceStrings (map (s: "-${s}") lowerChars) upperChars;
+
+in
+{
+  inherit findNixPath importDirToAttrs kebabCaseToCamelCase;
+
+  nerdfonts = importDirToAttrs ./nerdfonts;
+
+  font-awesome = import ./font-awesome.nix;
+
+  importNixosConfig = mapNullable import (findNixPath "nixos-config");
+
+  /* Replace strings by attrset
+    Type: substitueStrings :: AttrSet -> String -> String
+  */
+  substitueStrings = m: replaceStrings (attrNames m) (map toString (attrValues m));
 
   unionOfDisjoint = x: y:
     let
