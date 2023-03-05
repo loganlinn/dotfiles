@@ -9,17 +9,6 @@
     ./modules/tailscale.nix
   ];
 
-  home-manager.users.logan = {
-    imports = [
-      ../nix/modules/fonts.nix
-      ../nix/home/common.nix
-      ../nix/home/dev
-      ../nix/home/pretty.nix
-      ../nix/home/zsh
-    ];
-    home.stateVersion = "22.11";
-  };
-
   system.defaults = {
     NSGlobalDomain = {
       AppleKeyboardUIMode = 3;

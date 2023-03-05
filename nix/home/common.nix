@@ -22,7 +22,6 @@
     curl
     dig
     dogdns # dig on steroids
-    dtrx # Do The Right Extraction
     du-dust # du alternative
     duf # df alternative
     fd # find alternative
@@ -47,7 +46,6 @@
     tree
     unzip
     xh # curl alternative
-    zenith-nvidia # htop alternative
     zip
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     cached-nix-shell

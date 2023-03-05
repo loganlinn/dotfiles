@@ -94,8 +94,6 @@ in
       (python3.withPackages (ps:
         with ps; [
           black
-          bpython
-          dbus-python
           ipython
           isort
           jupyterlab
@@ -106,24 +104,13 @@ in
           pandas
           pipx
           ptpython
-          pygobject3
           pynvim
           requests
           setuptools
-        ] ++ [
-          # click
-          # click-command-tree
-          # click-completion
-          # click-configfile
-          # click-defaultgroup
-          # click-datetime
-          # click-didyoumean
-          # click-log
-          # click-repl
-          # click-shell
-          # click-spinner
-          # click-threading
-          # clickgen
+        ] ++ lib.optionals pkgs.stdenv.isLinux [
+          dbus-python
+          pygobject3
+          bpython
         ] ++ lib.optionals config.xsession.windowManager.i3.enable [
           i3ipc
         ]))

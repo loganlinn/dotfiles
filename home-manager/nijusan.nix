@@ -121,5 +121,9 @@ in
     minikube
   ];
 
+  home.username = "logan";
+
+  home.homeDirectory = "/home/logan";
+
   home.stateVersion = "22.11";
 }

@@ -13,7 +13,7 @@
       bbenoist.nix
       betterthantomorrow.calva
       bungcip.better-toml
-      coolbear.systemd-unit-file
+      # coolbear.systemd-unit-file
       # davidanson.vscode-markdownlint
       dracula-theme.theme-dracula
       eamodio.gitlens
