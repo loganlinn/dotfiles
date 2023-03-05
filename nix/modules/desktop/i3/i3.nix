@@ -489,9 +489,6 @@ in
             notification = false;
           })
           {
-            command = "i3-msg 'workspace 1; exec ${cfg.editor.exec}; workspace 2; exec ${cfg.terminal.exec}'";
-          }
-          {
             command = "${./i3-focus-marker.sh}";
             always = true;
             notification = false;
