@@ -1,6 +1,15 @@
 # USAGE: nix repl ./repl.nix --argstr hostname <hostname>
+with builtins;
+
 let
-  currentHostname = builtins.head (builtins.match "([a-zA-Z0-9]+)\n" (builtins.readFile "/etc/hostname"));
+  currentHostname = import ../lib/currentHostname.nix;
+  self = getFlake (toString ./..);
+  inherit (self.inputs.nixpkgs) lib;
 in
+
 { hostname ? currentHostname }:
-(builtins.getFlake (toString ./..)).nixosConfigurations.${hostname}
+
+self.nixosConfigurations.${hostname} // {
+  inherit self lib;
+  currentHostname = hostname;
+}
