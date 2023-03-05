@@ -130,6 +130,7 @@ in
         xorg.xrandr
         xorg.xkbevd
         xorg.xmodmap
+        xorg.xdpyinfo
 
         nsxiv # simple image viewer
       ] ++ [
