@@ -66,6 +66,21 @@ in
 
     initExtraBeforeCompInit = ''
       ${readFile ./editor.zsh}
+
+      # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
+      stty -ixon
+
+      ${optionalString config.programs.fzf.enable
+        ''
+        source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
+
+        gco() {
+          local selected
+          if selected=$(_fzf_git_each_ref --no-multi); then
+            [[ -n $selected ]] && git checkout "$selected"
+          fi
+        }
+        ''}
     '';
 
     initExtra = ''
@@ -82,21 +97,6 @@ in
       setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
 
       DIRSTACKSIZE=9
-
-      # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
-      stty -ixon
-
-      ${optionalString config.programs.fzf.enable
-        ''
-        source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
-
-        gco() {
-          local selected
-          if selected=$(_fzf_git_each_ref --no-multi); then
-            [[ -n $selected ]] && git checkout "$selected"
-          fi
-        }
-        ''}
 
       ${readFile ./clipboard.zsh}
 
