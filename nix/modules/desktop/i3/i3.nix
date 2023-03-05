@@ -62,6 +62,11 @@ in
       default = null;
     };
 
+    editor.exec = mkOption {
+      type = execType;
+      default = "emacs";
+    };
+
     terminal.exec = mkOption {
       type = execType;
       default =
@@ -134,7 +139,7 @@ in
               };
 
               editor = {
-                "${super}+e" = ''exec emacs'';
+                "${super}+e" = ''exec ${cfg.editor.exec}'';
                 "${super}+Shift+e" = ''[class="emacs"] focus'';
                 "${super}+${alt}+e" = ''exec emacsclient -a "" -c'';
               };
@@ -483,6 +488,9 @@ in
             always = true;
             notification = false;
           })
+          {
+            command = "i3-msg 'workspace 1; exec ${cfg.editor.exec}; workspace 2; exec ${cfg.terminal.exec}'";
+          }
           {
             command = "${./i3-focus-marker.sh}";
             always = true;
