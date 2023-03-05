@@ -6,10 +6,21 @@
     kubectx
     kubernetes-helm
     kustomize
-    stern     # log tailer
+    stern # log tailer
   ];
 
   programs.k9s.enable = true;
+
+  # https://raw.githubusercontent.com/derailed/k9s/17a61323e155fa193db0a86d8e53238c7852454b/assets/k9s.png
+  xdg.desktopEntries.k9s = {
+    name = "k9s";
+    genericName = "Kubernetes Console";
+    comment = "Kubernetes cluster resource monitor and manager";
+    type = "Application";
+    exec = "${config.programs.k9s.package}/bin/k9s";
+    terminal = true;
+    categories = [ "Development" "Utility" "Network" "ConsoleOnly" ];
+  };
 
   xdg.configFile."k9s/plugin.yml".text = ''
     plugin:
