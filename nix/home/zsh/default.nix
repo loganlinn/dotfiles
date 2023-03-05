@@ -86,10 +86,17 @@ in
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
       stty -ixon
 
-      gco() {
-        local selected=$(_fzf_git_each_ref --no-multi)
-        [ -n "$selected" ] && git checkout "$selected"
-      }
+      ${optionalString config.programs.fzf.enable
+        ''
+        source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
+
+        gco() {
+          local selected
+          if selected=$(_fzf_git_each_ref --no-multi); then
+            [[ -n $selected ]] && git checkout "$selected"
+          fi
+        }
+        ''}
 
       ${readFile ./clipboard.zsh}
 

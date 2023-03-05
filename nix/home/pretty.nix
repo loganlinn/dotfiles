@@ -25,6 +25,5 @@
   };
 
   home.packages = with pkgs; [
-    fzf-git-sh
   ];
 }
