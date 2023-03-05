@@ -40,18 +40,19 @@ in
     };
     sessionVariables = lib.mkOptionDefault config.home.sessionVariables;
     dirHashes = {
-      cfg = config.xdg.configHome;
-      dls = config.xdg.userDirs.download;
-      docs = config.xdg.userDirs.documents;
-      pics = config.xdg.userDirs.pictures;
-      music = config.xdg.userDirs.music;
-      vids = config.xdg.userDirs.videos;
       sync = "$HOME/Sync";
       dots = "$HOME/.dotfiles";
       src = "$HOME/src";
       gh = "$HOME/src/github.com";
       pat = "$HOME/src/github.com/patch-tech/patch";
       be = "$HOME/src/github.com/patch-tech/patch/backend";
+    } // lib.optionalAttrs config.xdg.enable {
+      cfg = config.xdg.configHome;
+      dls = config.xdg.userDirs.download;
+      docs = config.xdg.userDirs.documents;
+      pics = config.xdg.userDirs.pictures;
+      music = config.xdg.userDirs.music;
+      vids = config.xdg.userDirs.videos;
     };
 
     initExtraFirst = ''

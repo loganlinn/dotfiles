@@ -6,6 +6,7 @@
     name = "logan";
     description = "Logan Linn";
     shell = pkgs.zsh;
+    home = "/Users/logan";
   };
 
   services.nix-daemon.enable = true;

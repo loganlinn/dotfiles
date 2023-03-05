@@ -1,15 +1,9 @@
-{ config
-, pkgs
-, self
-, lib
-, ...
-}:
+{ config, pkgs, self, lib, ... }:
 
 let
   inherit (lib) mkOptionDefault;
   inherit (config.lib.file) mkOutOfStoreSymlink;
-in
-{
+in {
   # LSP servers
   home.packages = with pkgs; [
     deadnix
@@ -32,21 +26,25 @@ in
     vimAlias = true;
     viAlias = true;
 
-    extraPackages = with pkgs;[
-      gcc
-      zig
-    ];
+    extraPackages = with pkgs; [ gcc zig ];
 
     extraPython3Packages = ps: with ps; [ pynvim ];
 
   };
 
   # nvim  --headless -c 'autocmd User PackerComplete quitall'
-  xdg.configFile."astronvim/lua/user".source = mkOutOfStoreSymlink "${config.my.dotfilesDir}/config/astronvim/lua/user";
+  xdg.configFile."astronvim/lua/user".source =
+    mkOutOfStoreSymlink "${config.my.dotfilesDir}/config/astronvim/lua/user";
 
-  home.activation.astrovim = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! [ -d "${config.xdg.configHome}"/nvim/.git ]; then
-      ${pkgs.git}/bin/git clone https://github.com/AstroNvim/AstroNvim "${config.xdg.configHome}"/nvim
+  home.activation.astrovim = let
+    nvimDir = if config.xdg.enable then
+      "${config.xdg.configHome}/nvim"
+    else
+      "${config.home.homeDirectory}/.config/nvim";
+  in lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if ! [[ -d ${nvimDir}/.git ]]; then
+      mkdir -p "$(dirname "${nvimDir}")"
+      ${pkgs.git}/bin/git clone https://github.com/AstroNvim/AstroNvim "${nvimDir}"
     fi
   '';
 }
