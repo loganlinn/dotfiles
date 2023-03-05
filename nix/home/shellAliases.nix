@@ -16,7 +16,6 @@ in
 
     gc = "git commit -v";
     gca = "git commit -v -a";
-    gco = "git switch";
     gcm = ''git switch "$(git default-branch || echo .)"'';
     gcob = "git switch -c";
     gcop = "git checkout -p";

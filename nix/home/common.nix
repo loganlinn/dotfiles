@@ -14,6 +14,7 @@
     ];
 
   home.packages = with pkgs; [
+    bc
     binutils
     cmake
     comma # github.com/nix-community/comma

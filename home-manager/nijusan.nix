@@ -99,6 +99,19 @@ in
     BROWSER = "${lib.getExe config.programs.google-chrome.package}"; # TODO use option
   };
 
+  #
+  #    $ xrandr --query | grep " connected"
+  #    DP-0 connected primary 3840x1600+2560+985 (normal left inverted right x axis y axis) 880mm x 367mm
+  #
+  #    # given, 24.5 mm per inch
+  #    $ bc
+  #    3880/(880/24.5)
+  #    110
+  #    1600/(367/24.5)
+  #    114
+
+  xresources.properties."Xft.dpi" = "96";
+
   # qt.enable = true;
 
   home.packages = with pkgs; [
