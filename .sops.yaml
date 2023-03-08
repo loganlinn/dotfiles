@@ -5,9 +5,5 @@ keys:
 
 creation_rules:
   - path_regex: secrets/[^/]+\.yaml$
-    key_groups:
-      - pgp:
-          - *llinn-pgp
-      - age:
-        - *llinn-ssh
-        - *nijusan
+    age: *llinn-ssh
+    pgp: *llinn-pgp

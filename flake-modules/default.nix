@@ -3,9 +3,8 @@ toplevel@{ self, inputs, lib, ... }:
 {
   imports = [
     inputs.flake-parts.flakeModules.easyOverlay
-    ../home-manager/flake-module.nix
-    ../nixos/flake-module.nix
     ./options.nix
+    ./mission-control.nix
   ];
 
   flake = {
@@ -27,14 +26,9 @@ toplevel@{ self, inputs, lib, ... }:
       inherit (config.packages) jdk;
     };
 
+    # formatter = pkgs.nixfmt;
+    # formatter = nixpkgs-fmt;
     formatter = pkgs.alejandra;
-
-    devShells = {
-      default = inputs.devenv.lib.mkShell {
-        inherit inputs pkgs;
-        modules = [ ../devenv.nix ];
-      };
-    };
 
     packages = {
       jdk = lib.mkDefault pkgs.jdk;

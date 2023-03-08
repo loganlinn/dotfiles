@@ -126,6 +126,7 @@ in
 
       # javascript
       # pnpm # Fast, disk space efficient package manager
+      nodejs
       yarn
       yarn-bash-completion
       deno

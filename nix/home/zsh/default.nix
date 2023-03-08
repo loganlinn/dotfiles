@@ -76,6 +76,10 @@ in
         source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
 
         gco() {
+          if (( $# )); then
+            git checkout "$@"
+            return $?
+          fi
           local selected
           if selected=$(_fzf_git_each_ref --no-multi); then
             [[ -n $selected ]] && git checkout "$selected"
