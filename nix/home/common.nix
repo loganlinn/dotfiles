@@ -5,6 +5,7 @@
     [
       ./accounts.nix
       ./clipboard.nix
+      ./common-linux.nix
       ./git.nix
       ./neovim
       ./security.nix

@@ -30,7 +30,7 @@
         description: "Logs <Stern>"
         scopes:
           - pods
-        command: ${pkgs.stern}
+        command: ${pkgs.stern}/bin/stern
         background: false
         args:
           - --tail
@@ -50,7 +50,7 @@
         background: false
         args:
         - -c
-        - "watch -n 5 ${pkgs.kubectl} get events --context $CONTEXT --namespace $NAMESPACE --field-selector involvedObject.name=$NAME"
+        - "watch -n 5 ${pkgs.kubectl}/bin/kubectl get events --context $CONTEXT --namespace $NAMESPACE --field-selector involvedObject.name=$NAME"
   '';
 
   # xdg.configFile."k9s/skin.yml".text = ''

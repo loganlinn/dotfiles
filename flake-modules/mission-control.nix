@@ -1,3 +1,5 @@
+{ inputs, ... }:
+
 {
   perSystem = { pkgs, lib, config, system, ... }:
     let
@@ -49,6 +51,11 @@
           description = "Format the source tree";
           exec = ''nix fmt'';
           category = "Dev Tools";
+        };
+
+        home-manager = {
+          description = "Runs home-manager";
+          exec = inputs.home-manager.packages.${system}.home-manager;
         };
       };
 
