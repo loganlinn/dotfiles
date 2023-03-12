@@ -51,6 +51,9 @@ in
         path = "${workConfig}";
         condition = "gitdir:${workDir}";
       });
+    lfs = {
+      enable = true;
+    };
     delta = {
       enable = true;
       options = {

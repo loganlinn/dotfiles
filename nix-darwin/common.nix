@@ -9,6 +9,9 @@
     home = "/Users/logan";
   };
 
+  programs.bash.enable = true;
+  programs.zsh.enable = true;
+
   services.nix-daemon.enable = true;
 
   nix = {
