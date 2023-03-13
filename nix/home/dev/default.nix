@@ -41,8 +41,13 @@ in
       asciinema
       asciinema-scenario # https://github.com/garbas/asciinema-scenario/
 
-      # toml
-      taplo
+      # data
+      dasel
+      jless
+      jq
+      taplo # toml
+      yamllint
+      yq-go
 
       # data
       protobuf
@@ -72,6 +77,7 @@ in
       nix-init
       deadnix
       statix
+      toml2nix
 
       # c/c++
       ccls
@@ -134,14 +140,6 @@ in
 
       # graphql
       nodePackages.graphql-language-service-cli
-
-      # json
-      jq
-      jless
-
-      # yaml
-      yamllint
-      yq-go
 
       # apis
       doctl

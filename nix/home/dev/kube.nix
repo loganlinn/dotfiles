@@ -6,6 +6,7 @@
     kubectx
     kubernetes-helm
     kustomize
+    kuttl
     stern # log tailer
   ];
 
