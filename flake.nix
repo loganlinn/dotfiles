@@ -12,8 +12,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:lnl7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    hyprland.url = "github:vaxerski/Hyprland/v0.21.0beta";
-    hyprland.inputs.nixpkgs.follows = "nixpkgs";
+    # hyprland.url = "github:vaxerski/Hyprland/v0.21.0beta";
+    # hyprland.inputs.nixpkgs.follows = "nixpkgs";
 
     # overlays
     emacs.url = "github:nix-community/emacs-overlay";

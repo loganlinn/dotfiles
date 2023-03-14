@@ -55,6 +55,16 @@ in
       vids = config.xdg.userDirs.videos;
     };
 
+    plugins = lib.optional config.programs.starship.enable {
+      name = "spaceship-vi-mode";
+      src = pkgs.fetchFromGitHub {
+        owner = "spaceship-prompt";
+        repo = "spaceship-vi-mode";
+        rev = "31a5ac45eb9dcb84b968e1515e8a0074dbc4d1a8";
+        hash = "sha256-NZCfgpLKUsvFLFQnrQdGDaEVwvD5TM14QtbQnkmClXU=";
+      };
+    };
+
     initExtraFirst = ''
       # Stop TRAMP (in Emacs) from hanging or term/shell from echoing back commands
       if [[ $TERM == dumb || -n $INSIDE_EMACS ]]; then
@@ -102,6 +112,8 @@ in
       setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
 
       DIRSTACKSIZE=9
+
+      fpath+=("${../../../local/share/zsh/functions}")
 
       ${readFile ./clipboard.zsh}
 

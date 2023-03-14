@@ -14,6 +14,8 @@ in
 
   home.packages = with pkgs;
     [
+      openssl
+
       # benchmarking
       hey
       hyperfine
@@ -42,27 +44,33 @@ in
       asciinema-scenario # https://github.com/garbas/asciinema-scenario/
 
       # data
+      buf
       dasel
+      grpcurl
       jless
       jq
+      protobuf
       taplo # toml
       yamllint
       yq-go
-
-      # data
-      protobuf
-      buf
-      grpcurl
 
       # version control
       pre-commit
       nodePackages_latest.graphite-cli
       delta
 
-      # markdown
-      mdsh
-      glow
-      nodePackages_latest.mermaid-cli
+      # apis
+      doctl
+      # python3Packages.datadog # conflicts with dog (dns tool)
+      # google-cloud-sdk
+
+      # tools/utils
+      xxd # make a hexdump or do the reverse.
+      cloc
+
+
+      ##########################################################################
+      # LANGUAGES
 
       # shell
       shfmt
@@ -92,6 +100,12 @@ in
       # golang
       gopls
 
+      # vlang
+      vlang
+
+      # zig
+      zig
+
       # java
       java-language-server
       visualvm
@@ -100,6 +114,7 @@ in
       (python3.withPackages (ps:
         with ps; [
           black
+          grip # markdown preview. used by emacs grip-mode
           ipython
           isort
           jupyterlab
@@ -141,14 +156,10 @@ in
       # graphql
       nodePackages.graphql-language-service-cli
 
-      # apis
-      doctl
-      # python3Packages.datadog # conflicts with dog (dns tool)
-      # google-cloud-sdk
-
-      # tools/utils
-      xxd # make a hexdump or do the reverse.
-      cloc
+      # markdown
+      mdsh
+      glow
+      nodePackages_latest.mermaid-cli
 
     ] ++ [
 

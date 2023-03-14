@@ -12,51 +12,35 @@
 
       mission-control.scripts = {
 
-        repl = {
-          description = "Start nix flake repl";
-          exec = ''nix repl --file "$(${flakeRootBin})/repl.nix" "$@"'';
-          category = "REPLs";
+        z = {
+          description = "Start (named) nix repl";
+          exec = ''nix repl --file "$(${flakeRootBin})/''${1-}''${1+/}repl.nix" "$@"'';
         };
 
-        hm-repl = {
-          description = "Start repl for home-manager configuration";
-          exec = ''nix repl --file "$(${flakeRootBin})/home-manager/repl.nix" "$@"'';
-          category = "REPLs";
-        };
-
-        os-repl = {
-          description = "Start repl for nixos configuration";
-          exec = ''nix repl --file "$(${flakeRootBin})/nixos/repl.nix" "$@"'';
-          category = "REPLs";
-        };
-
-        # darwin-repl = {
-        #   description = "Start repl for darwin configuration";
-        #   exec = '''';
-        # };
-
-        switch = {
+        s = {
           description = "Build and activate configuration";
           exec = ''hm switch "$@"'';
-          category = "Dev Tools";
         };
 
-        build = {
+        b = {
           description = "Build configuration";
           exec = ''hm build "$@"'';
-          category = "Dev Tools";
         };
 
-        fmt = {
+        f = {
           description = "Format the source tree";
           exec = ''nix fmt'';
-          category = "Dev Tools";
         };
 
         home-manager = {
           description = "Runs home-manager";
           exec = inputs.home-manager.packages.${system}.home-manager;
         };
+
+        # d = {
+        #   description = "Runs darwin";
+        #   exec = inputs.home-manager.packages.${system}.home-manager;
+        # };
       };
 
       devShells.default =
