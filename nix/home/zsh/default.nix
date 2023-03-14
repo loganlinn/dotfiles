@@ -46,6 +46,8 @@ in
       gh = "$HOME/src/github.com";
       pat = "$HOME/src/github.com/patch-tech/patch";
       be = "$HOME/src/github.com/patch-tech/patch/backend";
+      otel = "$HOME/src/github.com/open-telemetry";
+      clj = "$HOME/src/github.com/clojure";
     } // lib.optionalAttrs config.xdg.enable {
       cfg = config.xdg.configHome;
       dls = config.xdg.userDirs.download;
