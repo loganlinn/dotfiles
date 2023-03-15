@@ -2,27 +2,28 @@
   description = "loganlinn's (highly indecisive) flake";
 
   inputs = {
-    # packages
+    ## packages
     nixpkgs.url = "nixpkgs/nixos-unstable";
     nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
-    # builders
+    ## builders
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:lnl7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     # hyprland.url = "github:vaxerski/Hyprland/v0.21.0beta";
     # hyprland.inputs.nixpkgs.follows = "nixpkgs";
+    # nixos-shell.url = "github:Mic92/nixos-shell";
 
-    # overlays
+    ## overlays
     emacs.url = "github:nix-community/emacs-overlay";
     emacs.inputs.nixpkgs.follows = "nixpkgs";
     # eww.url = "github:elkowar/eww";
     # eww.inputs.nixpkgs.follows = "nixpkgs";
     # nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
 
-    # libs + data
+    ## libs + data
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
@@ -30,29 +31,88 @@
     grub2-themes.url = "github:AnotherGroupChat/grub2-themes-png";
     mission-control.url = "github:Platonic-Systems/mission-control";
     nix-colors.url = "github:misterio77/nix-colors";
+    nixos-flake.url = "github:srid/nixos-flake";
     sops-nix.url = "github:Mic92/sops-nix";
+    agenix.url = "github:ryantm/agenix";
     # process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
 
-    # shells
+    ## shells
     devenv.url = "github:cachix/devenv";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     # devshellurl = "github:numtide/devshell";
     # devshell.inputs.nixpkgs.follows = "nixpkgs";
+
+    ## applications
+    # comma.inputs.nixpkgs.follows = "nixpkgs";
+    # comma.url = "github:nix-community/comma";
+    # emanote.url = "github:srid/emanote";
+    # hci.url = "github:hercules-ci/hercules-ci-agent";
+    # nixos-vscode-server.flake = false;
+    # nixos-vscode-server.url = "github:msteen/nixos-vscode-server";
+    # nixpkgs-match.url = "github:srid/nixpkgs-match";
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake
-      { inherit inputs; }
-      {
-        imports = [
-          inputs.flake-parts.flakeModules.easyOverlay
-          inputs.flake-root.flakeModule
-          inputs.mission-control.flakeModule
-          ./flake-modules
-          ./home-manager/flake-module.nix
-          ./nixos/flake-module.nix
-        ];
-        systems = [ "x86_64-linux" "aarch64-darwin" ];
-        debug = true;
+  outputs = inputs@{ self, ... }:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" "aarch64-darwin" "aarch64-linux" ];
+
+      imports = [
+        inputs.flake-parts.flakeModules.easyOverlay
+        inputs.flake-root.flakeModule
+        inputs.mission-control.flakeModule
+        inputs.nixos-flake.flakeModule
+        # imports.emanote.flakeModule
+        # inputs.hercules-ci-effects.flakeModule
+        ./flake-modules/options.nix # TODO move
+        ./home-manager/flake-module.nix
+        ./nixos/flake-module.nix
+      ];
+
+      debug = true;
+
+      flake = {
+        lib = import ./lib self;
       };
+
+      perSystem = { config, system, inputs', pkgs, lib, ... }: {
+        overlayAttrs = {
+          inherit (inputs'.home-manager.packages) home-manager;
+          inherit (inputs'.devenv.packages) devenv;
+          inherit (inputs'.emacs.packages) emacsGit emacsLsp emacsUnstable;
+          inherit (config.packages) jdk;
+        };
+
+        packages = {
+          jdk = lib.mkDefault pkgs.jdk;
+        };
+
+        formatter = pkgs.nixpkgs-fmt;
+
+        devShells.default = config.mission-control.installToDevShell
+          (pkgs.mkShell {
+            buildInputs = [
+              pkgs.nixpkgs-fmt
+              inputs'.agenix.packages.agenix
+            ];
+          });
+
+        mission-control.scripts =
+          let
+            inherit (lib) getExe;
+            flakeRootBin = getExe config.flake-root.package;
+            homeManagerBin = getExe inputs'.home-manager.packages.home-manager;
+            switchExec = ''homie switch "$@"'';
+            replExec = p: ''file=$(${flakeRootBin})/${p}repl.nix; echo "Starting $file"; nix repl --file "$file""" "$@"'';
+          in
+          {
+            z = { description = "Start flake REPL"; exec = replExec ""; };
+            b = { description = "Build configuration"; exec = ''homie build "$@"''; };
+            s = { description = "Build + activate configuration"; exec = switchExec; };
+            f = { description = "Run nix fmt"; exec = ''nix fmt''; };
+            hm = { description = "Run home-manager"; exec = homeManagerBin; };
+            zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/"; };
+            zo = { description = "Start nixos REPL"; exec = replExec "nixos/"; };
+          };
+      };
+    };
 }

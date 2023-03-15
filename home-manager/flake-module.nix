@@ -8,6 +8,7 @@ toplevel@{ self, inputs, lib, ... }:
       extraSpecialArgs = {
         inherit (inputs) home-manager darwin emacs nix-colors;
         inherit (self.lib) nerdfonts;
+        inherit (config) flake-root;
       };
 
       commonModules = [
@@ -20,7 +21,8 @@ toplevel@{ self, inputs, lib, ... }:
         _module.args.inputs = inputs; # TODO darwin?
       }];
 
-    in {
+    in
+    {
       legacyPackages = (lib.optionalAttrs (system == "x86_64-linux") {
 
         homeConfigurations."logan@nijusan" =
