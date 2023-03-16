@@ -1,7 +1,9 @@
 { config, lib, pkgs, ... }: {
   home.packages = with pkgs; [
     kind
+    kpt
     krew # required after install: krew install krew
+    kubeconform
     kubectl
     kubectx
     kubernetes-helm
