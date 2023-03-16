@@ -25,6 +25,10 @@ in
       configDir = ../../../../config/eww;
     };
 
+    # home.activation.ewwConfigDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    #   ln -s "$(${flakeRootBin})/config/eww" "${config.xdg.configHome}/eww"
+    # '';
+
     systemd.user.services.eww = mkIf config.programs.eww.enable {
       Unit = {
         Description = "Eww Daemon";

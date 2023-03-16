@@ -1,9 +1,4 @@
-args@
-{ inputs ? dotfiles.inputs
-, dotfiles ? if args?inputs then inputs.self else builtins.getFlake "git+file://${toString ./..}"
-, lib ? inputs.nixpkgs.lib
-, ...
-}:
+lib:
 
 with lib;
 

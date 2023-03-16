@@ -60,7 +60,7 @@
         inputs.flake-parts.flakeModules.easyOverlay
         inputs.flake-root.flakeModule
         inputs.mission-control.flakeModule
-        inputs.nixos-flake.flakeModule
+        # inputs.nixos-flake.flakeModule # FIXME: conflicts with flake.lib
         # imports.emanote.flakeModule
         # inputs.hercules-ci-effects.flakeModule
         ./flake-modules/options.nix # TODO move
@@ -71,7 +71,7 @@
       debug = true;
 
       flake = {
-        lib = import ./lib self;
+        lib = import ./lib inputs.nixpkgs.lib;
       };
 
       perSystem = { config, system, inputs', pkgs, lib, ... }: {
@@ -99,19 +99,24 @@
         mission-control.scripts =
           let
             inherit (lib) getExe;
-            flakeRootBin = getExe config.flake-root.package;
-            homeManagerBin = getExe inputs'.home-manager.packages.home-manager;
-            switchExec = ''homie switch "$@"'';
-            replExec = p: ''file=$(${flakeRootBin})/${p}repl.nix; echo "Starting $file"; nix repl --file "$file""" "$@"'';
+            withArgs = cmd: ''${cmd} "$@"'';
+            withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
+            wrap = cmd: lib.pipe cmd [ withArgs withCows ];
+            pkgExec = p: withArgs (getExe p);
+            replExec = f: wrap ''nix repl --file "${f}"'';
           in
           {
-            z = { description = "Start flake REPL"; exec = replExec ""; };
+            z = { description = "Start flake REPL"; exec = replExec "repl.nix"; };
             b = { description = "Build configuration"; exec = ''homie build "$@"''; };
-            s = { description = "Build + activate configuration"; exec = switchExec; };
-            f = { description = "Run nix fmt"; exec = ''nix fmt''; };
-            hm = { description = "Run home-manager"; exec = homeManagerBin; };
-            zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/"; };
-            zo = { description = "Start nixos REPL"; exec = replExec "nixos/"; };
+            s = { description = "Build + activate configuration"; exec = withArgs "homie switch"; };
+            f = { description = "Run nix fmt"; exec = withArgs "nix fmt"; };
+            hm = { description = "Run home-manager"; exec = pkgExec inputs'.home-manager.packages.home-manager; };
+            zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/repl.nix"; };
+            zo = { description = "Start nixos REPL"; exec = replExec "nixos/repl.nix"; };
+            "," = { description = "Run comma"; exec = pkgExec pkgs.comma; };
+            up = { description = "Update flake.lock"; exec = wrap "nix flake update"; };
+            show = { description = "Show flake outputs"; exec = wrap "nix flake show"; };
+            meta = { description = "Show flake"; exec = wrap "nix flake metadata"; };
           };
       };
     };
