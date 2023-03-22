@@ -11,7 +11,6 @@ let
     ;
 
   cfg = config.modules.programs.eww;
-
 in
 {
   options.modules.programs.eww = {

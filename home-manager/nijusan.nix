@@ -1,6 +1,7 @@
-{ config, pkgs, lib, nix-colors, ... }:
+{ flake, config, pkgs, lib, system, ... }:
 
 let
+  inherit (flake.inputs) nix-colors;
   inherit (nix-colors.lib-contrib { inherit pkgs; }) nixWallpaperFromScheme;
 in
 {
@@ -109,13 +110,31 @@ in
 
   xresources.properties."Xft.dpi" = "96";
 
-  # qt.enable = true;
+  # services.emanote = {
+  #   enable = true;
+  #   notes = [
+  #     "${config.home.homeDirectory}/Sync/Notes"
+  #   ];
+  #   package = flake.inputs.emanote.packages.${system}.default;
+  # };
+
+  # pkgs.fetchFromGitHub {
+  #   owner = "kdave";
+  #   repo = "btrfsmaintenance";
+  #   rev = "be42cb6267055d125994abd6927cf3a26deab74c";
+  #   hash = "sha256-wD9AWOaYtCZqU2YIxO6vEDIHCNQBygvFzRHW3LOQRqk=";
+  # };
 
   home.packages = with pkgs; [
     btrfs-progs
+    btrfs-snap # https://github.com/jf647/btrfs-snap
+    btrfs-heatmap # https://github.com/knorrie/btrfs-heatmap
+    (jetbrains.idea-community.override { jdk = config.programs.java.package; })
+    dbeaver
     google-cloud-sdk
     # nemo
     minikube
+    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default))
   ];
 
   home.username = "logan";

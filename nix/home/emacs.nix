@@ -1,4 +1,4 @@
-{ config, lib, pkgs, emacs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   inherit (lib) getExe;
@@ -15,7 +15,8 @@ in
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacsNativeComp;
+    # package = pkgs.emacsNativeComp;
+    package = pkgs.emacsUnstable;
     extraPackages = epkgs: [ epkgs.vterm ];
   };
 

@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# shellcheck disable=2317
+
+set -e
+
+[[ -z ${DEBUG:-} ]] || set -x
+
+function homeConfigurations() { #: Lists home-manager configuration in flake
+    local names
+    # shellcheck disable=SC2005
+    names=$(
+        nix eval "${FLAKE_REF}#homeConfigurations" \
+            --apply 'with builtins; x: concatStringsSep "\n" (attrNames x)'
+    )
+    # strip quotes
+    names="${names#\"}"
+    names="${names%\"}"
+    # echo to expand newlines
+    echo "$names"
+}
+
+printUsage() {
+    echo "Usage: $(basename "$0") <command> [options...]"
+    echo
+}
+
+####
+
+if [[ -z $FLAKE ]]; then
+    FLAKE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
+fi
+
+FLAKE_REF="${FLAKE%#*}" # before '#'
+if [[ -z $FLAKE_ATTR ]]; then
+    FLAKE_ATTR=$(printf '"%s@%s"' "$USER" "$(hostname -s)")
+fi
+
+###########
+
+COMMAND=$1
+shift
+
+case ${COMMAND:-shell} in
+    -h | --help | help)
+        printUsage
+        ;;
+
+    option)
+        # 'home-manager option' does not support --flake option (manpage is more useful, anyway...)
+        PAGER="less -g -I -s '+/^       $1'" man home-configuration.nix
+        ;;
+
+    update)
+        if [[ $# -eq 0 ]]; then
+            echo "Updating all input flakes..."
+            nix flake update \
+                "$FLAKE_REF"
+        else
+            echo "Updating input flakes: $*"
+            nix flake lock \
+                "${@/#/--update-input }" \
+                "$FLAKE_REF"
+        fi
+        ;;
+
+    gc)
+        if [[ " $* " != *" --quick "* ]]; then
+            echo "Optimizing nix-store" >&2
+            nix-store --optimise -vv
+        fi
+        echo "Collecting generations" >&2
+        nix-collect-garbage --delete-old
+        ;;
+
+    repl)
+        if [[ -f $FLAKE_REF/repl.nix ]]; then
+            exec nix repl --file "$FLAKE_REF"/repl.nix "$@"
+        else
+            echo "not found: $FLAKE_REF/repl.nix: starting default repl" >&2
+            exec nix repl "$@"
+        fi
+        ;;
+
+    sh | shell)
+        if [[ -d $FLAKE_REF ]]; then
+            cd "$FLAKE_REF"
+        fi
+        exec nix "$@" develop "$FLAKE_REF"
+        ;;
+
+    # flake apps
+    run)
+        if [[ $# -eq 0 ]]; then # run default app
+            exec nix run "${NIX_OPTS[@]}" "$FLAKE"
+        else # run non-default app
+            # shellcheck disable=2145
+            exec nix run "${NIX_OPTS[@]}" "$FLAKE#$@"
+        fi
+        ;;
+
+    # flake commands
+    check | info | lock | metadata | show)
+        nix flake "$COMMAND" \
+            "${NIX_OPTS[@]}" \
+            "$@" \
+            "$FLAKE_REF"
+        ;;
+
+    # basic home-manager commands
+    remove-generations | expire-generations | news)
+        exec home-manager "$COMMAND"
+        ;;
+
+    # flake home-manager commands
+    switch | build | instantiate | generations | packages)
+        exec home-manager "$COMMAND" --flake "$FLAKE" "$@"
+        ;;
+
+    '')
+        echo "$(basename "$0"): missing command"
+        echo
+        printUsage
+        exit 1
+        ;;
+
+    *)
+        echo "$(basename "$0"): '$1' is not a command"
+        echo
+        printUsage
+        exit 1
+        ;;
+
+esac

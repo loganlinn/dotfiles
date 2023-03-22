@@ -7,7 +7,7 @@ in
 {
   imports = [
     ./azure.nix
-    ./clojure.nix
+    ./jvm.nix
     ./kube.nix
     ./gh.nix
   ];
@@ -53,6 +53,7 @@ in
       taplo # toml
       yamllint
       yq-go
+      prom2json
 
       # version control
       pre-commit
@@ -76,6 +77,8 @@ in
       shfmt
       shellcheck
       shellharden
+      docopts
+      # (import ../../pkgs/docopt-sh.nix pkgs)
 
       # nix
       alejandra
@@ -91,11 +94,15 @@ in
       ccls
       clang-tools
 
+      # cue
+      cue
+      cuelsp
+
       # rust
-      rustc
-      cargo
-      rustfmt
-      rust-analyzer
+      # rustc
+      # cargo
+      # rustfmt
+      # rust-analyzer
 
       # golang
       gopls
@@ -108,7 +115,7 @@ in
 
       # java
       java-language-server
-      visualvm
+      # visualvm # conflicts with pkgs.graalvm-ce
 
       # python
       (python3.withPackages (ps:

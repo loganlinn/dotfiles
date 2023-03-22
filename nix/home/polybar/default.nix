@@ -1,10 +1,11 @@
-{ config, lib, pkgs, nerdfonts, ... }:
+{ flake, config, lib, pkgs, ... }:
 
 with builtins;
 
 let
   cfg = config.modules.polybar;
 
+  inherit (flake.lib) nerdfonts;
   inherit (lib)
     forEach
     mkEnableOption

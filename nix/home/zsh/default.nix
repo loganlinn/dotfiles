@@ -57,7 +57,17 @@ in
       vids = config.xdg.userDirs.videos;
     };
 
-    plugins = lib.optional config.programs.starship.enable {
+    plugins = [
+      {
+        name = "forgit";
+        src = pkgs.fetchFromGitHub {
+          owner = "wfxr";
+          repo = "forgit";
+          rev = "9bb53dc455d09096cca066627adbf41eb7766f28";
+          hash = "sha256-fhRQuyheNqdu/YHOffmaa+J9il2kmwyM7QKXRXmbPrQ=";
+        };
+      }
+    ] ++ lib.optional config.programs.starship.enable {
       name = "spaceship-vi-mode";
       src = pkgs.fetchFromGitHub {
         owner = "spaceship-prompt";
@@ -129,6 +139,7 @@ in
         ''[[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX''}
 
       source ${./../../../bin/src-get}
+      # eval "$(src init -)"
 
       [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
     '';

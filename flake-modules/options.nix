@@ -6,6 +6,7 @@ let
   inherit (flake-parts-lib)
     mkPerSystemOption
     ;
+
   inherit (lib)
     genAttrs
     mapAttrs
@@ -16,70 +17,89 @@ let
     types
     mkAliasDefinitions
     ;
+
+  strOrPackage = with lib;
+    let
+      resolveKey = key:
+        let
+          attrs = builtins.filter builtins.isString (builtins.split "\\." key);
+          op = sum: attr: sum.${attr} or (throw "package \"${key}\" not found");
+        in
+        builtins.foldl' op pkgs attrs;
+    in
+    # Because we want to be able to push pure JSON-like data into the environment.
+    types.coercedTo types.str resolveKey types.package;
+
 in
 
 {
   options = {
 
-    perSystem = mkPerSystemOption ({ options, config, pkgs, ... }: {
+    perSystem = mkPerSystemOption
+      ({ options, config, pkgs, ... }: {
 
-      # imports = [
-      #   (lib.mkAliasOptionModule [ "mission-control" "scripts" ])
-      # ];
+        # imports = [
+        #   (lib.mkAliasOptionModule [ "mission-control" "scripts" ])
+        # ];
 
-      options.my = {
+        options.my = {
 
-        user = mkOption {
-          type = types.str;
-          default = "logan";
+          user = mkOption {
+            type = types.str;
+            default = "logan";
+          };
+
+          email = mkOption {
+            type = types.str;
+            default = "logan@llinn.dev";
+          };
+
+          github.user = mkOption {
+            type = types.str;
+            default = "loganlinn";
+          };
+
+          github.oauth-token = mkOption {
+            type = with types; nullOr str;
+            default = null;
+          };
+
+          homeDir = mkOption {
+            type = types.str;
+            default =
+              if pkgs.stdenv.targetPlatform.isLinux
+              then "/home/${config.my.user}"
+              else "/Users/${config.my.user}";
+          };
+
+          dotfilesDir = mkOption {
+            type = types.str;
+            default = "${config.my.homeDir}/.dotfiles";
+          };
+
+          terminal.package = mkOption {
+            type = strOrPackage;
+            default = pkgs.kitty;
+          };
+
+          terminal.exe = mkOption {
+            type = types.str;
+            default = lib.getExe config.my.terminal.package;
+          };
+
+          browser.package = mkOption {
+            type = strOrPackage;
+            default = pkgs.chrome-stable;
+          };
+
+          # TODO public keys
         };
 
-        email = mkOption {
-          type = types.str;
-          default = "logan@llinn.dev";
-        };
 
-        github.user = mkOption {
-          type = types.str;
-          default = "loganlinn";
-        };
+        # config = {
+        #   home-manager.users.${config.my.user} = mkAliasDefinitions options.my.home;
+        # };
 
-        github.oauth-token = mkOption {
-          type = with types; nullOr str;
-          default = null;
-        };
-
-        homeDir = mkOption {
-          type = types.str;
-          default =
-            if pkgs.stdenv.targetPlatform.isLinux
-            then "/home/${config.my.user}"
-            else "/Users/${config.my.user}";
-        };
-
-        dotfilesDir = mkOption {
-          type = types.str;
-          default = "${config.my.homeDir}/.dotfiles";
-        };
-
-        defaults.terminal = mkOption {
-          type = with types; oneOf [ path str package ];
-          default = "${pkgs.kitty}/bin/kitty";
-          apply = toString;
-        };
-
-        defaults.explorer = mkOption {
-          type = with types; oneOf [ path str package ];
-        };
-
-        # TODO public keys
-      };
-
-
-      # config = {
-      #   home-manager.users.${config.my.user} = mkAliasDefinitions options.my.home;
-      # };
-
-    });
+      });
   };
 }

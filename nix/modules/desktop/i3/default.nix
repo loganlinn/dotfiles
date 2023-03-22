@@ -23,6 +23,7 @@ in
     home.packages = with pkgs; [
       i3-layout-manager
 
+      # TODO move to file where other derivations are defined
       (with pkgs; python3Packages.buildPythonPackage rec {
         pname = "i3-balance-workspace"; # bin/i3_balance_workspace
         version = "1.8.6";

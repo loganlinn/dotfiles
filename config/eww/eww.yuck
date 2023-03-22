@@ -1,6 +1,7 @@
 (include "./modules/bluetooth.yuck")
 (include "./modules/bright.yuck")
 (include "./modules/clock.yuck")
+;; (include "./modules/favorites.yuck")
 (include "./modules/music.yuck")
 (include "./modules/net.yuck")
 (include "./modules/sys.yuck")
@@ -12,6 +13,7 @@
 (include "./windows/music.yuck")
 (include "./windows/osd.yuck")
 (include "./windows/system-menu.yuck")
+;; (include "./windows/favorites.yuck")
 
 (defwidget left []
   (box

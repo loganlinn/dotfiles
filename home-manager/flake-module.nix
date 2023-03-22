@@ -9,9 +9,17 @@ toplevel@{ self, inputs, lib, ... }:
         inherit (inputs) home-manager darwin emacs nix-colors;
         inherit (self.lib) nerdfonts;
         inherit (config) flake-root;
+        flake = self;
+        inherit system;
       };
 
       commonModules = [
+        {
+          nixpkgs.overlays = [
+            inputs.rust-overlay.overlays.default
+            inputs.emacs.overlays.default
+          ];
+        }
         {
           options.my = ctx.options.my;
           config.my = ctx.config.my;
@@ -31,6 +39,7 @@ toplevel@{ self, inputs, lib, ... }:
             modules = commonModules ++ [
               inputs.nix-colors.homeManagerModule
               inputs.sops-nix.homeManagerModule
+              # inputs.emanote.homeManagerModule
               ../home-manager/nijusan.nix
             ];
           };

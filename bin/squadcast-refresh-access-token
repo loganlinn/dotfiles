@@ -1,0 +1,24 @@
+#!/usr/bin/env nix-shell
+#! nix-shell -i bash -p curl jq
+
+set -e
+
+load_squadcast_refresh_token() {
+	if [[ -n $SQUADCAST_REFRESH_TOKEN ]]; then
+		printf "%s" $SQUADCAST_REFRESH_TOKEN
+		return
+	elif [[ -n $SQUADCAST_REFRESH_TOKEN_COMMAND ]]; then
+		bash -c "$SQUADCAST_REFRESH_TOKEN_COMMAND"
+	else
+		passage squadcast.com/refresh-token
+	fi
+
+}
+
+if [[ -z $SQUADCAST_REFRESH_TOKEN ]]; then
+	SQUADCAST_REFRESH_TOKEN=$(load_squadcast_refresh_token)
+fi
+
+curl -qsSL "https://${SQUADCAST_AUTH_HOST:-auth.squadcast.com}/oauth/access-token" \
+	--header "X-Refresh-Token: ${SQUADCAST_REFRESH_TOKEN?}" |
+	jq -r .data.access_token
