@@ -6,7 +6,7 @@ let cfg = config.modules.minecraft-server; in
     enable = mkEnableOption "creepers";
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     services.minecraft-server = {
       enable = true;
       eula = true;
