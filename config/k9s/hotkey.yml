@@ -1,0 +1,51 @@
+hotKey:
+
+  shift-0:
+    shortCut:    Shift-0
+    description: View Namespaces
+    command:     namespaces
+
+  shift-1:
+    shortCut:    Shift-1
+    description: View Pods
+    command:     pods
+
+  shift-2:
+    shortCut:    Shift-2
+    description: View ConfigMaps
+    command:     configmaps
+
+  shift-3:
+    shortCut:    Shift-3
+    description: View Secrets
+    command:     secrets
+
+  shift-4:
+    shortCut:    Shift-4
+    description: View Services
+    command:     services
+
+  shift-5:
+    shortCut:    Shift-5
+    description: View Deployments
+    command:     deployments
+
+  shift-6:
+    shortCut:    Shift-6
+    description: View StatefulSets
+    command:     sts
+
+  shift-7:
+    shortCut:    Shift-7
+    description: View DaemonSets
+    command:     ds
+
+  shift-8:
+    shortCut:    Shift-8
+    description: View Instrumentations
+    command:     instrumentations
+
+  shift-9:
+    shortCut:    Shift-9
+    description: View OpenTelemetryCollectors
+    command:     otelcols

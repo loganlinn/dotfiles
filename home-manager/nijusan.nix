@@ -127,15 +127,19 @@ in
 
   home.packages = with pkgs; [
     btrfs-progs
-    btrfs-snap # https://github.com/jf647/btrfs-snap
-    btrfs-heatmap # https://github.com/knorrie/btrfs-heatmap
-    (jetbrains.idea-community.override { jdk = config.programs.java.package; })
+    # btrfs-snap # https://github.com/jf647/btrfs-snap
+    jetbrains.idea-community
     dbeaver
     google-cloud-sdk
     # nemo
     minikube
     (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default))
   ];
+
+  # use system clipboard
+  home.file.".ideavim".text = ''
+    set clipboard+=unnamed
+  '';
 
   home.username = "logan";
 
