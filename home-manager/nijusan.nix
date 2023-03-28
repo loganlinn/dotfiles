@@ -6,6 +6,7 @@ let
 in
 {
   imports = [
+    ./autorandr.nix
     ../nix
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
@@ -40,8 +41,6 @@ in
 
   modules.desktop.i3 = {
     enable = true;
-    outputs.primary = "DP0";
-    outputs.secondary = "DP2";
   };
 
   modules.polybar = {
@@ -89,6 +88,8 @@ in
     enableBashIntegration = true;
   };
 
+  programs.obs-studio.enable = true;
+
   services.dunst.enable = true;
 
   services.picom.enable = true;
@@ -124,6 +125,10 @@ in
   #   rev = "be42cb6267055d125994abd6927cf3a26deab74c";
   #   hash = "sha256-wD9AWOaYtCZqU2YIxO6vEDIHCNQBygvFzRHW3LOQRqk=";
   # };
+
+  # Install a JSON formatted list of all Home Manager options. This can be located at <profile directory>/share/doc/
+  # home-manager/options.json, and may be used for navigating definitions, auto-completing, and other miscellaneous tasks.
+  manual.json.enable = true;
 
   home.packages = with pkgs; [
     btrfs-progs

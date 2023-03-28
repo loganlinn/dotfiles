@@ -52,16 +52,6 @@ in
       default = "${config.services.flameshot.package}/bin/flameshot gui";
     };
 
-    outputs.primary = mkOption {
-      type = types.str;
-      default = "primary";
-    };
-
-    outputs.secondary = mkOption {
-      type = with types; nullOr str;
-      default = null;
-    };
-
     editor.exec = mkOption {
       type = execType;
       default = "emacs";
@@ -172,6 +162,7 @@ in
 
               focusWorkspaceRelative = {
                 "${super}+Tab" = "workspace back_and_forth";
+                "${super}+Shift+Tab" = "move container to workspace back_and_forth";
                 "${super}+Left" = "workspace prev";
                 "${super}+Right" = "workspace next";
                 "${super}+minus" = "exec --no-startup-id i3-next-workspace focus";
@@ -464,17 +455,9 @@ in
           "0" = [ ];
         };
 
-        workspaceOutputAssign = with cfg.outputs; [
-          { workspace = "1"; output = primary; }
-          { workspace = "2"; output = primary; }
-          { workspace = "3"; output = primary; }
-          { workspace = "4"; output = primary; }
-          { workspace = "5"; output = primary; }
-          { workspace = "6"; output = primary; }
-          { workspace = "7"; output = primary; }
-          { workspace = "8"; output = primary; }
-          { workspace = "9"; output = if secondary == null then primary else secondary; }
-          { workspace = "0"; output = if secondary == null then primary else secondary; }
+        workspaceOutputAssign = [
+          { workspace = "9"; output = "nonprimary"; }
+          { workspace = "0"; output = "nonprimary"; }
         ];
 
         startup = [

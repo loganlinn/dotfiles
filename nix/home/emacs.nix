@@ -4,8 +4,8 @@ let
   inherit (lib) getExe;
   emacsRepoUrl = "https://github.com/doomemacs/doomemacs";
   doomRepoUrl = "https://github.com/loganlinn/.doom.d";
-  emacsDir = "${config.home.homeDirectory}/.emacs.d";
-  doomDir = "${config.home.homeDirectory}/.doom.d";
+  emacsDir = "${config.xdg.configHome}/emacs";
+  doomDir = "${config.xdg.configHome}/doom";
 in
 {
 

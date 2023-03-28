@@ -8,24 +8,24 @@ src-home() {
 # Normalize input into URL
 src-repo-url() {
 	case $1 in
-	*://*) # i.e. https://github.com/loganlinn/dotfiles
-		printf "%s\n" "$1"
-		;;
-	*.*/*) # i.e. github.com/loganlinn/dotfiles
-		echo "https://$1"
-		;;
-	*/*) # i.e. loganlinn/dotfiles
-		echo "https://github.com/$1"
-		;;
-	*)
-		(
-			set -eo pipefail
-			gh repo list "$@" |
-				fzf -m --layout=reverse --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all |
-				cut -f1 |
-				sed -e 's|^|https://github.com/|' -e 's|$|.git|'
-		)
-		;;
+		*://*) # i.e. https://github.com/loganlinn/dotfiles
+			printf "%s\n" "$1"
+			;;
+		*.*/*) # i.e. github.com/loganlinn/dotfiles
+			echo "https://$1"
+			;;
+		*/*) # i.e. loganlinn/dotfiles
+			echo "https://github.com/$1"
+			;;
+		*)
+			(
+				set -eo pipefail
+				gh repo list "$@" |
+					fzf -m --layout=reverse --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all |
+					cut -f1 |
+					sed -e 's|^|https://github.com/|' -e 's|$|.git|'
+			)
+			;;
 	esac
 }
 
@@ -48,23 +48,23 @@ src-get() {
 	local debug_flag=false
 
 	case $1 in
-	-h | --help | help)
-		echo "Usage: src-get <repository>"
-		echo "       src-get <owner>/<repo>"
-		return 0
-		;;
-	--debug)
-		shift
-		debug_flag=true
-		;;
-	--)
-		shift
-		;;
-	-*)
-		echo "src-get: unknown '$1' option" >&2
-		echo "Try 'src-get --help' for more information." >&2
-		return 1
-		;;
+		-h | --help | help)
+			echo "Usage: src-get <repository>"
+			echo "       src-get <owner>/<repo>"
+			return 0
+			;;
+		--debug)
+			shift
+			debug_flag=true
+			;;
+		--)
+			shift
+			;;
+		-*)
+			echo "src-get: unknown '$1' option" >&2
+			echo "Try 'src-get --help' for more information." >&2
+			return 1
+			;;
 	esac
 
 	if [[ -z $1 ]]; then
@@ -87,7 +87,7 @@ src-get() {
 					cd "$src_path" ||
 					return $?
 			else
-				cd -- "$src_path" && git fetch --all
+				cd -- "$src_path"
 			fi
 		done
 	done
@@ -107,3 +107,10 @@ src-for-each-exec() {
 	find "$(src-home)" -type d -name '.git' -prune \
 		-execdir "$shell" -c "$*" _ {} \;
 }
+
+# Allow this to be executed directly
+if [[ $0 == "${BASH_SOURCE[0]}" ]]; then
+	echo "Calling src-get $*"
+	set -ex
+	pwd
+fi

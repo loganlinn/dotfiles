@@ -285,6 +285,10 @@ let
     "application/x-shellscript"
     "text/x-c"
     "text/x-c++"
+    "application/x-yaml"
+    "application/x-json"
+    "application/x-toml"
+    "application/x-clj"
   ];
 
   browser = [

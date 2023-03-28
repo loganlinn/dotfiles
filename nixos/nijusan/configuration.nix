@@ -13,6 +13,7 @@
     ./xserver.nix
   ];
 
+  modules.thunar.enable = true;
   modules.tailscale.enable = true;
   modules.tailscale.ssh.enable = true;
   modules.minecraft-server.enable = false;
@@ -30,7 +31,7 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-  hardware.cpu.intel.updateMicrocode = true;
+  # hardware.cpu.intel.updateMicrocode = true;
 
   hardware.bluetooth.enable = true;
 
@@ -55,10 +56,10 @@
 
   hardware.nvidia.powerManagement.enable = true;
 
-  hardware.logitech.wireless = {
-    enable = true;
-    enableGraphical = true;
-  };
+  # hardware.logitech.wireless = {
+  #   enable = true;
+  #   enableGraphical = true;
+  # };
 
   services.hardware.bolt.enable = true;
 
