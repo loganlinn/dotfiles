@@ -16,6 +16,8 @@ let
     ;
 
   cfg = config.modules.desktop.i3;
+  configCfg = config.xsession.windowManager.i3.config;
+
   themeCfg = config.modules.theme;
   colors = config.colorScheme.colors;
 
@@ -115,6 +117,7 @@ in
                 "${super}+j" = "focus down";
                 "${super}+k" = "focus up";
                 "${super}+l" = "focus right";
+                "${super}+backslash" = "focus parent";
               };
 
               browser = let chrome = "google-chrome-stable"; in
@@ -271,6 +274,7 @@ in
 
               ## Modify // Window layout
               layout = {
+                "${super}+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
                 "${super}+f" = "floating toggle";
                 "${super}+t" = "layout toggle split";
                 "${super}+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
@@ -489,14 +493,11 @@ in
 
         include ${config.xdg.configHome}/i3/config.d/*.conf
 
-        # Enabling “Smart Gaps” means no gaps will be shown when there is
-        # precisely one window or split container on the workspace.
-        #
-        # inverse_outer only enables outer gaps when there is exactly one
-        # window or split container on the workspace.
-        smart_gaps on
-
         default_orientation auto
+
+        #=====================================
+        # Window rules
+        #=====================================
 
         for_window [class="kitty-one"] move position center
 
@@ -508,7 +509,10 @@ in
 
         for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
 
-        # Notification menu
+        #=====================================
+        # Notifications
+        #=====================================
+
         set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
 
         mode --pango_markup "$mode_notifications" {
@@ -526,28 +530,43 @@ in
             bindsym Ctrl+g mode "default"
         }
 
-        set $mode_gaps Gaps (o) outer, (i) inner
-        set $mode_gaps_outer Outer Gaps (k/Up) grow locally, (K/Shift+Up) grow globally
-        set $mode_gaps_inner Inner Gaps (k/Up) grow locally, (K/Shift+Up) grow globally
+        #=====================================
+        # Gaps
+        #=====================================
+
+        smart_gaps on
+
+        set $gaps_inner_default ${toString configCfg.gaps.inner}
+        set $gaps_outer_default ${toString configCfg.gaps.outer}
+
+        set $mode_gaps        gaps> [o]uter [i]nner [0]reset [q]uit
+        set $mode_gaps_outer  gaps outer> [-|+]all [j|k]current [BS|0]reset [q]uit
+        set $mode_gaps_inner  gaps inner> [-|+]all [j|k]current [BS|0]reset [q]uit
+
+        bindsym $mod+Shift+g mode "$mode_gaps"
 
         mode --pango_markup "$mode_gaps" {
-            bindsym o           mode "$mode_gaps_outer"
-            bindsym i           mode "$mode_gaps_inner"
-            bindsym Return      mode "$mode_gaps"
-            bindsym Escape      mode "default"
-            bindsym Ctrl+c      mode "default"
-            bindsym Ctrl+g      mode "default"
+            bindsym o          mode "$mode_gaps_outer"
+            bindsym i          mode "$mode_gaps_inner"
+
+            bindsym BackSpace  gaps outer current set $gaps_outer_default, gaps inner current set $gaps_inner_default, mode default
+            bindsym 0          gaps outer all set $gaps_outer_default    , gaps inner all set $gaps_inner_default    , mode  default
+
+            bindsym q            mode "default"
+            bindsym Return       mode "$mode_gaps"
+            bindsym Escape       mode "default"
+            bindsym Ctrl+c       mode "default"
+            bindsym Ctrl+g       mode "default"
         }
+
         mode --pango_markup "$mode_gaps_outer" {
+            bindsym equal       gaps outer all plus 5
+            bindsym minus       gaps outer all minus 5
             bindsym k           gaps outer current plus 5
             bindsym j           gaps outer current minus 5
-            bindsym Up          gaps outer current plus 5
-            bindsym Down        gaps outer current minus 5
 
-            bindsym Shift+k     gaps outer all plus 5
-            bindsym Shift+j     gaps outer all minus 5
-            bindsym Shift+Up    gaps outer all plus 5
-            bindsym Shift+Down  gaps outer all minus 5
+            bindsym BackSpace   gaps current outer set $gaps_outer_default, mode default
+            bindsym 0           gaps outer all set $gaps_outer_default    , mode default
 
             bindsym Tab         mode "$mode_gaps_inner"
             bindsym Return      mode "$mode_gaps"
@@ -555,18 +574,15 @@ in
             bindsym Ctrl+c      mode "default"
             bindsym Ctrl+g      mode "default"
         }
-        mode "$mode_gaps_inner" {
-            bindsym k          gaps inner current plus 5
-            bindsym j          gaps inner current minus 5
-            # same bindings, but for the arrow keys
-            bindsym Up         gaps inner current plus 5
-            bindsym Down       gaps inner current minus 5
 
-            bindsym Shift+k    gaps inner all plus 5
-            bindsym Shift+j    gaps inner all minus 5
-            # same keybindings, but for the arrow keys
-            bindsym Shift+Up   gaps inner all plus 5
-            bindsym Shift+Down gaps inner all minus 5
+        mode "$mode_gaps_inner" {
+            bindsym equal       gaps inner all plus 5
+            bindsym minus       gaps inner all minus 5
+            bindsym k           gaps inner current plus 5
+            bindsym j           gaps inner current minus 5
+
+            bindsym BackSpace   gaps current inner set $gaps_inner_default, mode default
+            bindsym 0           gaps all inner set $gaps_inner_default    , mode default
 
             bindsym Tab         mode "$mode_gaps_outer"
             bindsym Return      mode "$mode_gaps"
@@ -574,9 +590,12 @@ in
             bindsym Ctrl+c      mode "default"
             bindsym Ctrl+g      mode "default"
         }
-        bindsym $mod+Shift+g mode "$mode_gaps"
 
-        set $mode_resize Resize (w)ider, (n)arrower, (s)horter, (t)aller, (=) balance, (g)aps,
+        #=====================================
+        # Window size
+        #=====================================
+
+        set $mode_resize resize> [w]ider [n]arrower [s]horter [t]aller [=]balance [g]aps
         mode "$mode_resize" {
             bindsym w resize grow width 8 px or 1 ppt
             bindsym n resize shrink width 8 px or 1 ppt
