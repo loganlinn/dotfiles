@@ -135,10 +135,12 @@ in
           pynvim
           requests
           setuptools
-        ] ++ lib.optionals pkgs.stdenv.isLinux [
+        ] ++ lib.optionals stdenv.isLinux [
           dbus-python
           pygobject3
           bpython
+          # ] ++ lib.optionals config.programs.obs-studio [
+          #   obspython
         ] ++ lib.optionals config.xsession.windowManager.i3.enable [
           i3ipc
         ]))
@@ -186,6 +188,8 @@ in
       # system76-keyboard-configurator
 
     ];
+
+  home.sessionVariables.GRAPHITE_DISABLE_TELEMETRY = "1";
 
   xdg.configFile."ranger/rc.conf".text = ''
     set vcs_aware false

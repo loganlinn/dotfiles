@@ -6,6 +6,9 @@ plugin:
     description: "Logs <Stern>"
     scopes:
       - pods
+      - jobs
+      - daemonsets
+      - statefulsets
     command: stern
     background: false
     args:

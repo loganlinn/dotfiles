@@ -49,7 +49,7 @@ in
       { interface = "eno3"; interface-type = "wired"; }
       { interface = "wlo1"; interface-type = "wireless"; }
     ];
-    top.left.modules = [ "title" ];
+    top.left.modules = [ "date" "title" ];
     top.center.modules = [ "i3" "sep1" "i3-scratchpad" ];
     top.right.modules = [
       "memory"
@@ -88,7 +88,12 @@ in
     enableBashIntegration = true;
   };
 
-  programs.obs-studio.enable = true;
+  programs.obs-studio = {
+    enable = true;
+    plugins = [
+
+    ];
+  };
 
   services.dunst.enable = true;
 
@@ -138,12 +143,38 @@ in
     google-cloud-sdk
     # nemo
     minikube
-    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default))
+    gcc
+    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
   ];
 
-  # use system clipboard
-  home.file.".ideavim".text = ''
+  # TODO move into own module (maybe can reuse settings type from https://github.com/nix-community/home-manager/blob/master/modules/programs/vim.nix)
+  xdg.configFile."ideavim/ideavimrc".text = ''
+    Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-commentary'
+
+    packadd matchit
+
+    set hlsearch
+    set ignorecase
+    set incsearch
+    set smartcase
+    set relativenumber
+
+    " use system clipboard
     set clipboard+=unnamed
+
+    " enable native IntelliJ insertion
+    set clipboard+=ideaput
+
+    " see https://github.com/JetBrains/ideavim/wiki/ideajoin-examples
+    set ideajoin
+
+    set idearefactormode=keep
+
+
+    map <leader>f <Action>(GotoFile)
+    map <leader>g <Action>(FindInPath)
+    map <leader>b <Action>(Switcher)
   '';
 
   home.username = "logan";
