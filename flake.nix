@@ -89,13 +89,13 @@
 
         formatter = pkgs.nixpkgs-fmt;
 
-        devShells.default = config.mission-control.installToDevShell
-          (pkgs.mkShell {
-            buildInputs = [
-              pkgs.nixpkgs-fmt
-              inputs'.agenix.packages.agenix
-            ];
-          });
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [ config.mission-control.devShell ];
+          buildInputs = [
+            pkgs.nixpkgs-fmt
+            inputs'.agenix.packages.agenix
+          ];
+        };
 
         mission-control = {
           wrapperName = ",,"; # play nice with nix-community/comma
