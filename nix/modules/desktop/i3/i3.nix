@@ -171,10 +171,6 @@ in
                 "${super}+minus" = "exec --no-startup-id i3-next-workspace focus";
                 "${super}+bracketleft" = "workspace prev";
                 "${super}+bracketright" = "workspace next";
-                "${super}+${scrollWheelUp}" = "workspace next";
-                "${super}+${scrollWheelDown}" = "workspace prev";
-                "${super}+${scrollWheelLeft}" = "move workspace to output next";
-                "${super}+${scrollWheelRight}" = "move workspace to output prev";
               };
 
               jumpWindow = {
@@ -494,6 +490,15 @@ in
         include ${config.xdg.configHome}/i3/config.d/*.conf
 
         default_orientation auto
+
+        #=====================================
+        # Keybindings, cont.
+        #=====================================
+
+        bindsym --whole-window --border ${super}+${scrollWheelUp} focus up
+        bindsym --whole-window --border ${super}+${scrollWheelDown} focus down
+        bindsym --whole-window --border ${super}+${scrollWheelLeft} focus left
+        bindsym --whole-window --border ${super}+${scrollWheelRight} focus right
 
         #=====================================
         # Window rules
