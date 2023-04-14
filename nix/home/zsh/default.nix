@@ -31,6 +31,9 @@ in
     };
     shellAliases = {
       sudo = "sudo ";
+      fpath = ''"printf '%s\n' "''${fpath[@]}"'';
+      path = ''"printf '%s\n' "''${path[@]}"'';
+      commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
     };
     shellGlobalAliases = {
       "..." = "../..";
