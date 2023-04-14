@@ -72,7 +72,7 @@ in
       branch.sort = "-committerdate";
       color.ui = true;
       commit.verbose = true; # include diff in commit message editor
-      core.askPass = optionalString (with config.services.gpg-agent; enable && enableSshSupport) ""; # needs to be empty to use terminal for ask pass
+      # core.askPass = optionalString (with config.services.gpg-agent; enable && enableSshSupport) ""; # needs to be empty to use terminal for ask pass
       github.user = "loganlinn";
       help.autocorrect = "prompt";
       init.defaultBranch = "main";

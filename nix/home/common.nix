@@ -147,8 +147,11 @@
   services.gpg-agent = {
     enable = pkgs.stdenv.isLinux;
     enableSshSupport = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
     defaultCacheTtl = lib.mkDefault 86400;
     maxCacheTtl = lib.mkDefault 86400;
+    pinentryFlavor = "tty";
     extraConfig = ''
       allow-emacs-pinentry
       allow-loopback-pinentry
