@@ -154,6 +154,13 @@ in
       icr
       shards
 
+      # vala
+      vala
+      vala-lint
+      vala-language-server
+      pkg-config
+      # akira-unstable
+
       # javascript
       # pnpm # Fast, disk space efficient package manager
       nodejs
