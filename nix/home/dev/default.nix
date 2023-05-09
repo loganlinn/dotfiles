@@ -154,13 +154,6 @@ in
       icr
       shards
 
-      # vala
-      vala
-      vala-lint
-      vala-language-server
-      pkg-config
-      # akira-unstable
-
       # javascript
       # pnpm # Fast, disk space efficient package manager
       nodejs
@@ -201,5 +194,6 @@ in
   xdg.configFile."ranger/rc.conf".text = ''
     set vcs_aware false
     map zg set vcs_aware true
+    setlocal path=${config.xdg.userDirs.download} sort mtime
   '';
 }

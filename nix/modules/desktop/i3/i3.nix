@@ -56,7 +56,7 @@ in
 
     editor.exec = mkOption {
       type = execType;
-      default = "emacs";
+      default = "${pkgs.handlr}/bin/handlr launch text/plain";
     };
 
     terminal.exec = mkOption {
@@ -145,9 +145,9 @@ in
               menus = {
                 "${super}+space" = "exec --no-startup-id rofi-launcher";
                 "${super}+colon" = "exec --no-startup-id rofi-run";
-                "${super}+w" = "exec --no-startup-id rofi-window";
-                "${super}+p" = "exec --no-startup-id rofi-powermenu";
-                "${super}+a" = "exec --no-startup-id rofi-volume";
+                "${super}+Shift+space" = "exec --no-startup-id rofi-window";
+                "${super}+Shift+p" = "exec --no-startup-id rofi-powermenu";
+                "${super}+Shift+s" = "exec --no-startup-id rofi-volume";
               };
 
               focusWorkspaceAbsolute = {
@@ -176,15 +176,6 @@ in
               jumpWindow = {
                 "${super}+comma" = "[con_mark=_prevFocus0] focus";
                 "${super}+ctrl+comma" = "[con_mark=_prevFocus2] focus";
-              };
-
-              focusOutput = {
-                "${super}+Ctrl+Left" = "workspace prev_on_output";
-                "${super}+Ctrl+Right" = "workspace next_on_output";
-                "${super}+Ctrl+bracketleft" = "workspace prev_on_output";
-                "${super}+Ctrl+bracketright" = "workspace next_on_output";
-                "${super}+Ctrl+Tab" = "workspace next_on_output";
-                "${super}+Ctrl+Shift+Tab" = "workspace prev_on_output";
               };
 
               moveWindowPosition = {
@@ -242,16 +233,23 @@ in
                 "${super}+${alt}+minus" = "exec --no-startup-id i3-next-workspace carry";
               };
 
-              modifyWorkspace = {
+              # Ctrl+Shift ~> per-output operations
+              outputs = {
+                "${super}+Ctrl+Shift+Tab" = "workspace next_on_output";
+                "${super}+Ctrl+Shift+grave" = "workspace prev_on_output";
+
                 "${super}+Ctrl+Shift+h" = "move workspace to output left";
                 "${super}+Ctrl+Shift+j" = "move workspace to output down";
                 "${super}+Ctrl+Shift+k" = "move workspace to output up";
                 "${super}+Ctrl+Shift+l" = "move workspace to output right";
-                "${super}+Ctrl+Shift+Left" = "move workspace to output left";
-                "${super}+Ctrl+Shift+Right" = "move workspace to output right";
-                "${super}+Ctrl+Shift+Up" = "move workspace to output up";
-                "${super}+Ctrl+Shift+Down" = "move workspace to output down";
+
+                "${super}+Ctrl+Shift+bracketleft" = "workspace prev_on_output";
+                "${super}+Ctrl+Shift+bracketright" = "workspace next_on_output";
+
+                "${super}+Ctrl+Shift+greater" = "move workspace to output primary";
+                "${super}+Ctrl+Shift+less" = "move workspace to output nonprimary";
               };
+
 
               split = {
                 "${super}+v" = "split vertical";

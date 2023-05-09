@@ -70,6 +70,15 @@ in
           hash = "sha256-fhRQuyheNqdu/YHOffmaa+J9il2kmwyM7QKXRXmbPrQ=";
         };
       }
+      {
+        name = "fzf-tab";
+        src = pkgs.fetchFromGitHub {
+          owner = "Aloxaf";
+          repo = "fzf-tab";
+          rev = "5a81e13792a1eed4a03d2083771ee6e5b616b9ab";
+          hash = "sha256-dPe5CLCAuuuLGRdRCt/nNruxMrP9f/oddRxERkgm1FE=";
+        };
+      }
     ] ++ lib.optional config.programs.starship.enable {
       name = "spaceship-vi-mode";
       src = pkgs.fetchFromGitHub {

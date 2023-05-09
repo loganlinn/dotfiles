@@ -1,15 +1,18 @@
-{
-  config,
-  pkgs,
-  ...
-}: let
+{ config
+, pkgs
+, ...
+}:
+let
   inherit (config.home) homeDirectory;
-in {
+in
+{
   # https://github.com/FiloSottile/passage
   home.packages = with pkgs; [
     age
     age-plugin-yubikey
     passage
+    pass
+    # (writeShellScriptBin "pass" ''exec ${passage}/bin/passage "$@"'')
     (writeShellScriptBin "pz" ''
        set -eou pipefail
        PREFIX="''${PASSAGE_DIR:-$HOME/.passage/store}"

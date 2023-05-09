@@ -1,5 +1,8 @@
 { config, lib, pkgs, ... }:
 
+let
+  withSystemd = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
+in
 {
   imports =
     [
@@ -48,12 +51,6 @@
     unzip
     xh # curl alternative
     zip
-  ] ++ lib.optionals pkgs.stdenv.isLinux [
-    cached-nix-shell
-    sysz
-    trash-cli
-    (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
-    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
   ];
 
   home.sessionVariables = {
@@ -143,9 +140,8 @@
 
   programs.tealdeer.enable = true; # tldr command
 
-  # requires systemd
   services.gpg-agent = {
-    enable = pkgs.stdenv.isLinux;
+    enable = withSystemd;
     enableSshSupport = true;
     enableBashIntegration = true;
     enableZshIntegration = true;
@@ -157,5 +153,4 @@
       allow-loopback-pinentry
     '';
   };
-
 }

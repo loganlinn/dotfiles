@@ -10,6 +10,7 @@ in
     ../nix
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
+    #../nix/home/dev/vala.nix
     ../nix/home/emacs.nix # TODO module
     ../nix/home/kitty
     ../nix/home/mpv.nix
@@ -41,6 +42,7 @@ in
 
   modules.desktop.i3 = {
     enable = true;
+    editor.exec = "doom run";
   };
 
   modules.polybar = {
@@ -137,6 +139,7 @@ in
 
   home.packages = with pkgs; [
     btrfs-progs
+    wordnet # English thesaurus backend (used by synosaurus.el)
     # btrfs-snap # https://github.com/jf647/btrfs-snap
     jetbrains.idea-community
     dbeaver
