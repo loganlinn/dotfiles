@@ -57,21 +57,26 @@ in
     DOOMDIR = "${doomDir}/";
   };
 
-  home.shellAliases = { et = "${pkgs.emacs}/bin/emacs -nw"; };
+  home.shellAliases = {
+    et = "emacs -nw";
+    erepl = "rlwrap doom run --repl";
+  };
 
   # Automatically clone doom emacs repos
-  home.activation = {
-    cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if ! [ -d "${emacsDir}"/.git ]; then
-        ${
-          getExe pkgs.git
-        }/bin/git clone --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
-      fi
-    '';
-    cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if ! [ -d "${doomDir}" ]; then
-        ${getExe pkgs.git} clone "${doomRepoUrl}" "${doomDir}"
-      fi
-    '';
-  };
+  home.activation =
+    let
+      git = "${pkgs.git}/bin/git";
+    in
+    {
+      cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if ! [ -d "${emacsDir}"/.git ]; then
+          $DRY_RUN_COMMAND ${git} clone $VERBOSE_ARG --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
+        fi
+      '';
+      cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if ! [ -d "${doomDir}" ]; then
+          $DRY_RUN_COMMAND ${git} clone $VERBOSE_ARG "${doomRepoUrl}" "${doomDir}"
+        fi
+      '';
+    };
 }

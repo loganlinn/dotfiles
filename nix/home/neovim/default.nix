@@ -3,7 +3,8 @@
 let
   inherit (lib) mkOptionDefault;
   inherit (config.lib.file) mkOutOfStoreSymlink;
-in {
+in
+{
   # LSP servers
   home.packages = with pkgs; [
     deadnix
@@ -36,15 +37,17 @@ in {
   xdg.configFile."astronvim/lua/user".source =
     mkOutOfStoreSymlink "${config.my.dotfilesDir}/config/astronvim/lua/user";
 
-  home.activation.astrovim = let
-    nvimDir = if config.xdg.enable then
-      "${config.xdg.configHome}/nvim"
-    else
-      "${config.home.homeDirectory}/.config/nvim";
-  in lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! [[ -d ${nvimDir}/.git ]]; then
-      mkdir -p "$(dirname "${nvimDir}")"
-      ${pkgs.git}/bin/git clone https://github.com/AstroNvim/AstroNvim "${nvimDir}"
-    fi
-  '';
+  home.activation.astrovim =
+    let
+      nvimDir =
+        if config.xdg.enable then
+          "${config.xdg.configHome}/nvim"
+        else
+          "${config.home.homeDirectory}/.config/nvim";
+    in
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      if ! [[ -d ${nvimDir}/.git ]]; then
+        $DRY_RUN_CMD ${pkgs.git}/bin/git clone $VERBOSE_ARG https://github.com/AstroNvim/AstroNvim "${nvimDir}"
+      fi
+    '';
 }
