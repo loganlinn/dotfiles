@@ -147,6 +147,7 @@ in
     # nemo
     minikube
     gcc
+    libreoffice
     (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
   ];
 
