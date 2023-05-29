@@ -39,6 +39,7 @@ in
     gzip
     moreutils
     neofetch
+    nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
     pinentry
     procs # ps alternative
     rcm # TODO no longer used (!)
