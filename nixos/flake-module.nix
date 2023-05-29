@@ -1,41 +1,28 @@
-{ self, inputs, ... }:
+{ self, withSystem, inputs, ... }:
 
-let
-
-  inherit (inputs) nixpkgs home-manager sops-nix;
-  inherit (nixpkgs) lib;
-
-  nixosSystem = args:
-    (lib.makeOverridable lib.nixosSystem)
-      (lib.recursiveUpdate args {
-        modules = args.modules ++ [
-          {
-            config.nixpkgs.pkgs = lib.mkDefault args.pkgs;
-            config.nixpkgs.localSystem = lib.mkDefault args.pkgs.stdenv.hostPlatform;
-          }
-        ];
-      });
-
-  defaultModules = [
-    # # make flake inputs accessiable in NixOS
-    # {
-    #   _module.args.self = self;
-    #   _module.args.inputs = self.inputs;
-    # }
-  ];
-
-in
 {
-  flake.nixosConfigurations = {
-    nijusan = nixosSystem {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      specialArgs = { inherit self inputs; };
-      modules = defaultModules ++ [
-        # home-manager.nixosModules.home-manager
-        # sops-nix.nixosModules.sops
-        ./nijusan/configuration.nix
-      ];
-    };
+  flake.nixosModules = {
+    # ...
   };
 
+  flake.nixosConfigurations.nijusan = withSystem "x86_64-linux"
+    (ctx@{ config, inputs', ... }:
+      inputs.nixpkgs.lib.nixosSystem {
+        specialArgs = {
+          inherit self inputs inputs';
+          inherit (config) packages;
+        };
+        modules = [
+          ./options.nix
+          # inputs.home-manager.nixosModules.home-manager
+          # inputs.sops-nix.nixosModules.sops
+          ./nijusan/configuration.nix
+          { nixpkgs.config.allowUnfree = true; }
+          {
+            environment.etc."nix/inputs/nixpkgs".source = inputs.nixpkgs.outPath;
+            nix.nixPath = ["nixpkgs=/etc/nix/inputs/nixpkgs"];
+          }
+          # config.nixosModules.my-module
+        ];
+      });
 }

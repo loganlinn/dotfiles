@@ -14,6 +14,7 @@ toplevel@{ self, inputs, lib, ... }:
       };
 
       commonModules = [
+        { _module.args.self = self; } # TODO explain this (needed?)
         {
           nixpkgs.overlays = [
             inputs.rust-overlay.overlays.default
@@ -24,13 +25,21 @@ toplevel@{ self, inputs, lib, ... }:
           options.my = ctx.options.my;
           config.my = ctx.config.my;
         }
-        { _module.args.self = self; }
+        ({ config, ... }: {
+          # https://ayats.org/blog/channels-to-flakes/
+          # Configure NIX_PATH to nixpkgs our flake uses.
+          xdg.configFile."nix/inputs/nixpkgs".source = inputs.nixpkgs.outPath;
+          home.sessionVariables.NIX_PATH =
+            "nixpkgs=${config.xdg.configHome}/nix/inputs/nixpkgs\${NIX_PATH:+:$NIX_PATH}";
+
+          # Pin registry
+          nix.registry.nixpkgs.flake = inputs.nixpkgs;
+        })
       ] ++ lib.optionals pkgs.stdenv.isLinux [{
         _module.args.inputs = inputs; # TODO darwin?
       }];
 
-    in
-    {
+    in {
       legacyPackages = (lib.optionalAttrs (system == "x86_64-linux") {
 
         homeConfigurations."logan@nijusan" =
