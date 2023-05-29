@@ -200,7 +200,6 @@ in
             tray-offset-y = 0;
             tray-detached = false;
             tray-background = "\${colors.background}";
-            tray-transparent = false;
 
             cursor-click = "pointer"; # hand
             cursor-scroll = "ns-resize"; # arrows
@@ -273,7 +272,7 @@ in
         (mkModule "title" "internal/xwindow" {
           format-prefix = nerdfonts.md.dock_window;
           format = "<label>";
-          label = "%{A1:true && rofi -show window:} %title% %{A}";
+          label = "%title%";
           label-maxlen = 64;
           label-empty = "Empty";
           label-empty-foreground = "\${colors.foreground-dark}";
@@ -486,11 +485,11 @@ in
                     # need to manually pad with whitespace because background is changed dynamically
                     echo -n "$tags  $text  "
 
-                    echo -n '%{A}'
-                    echo -n '%{A}'
-                    echo -n '%{A}'
-                    echo -n '%{A}'
-                    echo -n '%{A}'
+                    echo -n '%{A}' # left click
+                    echo -n '%{A}' # middle click
+                    echo -n '%{A}' # right click
+                    echo -n '%{A}' # scroll up
+                    echo -n '%{A}' # scroll down
                     echo
 
                     sleep 1
