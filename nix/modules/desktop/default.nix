@@ -92,6 +92,7 @@ in
         desktop-file-utils # update-desktop-database
         libnotify
         pango
+        networkmanagerapplet
 
         (conky.override {
           x11Support = true;
