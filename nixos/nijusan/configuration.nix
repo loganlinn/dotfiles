@@ -39,9 +39,11 @@
     enable = true;
     package = pkgs.pulseaudioFull;
     support32Bit = true;
+    extraConfig = "
+      load-module module-switch-on-connect
+    ";
   };
 
-  hardware.video.hidpi.enable = true;
   # environment.variables._JAVA_OPTIONS = "-Dsun.java2d.uiScale=2";
   # environment.variables.GDK_SCALE = "2";
   # environment.variables.GDK_DPI_SCALE = "0.5";
@@ -55,6 +57,7 @@
   };
 
   hardware.nvidia.powerManagement.enable = true;
+  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.production; # avoid using the bleeding edge here...
 
   # hardware.logitech.wireless = {
   #   enable = true;
@@ -62,6 +65,7 @@
   # };
 
   services.hardware.bolt.enable = true;
+  services.blueman.enable = true;
 
   powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "powersave";
@@ -242,6 +246,5 @@
     };
   };
 
-  system.copySystemConfiguration = true;
   system.stateVersion = "23.05";
 }
