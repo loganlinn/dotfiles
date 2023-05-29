@@ -76,6 +76,11 @@
       };
 
       perSystem = { config, system, inputs', pkgs, lib, ... }: {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+
         overlayAttrs = {
           inherit (inputs'.home-manager.packages) home-manager;
           inherit (inputs'.devenv.packages) devenv;
