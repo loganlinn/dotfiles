@@ -1,6 +1,10 @@
-{ inputs, config, lib, pkgs, ... }:
-
 {
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   imports = [
     inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
     inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
@@ -28,21 +32,30 @@
     "i915.enable_psr=1"
     "i915.force_probe=a780"
   ];
-  boot.kernelModules = [ "kvm-intel" ];
-  boot.extraModulePackages = [ ];
+  boot.kernelModules = ["kvm-intel"];
+  boot.extraModulePackages = [];
 
   # hardware.cpu.intel.updateMicrocode = true;
 
   hardware.bluetooth.enable = true;
 
   hardware.pulseaudio = {
-    enable = true;
+    enable = !config.services.pipewire.enable;
     package = pkgs.pulseaudioFull;
     support32Bit = true;
     extraConfig = "
       load-module module-switch-on-connect
     ";
   };
+
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
+
+  security.rtkit.enable = true; # recommended for pipewire
 
   # environment.variables._JAVA_OPTIONS = "-Dsun.java2d.uiScale=2";
   # environment.variables.GDK_SCALE = "2";
@@ -92,17 +105,7 @@
 
   i18n.defaultLocale = "en_US.UTF-8";
 
-  security.sudo.package = pkgs.sudo.override { withInsults = true; }; # do your worst.
-
-  sound.enable = true;
-
-  # TODO
-  # sound.enable = false;
-  # services.pipewire = {
-  #   enable = false;
-  #   alsa.enable = true;
-  #   pulse.enable = true;
-  # };
+  security.sudo.package = pkgs.sudo.override {withInsults = true;}; # do your worst.
 
   services.printing = {
     enable = true;
@@ -150,61 +153,63 @@
 
   programs.mosh.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    _1password
-    _1password-gui
-    btrbk
-    cachix
-    curl
-    exa
-    fd
-    killall
-    nixos-option
-    pciutils
-    powertop
-    ripgrep
-    sysz
-    tmux
-    tree
-    steam
-    usbutils
-    wget
-    xclip
-    xdg-utils
-    yubikey-personalization
-    libva-utils # vainfo
-    # linuxPackages_latest.perf
-    ((vim_configurable.override { }).customize {
-      name = "vim";
-      vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
-        start = [
-          vim-commentary
-          vim-eunuch
-          vim-lastplace
-          vim-nix
-          vim-repeat
-          vim-sensible
-          vim-sleuth
-          vim-surround
-          vim-unimpaired
-        ];
-        opt = [ ];
-      };
-      vimrcConfig.customRC = ''
-        let mapleader = "\<Space>"
-        " system clip
-        set clipboard=unnamed
-        " yank to system clipboard without motion
-        nnoremap <Leader>y "+y
-        " yank line to system clipboard
-        nnoremap <Leader>yl "+yy
-        " yank file to system clipboard
-        nnoremap <Leader>yf gg"+yG
-        " paste from system clipboard
-        nnoremap <Leader>p "+p
-      '';
-    })
-  ];
+  environment.systemPackages = with pkgs;
+    [
+      _1password
+      _1password-gui
+      btrbk
+      cachix
+      curl
+      exa
+      fd
+      killall
+      nixos-option
+      pciutils
+      powertop
+      ripgrep
+      sysz
+      tmux
+      tree
+      steam
+      usbutils
+      wget
+      xclip
+      xdg-utils
+      yubikey-personalization
+      libva-utils # vainfo
+      # linuxPackages_latest.perf
+      ((vim_configurable.override {}).customize {
+        name = "vim";
+        vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
+          start = [
+            vim-commentary
+            vim-eunuch
+            vim-lastplace
+            vim-nix
+            vim-repeat
+            vim-sensible
+            vim-sleuth
+            vim-surround
+            vim-unimpaired
+          ];
+          opt = [];
+        };
+        vimrcConfig.customRC = ''
+          let mapleader = "\<Space>"
+          " system clip
+          set clipboard=unnamed
+          " yank to system clipboard without motion
+          nnoremap <Leader>y "+y
+          " yank line to system clipboard
+          nnoremap <Leader>yl "+yy
+          " yank file to system clipboard
+          nnoremap <Leader>yf gg"+yG
+          " paste from system clipboard
+          nnoremap <Leader>p "+p
+        '';
+      })
+    ]
+    ++ lib.optional config.services.pipewire.enable easyeffects;
 
   virtualisation = {
     docker = {
@@ -221,9 +226,16 @@
     home = "/home/logan";
     createHome = true;
     shell = pkgs.zsh;
-    extraGroups = [ "wheel" "networkmanager" "video" "docker" ];
+    extraGroups = ["wheel" "networkmanager" "audio" "video" "docker"];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa"
+    ];
+  };
+
+  xdg.portal = {
+    enable = true; # needed by pipewire
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
     ];
   };
 
@@ -231,13 +243,13 @@
   nix.extraOptions = ''
     experimental-features = nix-command flakes
   '';
-  nix.settings.trusted-users = [ "logan" ];
+  nix.settings.trusted-users = ["logan"];
   nix.gc.automatic = true; # see also: nix-store --optimise
 
   nixpkgs = {
     config = {
       allowUnfree = true; # NVIDIA drivers, Brother, etc
-      allowUnfreePredicate = (pkg: true);
+      allowUnfreePredicate = pkg: true;
       packageOverrides = pkgs: {
         nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
           inherit pkgs;
