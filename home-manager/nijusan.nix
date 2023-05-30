@@ -101,6 +101,8 @@ in
 
   services.picom.enable = true;
 
+  services.easyeffects.enable = true;
+
   home.sessionVariables = {
     BROWSER = "${lib.getExe config.programs.google-chrome.package}"; # TODO use option
   };
