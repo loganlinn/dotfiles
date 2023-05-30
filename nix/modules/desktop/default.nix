@@ -1,38 +1,36 @@
-{ config
-, options
-, lib
-, pkgs
-, ...
-}:
-
-let
-
-  inherit (lib)
+{
+  config,
+  options,
+  lib,
+  pkgs,
+  ...
+}: let
+  inherit
+    (lib)
     mkEnableOption
     mkIf
     mkMerge
     mkOption
-    types;
+    types
+    ;
 
   cfg = config.modules.desktop;
-
-in
-{
-
+in {
   imports = [
     ../../home/polybar
     ../../home/thunar.nix
-    ../../home/tray.nix
     ../../home/xdg.nix
     ../themes
     ./apps
-    ./rofi
-    ./picom.nix
+    ./clipboard.nix
     ./notifications/dunst.nix
+    ./picom.nix
+    ./rofi
+    ./syncthing.nix
+    ./tray.nix
   ];
 
   options.modules.desktop = with types; {
-
     bookmarks = mkOption {
       type = listOf str;
       default = [
@@ -49,50 +47,29 @@ in
         "file://${config.home.homeDirectory}/src/github.com/patch-tech"
       ];
     };
-
-    media.graphics.enable = mkEnableOption "Graphics editing";
-
   };
 
-  config = mkMerge [
-    {
-      programs.eww.enable = true;
+  config = {
+    modules.programs.eww.enable = true;
 
-      programs.feh.enable = true;
+    programs.eww.enable = true;
 
-      modules.programs.eww.enable = true;
+    programs.feh.enable = true;
 
-      services.clipmenu = {
-        enable = true;
-        launcher = lib.getExe config.programs.rofi.package;
-      };
+    services.flameshot.enable = true;
 
-      services.flameshot.enable = true;
+    services.network-manager-applet.enable = true;
 
-      services.network-manager-applet.enable = true;
+    gtk.gtk3.bookmarks = cfg.bookmarks;
 
-      # needs ./tray.nix
-      services.syncthing = {
-        enable = true;
-        tray = {
-          enable = true;
-          package = pkgs.syncthingtray.override {
-            webviewSupport = true;
-            jsSupport = true;
-            plasmoidSupport = false;
-            kioPluginSupport = false;
-          };
-          command = "syncthingtray --wait";
-        };
-      };
-
-      home.packages = with pkgs; [
+    home.packages = with pkgs;
+      [
         arandr
         gtk3
         desktop-file-utils # update-desktop-database
         libnotify
         pango
-        networkmanagerapplet
+        networkmanagerapplet # nm-connection-editor
 
         (conky.override {
           x11Support = true;
@@ -117,14 +94,14 @@ in
         qalculate-gtk
 
         vlc
-      ] ++ [
-
+        nsxiv # simple image viewer
+      ]
+      ++ [
         # x11
         xdotool # Fake keyboard/mouse input, window management, etc
-        xclip
         xscreensaver
 
-        xorg.xev # Event viewer
+        xorg.xev
         xorg.xkill
         xorg.xprop
         xorg.xwininfo
@@ -132,27 +109,11 @@ in
         xorg.xkbevd
         xorg.xmodmap
         xorg.xdpyinfo
-
-        nsxiv # simple image viewer
-      ] ++ [
-
+      ]
+      ++ [
         obsidian
         slack
-
-      ];
-
-      gtk.gtk3.bookmarks = cfg.bookmarks;
-
-      # # Try really hard to get QT to respect my GTK theme.
-      # env.GTK_DATA_PREFIX = [ "${config.system.path}" ];
-      # env.QT_QPA_PLATFORMTHEME = "gnome";
-      # env.QT_STYLE_OVERRIDE = "kvantum";
-
-    }
-    (mkIf cfg.media.graphics.enable {
-      home.packages = with pkgs; [
         inkscape
       ];
-    })
-  ];
+  };
 }
