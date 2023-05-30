@@ -112,6 +112,10 @@ in
                 "Ctrl+${alt}+Delete" = ''exec ${cfg.processManager.exec}'';
               };
 
+              clipboard = lib.optionalAttrs config.services.clipmenu.enable {
+                "${super}+Shift+backslash" = ''exec --no-startup-id env CM_LAUNCHER=rofi clipmenu'';
+              };
+
               focusWindow = {
                 "${super}+h" = "focus left";
                 "${super}+j" = "focus down";
