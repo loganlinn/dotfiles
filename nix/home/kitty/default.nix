@@ -40,6 +40,7 @@
       "kitty_mod+y > l" = "kitten hints --type line --program @";
       "kitty_mod+y > w" = "kitten hints --type word --program @";
       "shift+super+w" = "close_os_window";
+      "kitty_mod+/" = ''launch --type=overlay bash -i -c 'rg "^\s*(map|mouse_map)\s+.*" ~/.config/kitty/kitty.conf | fzf' '';
     };
 
     settings = {
