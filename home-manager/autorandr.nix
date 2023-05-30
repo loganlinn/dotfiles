@@ -7,8 +7,8 @@ let
   };
 in
 {
-  programs.autorandr.enable = true;
   programs.autorandr = {
+    enable = true;
     profiles = {
       home = {
         fingerprint = with edids; {
@@ -37,4 +37,5 @@ in
       "notify-i3" = "${pkgs.i3}/bin/i3-msg restart";
     };
   };
+  services.autorandr.enable = true;
 }
