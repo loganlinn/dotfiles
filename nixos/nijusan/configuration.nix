@@ -153,63 +153,62 @@
 
   programs.mosh.enable = true;
 
-  environment.systemPackages = with pkgs;
-    [
-      _1password
-      _1password-gui
-      btrbk
-      cachix
-      curl
-      exa
-      fd
-      killall
-      nixos-option
-      pciutils
-      powertop
-      ripgrep
-      sysz
-      tmux
-      tree
-      steam
-      usbutils
-      wget
-      xclip
-      xdg-utils
-      yubikey-personalization
-      libva-utils # vainfo
-      # linuxPackages_latest.perf
-      ((vim_configurable.override {}).customize {
-        name = "vim";
-        vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
-          start = [
-            vim-commentary
-            vim-eunuch
-            vim-lastplace
-            vim-nix
-            vim-repeat
-            vim-sensible
-            vim-sleuth
-            vim-surround
-            vim-unimpaired
-          ];
-          opt = [];
-        };
-        vimrcConfig.customRC = ''
-          let mapleader = "\<Space>"
-          " system clip
-          set clipboard=unnamed
-          " yank to system clipboard without motion
-          nnoremap <Leader>y "+y
-          " yank line to system clipboard
-          nnoremap <Leader>yl "+yy
-          " yank file to system clipboard
-          nnoremap <Leader>yf gg"+yG
-          " paste from system clipboard
-          nnoremap <Leader>p "+p
-        '';
-      })
-    ]
-    ++ lib.optional config.services.pipewire.enable easyeffects;
+  environment.systemPackages = with pkgs; [
+    _1password
+    _1password-gui
+    alsa-utils # arecord
+    btrbk
+    cachix
+    curl
+    exa
+    fd
+    killall
+    nixos-option
+    pciutils
+    powertop
+    ripgrep
+    sysz
+    tmux
+    tree
+    steam
+    usbutils
+    wget
+    xclip
+    xdg-utils
+    yubikey-personalization
+    libva-utils # vainfo
+    # linuxPackages_latest.perf
+    ((vim_configurable.override {}).customize {
+      name = "vim";
+      vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
+        start = [
+          vim-commentary
+          vim-eunuch
+          vim-lastplace
+          vim-nix
+          vim-repeat
+          vim-sensible
+          vim-sleuth
+          vim-surround
+          vim-unimpaired
+        ];
+        opt = [];
+      };
+      vimrcConfig.customRC = ''
+        let mapleader = "\<Space>"
+        " system clip
+        set clipboard=unnamed
+        " yank to system clipboard without motion
+        nnoremap <Leader>y "+y
+        " yank line to system clipboard
+        nnoremap <Leader>yl "+yy
+        " yank file to system clipboard
+        nnoremap <Leader>yf gg"+yG
+        " paste from system clipboard
+        nnoremap <Leader>p "+p
+      '';
+    })
+  ];
 
   virtualisation = {
     docker = {
