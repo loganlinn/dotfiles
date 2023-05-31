@@ -36,6 +36,7 @@ in
     gwd = "git rev-parse --show-prefix"; # "git working directory"
     grt = ''cd -- "$(gtl || pwd)"''; # "goto root"
 
+    nix = "noglob nix"; # don't glob so flake references dont need to be quoting
     nix-gc = "nix-collect-garbage -d";
     nixq = "nix-env -qaP";
     nixpkgs = "nix repl --expr 'let pkgs = import <nixpkgs> {}; in builtins // pkgs.lib // { inherit pkgs; }'";
