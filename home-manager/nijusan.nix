@@ -7,21 +7,21 @@ in
 {
   imports = [
     ../nix
-    ./modules/common.nix
-    ./modules/dev # TODO module
-    #./modules/dev/vala.nix
-    ./modules/emacs.nix
-    ./modules/kitty
-    ./modules/mpv.nix
-    ./modules/nnn.nix
-    ./modules/pretty.nix
-    ./modules/sync.nix
-    ./modules/urxvt.nix
-    ./modules/vpn.nix
-    ./modules/vscode.nix
-    ./modules/x11.nix
-    ./modules/yt-dlp.nix
-    ./modules/zsh
+    ../nix/home/common.nix
+    ../nix/home/dev # TODO module
+    #../nix/home/dev/vala.nix
+    ../nix/home/emacs.nix
+    ../nix/home/kitty
+    ../nix/home/mpv.nix
+    ../nix/home/nnn.nix
+    ../nix/home/pretty.nix
+    ../nix/home/sync.nix
+    ../nix/home/urxvt.nix
+    ../nix/home/vpn.nix
+    ../nix/home/vscode.nix
+    ../nix/home/x11.nix
+    ../nix/home/yt-dlp.nix
+    ../nix/home/zsh
     ../nix/modules/programs/eww
     ../nix/modules/programs/the-way
     ../nix/modules/services
