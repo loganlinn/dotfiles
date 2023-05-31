@@ -142,6 +142,7 @@ in
   manual.json.enable = true;
 
   home.packages = with pkgs; [
+    audacity
     btrfs-progs
     wordnet # English thesaurus backend (used by synosaurus.el)
     # btrfs-snap # https://github.com/jf647/btrfs-snap
