@@ -8,6 +8,12 @@ in
   programs.mpv = {
     enable = isLinux;
     defaultProfiles = mkDefault [ "gpu-hq" "interpolation" ];
+    scripts = with pkgs.mpvScripts; [
+      autoload # loads playlist entries
+      mpris # media keys
+      thumbnail # in OSC seekbar
+      sponsorblock
+    ];
     config = {
       # Use hardware acceleration
       hwdec = mkIf isLinux "vaapi";
