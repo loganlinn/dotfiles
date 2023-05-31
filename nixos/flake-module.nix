@@ -14,11 +14,12 @@
           # inputs.home-manager.nixosModules.home-manager
           # inputs.sops-nix.nixosModules.sops
           ./nijusan/configuration.nix
+          config.nixosModules.nix-path
+          ../nix/modules/nix-registry.nix
           {
             options.my = system.options.my;
             config.my = system.config.my;
           }
-          # ./options.nix
           # {
           #   environment.etc."nix/inputs/nixpkgs".source = inputs.nixpkgs.outPath;
           #   nix.nixPath = ["nixpkgs=/etc/nix/inputs/nixpkgs"];
