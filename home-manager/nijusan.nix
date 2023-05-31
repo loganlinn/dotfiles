@@ -97,6 +97,8 @@ in
     ];
   };
 
+  programs.yt-dlp.enable = true;
+
   services.dunst.enable = true;
 
   services.picom.enable = true;
