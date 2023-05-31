@@ -33,9 +33,10 @@ in
     };
     # hooks.predetect = { };
     # hooks.preswitch = { };
-    hooks.postswitch = lib.optionalAttrs config.modules.desktop.i3.enable {
+    hooks.postswitch = lib.optionalAttrs config.xsession.windowManager.i3.enable {
       "notify-i3" = "${pkgs.i3}/bin/i3-msg restart";
     };
   };
+
   services.autorandr.enable = true;
 }
