@@ -158,6 +158,9 @@
     _1password-gui
     alsa-utils # arecord
     btrbk
+    bluez
+    bluez-alsa
+    bluez-tools
     cachix
     curl
     exa

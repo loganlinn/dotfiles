@@ -132,6 +132,7 @@ in
           pandas
           pipx
           ptpython
+          pybluez
           pynvim
           requests
           setuptools
