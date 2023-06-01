@@ -11,10 +11,12 @@ in
       ./common-linux.nix
       ./git.nix
       ./neovim
-      ./security.nix
+      ./nix-path.nix
       ./readline.nix
       ./secrets.nix
+      ./security.nix
       ./shellAliases.nix
+      ../modules/nix-registry.nix
     ];
 
   home.packages = with pkgs; [

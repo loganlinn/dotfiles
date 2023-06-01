@@ -18,14 +18,13 @@
 in {
   imports = [
     ../../home/polybar
+    ../../home/rofi.nix
     ../../home/thunar.nix
     ../../home/xdg.nix
     ../themes
     ./apps
-    ./clipboard.nix
-    ./notifications/dunst.nix
+    ./dunst.nix
     ./picom.nix
-    ./rofi
     ./syncthing.nix
     ./tray.nix
   ];

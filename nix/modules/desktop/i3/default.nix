@@ -21,7 +21,11 @@ in
     xsession.windowManager.i3.enable = true;
 
     home.packages = with pkgs; [
+      xdotool
+      wmctrl
       i3-layout-manager
+
+      # lightlocker
 
       # TODO move to file where other derivations are defined
       (with pkgs; python3Packages.buildPythonPackage rec {

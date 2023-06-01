@@ -1,8 +1,12 @@
 { config, pkgs, lib, ... }:
 
 {
+  programs.rofi.terminal = lib.mkDefault "${config.programs.kitty.package}/bin/kitty";
+
   programs.kitty = {
     enable = true;
+
+    theme = "kanagawabones";
 
     font = {
       package = pkgs.victor-mono;
@@ -82,56 +86,8 @@
     };
 
 
-    extraConfig = let scheme = config.colorScheme; in
-      ''
-        # # Base16 ${scheme.name} - kitty color config
-        # # Scheme by ${scheme.author}
-        # background #${scheme.colors.base00}
-        # foreground #${scheme.colors.base05}
-        # selection_background #${scheme.colors.base05}
-        # selection_foreground #${scheme.colors.base00}
-        # url_color #${scheme.colors.base04}
-        # cursor #${scheme.colors.base05}
-        # active_border_color #${scheme.colors.base03}
-        # inactive_border_color #${scheme.colors.base01}
-        # active_tab_background #${scheme.colors.base00}
-        # active_tab_foreground #${scheme.colors.base05}
-        # inactive_tab_background #${scheme.colors.base01}
-        # inactive_tab_foreground #${scheme.colors.base04}
-        # tab_bar_background #${scheme.colors.base01}
-
-        # # normal
-        # color0 #${scheme.colors.base00}
-        # color1 #${scheme.colors.base08}
-        # color2 #${scheme.colors.base0B}
-        # color3 #${scheme.colors.base0A}
-        # color4 #${scheme.colors.base0D}
-        # color5 #${scheme.colors.base0E}
-        # color6 #${scheme.colors.base0C}
-        # color7 #${scheme.colors.base05}
-
-        # # bright
-        # color8 #${scheme.colors.base03}
-        # color9 #${scheme.colors.base08}
-        # color10 #${scheme.colors.base0B}
-        # color11 #${scheme.colors.base0A}
-        # color12 #${scheme.colors.base0D}
-        # color13 #${scheme.colors.base0E}
-        # color14 #${scheme.colors.base0C}
-        # color15 #${scheme.colors.base07}
-
-        # # extended base16 colors
-        # color16 #${scheme.colors.base09}
-        # color17 #${scheme.colors.base0F}
-        # color18 #${scheme.colors.base01}
-        # color19 #${scheme.colors.base02}
-        # color20 #${scheme.colors.base04}
-        # color21 #${scheme.colors.base06}
-
+    extraConfig = ''
         globinclude kitty.d/**/*.conf
-
-      ''
-      + builtins.readFile ../../../config/kitty/current-theme.conf
-    ;
+      '';
   };
 }

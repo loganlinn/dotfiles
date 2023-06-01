@@ -1,13 +1,20 @@
-{ inputs, options, config, lib, pkgs, ... }:
-
-let
-  inherit (builtins)
+{
+  inputs,
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  inherit
+    (builtins)
     getEnv
     isNull
     pathExists
     ;
 
-  inherit (lib)
+  inherit
+    (lib)
     mkAliasDefinitions
     mkAliasOptionModule
     mkIf
@@ -18,20 +25,21 @@ let
     types
     ;
 
-  inherit (inputs.home-manager.lib.hm.types)
-    fontType;
+  inherit
+    (inputs.home-manager.lib.hm.types)
+    fontType
+    ;
 
-  inherit (inputs.nix-colors.lib-contrib)
-    gtkThemeFromScheme
+  inherit
+    (inputs.nix-colors.lib.contrib {inherit pkgs;})
+    vimThemeFromScheme
     shellThemeFromScheme
-    nixWallpaperFromScheme;
+    ;
 
   cfg = config.modules.theme;
 
   colorCfg = config.colorScheme.colors;
-
-in
-{
+in {
   imports = [
     ../fonts.nix
     ./dracula
@@ -39,13 +47,15 @@ in
   ];
 
   options.modules.theme = with types; {
-
     active = mkOption {
       type = with types; nullOr str;
       default = "arc";
-      apply = v:
-        let theme = getEnv "THEME"; in
-        if theme != "" then theme else v;
+      apply = v: let
+        theme = getEnv "THEME";
+      in
+        if theme != ""
+        then theme
+        else v;
       description = ''
         Name of the theme to enable. Can be overridden by the THEME environment
         variable. Themes can also be hot-swapped with 'hey theme $THEME'.
@@ -55,9 +65,12 @@ in
     wallpaper = mkOption {
       type = with types; nullOr (either string path);
       default = null;
-      apply = v:
-        let wallpaper = getEnv "WALLPAPER";
-        in if wallpaper != "" then wallpaper else v;
+      apply = v: let
+        wallpaper = getEnv "WALLPAPER";
+      in
+        if wallpaper != ""
+        then wallpaper
+        else v;
     };
 
     fonts = {
@@ -89,7 +102,7 @@ in
 
     onReload = mkOption {
       type = with types; attrsOf lines;
-      default = { };
+      default = {};
     };
 
     # colors = with types; submodule {
@@ -154,7 +167,6 @@ in
           muted-blue = "387aa7";
           highlight = blue;
           vertical-bar = base1;
-          selection = dark-blue;
           builtin = magenta;
           comments = base5;
           doc-comments = base5;
@@ -180,14 +192,20 @@ in
     {
       modules.fonts.enable = true;
 
-      home.packages = with pkgs; [
-        paper-icon-theme
-        pywal
-        wpgtk # gui for pywal ('wpg' command)
-        siji # iconic bitmap font
-      ]
-      ++ optional (!isNull cfg.fonts.mono.package) cfg.fonts.mono.package
-      ++ optional (!isNull cfg.fonts.sans.package) cfg.fonts.sans.package;
+      home.packages = with pkgs;
+        [
+          paper-icon-theme
+          pywal
+          wpgtk # gui for pywal ('wpg' command)
+          siji # iconic bitmap font
+        ]
+        ++ optional (!isNull cfg.fonts.mono.package) cfg.fonts.mono.package
+        ++ optional (!isNull cfg.fonts.sans.package) cfg.fonts.sans.package;
+
+      xdg.dataFile."nix-colors.sh" = {
+        text = (shellThemeFromScheme {scheme = config.colorScheme;}).text;
+        executable = true;
+      };
 
       home.pointerCursor = mkOptionDefault {
         package = pkgs.paper-gtk-theme;
@@ -241,7 +259,6 @@ in
         *.color14:      base0F
         *.color15:      base07
       '';
-
 
       # Workaround for apps that use libadwaita which does locate GTK settings via XDG.
       # https://www.reddit.com/r/swaywm/comments/qodk20/gtk4_theming_not_working_how_do_i_configure_it/hzrv6gr/?context=3
@@ -297,24 +314,174 @@ in
         "--layout=reverse"
         "--border"
         "--inline-info"
-        "--color 'fg:#${base05}'" # Text
-        "--color 'bg:#${base00}'" # Background
-        "--color 'preview-fg:#${base05}'" # Preview window text
-        "--color 'preview-bg:#${base00}'" # Preview window background
+        "--color 'bg:#${base00}'"
+        "--color 'fg:#${base05}'"
+        "--color 'preview-fg:#${base05}'"
+        "--color 'preview-bg:#${base00}'"
         "--color 'hl:#${base0A}'" # Highlighted substrings
-        "--color 'fg+:#${base0D}'" # Text (current line)
         "--color 'bg+:#${base02}'" # Background (current line)
-        "--color 'gutter:#${base02}'" # Gutter on the left (defaults to bg+)
+        "--color 'fg+:#${base06}'" # Text (current line)
+        "--color 'gutter:#${base04}'" # Gutter on the left (defaults to bg+)
         "--color 'hl+:#${base0E}'" # Highlighted substrings (current line)
-        "--color 'info:#${base0E}'" # Info line (match counters)
-        "--color 'border:#${base0D}'" # Border around the window (--border and --preview)
-        "--color 'prompt:#${base05}'" # Prompt
+        "--color 'info:#${base05}'" # Info line (match counters)
+        "--color 'border:#${base01}'" # Border around the window (--border and --preview)
+        "--color 'prompt:#${base01}'" # Prompt
         "--color 'pointer:#${base0E}'" # Pointer to the current line
         "--color 'marker:#${base0E}'" # Multi-select marker
         "--color 'spinner:#${base0E}'" # Streaming input indicator
-        "--color 'header:#${base05}'" # Header
+        "--color 'header:#${base0D}'" # Header
       ];
     })
+    {
+      programs.rofi.font = cfg.fonts.mono.name;
+      # programs.rofi.theme = let
+      #   inherit (config.lib.formats.rasi) mkLiteral;
+      #   inherit (config.colorScheme) colors;
+      #   c = lib.mapAttrs (_: v: mkLiteral "#${v}") colors;
+      # in {
+      #   "*" = {
+      #     red = c.base08;
+      #     lightbg = c.base01;
+      #     lightfg = c.base06;
+      #     blue = c.base0D;
+      #     background = c.base00;
+      #     foreground = c.base05;
+      #     border-color = c.base03;
+      #     spacing = 2;
 
+      #     separatorcolor = "@foreground";
+      #     selected-normal-foreground = "@lightbg";
+      #     selected-normal-background = "@lightfg";
+      #     selected-active-foreground = "@background";
+      #     selected-active-background = "@blue";
+      #     selected-urgent-foreground = "@background";
+      #     selected-urgent-background = "@red";
+      #     normal-foreground = "@foreground";
+      #     normal-background = "@background";
+      #     active-foreground = "@blue";
+      #     active-background = "@background";
+      #     urgent-foreground = "@red";
+      #     urgent-background = "@background";
+      #     alternate-normal-foreground = "@foreground";
+      #     alternate-normal-background = "@lightbg";
+      #     alternate-active-foreground = "@blue";
+      #     alternate-active-background = "@lightbg";
+      #     alternate-urgent-foreground = "@red";
+      #     alternate-urgent-background = "@lightbg";
+      #   };
+      #   window = {
+      #     background-color = "@background";
+      #     border = "1";
+      #     padding = "5";
+      #   };
+      #   mainbox = {
+      #     border = "0";
+      #     padding = "0";
+      #   };
+      #   message = {
+      #     border = "1px dash 0px 0px ";
+      #     border-color = "@separatorcolor";
+      #     padding = "1px ";
+      #   };
+      #   textbox = {
+      #     text-color = "@foreground";
+      #   };
+      #   listview = {
+      #     fixed-height = "0";
+      #     border = "2px dash 0px 0px ";
+      #     border-color = "@separatorcolor";
+      #     spacing = "2px ";
+      #     scrollbar = "true";
+      #     padding = "2px 0px 0px ";
+      #   };
+      #   "element-text, element-icon" = {
+      #     background-color = "inherit";
+      #     text-color = "inherit";
+      #   };
+      #   element = {
+      #     border = "0";
+      #     padding = "1px ";
+      #   };
+      #   "element normal.normal" = {
+      #     background-color = "@normal-background";
+      #     text-color = "@normal-foreground";
+      #   };
+      #   "element normal.urgent" = {
+      #     background-color = "@urgent-background";
+      #     text-color = "@urgent-foreground";
+      #   };
+      #   "element normal.active" = {
+      #     background-color = "@active-background";
+      #     text-color = "@active-foreground";
+      #   };
+      #   "element selected.normal" = {
+      #     background-color = "@selected-normal-background";
+      #     text-color = "@selected-normal-foreground";
+      #   };
+      #   "element selected.urgent" = {
+      #     background-color = "@selected-urgent-background";
+      #     text-color = "@selected-urgent-foreground";
+      #   };
+      #   "element selected.active" = {
+      #     background-color = "@selected-active-background";
+      #     text-color = "@selected-active-foreground";
+      #   };
+      #   "element alternate.normal" = {
+      #     background-color = "@alternate-normal-background";
+      #     text-color = "@alternate-normal-foreground";
+      #   };
+      #   "element alternate.urgent" = {
+      #     background-color = "@alternate-urgent-background";
+      #     text-color = "@alternate-urgent-foreground";
+      #   };
+      #   "element alternate.active" = {
+      #     background-color = "@alternate-active-background";
+      #     text-color = "@alternate-active-foreground";
+      #   };
+      #   scrollbar = {
+      #     width = "4px";
+      #     border = "0";
+      #     handle-color = "@normal-foreground";
+      #     handle-width = "8px ";
+      #     padding = "0";
+      #   };
+      #   sidebar = {
+      #     border = "2px dash 0px 0px ";
+      #     border-color = "@separatorcolor";
+      #   };
+      #   button = {
+      #     spacing = "0";
+      #     text-color = "@normal-foreground";
+      #   };
+      #   "button selected" = {
+      #     background-color = "@selected-normal-background";
+      #     text-color = "@selected-normal-foreground";
+      #   };
+      #   inputbar = {
+      #     spacing = "0px";
+      #     text-color = "@normal-foreground";
+      #     padding = "1px ";
+      #     children = "[ prompt,textbox-prompt-colon,entry,case-indicator ]";
+      #   };
+      #   case-indicator = {
+      #     spacing = "0";
+      #     text-color = "@normal-foreground";
+      #   };
+      #   entry = {
+      #     spacing = "0";
+      #     text-color = "@normal-foreground";
+      #   };
+      #   prompt = {
+      #     spacing = "0";
+      #     text-color = "@normal-foreground";
+      #   };
+      #   textbox-prompt-colon = {
+      #     expand = "false";
+      #     str = ":";
+      #     margin = "0px 0.3000em 0.0000em 0.0000em ";
+      #     text-color = "inherit";
+      #   };
+      # };
+    }
   ]);
 }

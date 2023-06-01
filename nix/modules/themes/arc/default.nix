@@ -29,7 +29,5 @@ in
       gtk.enable = true;
     };
 
-    programs.rofi.theme = "Arc-Dark";
-
   };
 }

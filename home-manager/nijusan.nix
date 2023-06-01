@@ -1,10 +1,13 @@
-{ flake, config, pkgs, lib, system, ... }:
-
-let
-  inherit (flake.inputs) nix-colors;
-  inherit (nix-colors.lib-contrib { inherit pkgs; }) nixWallpaperFromScheme;
-in
 {
+  nix-colors,
+  config,
+  pkgs,
+  lib,
+  system,
+  ...
+}: let
+  inherit (nix-colors.lib.contrib {inherit pkgs;}) nixWallpaperFromScheme;
+in {
   imports = [
     ../nix
     ../nix/home/common.nix
@@ -33,7 +36,7 @@ in
   ];
 
   sops.defaultSopsFile = ../secrets/default.yaml;
-  sops.age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+  sops.age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
   sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
   sops.secrets.github_token.sopsFile = ../secrets/default.yaml;
 
@@ -49,11 +52,17 @@ in
   modules.polybar = {
     enable = true;
     networks = [
-      { interface = "eno3"; interface-type = "wired"; }
-      { interface = "wlo1"; interface-type = "wireless"; }
+      {
+        interface = "eno3";
+        interface-type = "wired";
+      }
+      {
+        interface = "wlo1";
+        interface-type = "wireless";
+      }
     ];
-    top.left.modules = [ "date" "title" ];
-    top.center.modules = [ "i3" "sep1" "i3-scratchpad" ];
+    top.left.modules = ["date" "title"];
+    top.center.modules = ["i3" "sep1" "i3-scratchpad"];
     top.right.modules = [
       "memory"
       "cpu"
@@ -94,7 +103,6 @@ in
   programs.obs-studio = {
     enable = true;
     plugins = [
-
     ];
   };
 
@@ -152,7 +160,7 @@ in
     minikube
     gcc
     libreoffice
-    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
+    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {}))
   ];
 
   # TODO move into own module (maybe can reuse settings type from https://github.com/nix-community/home-manager/blob/master/modules/programs/vim.nix)
