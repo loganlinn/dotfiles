@@ -9,7 +9,6 @@
   inherit
     (builtins)
     getEnv
-    isNull
     pathExists
     ;
 
@@ -111,7 +110,7 @@ in {
     # };
   };
 
-  config = mkIf (!isNull cfg.active) (mkMerge [
+  config = mkIf (cfg.active != null) (mkMerge [
     # Color Scheme: doom-one
     # Adapted from https://github.com/doomemacs/themes/blob/master/themes/doom-one-theme.el
     {
@@ -194,13 +193,14 @@ in {
 
       home.packages = with pkgs;
         [
+          # zafiro-icons
           paper-icon-theme
           pywal
           wpgtk # gui for pywal ('wpg' command)
           siji # iconic bitmap font
         ]
-        ++ optional (!isNull cfg.fonts.mono.package) cfg.fonts.mono.package
-        ++ optional (!isNull cfg.fonts.sans.package) cfg.fonts.sans.package;
+        ++ optional (cfg.fonts.mono.package != null) cfg.fonts.mono.package
+        ++ optional (cfg.fonts.sans.package != null) cfg.fonts.sans.package;
 
       xdg.dataFile."nix-colors.sh" = {
         text = (shellThemeFromScheme {scheme = config.colorScheme;}).text;

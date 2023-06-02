@@ -8,9 +8,9 @@ with lib; {
     url ? null,
   }:
     escapeShellArgs ([]
-      ++ optional (!isNull userDataDir) "--user-data-dir=${userDataDir}"
-      ++ optional (!isNull profile) "--profile-directory=${profile}"
-      ++ optional (!isNull appId) "--app-id=${appId}"
+      ++ optional (userDataDir != null) "--user-data-dir=${userDataDir}"
+      ++ optional (profile != null) "--profile-directory=${profile}"
+      ++ optional (appId != null) "--app-id=${appId}"
       ++ optional incognito "--incognito"
-      ++ optional (!isNull url) url);
+      ++ optional (url != null) url);
 }

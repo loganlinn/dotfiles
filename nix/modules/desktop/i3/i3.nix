@@ -475,7 +475,7 @@ in {
         ];
 
         startup = [
-          (mkIf (!isNull themeCfg.wallpaper) {
+          (mkIf (themeCfg.wallpaper != null) {
             command = "${config.programs.feh.package}/bin/feh --no-fehbg --bg-fill ${themeCfg.wallpaper}";
             always = true;
             notification = false;

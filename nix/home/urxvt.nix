@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  inherit (builtins) isNull toString;
+  inherit (builtins) toString;
   inherit (config.modules.theme) fonts;
 in
 {
@@ -25,7 +25,7 @@ in
       lines = 10000;
     };
     fonts = with config.modules.theme; [
-      "xft:${fonts.mono.name}:size=${if (isNull fonts.mono.size) then 12 else (toString fonts.mono.size)}:antialias=true"
+      "xft:${fonts.mono.name}:size=${if fonts.mono.size == null then 12 else (toString fonts.mono.size)}:antialias=true"
       "xft:Material Design Icons:size=14:minspace=false"
     ];
   };
