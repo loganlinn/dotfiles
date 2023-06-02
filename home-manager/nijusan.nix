@@ -100,8 +100,8 @@ in {
   modules.desktop.browsers = let
     chrome = lib.getExe config.programs.google-chrome.package;
   in {
-    default = ''${chrome} "--profile-directory=Profile 1"''; # work
-    alternate = ''${chrome} "--profile-directory=Default"''; # personal
+    default = "${chrome} '--profile-directory=Profile 1"; # work
+    alternate = "${chrome} '--profile-directory=Default'"; # personal
   };
 
   gtk.enable = true;
