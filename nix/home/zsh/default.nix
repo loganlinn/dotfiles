@@ -8,9 +8,7 @@ with builtins;
 with lib;
 
 let
-
   cfg = config.programs.zsh;
-
 in
 {
   programs.zsh = {

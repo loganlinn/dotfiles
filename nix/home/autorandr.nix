@@ -20,23 +20,23 @@ in
             enable = true;
             primary = true;
             mode = "3840x1600";
-            position = "+2560+980";
             rate = "59.99";
           };
           DP-2 = {
             enable = true;
             mode = "2560x2880";
+            position = "2560x0";
             rate = "59.98";
           };
         };
       };
     };
-    # hooks.predetect = { };
-    # hooks.preswitch = { };
-    hooks.postswitch = lib.optionalAttrs config.xsession.windowManager.i3.enable {
-      "notify-i3" = "${pkgs.i3}/bin/i3-msg restart";
+    hooks.postswitch = {
+      desktop-notification = ''${pkgs.libnotify}/bin/notify-send -i "Display profile" "$AUTORANDR_CURRENT_PROFILE"'';
+    } // lib.optionalAttrs config.xsession.windowManager.i3.enable {
+      i3-restart = "${pkgs.i3}/bin/i3-msg restart";
     };
   };
 
-  services.autorandr.enable = true;
+  services.autorandr.enable = false;
 }

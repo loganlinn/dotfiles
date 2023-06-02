@@ -46,6 +46,8 @@ in
 
   color = import ./color.nix { inherit lib; };
 
+  chrome = import ./chrome.nix { inherit lib; };
+
   importNixosConfig = mapNullable import (findNixPath "nixos-config");
 
   /* Replace strings by attrset

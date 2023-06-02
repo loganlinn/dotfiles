@@ -15,6 +15,7 @@ in {
     #../nix/home/dev/vala.nix
     ../nix/home/emacs.nix
     ../nix/home/kitty
+    ../nix/home/mpd.nix
     ../nix/home/mpv.nix
     ../nix/home/nnn.nix
     ../nix/home/pretty.nix
@@ -32,6 +33,7 @@ in {
     ../nix/modules/fonts.nix
     ../nix/modules/desktop
     ../nix/modules/desktop/browsers
+    ../nix/modules/desktop/browsers/firefox.nix
     ../nix/modules/desktop/i3
   ];
 
@@ -90,6 +92,18 @@ in {
     };
   };
 
+  programs.google-chrome.enable = true;
+  programs.firefox.enable = true;
+  programs.librewolf.enable = true;
+  programs.qutebrowser.enable = true;
+
+  modules.desktop.browsers = let
+    chrome = lib.getExe config.programs.google-chrome.package;
+  in {
+    default = ''${chrome} "--profile-directory=Profile 1"''; # work
+    alternate = ''${chrome} "--profile-directory=Default"''; # personal
+  };
+
   gtk.enable = true;
 
   programs.rofi.enable = true;
@@ -111,10 +125,6 @@ in {
   services.picom.enable = true;
 
   services.easyeffects.enable = true;
-
-  home.sessionVariables = {
-    BROWSER = "${lib.getExe config.programs.google-chrome.package}"; # TODO use option
-  };
 
   #
   #    $ xrandr --query | grep " connected"

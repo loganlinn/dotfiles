@@ -23,6 +23,7 @@ in {
     ../../home/xdg.nix
     ../themes
     ./apps
+    ./browsers
     ./dunst.nix
     ./picom.nix
     ./syncthing.nix

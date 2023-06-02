@@ -40,8 +40,8 @@ with lib; let
       mkOptionName = k: "-${k}";
       mkList = k: v: lib.optionals (v != []) [(mkOptionName k) (lib.concatStringsSep "," v)];
     };
-    in attrs: ''--release exec rofi ${toCommandLine attrs}''
-  ;
+  in
+    attrs: ''--release exec rofi ${toCommandLine attrs}'';
 
   execType = with types; oneOf [path str];
 in {
@@ -87,6 +87,11 @@ in {
         then "${cfg.terminal.exec} --class ProcessManager ${config.programs.htop.package}/bin/htop"
         else "${cfg.terminal.exec} --class ProcessManager ${config.programs.proc.package}/bin/top";
     };
+
+    google-chrome.exec = mkOption {
+      type = types.package;
+
+    };
   };
 
   config = {
@@ -129,21 +134,9 @@ in {
               "${super}+backslash" = "focus parent";
             };
 
-            webBrowser = let
-              chrome = findFirst (p: p.enable) programs.google-chrome [
-                config.programs.google-chrome
-                config.programs.google-chrome-beta
-                config.programs.chromium
-                config.programs.google-chrome-dev
-                config.programs.vivaldi
-                config.programs.brave
-              ];
-
-              linearChromeAppId = "bgdbmehlmdmddlgneophbcddadgknlpm";
-            in {
-              "${super}+Shift+Return" = ''exec google-chrome "--profile-directory=Profile 1"''; # work
-              "${super}+${alt}+Return" = ''exec google-chrome "--profile-directory=Default"''; # personal
-              "${super}+Shift+Ctrl+Return" = ''exec google-chrome "--profile-directory=Profile 1" --app-id=bgdbmehlmdmddlgneophbcddadgknlpm''; # linear
+            webBrowser = {
+              "${super}+Shift+Return" = config.modules.desktop.browsers.default;
+              "${super}+${alt}+Return" = config.modules.desktop.browsers.alternate;
             };
 
             explorer = {
@@ -161,10 +154,13 @@ in {
             };
 
             menus = {
-              "${super}+space" = rofi { show = "drun"; };
-              "${super}+semicolon" = rofi { show = "run"; };
-              "${super}+Shift+space" = rofi { show = "window"; modi = ["window" "windowcd"]; };
-              "${super}+Shift+equal" = rofi { show = "calc"; };
+              "${super}+space" = rofi {show = "drun";};
+              "${super}+semicolon" = rofi {show = "run";};
+              "${super}+Shift+space" = rofi {
+                show = "window";
+                modi = ["window" "windowcd"];
+              };
+              "${super}+Shift+equal" = rofi {show = "calc";};
             };
 
             focusWorkspaceAbsolute = {
