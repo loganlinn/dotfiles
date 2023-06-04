@@ -147,8 +147,8 @@ in {
             };
 
             webBrowser = {
-              "$mod+Shift+Return" = config.modules.desktop.browsers.default;
-              "$mod+$alt+Return" = config.modules.desktop.browsers.alternate;
+              "$mod+Shift+Return" = "exec ${config.modules.desktop.browsers.default}";
+              "$mod+$alt+Return" = "exec ${config.modules.desktop.browsers.alternate}";
             };
 
             explorer = {

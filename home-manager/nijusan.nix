@@ -78,7 +78,7 @@ in
       chrome = lib.getExe config.programs.google-chrome.package;
     in
     {
-      default = "${chrome} '--profile-directory=Profile 1"; # work
+      default = "${chrome} '--profile-directory=Profile 1'"; # work
       alternate = "${chrome} '--profile-directory=Default'"; # personal
     };
 

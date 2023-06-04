@@ -20,12 +20,12 @@ in
             enable = true;
             primary = true;
             mode = "3840x1600";
+            position = "2560x980";
             rate = "59.99";
           };
           DP-2 = {
             enable = true;
             mode = "2560x2880";
-            position = "2560x0";
             rate = "59.98";
           };
         };
