@@ -166,7 +166,7 @@ in {
             };
 
             menus = {
-              "$mod+space" = "exec --no-startup-id ${rofi "drun" {}}";
+              "$mod+space" = "exec --no-startup-id ${rofi "drun" {sidebar-mode = true;}}";
               "$mod+semicolon" = "exec --no-startup-id ${rofi "run" {}}";
               "$mod+Shift+space" = "--release exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
               "$mod+Shift+equal" = "exec --no-startup-id ${rofi "calc" {}}";
@@ -506,8 +506,9 @@ in {
         workspaceLayout = "default";
       };
 
-      extraConfig = with config.colorScheme.colors;
-        let colors = config.colorScheme.colors; in ''
+      extraConfig = with config.colorScheme.colors; let
+        colors = config.colorScheme.colors;
+      in ''
         #=====================================
         # Variables
         #=====================================
