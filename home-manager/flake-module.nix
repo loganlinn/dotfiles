@@ -14,7 +14,7 @@ in
       inherit (pkgs.stdenv) isLinux isDarwin;
 
       extraSpecialArgs = {
-        inherit (inputs) home-manager emacs;
+        inherit (inputs) nixpkgs home-manager emacs;
         inherit (config) flake-root;
         flake = self; # remove usage
         nerdfonts = import ../lib/nerdfonts;
