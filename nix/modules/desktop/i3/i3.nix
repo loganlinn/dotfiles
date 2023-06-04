@@ -60,8 +60,8 @@ in {
     keysyms.mouseButtonRight = mkStrOptDefault "button3";
     keysyms.mouseWheelUp = mkStrOptDefault "button4";
     keysyms.mouseWheelDown = mkStrOptDefault "button5";
-    keysyms.mouseWheelRight = mkStrOptDefault "button6";
-    keysyms.mouseWheelLeft = mkStrOptDefault "button7";
+    keysyms.mouseWheelLeft = mkStrOptDefault "button6";
+    keysyms.mouseWheelRight = mkStrOptDefault "button7";
 
     # sessionLocker ?
     # ?
