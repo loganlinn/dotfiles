@@ -27,18 +27,12 @@ in
           config.my = ctx.config.my;
         }
         {
-          _module.args.self = self; # TODO remove usage
-        }
-
-        {
           nixpkgs.overlays = [
             inputs.rust-overlay.overlays.default
             inputs.emacs.overlays.default
           ];
         }
-      ] ++ lib.optional isLinux {
-        _module.args.inputs = inputs; # TODO darwin?
-      };
+      ];
     in
     {
       legacyPackages =
@@ -56,7 +50,7 @@ in
         })
         // (lib.optionalAttrs (system == "aarch64-darwin") {
           darwinConfigurations."logan@patchbook" = inputs.darwin.lib.darwinSystem {
-            inherit system;
+            inherit lib system;
             # FIXME: commonModules should be used in both...
             modules = commonModules ++ [
               ../nix-darwin/patchbook.nix

@@ -1,0 +1,3 @@
+{
+  colorSchemes = import ./schemes;
+}

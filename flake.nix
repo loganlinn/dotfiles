@@ -15,6 +15,7 @@
     # hyprland.url = "github:vaxerski/Hyprland/v0.21.0beta";
     # hyprland.inputs.nixpkgs.follows = "nixpkgs";
     # nixos-shell.url = "github:Mic92/nixos-shell";
+    # nixinate.url = "github:matthewcroughan/nixinate";
 
     ## overlays
     emacs.url = "github:nix-community/emacs-overlay";

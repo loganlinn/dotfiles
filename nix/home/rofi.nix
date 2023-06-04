@@ -1,9 +1,8 @@
-{
-  config,
-  options,
-  lib,
-  pkgs,
-  ...
+{ config
+, options
+, lib
+, pkgs
+, ...
 }:
 with lib; {
   programs.rofi = {
@@ -13,20 +12,17 @@ with lib; {
 
     pass = optionalAttrs config.programs.password-store.enable {
       enable = true;
-      stores = [config.programs.password-store.settings.PASSWORD_STORE_DIR];
+      stores = [ config.programs.password-store.settings.PASSWORD_STORE_DIR ];
     };
 
-    plugins = (with pkgs;
-      [
-        rofi-calc
-        rofi-emoji
-        rofi-file-browser
-        rofi-bluetooth
-        rofi-pulse-select
-        rofi-power-menu
-      ]
-      ++ optional (meta.availableOn pkgs.stdenv.hostPlatform systemd) rofi-systemd
-      ++ optional config.services.mpd.enable rofi-mpd);
+    plugins = with pkgs; [
+      rofi-calc
+      rofi-emoji
+      rofi-file-browser
+      rofi-bluetooth
+      rofi-pulse-select
+      rofi-power-menu
+    ];
 
     extraConfig = {
       modi = "drun,run,window,ssh,calc,emoji";

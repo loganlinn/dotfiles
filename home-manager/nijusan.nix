@@ -1,13 +1,14 @@
+{ nix-colors
+, config
+, pkgs
+, lib
+, system
+, ...
+}:
+let
+  inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
+in
 {
-  nix-colors,
-  config,
-  pkgs,
-  lib,
-  system,
-  ...
-}: let
-  inherit (nix-colors.lib.contrib {inherit pkgs;}) nixWallpaperFromScheme;
-in {
   imports = [
     nix-colors.homeManagerModule
     ../nix
@@ -40,7 +41,7 @@ in {
   ];
 
   sops.defaultSopsFile = ../secrets/default.yaml;
-  sops.age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
+  sops.age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
   sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
   sops.secrets.github_token.sopsFile = ../secrets/default.yaml;
 
@@ -51,35 +52,6 @@ in {
   modules.desktop.i3 = {
     enable = true;
     editor.exec = "doom run";
-  };
-
-  modules.polybar = {
-    enable = true;
-    networks = [
-      {
-        interface = "eno3";
-        interface-type = "wired";
-      }
-      {
-        interface = "wlo1";
-        interface-type = "wireless";
-      }
-    ];
-    top.left.modules = ["date" "title"];
-    top.center.modules = ["i3" "sep1" "i3-scratchpad"];
-    top.right.modules = [
-      "memory"
-      "cpu"
-      "temperature"
-      "sep4"
-      "pulseaudio"
-      "sep3"
-      "dunst"
-      "network-eno3"
-      "network-wlo1"
-      "sep1"
-      "date"
-    ];
   };
 
   colorScheme = nix-colors.colorSchemes.doom-one;
@@ -101,12 +73,14 @@ in {
   programs.librewolf.enable = true;
   programs.qutebrowser.enable = true;
 
-  modules.desktop.browsers = let
-    chrome = lib.getExe config.programs.google-chrome.package;
-  in {
-    default = "${chrome} '--profile-directory=Profile 1"; # work
-    alternate = "${chrome} '--profile-directory=Default'"; # personal
-  };
+  modules.desktop.browsers =
+    let
+      chrome = lib.getExe config.programs.google-chrome.package;
+    in
+    {
+      default = "${chrome} '--profile-directory=Profile 1"; # work
+      alternate = "${chrome} '--profile-directory=Default'"; # personal
+    };
 
   gtk.enable = true;
 
@@ -125,6 +99,20 @@ in {
   };
 
   services.dunst.enable = true;
+
+  services.polybar.enable = true;
+  modules.polybar = {
+    networks = [
+      {
+        interface = "eno3";
+        interface-type = "wired";
+      }
+      {
+        interface = "wlo1";
+        interface-type = "wireless";
+      }
+    ];
+  };
 
   services.picom.enable = true;
 
@@ -174,7 +162,7 @@ in {
     minikube
     gcc
     libreoffice
-    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {}))
+    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
   ];
 
   # TODO move into own module (maybe can reuse settings type from https://github.com/nix-community/home-manager/blob/master/modules/programs/vim.nix)

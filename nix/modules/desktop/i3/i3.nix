@@ -282,14 +282,15 @@ in {
               "$mod+m" = "fullscreen toggle";
             };
 
-            sticky = {
-              "$mod+s" = "floating toggle; sticky toggle";
+            system = {
+              "$mod+s" = "exec --no-startup-id ${getExe pkgs.rofi-systemd}";
             };
 
             ## Modify // Window layout
             layout = {
               "$mod+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
               "$mod+f" = "floating toggle";
+              "$mod+Shift+f" = "floating toggle; sticky toggle";
               "$mod+t" = "layout toggle split";
               "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
               "$mod+equal" = "exec ${import ./i3-balance-workspace.nix pkgs}/bin/i3_balance_workspace";
