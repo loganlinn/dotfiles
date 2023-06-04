@@ -1,47 +1,30 @@
 { lib, ... }:
 
+with lib;
 let
-  inherit (builtins) getAttr hasAttr;
-  inherit (lib.lists) foldl;
-  inherit (lib.strings) stringToCharacters toUpper removePrefix;
-  inherit (lib.trivial) toHexString;
+  # Generate an attribute set by mapping a function of a list of attribute values.
+  genTable = values: f: listToAttrs (map (v: nameValuePair (toString (f v)) v) values);
 
-  # Parse a single hexadecimal digit to an integer
-  _parseDigit = c:
-    let
-      k = toUpper c;
-      dict = {
-        "0" = 0;
-        "1" = 1;
-        "2" = 2;
-        "3" = 3;
-        "4" = 4;
-        "5" = 5;
-        "6" = 6;
-        "7" = 7;
-        "8" = 8;
-        "9" = 9;
-        "A" = 10;
-        "B" = 11;
-        "C" = 12;
-        "D" = 13;
-        "E" = 14;
-        "F" = 15;
-      };
-    in
-    assert(hasAttr k dict);
-    getAttr k dict;
-
+  # hex character => decimal value
+  toIntTable = genTable (range 0 15) toHexString;
 in
 {
   # Convert an hexadecimal string to an integer
-  toDec = s:
-    let
-      characters = stringToCharacters (removePrefix "0x" s);
-      values = map _parseDigit characters;
-    in
-    foldl (acc: n: acc * 16 + n) 0 values;
+  toInt = s: pipe s [
+    (removePrefix "0x")
+    stringToCharacters
+    (map (c: toIntTable.${toUpper c}))
+    (foldl (acc: n: acc * 16 + n) 0)
+  ];
 
-  # Convert an integer to a decimal string
-  fromDec = toHexString;
+  # Convert an integer to a hex string
+  fromInt = toHexString;
+
+  # Convert an integer to hex string with padding
+  fromIntWithPadding = n: i:
+    let
+      s = toHexString i;
+      pad = n - (stringLength s);
+    in
+    if n > 0 then "${concatStrings (replicate (n - 1) "0")}${s}" else s;
 }

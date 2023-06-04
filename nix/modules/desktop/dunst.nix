@@ -19,7 +19,7 @@ in
       settings = rec {
         global = {
           browser = "${pkgs.xdg-utils}/bin/xdg-open";
-          dmenu = "${config.programs.rofi.package}/bin/rofi -dmenu -p dunst:";
+          dmenu = "${config.programs.rofi.finalPackage}/bin/rofi -dmenu -p dunst:";
           monitor = 0;
           follow = "none";
           font = "${fonts.mono.name} Light 10";

@@ -1,7 +1,7 @@
 { pkgs, ... }: {
   imports = [
     ./readline.nix
-    ./starship.nix
+    ./shell/starship.nix
   ];
 
   programs.bat.enable = true;

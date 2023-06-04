@@ -44,6 +44,8 @@ in
     sqlite
     # :lang latex & :lang org (latex previews)
     texlive.combined.scheme-medium
+    # doom launch wrapper
+    (writeShellScriptBin "doomer" ''doom run "$@" &'')
   ];
 
 
@@ -70,12 +72,12 @@ in
     {
       cloneEmacsConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if ! [ -d "${emacsDir}"/.git ]; then
-          $DRY_RUN_COMMAND ${git} clone $VERBOSE_ARG --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
+          $DRY_RUN_CMD ${git} clone $VERBOSE_ARG --depth=1 --single-branch "${emacsRepoUrl}" "${emacsDir}"
         fi
       '';
       cloneDoomConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if ! [ -d "${doomDir}" ]; then
-          $DRY_RUN_COMMAND ${git} clone $VERBOSE_ARG "${doomRepoUrl}" "${doomDir}"
+          $DRY_RUN_CMD ${git} clone $VERBOSE_ARG "${doomRepoUrl}" "${doomDir}"
         fi
       '';
     };

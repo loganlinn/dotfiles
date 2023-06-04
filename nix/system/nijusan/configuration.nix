@@ -41,15 +41,6 @@
       '';
     };
   };
-  # services.xserver.desktopManager = {
-  #   xterm.enable = false;
-  # };
-
-  # # KDE Plasma
-  # # https://nixos.wiki/wiki/KDE
-  # services.xserver.displayManager.sddm.enable = true;
-  # services.xserver.desktopManager.plasma5.enable = true;
-
   sound.enable = true;
 
   services.printing.enable = true;
@@ -81,27 +72,16 @@
     _1password
     _1password-gui
     btrbk
-    cachix
     curl
-    exa
     fd
     killall
     nixos-option
     pciutils
     powertop
     ripgrep
-    sysz
-    tmux
-    tree
     steam
-    usbutils
+    usbutils # lsusb
     vim_configurable # has basic nix syntax
-    wget
-    xclip
-    yubikey-personalization
-  ] ++ lib.optionals config.services.xserver.desktopManager.plasma5.enable [
-    plasma5Packages.plasma-thunderbolt
-    libsForQt5.bismuth
   ] ;
 
   programs.git.enable = true;

@@ -1,44 +1,15 @@
-{
-  inputs,
-  options,
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
-  inherit
-    (builtins)
-    getEnv
-    pathExists
-    ;
+{ options, config, lib, pkgs, nix-colors, home-manager, ... }:
 
-  inherit
-    (lib)
-    mkAliasDefinitions
-    mkAliasOptionModule
-    mkIf
-    mkMerge
-    mkOption
-    mkOptionDefault
-    optional
-    types
-    ;
-
-  inherit
-    (inputs.home-manager.lib.hm.types)
-    fontType
-    ;
-
-  inherit
-    (inputs.nix-colors.lib.contrib {inherit pkgs;})
-    vimThemeFromScheme
-    shellThemeFromScheme
-    ;
+with lib;
+let
+  inherit (home-manager.lib.hm.types) fontType;
+  inherit (nix-colors.lib.contrib { inherit pkgs; }) vimThemeFromScheme shellThemeFromScheme;
 
   cfg = config.modules.theme;
 
   colorCfg = config.colorScheme.colors;
-in {
+in
+{
   imports = [
     ../fonts.nix
     ./dracula
@@ -49,9 +20,10 @@ in {
     active = mkOption {
       type = with types; nullOr str;
       default = "arc";
-      apply = v: let
-        theme = getEnv "THEME";
-      in
+      apply = v:
+        let
+          theme = builtins.getEnv "THEME";
+        in
         if theme != ""
         then theme
         else v;
@@ -64,9 +36,10 @@ in {
     wallpaper = mkOption {
       type = with types; nullOr (either string path);
       default = null;
-      apply = v: let
-        wallpaper = getEnv "WALLPAPER";
-      in
+      apply = v:
+        let
+          wallpaper = builtins.getEnv "WALLPAPER";
+        in
         if wallpaper != ""
         then wallpaper
         else v;
@@ -101,7 +74,7 @@ in {
 
     onReload = mkOption {
       type = with types; attrsOf lines;
-      default = {};
+      default = { };
     };
 
     # colors = with types; submodule {
@@ -111,83 +84,6 @@ in {
   };
 
   config = mkIf (cfg.active != null) (mkMerge [
-    # Color Scheme: doom-one
-    # Adapted from https://github.com/doomemacs/themes/blob/master/themes/doom-one-theme.el
-    {
-      colorScheme = {
-        name = "doom-one";
-        author = "Henrik Lissner (https://github.com/doomemacs/themes/blob/master/themes/doom-one-theme.el)";
-        slug = "doom-one";
-        colors = rec {
-          # https://github.com/chriskempson/base16/blob/main/styling.md
-          base00 = bg-alt; # Default background
-          base01 = bg; # Lighter Background (Used for status bars, line number and folding marks)
-          base02 = muted-blue; # Selection Background
-          base03 = comments; # Comments, Invisibles, Line Highlighting
-          base04 = base6; # Dark foreground (used for status bars)
-          base05 = fg; # Default foregrund, caret, delimiters, operators
-          base06 = base7; # Light foreground
-          base07 = base8; # Light background
-          base08 = red; # Variables, XML Tags, Markup Link Text, Markup Lists, Diff Deleted
-          base09 = violet; # Integers, Boolean, Constants, XML Attributes, Markup Link Url
-          base0A = blue; # Classes, Markup Bold, Search Text Background
-          base0B = green; # Strings, Inherited Class, Markup Code, Diff Inserted
-          base0C = dark-cyan; # Support, Regular Expressions, Escape Characters, Markup Quotes
-          base0D = teal; # Functions, Methods, Attribute IDs, Headings
-          base0E = orange; # Keywords, Storage, Selector, Markup Italic, Diff Changed
-          base0F = yellow; # Deprecated, Opening/Closing Embedded Language Tags, e.g. <?php ?>
-
-          # named colors
-          bg = "282c34";
-          fg = "bbc2cf";
-          bg-alt = "21242b";
-          fg-alt = "5b6268";
-          base0 = "1b2229";
-          base1 = "1c1f24";
-          base2 = "202328";
-          base3 = "23272e";
-          base4 = "3f444a";
-          base5 = "5b6268";
-          base6 = "73797e";
-          base7 = "9ca0a4";
-          base8 = "dfdfdf";
-          grey = "3f444a";
-          red = "ff6c6b";
-          orange = "da8548";
-          green = "98be65";
-          teal = "4db5bd";
-          yellow = "ecbe7b";
-          blue = "51afef";
-          dark-blue = "2257a0";
-          magenta = "c678dd";
-          violet = "a9a1e1";
-          cyan = "46d9ff";
-          dark-cyan = "5699af";
-          muted-blue = "387aa7";
-          highlight = blue;
-          vertical-bar = base1;
-          builtin = magenta;
-          comments = base5;
-          doc-comments = base5;
-          constants = violet;
-          functions = magenta;
-          keywords = blue;
-          methods = cyan;
-          operators = blue;
-          type = yellow;
-          strings = green;
-          variables = magenta;
-          numbers = orange;
-          region = bg-alt;
-          error = red;
-          warning = yellow;
-          success = green;
-          vc-modified = orange;
-          vc-added = green;
-          vc-deleted = red;
-        };
-      };
-    }
     {
       modules.fonts.enable = true;
 
@@ -203,7 +99,7 @@ in {
         ++ optional (cfg.fonts.sans.package != null) cfg.fonts.sans.package;
 
       xdg.dataFile."nix-colors.sh" = {
-        text = (shellThemeFromScheme {scheme = config.colorScheme;}).text;
+        text = (shellThemeFromScheme { scheme = config.colorScheme; }).text;
         executable = true;
       };
 
@@ -225,10 +121,10 @@ in {
 
       # similar to https://github.com/janoamaral/Xresources-themes
       xresources.extraConfig = ''
-        ${lib.pipe config.colorScheme.colors [
-          (lib.filterAttrs (name: _: lib.hasPrefix "base0" name))
-          (lib.mapAttrsToList (name: value: "#define ${name} #${value}"))
-          (lib.concatStringsSep "\n")
+        ${pipe config.colorScheme.colors [
+          (filterAttrs (name: _: hasPrefix "base0" name))
+          (mapAttrsToList (name: value: "#define ${name} #${value}"))
+          (concatStringsSep "\n")
         ]}
 
         *.foreground:   base05
@@ -309,29 +205,6 @@ in {
       qt.useGtkTheme = true;
     })
 
-    (mkIf config.programs.fzf.enable {
-      programs.fzf.defaultOptions = with config.colorScheme.colors; [
-        "--layout=reverse"
-        "--border"
-        "--inline-info"
-        "--color 'bg:#${base00}'"
-        "--color 'fg:#${base05}'"
-        "--color 'preview-fg:#${base05}'"
-        "--color 'preview-bg:#${base00}'"
-        "--color 'hl:#${base0A}'" # Highlighted substrings
-        "--color 'bg+:#${base02}'" # Background (current line)
-        "--color 'fg+:#${base06}'" # Text (current line)
-        "--color 'gutter:#${base04}'" # Gutter on the left (defaults to bg+)
-        "--color 'hl+:#${base0E}'" # Highlighted substrings (current line)
-        "--color 'info:#${base05}'" # Info line (match counters)
-        "--color 'border:#${base01}'" # Border around the window (--border and --preview)
-        "--color 'prompt:#${base01}'" # Prompt
-        "--color 'pointer:#${base0E}'" # Pointer to the current line
-        "--color 'marker:#${base0E}'" # Multi-select marker
-        "--color 'spinner:#${base0E}'" # Streaming input indicator
-        "--color 'header:#${base0D}'" # Header
-      ];
-    })
     {
       programs.rofi.font = cfg.fonts.mono.name;
       # programs.rofi.theme = let

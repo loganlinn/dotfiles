@@ -3,16 +3,27 @@
 with lib;
 
 let
-  inherit (pkgs.stdenv.targetPlatform) isDarwin;
+  # a which/command -v command that resolves symbolic links
+  realwhich = with pkgs; writeShellScript "realwhich" ''
+    e=0
+    for c; do
+      if ! ${coreutils}/bin/readlink -e "$(command -v "$c")"; then
+          echo "$c not found" >&2
+          e=1
+      fi
+    done
+    exit $e
+  '';
 in
 {
   home.shellAliases = rec {
     "'..'" = "cd ..";
     "'...'" = "cd ...";
-    "'?'" = "which";
-    "'??'" = "which -a";
     l = "ls -lah";
     mkd = "mkdir -p";
+    rmemptydirs = "${pkgs.fd}/bin/fd -td -te -x rmdir";
+
+    which = "${realwhich}";
 
     gc = "git commit -v";
     gca = "git commit -v -a";
@@ -24,7 +35,7 @@ in
     gfo = "git fetch origin";
     gl = "git pull";
     glr = "git pull --rebase";
-    glrp = "${glr} && ${gp}";
+    glrp = "glr && gp";
     gp = "git push -u";
     gpa = "git push all --all";
     gs = "git status -sb";
@@ -52,6 +63,5 @@ in
 
     now = "date +%s";
     today = "date -Idate";
-
   };
 }

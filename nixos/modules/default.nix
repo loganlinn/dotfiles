@@ -1,9 +1,18 @@
 {
-  fonts = import ./fonts.nix;
-  minecraft-server = import ./minecraft-server.nix;
-  nix-path = import ./nix-path.nix;
-  steam = import ./steam.nix;
-  tailscale = import ./tailscale.nix;
-  thunar = import ./thunar.nix;
-  wayland =  import ./wayland.nix;
+  bluetooth = ./bluetooth.nix;
+  docker = ./docker.nix;
+  fonts = ./fonts.nix;
+  minecraft-server = ./minecraft-server.nix;
+  networking = ./networking;
+  nix-path = ./nix-path.nix;
+  nix-registry = ../../nix/modules/nix-registry.nix;
+  nvidia = ./nvidia.nix;
+  pipewire = ./pipewire.nix;
+  printing = ./printing;
+  security = ./security;
+  steam = ./steam.nix;
+  tailscale = ./tailscale.nix;
+  thunar = ./thunar.nix;
+  thunderbolt = ./thunderbolt.nix;
+  wayland =  ./wayland.nix;
 }

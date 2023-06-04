@@ -16,7 +16,7 @@ with lib; {
       stores = [config.programs.password-store.settings.PASSWORD_STORE_DIR];
     };
 
-    plugins = mkDefault (with pkgs;
+    plugins = (with pkgs;
       [
         rofi-calc
         rofi-emoji

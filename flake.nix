@@ -54,78 +54,68 @@
     # nixpkgs-match.url = "github:srid/nixpkgs-match";
   };
 
-  outputs = inputs@{ self, ... }:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" "aarch64-darwin" "aarch64-linux" ];
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = [ "x86_64-linux" "aarch64-darwin" "aarch64-linux" ];
 
-      imports = [
-        inputs.flake-parts.flakeModules.easyOverlay
-        inputs.flake-root.flakeModule
-        inputs.mission-control.flakeModule
-        # inputs.nixos-flake.flakeModule # FIXME: conflicts with flake.lib
-        # inputs.emanote.flakeModule
-        ./flake-modules/options.nix # TODO move
-        ./home-manager/flake-module.nix
-        ./nixos/flake-module.nix
-      ];
+    imports = [
+      inputs.flake-parts.flakeModules.easyOverlay
+      inputs.flake-root.flakeModule
+      inputs.mission-control.flakeModule
+      # inputs.nixos-flake.flakeModule # FIXME: conflicts with flake.lib
+      # inputs.emanote.flakeModule
+      ./flake-modules/options.nix # TODO move
+      ./home-manager/flake-module.nix
+      ./nixos/flake-module.nix
+    ];
 
-      debug = true;
+    debug = true;
 
-      flake = {
-        lib = import ./lib inputs.nixpkgs.lib;
+    perSystem = { config, system, inputs', pkgs, lib, ... }: {
+      _module.args.lib = import ./lib/extended.nix lib;
+
+      packages.jdk = lib.mkDefault pkgs.jdk;
+
+      overlayAttrs = {
+        inherit (inputs'.home-manager.packages) home-manager;
+        inherit (inputs'.devenv.packages) devenv;
+        inherit (inputs'.emacs.packages) emacsGit emacsLsp emacsUnstable;
+        inherit (config.packages) jdk;
       };
 
-      perSystem = { config, system, inputs', pkgs, lib, ... }: {
-        _module.args.pkgs = import inputs.nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        };
+      formatter = pkgs.nixpkgs-fmt;
 
-        overlayAttrs = {
-          inherit (inputs'.home-manager.packages) home-manager;
-          inherit (inputs'.devenv.packages) devenv;
-          inherit (inputs'.emacs.packages) emacsGit emacsLsp emacsUnstable;
-          inherit (config.packages) jdk;
-        };
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [ config.mission-control.devShell ];
+        buildInputs = [
+          config.formatter
+          inputs'.agenix.packages.agenix
+        ];
+      };
 
-        packages = {
-          jdk = lib.mkDefault pkgs.jdk;
-        };
-
-        formatter = pkgs.nixpkgs-fmt;
-
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [ config.mission-control.devShell ];
-          buildInputs = [
-            pkgs.nixpkgs-fmt
-            inputs'.agenix.packages.agenix
-          ];
-        };
-
-        mission-control = {
-          wrapperName = ",,"; # play nice with nix-community/comma
-          scripts =
-            let
-              inherit (lib) getExe;
-              withArgs = cmd: ''${cmd} "$@"'';
-              withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
-              wrap = cmd: lib.pipe cmd [ withArgs withCows ];
-              pkgExec = p: withArgs (getExe p);
-              replExec = f: wrap ''nix repl --file "${f}"'';
-            in
-            {
-              z = { description = "Start flake REPL"; exec = replExec "repl.nix"; };
-              b = { description = "Build configuration"; exec = ''homie build "$@"''; };
-              s = { description = "Build + activate configuration"; exec = withArgs "homie switch"; };
-              f = { description = "Run nix fmt"; exec = withArgs "nix fmt"; };
-              hm = { description = "Run home-manager"; exec = pkgExec inputs'.home-manager.packages.home-manager; };
-              zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/repl.nix"; };
-              zo = { description = "Start nixos REPL"; exec = replExec "nixos/repl.nix"; };
-              up = { description = "Update flake.lock"; exec = wrap "nix flake update"; };
-              show = { description = "Show flake outputs"; exec = wrap "nix flake show"; };
-              meta = { description = "Show flake"; exec = wrap "nix flake metadata"; };
-            };
-        };
+      mission-control = {
+        wrapperName = ",,"; # play nice with nix-community/comma
+        scripts =
+          let
+            inherit (lib) getExe;
+            withArgs = cmd: ''${cmd} "$@"'';
+            withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
+            wrap = cmd: lib.pipe cmd [ withArgs withCows ];
+            pkgExec = p: withArgs (getExe p);
+            replExec = f: wrap ''nix repl --file "${f}"'';
+          in
+          {
+            z = { description = "Start flake REPL"; exec = replExec "repl.nix"; };
+            b = { description = "Build configuration"; exec = ''homie build "$@"''; };
+            s = { description = "Build + activate configuration"; exec = withArgs "homie switch"; };
+            f = { description = "Run nix fmt"; exec = withArgs "nix fmt"; };
+            hm = { description = "Run home-manager"; exec = pkgExec inputs'.home-manager.packages.home-manager; };
+            zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/repl.nix"; };
+            zo = { description = "Start nixos REPL"; exec = replExec "nixos/repl.nix"; };
+            up = { description = "Update flake.lock"; exec = wrap "nix flake update"; };
+            show = { description = "Show flake outputs"; exec = wrap "nix flake show"; };
+            meta = { description = "Show flake"; exec = wrap "nix flake metadata"; };
+          };
       };
     };
+  };
 }

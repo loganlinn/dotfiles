@@ -1,10 +1,12 @@
-{ config, lib, pkgs, ... }:
-
 {
-  options = { };
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
+  options = {};
 
   config = {
-
     services.xserver.enable = true;
     services.xserver.autorun = true;
     services.xserver.layout = "us";
@@ -74,5 +76,8 @@
       EndSubSection
     '';
 
+    xdg.portal.extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+    ];
   };
 }

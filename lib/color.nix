@@ -52,7 +52,7 @@ let
   # Convert 8bit value to a 2 digit hex string without initial #
   _toShortHex = values:
     assert(all _is8Bit values);
-    ''${concatMapStrings (v: fixedWidthString 2 "0" (hex.fromDec (float.round (0.0 + v)))) values}'';
+    ''${concatMapStrings (v: fixedWidthString 2 "0" (hex.fromInt (float.round (0.0 + v)))) values}'';
 
   # Convert 8bit value to a 2 digit hex string
   _toHex = values: "#${_toShortHex values}";
@@ -250,7 +250,7 @@ rec {
       rgbaVal = _match4hex s;
       rgbVal = _match3hex s;
       hex_list = if null == rgbVal then rgbaVal else rgbVal ++ [ "FF" ];
-      values = map (s: 0.0 + (hex.toDec s)) hex_list;
+      values = map (s: 0.0 + (hex.toInt s)) hex_list;
     in
     rgba {
       r = head values;

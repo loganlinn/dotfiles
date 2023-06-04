@@ -9,6 +9,7 @@
   inherit (nix-colors.lib.contrib {inherit pkgs;}) nixWallpaperFromScheme;
 in {
   imports = [
+    nix-colors.homeManagerModule
     ../nix
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
@@ -80,6 +81,8 @@ in {
       "date"
     ];
   };
+
+  colorScheme = nix-colors.colorSchemes.doom-one;
 
   modules.theme = {
     active = "arc";

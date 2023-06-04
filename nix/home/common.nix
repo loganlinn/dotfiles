@@ -9,13 +9,14 @@ in
       ./accounts.nix
       ./clipboard.nix
       ./common-linux.nix
+      ./fzf.nix
       ./git.nix
       ./neovim
       ./nix-path.nix
       ./readline.nix
       ./secrets.nix
       ./security.nix
-      ./shellAliases.nix
+      ./shell/aliases.nix
       ../modules/nix-registry.nix
     ];
 

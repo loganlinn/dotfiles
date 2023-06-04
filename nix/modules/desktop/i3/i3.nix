@@ -24,28 +24,45 @@ with lib; let
 
   super = "Mod4";
   alt = "Mod1";
-  leftMouseButton = "button1";
-  middleMouseButton = "button2";
-  rightMouseButton = "button2";
-  scrollWheelUp = "button4";
-  scrollWheelDown = "button5";
-  scrollWheelRight = "button6";
-  scrollWheelLeft = "button7";
+  mouseWheelUp = "button4";
+  mouseWheelDown = "button5";
+  mouseWheelRight = "button6";
+  mouseWheelLeft = "button7";
 
   playerctl = args: "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl ${args}";
   ponymix = args: "exec --no-startup-id ${pkgs.ponymix}/bin/ponymix ${args}";
 
-  rofi = let
-    toCommandLine = lib.cli.toGNUCommandLineShell rec {
-      mkOptionName = k: "-${k}";
-      mkList = k: v: lib.optionals (v != []) [(mkOptionName k) (lib.concatStringsSep "," v)];
-    };
+  rofiCommandLineScript = lib.cli.toGNUCommandLineShell rec {
+    mkOptionName = k: "-${k}";
+    mkList = k: v: lib.optionals (v != []) [(mkOptionName k) (lib.concatStringsSep "," v)];
+  };
+
+  # create  wrapper script for rofi commands to avoid collisions with i3 config parser
+  rofi = show: options: let
+    exe = "${config.programs.rofi.finalPackage}/bin/rofi";
+    args = rofiCommandLineScript ({inherit show;} // options);
   in
-    attrs: ''--release exec rofi ${toCommandLine attrs}'';
+    pkgs.writeShellScript "rofi-${show}" "${exe} ${args}";
 
   execType = with types; oneOf [path str];
+
+  mkStrOptDefault = default:
+    lib.mkOption {
+      type = types.str;
+      inherit default;
+    };
 in {
   options.modules.desktop.i3 = {
+    keysyms.mod = mkStrOptDefault "Mod4";
+    keysyms.alt = mkStrOptDefault "Mod1";
+    keysyms.mouseButtonLeft = mkStrOptDefault "button1";
+    keysyms.mouseButtonMiddle = mkStrOptDefault "button2";
+    keysyms.mouseButtonRight = mkStrOptDefault "button3";
+    keysyms.mouseWheelUp = mkStrOptDefault "button4";
+    keysyms.mouseWheelDown = mkStrOptDefault "button5";
+    keysyms.mouseWheelRight = mkStrOptDefault "button6";
+    keysyms.mouseWheelLeft = mkStrOptDefault "button7";
+
     # sessionLocker ?
     # ?
     # i3-input ? "i3-input -f 'pango:Victor Mono 12'"
@@ -87,15 +104,10 @@ in {
         then "${cfg.terminal.exec} --class ProcessManager ${config.programs.htop.package}/bin/htop"
         else "${cfg.terminal.exec} --class ProcessManager ${config.programs.proc.package}/bin/top";
     };
-
-    google-chrome.exec = mkOption {
-      type = types.package;
-
-    };
   };
 
   config = {
-    programs.rofi.plugins = with pkgs; [rofi-calc rofi-emoji];
+    programs.rofi.plugins = with pkgs; [rofi-calc]; # depended on below
 
     xsession.windowManager.i3 = {
       config = lib.mkOptionDefault {
@@ -105,189 +117,187 @@ in {
           groups = {
             session =
               {
-                "${super}+Shift+q" = "kill";
-                "${super}+Shift+x" = "--release exec ${pkgs.xdotool}/bin/xdotool selectwindow windowclose"; # alternatively, xkill
-                "${super}+${alt}+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
-                "${super}+Ctrl+c" = "restart";
-                "${super}+Shift+c" = "reload";
-                # "${super}+Shift+p" = ''exec --no-startup-id i3-msg exit'';
-                "${super}+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-                "${super}+F2;" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
+                "$mod+Shift+q" = "kill";
+                "$mod+Shift+x" = "--release exec --no-startup-id ${pkgs.xdotool}/bin/xdotool selectwindow windowclose"; # alternatively, xkill
+                "$mod+$alt+q" = "--release exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
+                "$mod+Ctrl+c" = "restart";
+                "$mod+Shift+c" = "reload";
+                # "$mod+Shift+p" = ''exec --no-startup-id i3-msg exit'';
+                "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
+                "$mod+F2;" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
               }
-              // optionalAttrs (!isNull cfg.locker.exec) {
-                "${super}+Escape" = "exec --no-startup-id ${cfg.locker.exec}";
+              // optionalAttrs (cfg.locker.exec != null) {
+                "$mod+Escape" = "exec --no-startup-id ${cfg.locker.exec}";
               };
 
             processManager = {
-              "Ctrl+${alt}+Delete" = ''exec ${cfg.processManager.exec}'';
+              "Ctrl+$alt+Delete" = ''exec ${cfg.processManager.exec}'';
             };
 
             clipboard = lib.optionalAttrs config.services.clipmenu.enable {
-              "${super}+Shift+backslash" = ''exec --no-startup-id env CM_LAUNCHER=rofi clipmenu'';
+              "$mod+Shift+backslash" = ''exec --no-startup-id env CM_LAUNCHER=rofi clipmenu'';
             };
 
             focusWindow = {
-              "${super}+h" = "focus left";
-              "${super}+j" = "focus down";
-              "${super}+k" = "focus up";
-              "${super}+l" = "focus right";
-              "${super}+backslash" = "focus parent";
+              "$mod+h" = "focus left";
+              "$mod+j" = "focus down";
+              "$mod+k" = "focus up";
+              "$mod+l" = "focus right";
+              "$mod+backslash" = "focus parent";
             };
 
             webBrowser = {
-              "${super}+Shift+Return" = config.modules.desktop.browsers.default;
-              "${super}+${alt}+Return" = config.modules.desktop.browsers.alternate;
+              "$mod+Shift+Return" = config.modules.desktop.browsers.default;
+              "$mod+$alt+Return" = config.modules.desktop.browsers.alternate;
             };
 
             explorer = {
-              "${super}+Shift+n" = ''exec kitty --class Ranger ${pkgs.ranger}/bin/ranger'';
-              "${super}+Shift+e" = ''exec thunar'';
+              "$mod+Shift+n" = ''exec kitty --class Ranger ${pkgs.ranger}/bin/ranger'';
+              "$mod+Shift+e" = ''exec thunar'';
             };
 
             editor = {
-              "${super}+e" = ''exec ${cfg.editor.exec}'';
+              "$mod+e" = ''exec ${cfg.editor.exec}'';
             };
 
             terminal = {
-              "${super}+Return" = "exec kitty";
-              "${super}+Ctrl+Return" = "exec kitty --title kitty-one --single-instance";
+              "$mod+Return" = "exec kitty";
+              "$mod+Ctrl+Return" = "exec kitty --title kitty-one --single-instance";
             };
 
             menus = {
-              "${super}+space" = rofi {show = "drun";};
-              "${super}+semicolon" = rofi {show = "run";};
-              "${super}+Shift+space" = rofi {
-                show = "window";
-                modi = ["window" "windowcd"];
-              };
-              "${super}+Shift+equal" = rofi {show = "calc";};
+              "$mod+space" = "exec --no-startup-id ${rofi "drun" {}}";
+              "$mod+semicolon" = "exec --no-startup-id ${rofi "run" {}}";
+              "$mod+Shift+space" = "--release exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
+              "$mod+Shift+equal" = "exec --no-startup-id ${rofi "calc" {}}";
             };
 
             focusWorkspaceAbsolute = {
-              "${super}+1" = "workspace number 1";
-              "${super}+2" = "workspace number 2";
-              "${super}+3" = "workspace number 3";
-              "${super}+4" = "workspace number 4";
-              "${super}+5" = "workspace number 5";
-              "${super}+6" = "workspace number 6";
-              "${super}+7" = "workspace number 7";
-              "${super}+8" = "workspace number 8";
-              "${super}+9" = "workspace number 9";
-              "${super}+0" = "workspace number 10";
+              "$mod+1" = "workspace number 1";
+              "$mod+2" = "workspace number 2";
+              "$mod+3" = "workspace number 3";
+              "$mod+4" = "workspace number 4";
+              "$mod+5" = "workspace number 5";
+              "$mod+6" = "workspace number 6";
+              "$mod+7" = "workspace number 7";
+              "$mod+8" = "workspace number 8";
+              "$mod+9" = "workspace number 9";
+              "$mod+0" = "workspace number 10";
             };
 
             focusWorkspaceRelative = {
-              "${super}+Tab" = "workspace back_and_forth";
-              "${super}+Shift+Tab" = "move container to workspace back_and_forth";
-              "${super}+Left" = "workspace prev";
-              "${super}+Right" = "workspace next";
-              "${super}+minus" = "exec --no-startup-id i3-next-workspace focus";
-              "${super}+bracketleft" = "workspace prev";
-              "${super}+bracketright" = "workspace next";
+              "$mod+Tab" = "workspace back_and_forth";
+              "$mod+Shift+Tab" = "move container to workspace back_and_forth";
+              "$mod+Left" = "workspace prev";
+              "$mod+Right" = "workspace next";
+              "$mod+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} focus";
+              "$mod+bracketleft" = "workspace prev";
+              "$mod+bracketright" = "workspace next";
             };
 
             jumpWindow = {
-              "${super}+comma" = "[con_mark=_prevFocus0] focus";
-              "${super}+ctrl+comma" = "[con_mark=_prevFocus2] focus";
+              "$mod+comma" = "[con_mark=_prevFocus0] focus";
+              "$mod+ctrl+comma" = "[con_mark=_prevFocus2] focus";
             };
 
             moveWindowPosition = {
-              "${super}+Shift+h" = "move left";
-              "${super}+Shift+j" = "move down";
-              "${super}+Shift+k" = "move up";
-              "${super}+Shift+l" = "move right";
+              "$mod+Shift+h" = "move left";
+              "$mod+Shift+j" = "move down";
+              "$mod+Shift+k" = "move up";
+              "$mod+Shift+l" = "move right";
             };
 
             moveWindowToWorkspace = {
-              "${super}+Shift+1" = "move container to workspace number 1";
-              "${super}+Shift+2" = "move container to workspace number 2";
-              "${super}+Shift+3" = "move container to workspace number 3";
-              "${super}+Shift+4" = "move container to workspace number 4";
-              "${super}+Shift+5" = "move container to workspace number 5";
-              "${super}+Shift+6" = "move container to workspace number 6";
-              "${super}+Shift+7" = "move container to workspace number 7";
-              "${super}+Shift+8" = "move container to workspace number 8";
-              "${super}+Shift+9" = "move container to workspace number 9";
-              "${super}+Shift+0" = "move container to workspace number 10";
-              "${super}+Shift+Ctrl+1" = "move container to workspace number 11";
-              "${super}+Shift+Ctrl+2" = "move container to workspace number 12";
-              "${super}+Shift+Ctrl+3" = "move container to workspace number 13";
-              "${super}+Shift+Ctrl+4" = "move container to workspace number 14";
-              "${super}+Shift+Ctrl+5" = "move container to workspace number 15";
-              "${super}+Shift+Ctrl+6" = "move container to workspace number 16";
-              "${super}+Shift+Ctrl+7" = "move container to workspace number 17";
-              "${super}+Shift+Ctrl+8" = "move container to workspace number 18";
-              "${super}+Shift+Ctrl+9" = "move container to workspace number 19";
-              "${super}+Shift+Ctrl+0" = "move container to workspace number 20";
-              "${super}+Shift+minus" = "exec --no-startup-id i3-next-workspace move";
+              "$mod+Shift+1" = "move container to workspace number 1";
+              "$mod+Shift+2" = "move container to workspace number 2";
+              "$mod+Shift+3" = "move container to workspace number 3";
+              "$mod+Shift+4" = "move container to workspace number 4";
+              "$mod+Shift+5" = "move container to workspace number 5";
+              "$mod+Shift+6" = "move container to workspace number 6";
+              "$mod+Shift+7" = "move container to workspace number 7";
+              "$mod+Shift+8" = "move container to workspace number 8";
+              "$mod+Shift+9" = "move container to workspace number 9";
+              "$mod+Shift+0" = "move container to workspace number 10";
+              "$mod+Shift+Ctrl+1" = "move container to workspace number 11";
+              "$mod+Shift+Ctrl+2" = "move container to workspace number 12";
+              "$mod+Shift+Ctrl+3" = "move container to workspace number 13";
+              "$mod+Shift+Ctrl+4" = "move container to workspace number 14";
+              "$mod+Shift+Ctrl+5" = "move container to workspace number 15";
+              "$mod+Shift+Ctrl+6" = "move container to workspace number 16";
+              "$mod+Shift+Ctrl+7" = "move container to workspace number 17";
+              "$mod+Shift+Ctrl+8" = "move container to workspace number 18";
+              "$mod+Shift+Ctrl+9" = "move container to workspace number 19";
+              "$mod+Shift+Ctrl+0" = "move container to workspace number 20";
+              "$mod+Shift+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} move";
             };
 
             carryWindowToWorkspace = {
-              "${super}+${alt}+1" = "move container to workspace number 1; workspace number 1";
-              "${super}+${alt}+2" = "move container to workspace number 2; workspace number 2";
-              "${super}+${alt}+3" = "move container to workspace number 3; workspace number 3";
-              "${super}+${alt}+4" = "move container to workspace number 4; workspace number 4";
-              "${super}+${alt}+5" = "move container to workspace number 5; workspace number 5";
-              "${super}+${alt}+6" = "move container to workspace number 6; workspace number 6";
-              "${super}+${alt}+7" = "move container to workspace number 7; workspace number 7";
-              "${super}+${alt}+8" = "move container to workspace number 8; workspace number 8";
-              "${super}+${alt}+9" = "move container to workspace number 9; workspace number 9";
-              "${super}+${alt}+0" = "move container to workspace number 10; workspace number 10;";
-              "${super}+${alt}+Ctrl+1" = "move container to workspace number 11; workspace number 11";
-              "${super}+${alt}+Ctrl+2" = "move container to workspace number 12; workspace number 12";
-              "${super}+${alt}+Ctrl+3" = "move container to workspace number 13; workspace number 13";
-              "${super}+${alt}+Ctrl+4" = "move container to workspace number 14; workspace number 14";
-              "${super}+${alt}+Ctrl+5" = "move container to workspace number 15; workspace number 15";
-              "${super}+${alt}+Ctrl+6" = "move container to workspace number 16; workspace number 16";
-              "${super}+${alt}+Ctrl+7" = "move container to workspace number 17; workspace number 17";
-              "${super}+${alt}+Ctrl+8" = "move container to workspace number 18; workspace number 18";
-              "${super}+${alt}+Ctrl+9" = "move container to workspace number 19; workspace number 19";
-              "${super}+${alt}+minus" = "exec --no-startup-id i3-next-workspace carry";
+              "$mod+$alt+1" = "move container to workspace number 1; workspace number 1";
+              "$mod+$alt+2" = "move container to workspace number 2; workspace number 2";
+              "$mod+$alt+3" = "move container to workspace number 3; workspace number 3";
+              "$mod+$alt+4" = "move container to workspace number 4; workspace number 4";
+              "$mod+$alt+5" = "move container to workspace number 5; workspace number 5";
+              "$mod+$alt+6" = "move container to workspace number 6; workspace number 6";
+              "$mod+$alt+7" = "move container to workspace number 7; workspace number 7";
+              "$mod+$alt+8" = "move container to workspace number 8; workspace number 8";
+              "$mod+$alt+9" = "move container to workspace number 9; workspace number 9";
+              "$mod+$alt+0" = "move container to workspace number 10; workspace number 10;";
+              "$mod+$alt+Ctrl+1" = "move container to workspace number 11; workspace number 11";
+              "$mod+$alt+Ctrl+2" = "move container to workspace number 12; workspace number 12";
+              "$mod+$alt+Ctrl+3" = "move container to workspace number 13; workspace number 13";
+              "$mod+$alt+Ctrl+4" = "move container to workspace number 14; workspace number 14";
+              "$mod+$alt+Ctrl+5" = "move container to workspace number 15; workspace number 15";
+              "$mod+$alt+Ctrl+6" = "move container to workspace number 16; workspace number 16";
+              "$mod+$alt+Ctrl+7" = "move container to workspace number 17; workspace number 17";
+              "$mod+$alt+Ctrl+8" = "move container to workspace number 18; workspace number 18";
+              "$mod+$alt+Ctrl+9" = "move container to workspace number 19; workspace number 19";
+              "$mod+$alt+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} carry";
             };
 
             # Ctrl+Shift ~> per-output operations
             outputs = {
-              "${super}+Ctrl+Shift+Tab" = "workspace next_on_output";
-              "${super}+Ctrl+Shift+grave" = "workspace prev_on_output";
+              "$mod+Ctrl+Shift+Tab" = "workspace next_on_output";
+              "$mod+Ctrl+Shift+grave" = "workspace prev_on_output";
 
-              "${super}+Ctrl+Shift+h" = "move workspace to output left";
-              "${super}+Ctrl+Shift+j" = "move workspace to output down";
-              "${super}+Ctrl+Shift+k" = "move workspace to output up";
-              "${super}+Ctrl+Shift+l" = "move workspace to output right";
+              "$mod+Ctrl+Shift+h" = "move workspace to output left";
+              "$mod+Ctrl+Shift+j" = "move workspace to output down";
+              "$mod+Ctrl+Shift+k" = "move workspace to output up";
+              "$mod+Ctrl+Shift+l" = "move workspace to output right";
 
-              "${super}+Ctrl+Shift+bracketleft" = "workspace prev_on_output";
-              "${super}+Ctrl+Shift+bracketright" = "workspace next_on_output";
+              "$mod+Ctrl+Shift+bracketleft" = "workspace prev_on_output";
+              "$mod+Ctrl+Shift+bracketright" = "workspace next_on_output";
 
-              "${super}+Ctrl+Shift+greater" = "move workspace to output primary";
-              "${super}+Ctrl+Shift+less" = "move workspace to output nonprimary";
+              "$mod+Ctrl+Shift+greater" = "move workspace to output primary";
+              "$mod+Ctrl+Shift+less" = "move workspace to output nonprimary";
             };
 
             split = {
-              "${super}+v" = "split vertical";
-              "${super}+g" = "split horizontal";
-              "${super}+BackSpace" = "split toggle";
+              "$mod+v" = "split vertical";
+              "$mod+g" = "split horizontal";
+              "$mod+BackSpace" = "split toggle";
             };
 
             ## Modify // Window space
             fullscreen = {
-              "${super}+m" = "fullscreen toggle";
+              "$mod+m" = "fullscreen toggle";
             };
 
             sticky = {
-              "${super}+s" = "floating toggle; sticky toggle";
+              "$mod+s" = "floating toggle; sticky toggle";
             };
 
             ## Modify // Window layout
             layout = {
-              "${super}+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
-              "${super}+f" = "floating toggle";
-              "${super}+t" = "layout toggle split";
-              "${super}+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
+              "$mod+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
+              "$mod+f" = "floating toggle";
+              "$mod+t" = "layout toggle split";
+              "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
+              "$mod+equal" = "exec ${import ./i3-balance-workspace.nix pkgs}/bin/i3_balance_workspace";
             };
 
             scratchpad = {
-              "${super}+Shift+grave" = "move scratchpad";
-              "${super}+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
+              "$mod+Shift+grave" = "move scratchpad";
+              "$mod+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
             };
 
             media = {
@@ -311,7 +321,7 @@ in {
             };
           };
         in
-          foldl' self.lib.unionOfDisjoint {} (attrValues groups);
+          foldl' lib.attrsets.unionOfDisjoint {} (attrValues groups);
 
         modes = {
           resize = {
@@ -325,20 +335,20 @@ in {
             "Shift+k" = "resize shrink height 24 px or 3 ppt";
             "Shift+l" = "resize grow width 24 px or 3 ppt";
 
-            "${super}+h" = "focus left";
-            "${super}+j" = "focus down";
-            "${super}+k" = "focus up";
-            "${super}+l" = "focus right";
+            "$mod+h" = "focus left";
+            "$mod+j" = "focus down";
+            "$mod+k" = "focus up";
+            "$mod+l" = "focus right";
 
             # Move position by mouse
-            "button1" = "move position mouse"; # move container to current position of mouse cursor
-            "button2" = "exec ${./scripts/draw-resize.sh}";
-            "button4" = "move up 1 ppt"; # scroll wheel up
-            "button5" = "move down 1 ppt"; # scroll wheel down
-            "button6" = "move right 1 ppt"; # scroll wheel right
-            "button7" = "move left 1 ppt"; # scroll wheel right
+            "$mouse_left" = "move position mouse"; # move container to current position of mouse cursor
+            "$mouse_right" = "exec ${./scripts/draw-resize.sh}";
+            "$mouse_wheel_up" = "move up 1 ppt";
+            "$mouse_wheel_down" = "move down 1 ppt"; # scroll wheel down
+            "$mouse_wheel_right" = "move right 1 ppt"; # scroll wheel right
+            "$mouse_wheel_left" = "move left 1 ppt"; # scroll wheel right
 
-            "${super}+r" = "mode default";
+            "$mod+r" = "mode default";
             "Escape" = "mode default";
             "Ctrl+c" = "mode default";
             "Ctrl+g" = "mode default";
@@ -496,10 +506,49 @@ in {
         workspaceLayout = "default";
       };
 
-      extraConfig = with config.colorScheme.colors; ''
-        set $mod ${super}
-        set $alt ${alt}
+      extraConfig = with config.colorScheme.colors;
+        let colors = config.colorScheme.colors; in ''
+        #=====================================
+        # Variables
+        #=====================================
+
+        set $mod ${cfg.keysyms.mod}
+        set $alt ${cfg.keysyms.alt}
+        set $mouse_left ${cfg.keysyms.mouseButtonLeft}
+        set $mouse_middle ${cfg.keysyms.mouseButtonMiddle}
+        set $mouse_right ${cfg.keysyms.mouseButtonRight}
+        set $mouse_wheel_up ${cfg.keysyms.mouseWheelUp}
+        set $mouse_wheel_down ${cfg.keysyms.mouseWheelDown}
+        set $mouse_wheel_left ${cfg.keysyms.mouseWheelLeft}
+        set $mouse_wheel_right ${cfg.keysyms.mouseWheelRight}
+
         set $bar_height ${toString barHeight}
+
+        #-------------------------------------
+        # Xresources
+        #-------------------------------------
+
+        set_from_resources $color0 i3wm.color0 #${colors.base00}
+        set_from_resources $color1 i3wm.color1 #${colors.base08}
+        set_from_resources $color2 i3wm.color2 #${colors.base0B}
+        set_from_resources $color3 i3wm.color3 #${colors.base0A}
+        set_from_resources $color4 i3wm.color4 #${colors.base0D}
+        set_from_resources $color5 i3wm.color5 #${colors.base0E}
+        set_from_resources $color6 i3wm.color6 #${colors.base0C}
+        set_from_resources $color7 i3wm.color7 #${colors.base05}
+        set_from_resources $color8 i3wm.color8 #${colors.base03}
+        set_from_resources $color9 i3wm.color9 #${colors.base09}
+        set_from_resources $color10 i3wm.color10 #${colors.base01}
+        set_from_resources $color11 i3wm.color11 #${colors.base02}
+        set_from_resources $color12 i3wm.color12 #${colors.base04}
+        set_from_resources $color13 i3wm.color13 #${colors.base06}
+        set_from_resources $color14 i3wm.color14 #${colors.base0F}
+        set_from_resources $color15 i3wm.color15 #${colors.base07}
+
+
+        #=====================================
+        # General
+        #=====================================
 
         include ${config.xdg.configHome}/i3/config.d/*.conf
 
@@ -509,10 +558,10 @@ in {
         # Keybindings, cont.
         #=====================================
 
-        bindsym --whole-window --border ${super}+${scrollWheelUp} focus up
-        bindsym --whole-window --border ${super}+${scrollWheelDown} focus down
-        bindsym --whole-window --border ${super}+${scrollWheelLeft} focus left
-        bindsym --whole-window --border ${super}+${scrollWheelRight} focus right
+        bindsym --whole-window --border $mod+$mouse_wheel_up focus up
+        bindsym --whole-window --border $mod+$mouse_wheel_down focus down
+        bindsym --whole-window --border $mod+$mouse_wheel_left focus left
+        bindsym --whole-window --border $mod+$mouse_wheel_right focus right
 
         #=====================================
         # Window rules
@@ -641,13 +690,12 @@ in {
             bindsym $mod+k focus up
             bindsym $mod+l focus right
 
-            bindsym # Move position by mouse
-            bindsym button1 move position mouse
-            bindsym button2 exec ${./scripts/draw-resize.sh}
-            bindsym button4 move up 1 ppt
-            bindsym button5 move down 1 ppt
-            bindsym button6 move right 1 ppt
-            bindsym button7 move left 1 ppt
+            bindsym $mouse_left move position mouse
+            bindsym $mouse_right exec --no-startup-id ${./scripts/draw-resize.sh}
+            bindsym $mouse_wheel_up move up 1 ppt
+            bindsym $mouse_wheel_down move down 1 ppt
+            bindsym $mouse_wheel_right move right 1 ppt
+            bindsym $mouse_wheel_left move left 1 ppt
 
             bindsym g mode "$mode_gaps"
             bindsym = exec i3_balance_workspace;
@@ -667,42 +715,25 @@ in {
 
         bindsym $mod+r mode "$mode_resize"
         bindsym $mod+n mode "$mode_notifications"
-        bindsym $mod+equal exec i3_balance_workspace;
 
-        # The side buttons move the window around
-        bindsym button9 move left
-        bindsym button8 move right
+        #=====================================
+        # Colors
+        #=====================================
 
-        #################
-        # client.focused
-        # : A client which currently has the focus.
-        #
-        # client.focused_inactive
-        # : A client which is the focused one of its container, but it does not have the focus at the moment.
-        #
-        # client.focused_tab_title
-        # : Tab or stack container title that is the parent of the focused container but not directly focused. Defaults to focused_inactive if not specified and does not use the indicator and child_border colors.
-        #
-        # client.unfocused
-        # : A client which is not the focused one of its container.
-        #
-        # client.urgent
-        # : A client which has its urgency hint activated.
-        #
-        # client.placeholder
-        # : Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
-        #
-        # client.background
-        # : Background color which will be used to paint the background of the client window on top of which the client will be rendered. Only clients which do not cover the whole area of this window expose the color. Note that this colorclass only takes a single color.
-        #################
-        # class                 border     backgr.    text       indicator  child_border
-        client.focused          #${base02} #${base01} #${base05} #${base0A} #${base02}
-        client.focused_inactive #${base03} #${base04} #${base05} #${base03} #${base04}
-        client.unfocused        #${base03} #${base00} #${base04} #${base03} #${base03}
-        client.urgent           #${base02} #${base0F} #${base05} #${base0F} #${base0F}
-        client.placeholder      #${base00} #${base01} #${base05} #${base00} #${base01}
-        client.background       #${base05}
-        #################
+        # class                 border   bg       fg       ind      child_border
+        client.focused          $color11 $color10 $color7  $color3  $color11
+        client.focused_inactive $color8  $color4  $color5  $color3  $color4
+        client.unfocused        $color3  $color0  $color4  $color3  $color3
+        client.urgent           $color2  $color15 $color5  $color15 $color15
+        client.placeholder      $color0  $color1  $color5  $color0  $color1
+        client.background       $color5
+
+        client.focused          #${colors.base02} #${colors.base01} #${colors.base05} #${colors.base0A} #${colors.base02}
+        client.focused_inactive #${colors.base03} #${colors.base04} #${colors.base05} #${colors.base03} #${colors.base04}
+        client.unfocused        #${colors.base03} #${colors.base00} #${colors.base04} #${colors.base03} #${colors.base03}
+        client.urgent           #${colors.base02} #${colors.base0F} #${colors.base05} #${colors.base0F} #${colors.base0F}
+        client.placeholder      #${colors.base00} #${colors.base01} #${colors.base05} #${colors.base00} #${colors.base01}
+        client.background       #${colors.base05}
       '';
     };
   };

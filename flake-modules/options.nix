@@ -1,11 +1,7 @@
 {
   config,
-  self,
-  inputs,
   flake-parts-lib,
   lib,
-  getSystem,
-  extendModules,
   ...
 }:
 with builtins; let

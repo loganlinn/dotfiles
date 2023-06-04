@@ -387,5 +387,4 @@
   "workspace_untrusted" = "";
   "zoom_in" = "";
   "zoom_out" = "";
-
 }
