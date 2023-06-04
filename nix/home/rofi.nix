@@ -79,4 +79,10 @@ with lib; {
       kb-cancel = "Escape,Control+g,Control+bracketleft";
     };
   };
+
+  home.packages = with pkgs; [
+    rofi-systemd # standalone launcher, rather than a plugin
+  ];
+
+  home.sessionVariables.ROFI_SYSTEMD_TERM="kitty"; # defaults to urxvt
 }
