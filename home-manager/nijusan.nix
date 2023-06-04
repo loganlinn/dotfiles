@@ -14,6 +14,7 @@ in {
     ../nix/home/dev # TODO module
     #../nix/home/dev/vala.nix
     ../nix/home/emacs.nix
+    ../nix/home/home-manager.nix
     ../nix/home/kitty
     ../nix/home/mpd.nix
     ../nix/home/mpv.nix
