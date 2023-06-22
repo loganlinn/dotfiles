@@ -55,11 +55,13 @@
     enableSSHSupport = true;
   };
 
+  programs._1password.enable = true;
+  programs._1password-gui.enable = true;
+  programs._1password-gui.polkitPolicyOwners = ["logan"];
+
   programs.mosh.enable = true;
 
   environment.systemPackages = with pkgs; [
-    _1password # TODO remove?
-    _1password-gui # TODO remove?
     btrbk
     cachix
     curl
@@ -111,7 +113,7 @@
     home = "/home/logan";
     createHome = true;
     shell = pkgs.zsh;
-    extraGroups = ["wheel" "networkmanager" "audio" "video" "docker"];
+    extraGroups = ["wheel" "networkmanager" "audio" "video" "docker" "onepassword"];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa"
     ];
