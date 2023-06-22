@@ -49,5 +49,9 @@ while :; do
     echo -n '%{A}' # scroll up
     echo -n '%{A}' # scroll down
     echo
-    sleep "${INTERVAL-1}"
+    if [[ -z $INTERVAL ]]; then
+        break
+    else
+        sleep "$INTERVAL"
+    fi
 done

@@ -482,6 +482,7 @@ in
                 PAUSED_FG = "\${colors.background-alt}";
                 PAUSED_BG = "\${colors.warn}";
                 ICON_FONT = "3";
+                INTERVAL = 1;
               };
             };
 
