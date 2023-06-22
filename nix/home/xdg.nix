@@ -306,6 +306,7 @@ let
     "imv.desktop"
   ] ++ browser;
   player = [
+    "vlc.desktop"
     "mpv.desktop"
   ] ++ browser;
   filemanager = [

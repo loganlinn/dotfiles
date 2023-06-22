@@ -14,8 +14,8 @@ lib.mkIf pkgs.stdenv.isLinux {
     sysz
     trash-cli
     xdg-utils
-    handlr # better xdg-utils
-    (writeShellScriptBin ''capslock'' ''${xdotool} key Caps_Lock'')
-    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool} key Caps_Lock'') # just in case ;)
+    handlr # better xdg-utils (xdg-open, etc) [https://github.com/chmln/handlr]
+    (writeShellScriptBin "open" ''exec ${handlr}/bin/handlr open "$@"'')
+    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool}/bin/xdotool key Caps_Lock'') # just in case ;)
   ];
 }

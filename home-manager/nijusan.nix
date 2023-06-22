@@ -101,6 +101,7 @@ in
   services.dunst.enable = true;
 
   services.polybar.enable = true;
+
   modules.polybar = {
     networks = [
       {
@@ -115,6 +116,11 @@ in
   };
 
   services.picom.enable = true;
+
+  services.betterlockscreen = {
+    enable = true;
+    arguments = ["-w" "dim"];
+  };
 
   services.easyeffects.enable = true;
 

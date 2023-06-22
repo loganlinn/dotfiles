@@ -21,7 +21,6 @@ with lib; {
       rofi-file-browser
       rofi-bluetooth
       rofi-pulse-select
-      rofi-power-menu
     ];
 
     extraConfig = {
@@ -82,6 +81,9 @@ with lib; {
 
   home.packages = with pkgs; [
     rofi-systemd # standalone launcher, rather than a plugin
+    (writeShellScriptBin "rofi-power" ''
+      ${getExe config.programs.rofi.finalPackage} -show Power -modes "Power:${getExe pkgs.rofi-power-menu}"
+    '')
   ];
 
   home.sessionVariables.ROFI_SYSTEMD_TERM="kitty"; # defaults to urxvt
