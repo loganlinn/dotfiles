@@ -121,16 +121,6 @@ in
         # Fix IntelliJ terminal issue where every keypress was accompanied by 'tmux' or 'tmux;'
         ''[[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX''}
 
-      # 1password wrapper
-      function op {
-        command op whoami >/dev/null 2>&1 || eval "$(command op signin)" && command op "$@"
-      }
-
-      [[ ! -f ~/.config/op/plugins.sh ]] || source ~/.config/op/plugins.sh
-
-      source ${./../../../bin/src-get}
-      # eval "$(src init -)"
-
       [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
     '';
   };

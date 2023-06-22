@@ -4,21 +4,21 @@ let
   withSystemd = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
 in
 {
-  imports =
-    [
-      ./accounts.nix
-      ./clipboard.nix
-      ./common-linux.nix
-      ./fzf.nix
-      ./git.nix
-      ./neovim
-      ./nix-path.nix
-      ./readline.nix
-      ./secrets.nix
-      ./security.nix
-      ./shell
-      ../modules/nix-registry.nix
-    ];
+  imports = [
+    ../modules/nix-registry.nix
+    ./accounts.nix
+    ./clipboard.nix
+    ./common-linux.nix
+    ./fzf.nix
+    ./git.nix
+    ./neovim
+    ./nix-path.nix
+    ./readline.nix
+    ./secrets.nix
+    ./security.nix
+    ./shell
+    ./zsh
+  ];
 
   home.packages = with pkgs; [
     bc

@@ -6,7 +6,6 @@
       ../nix/home/common.nix
       ../nix/home/dev
       ../nix/home/pretty.nix
-      ../nix/home/zsh
     ];
 
     modules.fonts.enable = true;
