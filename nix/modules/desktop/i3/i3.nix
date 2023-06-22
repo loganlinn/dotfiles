@@ -574,7 +574,6 @@ in
           set_from_resources $color14 i3wm.color14 #${colors.base0F}
           set_from_resources $color15 i3wm.color15 #${colors.base07}
 
-
           #=====================================
           # General
           #=====================================

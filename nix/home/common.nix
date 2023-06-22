@@ -40,6 +40,7 @@ in
     gnutls
     gping # ping alternative
     gzip
+    just
     moreutils
     neofetch
     nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
