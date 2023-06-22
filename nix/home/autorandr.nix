@@ -20,23 +20,22 @@ in
             enable = true;
             primary = true;
             mode = "3840x1600";
-            position = "2560x980";
-            rate = "59.99";
+            position = "2560x1064";
           };
           DP-2 = {
             enable = true;
             mode = "2560x2880";
-            rate = "59.98";
+            position = "0x0";
           };
         };
       };
     };
     hooks.postswitch = {
-      desktop-notification = ''${pkgs.libnotify}/bin/notify-send -i "Display profile" "$AUTORANDR_CURRENT_PROFILE"'';
+      desktop-notification = ''${pkgs.libnotify}/bin/notify-send -i "Display profile" "Activated display profile: $AUTORANDR_CURRENT_PROFILE"'';
     } // lib.optionalAttrs config.xsession.windowManager.i3.enable {
       i3-restart = "${pkgs.i3}/bin/i3-msg restart";
     };
   };
 
-  services.autorandr.enable = false;
+  services.autorandr.enable = true;
 }
