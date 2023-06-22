@@ -2,19 +2,6 @@
 
 with lib;
 
-let
-  # a which/command -v command that resolves symbolic links
-  realwhich = with pkgs; writeShellScript "realwhich" ''
-    e=0
-    for c; do
-      if ! ${coreutils}/bin/readlink -e "$(command -v "$c")"; then
-          echo "$c not found" >&2
-          e=1
-      fi
-    done
-    exit $e
-  '';
-in
 {
   home.shellAliases = rec {
     "'..'" = "cd ..";
@@ -22,8 +9,6 @@ in
     l = "ls -lah";
     mkd = "mkdir -p";
     rmemptydirs = "${pkgs.fd}/bin/fd -td -te -x rmdir";
-
-    which = "${realwhich}";
 
     gc = "git commit -v";
     gca = "git commit -v -a";

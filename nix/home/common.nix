@@ -16,7 +16,7 @@ in
       ./readline.nix
       ./secrets.nix
       ./security.nix
-      ./shell/aliases.nix
+      ./shell
       ../modules/nix-registry.nix
     ];
 
