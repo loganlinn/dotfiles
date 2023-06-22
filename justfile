@@ -8,48 +8,48 @@ alias b := build
 alias z := repl
 
 default:
-  @just --choose
+    @just --choose
 
 [linux]
 build:
-  nix run home-manager -- build
+    nix run home-manager -- build
 
 [macos]
 build:
-  darwin-rebuild build --flake {{flake}}
+    darwin-rebuild build --flake {{ flake }}
 
 [linux]
 switch:
-  nix run home-manager -- switch
+    nix run home-manager -- switch
 
 [macos]
 switch:
-  darwin-rebuild switch --flake {{flake}}
+    darwin-rebuild switch --flake {{ flake }}
 
 [linux]
 bootstrap:
-  nix run home-manager -- init --switch
+    nix run home-manager -- init --switch
 
 [macos]
 bootstrap:
-  nix build "{{flake}}#darwinConfigurations.$(hostname -s).system"
-  ./result/sw/bin/darwin-rebuild switch --flake {{invocation_directory()}}
+    nix build "{{ flake }}#darwinConfigurations.$(hostname -s).system"
+    ./result/sw/bin/darwin-rebuild switch --flake {{ invocation_directory() }}
 
 fmt:
-  nix fmt
-  just --fmt --unstable
+    nix fmt
+    just --fmt --unstable
 
 update:
-  nix flake update --commit-lock-file
+    nix flake update --commit-lock-file
 
 show:
-  nix flake show
+    nix flake show
 
 metadata:
-  nix flake metadata
+    nix flake metadata
 
-repl file='repl.nix':
-  nix repl --file {{file}}
+repl dir='.' file='repl.nix':
+    nix repl --file {{dir}}/{{ file }}
 
 netrc:
-  op inject -i netrc.tpl -o ~/.netrc
+    op inject -i netrc.tpl -o ~/.netrc
