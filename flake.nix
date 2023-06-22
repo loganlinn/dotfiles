@@ -112,7 +112,7 @@
             hm = { description = "Run home-manager"; exec = pkgExec inputs'.home-manager.packages.home-manager; };
             zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/repl.nix"; };
             zo = { description = "Start nixos REPL"; exec = replExec "nixos/repl.nix"; };
-            up = { description = "Update flake.lock"; exec = wrap "nix flake update"; };
+            up = { description = "Update flake.lock"; exec = wrap "nix flake update --commit-lock-file"; };
             show = { description = "Show flake outputs"; exec = wrap "nix flake show"; };
             meta = { description = "Show flake"; exec = wrap "nix flake metadata"; };
           };
