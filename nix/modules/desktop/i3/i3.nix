@@ -486,6 +486,11 @@ in {
         ];
 
         startup = [
+          {
+            command = getExe pkgs.i3-auto-layout;
+            always = true;
+            notification = false;
+          }
           (mkIf (themeCfg.wallpaper != null) {
             command = "${config.programs.feh.package}/bin/feh --no-fehbg --bg-fill ${themeCfg.wallpaper}";
             always = true;
