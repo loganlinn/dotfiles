@@ -334,7 +334,7 @@ in
                   padding = 2;
                 };
                 mode = {
-                  text = "%name%";
+                  text = "%mode%";
                   background = "\${colors.warn}";
                   foreground = "\${colors.background}";
                   padding = 2;
@@ -438,182 +438,123 @@ in
                 { text = "█"; foreground = "\${colors.alert}"; spacing = 0; }
               ];
             };
+
+            "module/temperature" = module "internal/temperature" {
+              interval = 5;
+              thermal-zone = "x86_pkg_temp";
+              hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
+              base.temperature = 50;
+              warn.temperature = 75;
+              format = {
+                prefix = "TEMP";
+                text = "<label> <ramp>";
+                warn = {
+                  text = "<label-warn> <ramp>";
+                  background = "\${colors.base00}";
+                  foreground = "\${colors.foreground}";
+                  padding = 2;
+                };
+              };
+              label = {
+                text = "%temperature-c%";
+                warn = "%temperature-c%";
+              };
+              units = true;
+              ramp = [
+                { text = iconText ""; foreground = "\${colors.ok}"; }
+                { text = iconText ""; foreground = "\${colors.ok}"; }
+                { text = iconText ""; foreground = "\${colors.ok}"; }
+                { text = iconText ""; foreground = "\${colors.warn}"; }
+                { text = iconText ""; foreground = "\${colors.warn}"; }
+                { text = iconText ""; foreground = "\${colors.warn}"; }
+                { text = iconText ""; foreground = "\${colors.warn}"; }
+                { text = iconText ""; foreground = "\${colors.alert}"; }
+              ];
+            };
+
+            "module/dunst" = {
+              type = "custom/script";
+              exec = "${./bin/polybar-dunst.sh}";
+              tail = true;
+              env = {
+                ACTIVE_FG = "\${colors.foreground-dark}";
+                ACTIVE_BG = "\${colors.background}";
+                PAUSED_FG = "\${colors.background-alt}";
+                PAUSED_BG = "\${colors.warn}";
+                ICON_FONT = "3";
+              };
+            };
+
+            # TODO reuse separator module?
+            "module/sep1" = {
+              type = "custom/text";
+              content = {
+                text = " ";
+                foreground = "\${colors.transparent}";
+                background = "\${colors.transparent}";
+              };
+            };
+            "module/sep2" = {
+              type = "custom/text";
+              content = {
+                text = " ";
+                foreground = "\${colors.transparent}";
+                background = "\${colors.transparent}";
+              };
+            };
+            "module/sep3" = {
+              type = "custom/text";
+              content = {
+                text = " ";
+                foreground = "\${colors.transparent}";
+                background = "\${colors.transparent}";
+              };
+            };
+            "module/sep4" = {
+              type = "custom/text";
+              content = {
+                text = " ";
+                foreground = "\${colors.transparent}";
+                background = "\${colors.transparent}";
+              };
+            };
           }
           cfg.settings;
 
       # TODO finish converting to services.polybar.settings
-      config = mkMerge ([
-        (mkModule "temperature" "internal/temperature" {
-          interval = 5;
-          thermal-zone = "x86_pkg_temp";
-          hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
-          base-temperature = 50;
-          warn-temperature = 75;
-          format-prefix = "TEMP";
-          format = "<label> <ramp>";
-          format-warn = "<label-warn> <ramp>";
-          format-warn-background = "\${colors.base00}";
-          format-warn-foreground = "\${colors.foreground}";
-          format-warn-padding = 2;
-          # units = false;
-          # label = "%temperature-c%${nerdfonts.md.temperature_celsius}";
-          # label-warn = "%temperature-c%${nerdfonts.md.temperature_celsius}";
-          units = true;
-          label = "%temperature-c%";
-          label-warn = "%temperature-c%";
-          ramp-0 = iconText "";
-          ramp-1 = iconText "";
-          ramp-2 = iconText "";
-          ramp-3 = iconText "";
-          ramp-4 = iconText "";
-          ramp-5 = iconText "";
-          ramp-6 = iconText "";
-          ramp-7 = iconText "";
-          ramp-0-foreground = "\${colors.ok}";
-          ramp-1-foreground = "\${colors.ok}";
-          ramp-2-foreground = "\${colors.ok}";
-          ramp-3-foreground = "\${colors.warn}";
-          ramp-4-foreground = "\${colors.warn}";
-          ramp-5-foreground = "\${colors.warn}";
-          ramp-6-foreground = "\${colors.warn}";
-          ramp-7-foreground = "\${colors.alert}";
-        })
-        (mkModule "github" "internal/github" {
-          token = mkIf (config.my.github.oauth-token != null) config.my.github.oauth-token;
-          user = config.my.github.user;
-        })
-        {
-          "module/dunst" = {
-            type = "custom/script";
-            exec =
-              let
-                dunst-module = pkgs.writeShellScriptBin "dunst-module" ''
-                  IS_PAUSED=
-                  declare -i COUNT_WAITING
-                  declare -i COUNT_DISPLAYED
-                  declare -i COUNT_HISTORY
+      config = fold recursiveUpdate {} (forEach cfg.networks ({ interface, interface-type, ... }@settings:
+        (mkModule "network-${interface}" "internal/network" ({
+          inherit interface;
 
-                  function is_paused() {
-                    IS_PAUSED=$(dunstctl is-paused)
-                    [[ $IS_PAUSED == "true" ]] || return 1
-                  }
+          format-connected =
+            if interface-type == "wireless"
+            then "<ramp-signal>"
+            else "<label-connected>";
+          format-connected-padding = 2;
+          format-connected-background = "\${colors.background}";
+          format-connected-foreground = "\${colors.foreground-dark}";
+          label-connected =
+            "%{A1:nm-connection-editor &:}${iconText nerdfonts.md.network_outline}%{A}";
 
-                  function some_waiting() {
-                    COUNT_WAITING=$(dunstctl count waiting)
-                    (( COUNT_WAITING > 0 )) || return 1
-                  }
+          format-disconnected = "<label-disconnected>";
+          format-disconnected-padding = 2;
+          format-disconnected-background = "\${colors.background}";
+          format-disconnected-foreground = "\${colors.foreground-dark}";
+          label-disconnected =
+            if interface-type == "wireless"
+            then (iconText nerdfonts.md.wifi_off)
+            else (iconText nerdfonts.md.network_off);
 
-                  function some_displayed() {
-                    COUNT_DISPLAYED=$(dunstctl count displayed)
-                    (( COUNT_DISPLAYED > 0 )) || return 1
-                  }
+          format-packetloss = "<animation-packetloss> <label-packetloss>";
+          format-packetloss-padding = 2;
+          format-packetloss-background = "\${colors.background}";
+          format-packetloss-foreground = "\${colors.foreground-dark}";
 
-                  function some_history() {
-                    COUNT_HISTORY=$(dunstctl count history)
-                    (( COUNT_HISTORY > 0 )) || return 1
-                  }
-
-                  while :; do
-                    echo -n '%{A1:dunstctl set-paused toggle:}' # left click
-                    echo -n '%{A2:dunstctl close-all:}'         # middle click
-                    echo -n '%{A3:dunstctl context:}'           # right click
-                    echo -n '%{A4:dunstctl close:}'             # scroll up
-                    echo -n '%{A5:dunstctl history-pop:}'       # scroll down
-
-                    if is_paused; then
-                      tags="%{B$PAUSED_BG}%{F$PAUSED_FG}"
-                      if some_waiting; then
-                        text="${iconText nerdfonts.md.bell_sleep} ($COUNT_WAITING)"
-                      else
-                        text="${iconText nerdfonts.md.bell_sleep_outline}"
-                      fi
-                    else
-                      tags="%{B$ACTIVE_BG}%{F$ACTIVE_FG}"
-                      if some_displayed; then
-                        text='${iconText nerdfonts.md.bell_alert}'
-                      else
-                        text='${iconText nerdfonts.md.bell}'
-                      fi
-                    fi
-
-                    # need to manually pad with whitespace because background is changed dynamically
-                    echo -n "$tags  $text  "
-
-                    echo -n '%{A}' # left click
-                    echo -n '%{A}' # middle click
-                    echo -n '%{A}' # right click
-                    echo -n '%{A}' # scroll up
-                    echo -n '%{A}' # scroll down
-                    echo
-
-                    sleep 1
-                  done
-                '';
-              in
-              "${dunst-module}/bin/dunst-module";
-            tail = true;
-            env-ACTIVE_FG = "\${colors.foreground-dark}";
-            env-ACTIVE_BG = "\${colors.background}";
-            env-PAUSED_FG = "\${colors.background-alt}";
-            env-PAUSED_BG = "\${colors.warn}";
-          };
-        }
-        (
-          let
-            sep = {
-              type = "custom/text";
-              content = " ";
-              content-foreground = "\${colors.transparent}";
-              content-background = "\${colors.transparent}";
-            };
-          in
-          {
-            "module/sep1" = sep;
-            "module/sep2" = sep;
-            "module/sep3" = sep;
-            "module/sep4" = sep;
-            "module/sep5" = sep;
-          }
-        )
-      ]
-      ++
-      (forEach cfg.networks
-        ({ interface, interface-type, ... }@settings:
-          (mkModule "network-${interface}" "internal/network" ({
-            inherit interface;
-
-            format-connected =
-              if interface-type == "wireless"
-              then "<ramp-signal>"
-              else "<label-connected>";
-            format-connected-padding = 2;
-            format-connected-background = "\${colors.background}";
-            format-connected-foreground = "\${colors.foreground-dark}";
-            label-connected =
-              "%{A1:nm-connection-editor &:}${iconText nerdfonts.md.network_outline}%{A}";
-
-            format-disconnected = "<label-disconnected>";
-            format-disconnected-padding = 2;
-            format-disconnected-background = "\${colors.background}";
-            format-disconnected-foreground = "\${colors.foreground-dark}";
-            label-disconnected =
-              if interface-type == "wireless"
-              then (iconText nerdfonts.md.wifi_off)
-              else (iconText nerdfonts.md.network_off);
-
-            format-packetloss = "<animation-packetloss> <label-packetloss>";
-            format-packetloss-padding = 2;
-            format-packetloss-background = "\${colors.background}";
-            format-packetloss-foreground = "\${colors.foreground-dark}";
-
-            ramp-signal-0 = iconText nerdfonts.md.wifi_strength_1;
-            ramp-signal-1 = iconText nerdfonts.md.wifi_strength_2;
-            ramp-signal-2 = iconText nerdfonts.md.wifi_strength_3;
-            ramp-signal-3 = iconText nerdfonts.md.wifi_strength_4;
-          } // settings))))
-      ++
-      singleton cfg.config
-      );
+          ramp-signal-0 = iconText nerdfonts.md.wifi_strength_1;
+          ramp-signal-1 = iconText nerdfonts.md.wifi_strength_2;
+          ramp-signal-2 = iconText nerdfonts.md.wifi_strength_3;
+          ramp-signal-3 = iconText nerdfonts.md.wifi_strength_4;
+        } // settings))));
 
       # extraConfig = ''
       #   ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in

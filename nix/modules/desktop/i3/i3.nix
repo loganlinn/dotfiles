@@ -527,22 +527,35 @@ in
           # Variables
           #=====================================
 
-          set $mod ${cfg.keysyms.mod}
           set $alt ${cfg.keysyms.alt}
+          set $mod ${cfg.keysyms.mod}
           set $menu ${cfg.keysyms.menu}
           set $mouse_left ${cfg.keysyms.mouseButtonLeft}
           set $mouse_middle ${cfg.keysyms.mouseButtonMiddle}
           set $mouse_right ${cfg.keysyms.mouseButtonRight}
-          set $mouse_wheel_up ${cfg.keysyms.mouseWheelUp}
           set $mouse_wheel_down ${cfg.keysyms.mouseWheelDown}
           set $mouse_wheel_left ${cfg.keysyms.mouseWheelLeft}
           set $mouse_wheel_right ${cfg.keysyms.mouseWheelRight}
+          set $mouse_wheel_up ${cfg.keysyms.mouseWheelUp}
 
           set $bar_height ${toString barHeight}
 
-          #-------------------------------------
-          # Xresources
-          #-------------------------------------
+          set $base00 #${colors.base00}
+          set $base01 #${colors.base01}
+          set $base02 #${colors.base02}
+          set $base03 #${colors.base03}
+          set $base04 #${colors.base04}
+          set $base05 #${colors.base05}
+          set $base06 #${colors.base06}
+          set $base07 #${colors.base07}
+          set $base08 #${colors.base08}
+          set $base09 #${colors.base09}
+          set $base0A #${colors.base0A}
+          set $base0B #${colors.base0B}
+          set $base0C #${colors.base0C}
+          set $base0D #${colors.base0D}
+          set $base0E #${colors.base0E}
+          set $base0F #${colors.base0F}
 
           set_from_resources $color0 i3wm.color0 #${colors.base00}
           set_from_resources $color1 i3wm.color1 #${colors.base08}
@@ -744,12 +757,20 @@ in
           # client.placeholder      $color0  $color1  $color5  $color0  $color1
           # client.background       $color5
 
-          client.focused          #${colors.base02} #${colors.base01} #${colors.base05} #${colors.base0A} #${colors.base02}
-          client.focused_inactive #${colors.base03} #${colors.base04} #${colors.base05} #${colors.base03} #${colors.base04}
-          client.unfocused        #${colors.base03} #${colors.base00} #${colors.base04} #${colors.base03} #${colors.base03}
-          client.urgent           #${colors.base02} #${colors.base0F} #${colors.base05} #${colors.base0F} #${colors.base0F}
-          client.placeholder      #${colors.base00} #${colors.base01} #${colors.base05} #${colors.base00} #${colors.base01}
-          client.background       #${colors.base05}
+          # client.focused          #${colors.base02} #${colors.base01} #${colors.base05} #${colors.base0A} #${colors.base02}
+          # client.focused_inactive #${colors.base03} #${colors.base04} #${colors.base05} #${colors.base03} #${colors.base04}
+          # client.unfocused        #${colors.base03} #${colors.base00} #${colors.base04} #${colors.base03} #${colors.base03}
+          # client.urgent           #${colors.base02} #${colors.base0F} #${colors.base05} #${colors.base0F} #${colors.base0F}
+          # client.placeholder      #${colors.base00} #${colors.base01} #${colors.base05} #${colors.base00} #${colors.base01}
+          # client.background       #${colors.base05}
+
+          # Property Name         Border  BG      Text    Indicator Child Border
+          client.focused          $base05 $base0D $base00 $base0D $base0C
+          client.focused_inactive $base01 $base01 $base05 $base03 $base01
+          client.unfocused        $base01 $base00 $base05 $base01 $base01
+          client.urgent           $base08 $base08 $base00 $base08 $base08
+          client.placeholder      $base00 $base00 $base05 $base00 $base00
+          client.background       $base07
         '';
     };
   };
