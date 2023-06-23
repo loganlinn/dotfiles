@@ -29,6 +29,13 @@
   ];
   boot.kernelModules = ["kvm-intel"];
 
+  boot.plymouth.enable = true;
+  # boot.plymouth.themesPackages = with pkgs; [
+  #   catppuccin-plymouth
+  #   adi1090x-plymouth-themes
+  #   nixos-bgrt-plymouth
+  # ];
+
   powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "powersave";
   powerManagement.powertop.enable = true;
