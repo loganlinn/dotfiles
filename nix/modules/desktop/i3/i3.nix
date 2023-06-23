@@ -452,6 +452,7 @@ in
             { class = "file-manager"; }
             { class = "kitty-floating"; }
             { class = "kitty-one"; }
+            { class = "mpv"; }
             { class = "nm-connection-editor"; }
             { class = "notification*"; }
             { class = "obs"; }
@@ -463,6 +464,7 @@ in
             { title = "Calculator"; }
             { title = "Event Tester"; } # i.e. xev
             { title = "Steam.*"; }
+            { title = "(?i)soundcloud"; }
             { title = "doom-capture"; }
           ];
         };

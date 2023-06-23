@@ -56,6 +56,8 @@ in {
 
     programs.feh.enable = true;
 
+    services.playerctld.enable = true;
+
     services.flameshot.enable = true;
 
     services.network-manager-applet.enable = true;
@@ -89,6 +91,7 @@ in {
         pavucontrol # PulseAudio Volume Control
         ponymix # CLI PulseAudio Volume Control
         ncpamixer # An ncurses mixer for PulseAudio inspired by pavucontrol
+        playerctl
 
         libqalculate
         qalculate-gtk
