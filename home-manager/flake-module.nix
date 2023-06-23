@@ -49,7 +49,7 @@ in
           };
         })
         // (lib.optionalAttrs (system == "aarch64-darwin") {
-          darwinConfigurations."logan@patchbook" = inputs.darwin.lib.darwinSystem {
+          darwinConfigurations.patchbook = inputs.darwin.lib.darwinSystem {
             inherit lib system;
             # FIXME: commonModules should be used in both...
             modules = commonModules ++ [
