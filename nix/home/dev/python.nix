@@ -41,7 +41,6 @@ let cfg = config.modules.dev.python; in
           pandas
           pipx
           ptpython
-          pybluez
           pynvim
           requests
           setuptools
@@ -49,6 +48,7 @@ let cfg = config.modules.dev.python; in
           dbus-python
           pygobject3
           bpython
+          pybluez
           # ] ++ optionals config.programs.obs-studio [
           #   obspython
         ] ++ optionals config.xsession.windowManager.i3.enable [
