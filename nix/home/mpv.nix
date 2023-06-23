@@ -37,7 +37,7 @@ in
       demuxer-max-bytes = "20M"; # sets fast seeking
       demuxer-max-back-bytes = "20M"; # sets fast seeking
       # ===== Term =====
-      cursor-autohide = 100; # autohides the cursor after X millis
+      cursor-autohide = 250; # autohides the cursor after X millis
       cursor-autohide-fs-only = true; # don't autohide the cursor in window mode, only fullscreen
       msg-color = true; # color log messages on terminal
       msg-module = true; # prepend module name to log messages
@@ -63,7 +63,7 @@ in
       # ===== Subtitles =====
       # TODO https://github.com/hl2guide/better-mpv-config/blob/master/mpv_v3/mpv_subtitles.conf
     } // optionalAttrs config.programs.yt-dlp.enable {
-      script-opts = "ytdl_hook-ytdl_path=${config.programs.yt-dlp.package}/bin/yt-dlp";
+      script-opts = "ytdl_hook-ytdl_path=${getExe config.programs.yt-dlp.package}";
       ytdl-format = "bv[height<=1440]+ba/best[height<=1440]/bestvideo+bestaudio/best";
     };
 
