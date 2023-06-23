@@ -4,22 +4,17 @@
 , pkgs
 , ...
 }:
+
 with builtins;
-with lib; let
-  inherit
-    (lib)
-    mkDefaultOption
-    mkOption
-    types
-    ;
+
+with lib;
+
+let
+  i3-auto-layout = import ./i3-auto-layout.nix pkgs;
 
   cfg = config.modules.desktop.i3;
-  configCfg = config.xsession.windowManager.i3.config;
-
+  i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
-  colors = config.colorScheme.colors;
-
-  barHeight = 40; # TODO option shared w/ (poly)bar config
 
   super = "Mod4";
   alt = "Mod1";
@@ -27,9 +22,6 @@ with lib; let
   mouseWheelDown = "button5";
   mouseWheelRight = "button6";
   mouseWheelLeft = "button7";
-
-  playerctl = args: "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl ${args}";
-  ponymix = args: "exec --no-startup-id ${pkgs.ponymix}/bin/ponymix ${args}";
 
   rofiCommandLineScript = lib.cli.toGNUCommandLineShell rec {
     mkOptionName = k: "-${k}";
@@ -127,7 +119,8 @@ in
                   "$mod+Shift+c" = "reload";
                   # "$mod+Shift+p" = ''exec --no-startup-id i3-msg exit'';
                   "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-                  "$mod+F2;" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
+                  "$mod+Shift+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
+                  "$mod+Shift+F2" = ''exec ${getExe pkgs.handlr} open ${config.xdg.configHome}/i3/config'';
                 }
                 // optionalAttrs (cfg.locker.exec != null) {
                   "$mod+Escape" = "exec --no-startup-id ${cfg.locker.exec}";
@@ -307,16 +300,21 @@ in
                 "$mod+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
               };
 
-              media = {
-                "XF86AudioRaiseVolume " = ponymix "increase 5";
-                "XF86AudioLowerVolume" = ponymix "decrease 5";
-                "XF86AudioMute" = ponymix "--sink toggle";
-                "Scroll_Lock" = ponymix "--source toggle";
-                "XF86AudioPlay" = playerctl "play";
-                "XF86AudioPause" = playerctl "pause";
-                "XF86AudioNext" = playerctl "next";
-                "XF86AudioPrev" = playerctl "previous";
-              };
+              media =
+                let
+                  playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
+                  ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} ${args}";
+                in
+                {
+                  "XF86AudioRaiseVolume " = ponymix "increase 5";
+                  "XF86AudioLowerVolume" = ponymix "decrease 5";
+                  "XF86AudioMute" = ponymix "--sink toggle";
+                  "Scroll_Lock" = ponymix "--source toggle";
+                  "XF86AudioPlay" = playerctl "play";
+                  "XF86AudioPause" = playerctl "pause";
+                  "XF86AudioNext" = playerctl "next";
+                  "XF86AudioPrev" = playerctl "previous";
+                };
 
               backlight = {
                 "XF86MonBrightnessDown" = "exec xbacklight -dec 20";
@@ -330,38 +328,6 @@ in
           in
           foldl' lib.attrsets.unionOfDisjoint { } (attrValues groups);
 
-        modes = {
-          resize = {
-            "h" = "resize shrink width 8 px or 1 ppt";
-            "j" = "resize grow height 8 px or 1 ppt";
-            "k" = "resize shrink height 8 px or 1 ppt";
-            "l" = "resize grow width 8 px or 1 ppt";
-
-            "Shift+h" = "resize shrink width 24 px or 3 ppt";
-            "Shift+j" = "resize grow height 24 px or 3 ppt";
-            "Shift+k" = "resize shrink height 24 px or 3 ppt";
-            "Shift+l" = "resize grow width 24 px or 3 ppt";
-
-            "$mod+h" = "focus left";
-            "$mod+j" = "focus down";
-            "$mod+k" = "focus up";
-            "$mod+l" = "focus right";
-
-            # Move position by mouse
-            "$mouse_left" = "move position mouse"; # move container to current position of mouse cursor
-            "$mouse_right" = "exec ${./scripts/draw-resize.sh}";
-            "$mouse_wheel_up" = "move up 1 ppt";
-            "$mouse_wheel_down" = "move down 1 ppt"; # scroll wheel down
-            "$mouse_wheel_right" = "move right 1 ppt"; # scroll wheel right
-            "$mouse_wheel_left" = "move left 1 ppt"; # scroll wheel right
-
-            "$mod+r" = "mode default";
-            "Escape" = "mode default";
-            "Ctrl+c" = "mode default";
-            "Ctrl+g" = "mode default";
-          };
-        };
-
         bars = lib.mkIf config.services.polybar.enable [ ]; # disable for polybar
 
         fonts = {
@@ -373,48 +339,8 @@ in
           size = 10.0;
         };
 
-        # colors = with config.colorScheme.colors; {
-        #   focused = {
-        #     border = "#${base02}";
-        #     background = "#${base01}";
-        #     text = "#${base05}";
-        #     indicator = "#${base04}";
-        #     childBorder = "#${base03}";
-        #   };
-        #   focusedInactive = {
-        #     border = "#${base02}";
-        #     background = "#${base01}";
-        #     text = "#${base05}";
-        #     indicator = "#${base03}";
-        #     childBorder = "#${base02}";
-        #   };
-        #   unfocused = {
-        #     border = "#${base01}";
-        #     background = "#${base00}";
-        #     text = "#${base04}";
-        #     indicator = "#${base01}";
-        #     childBorder = "#${base01}";
-        #   };
-        #   urgent = {
-        #     border = "#${base08}";
-        #     background = "#${base08}";
-        #     text = "#${base00}";
-        #     indicator = "#${base08}";
-        #     childBorder = "#${base08}";
-        #   };
-        #   placeholder = {
-        #     border = "#${base00}";
-        #     background = "#${base00}";
-        #     text = "#${base05}";
-        #     indicator = "#${base00}";
-        #     childBorder = "#${base00}";
-        #   };
-        #   background = "#${base00}";
-        # };
-
         window = {
           border = 2;
-          # commands = [ ];
           titlebar = false;
         };
 
@@ -466,6 +392,7 @@ in
             { title = "Steam.*"; }
             { title = "(?i)soundcloud"; }
             { title = "doom-capture"; }
+            { title = "Yubico Authenticator"; }
           ];
         };
 
@@ -495,7 +422,12 @@ in
 
         startup = [
           {
-            command = getExe pkgs.i3-auto-layout;
+            command = getExe i3-auto-layout;
+            always = true;
+            notification = false;
+          }
+          {
+            command = "touch /home/logan/i3-test-marker";
             always = true;
             notification = false;
           }
@@ -509,11 +441,12 @@ in
             always = true;
             notification = false;
           })
-          {
-            command = "${./i3-focus-marker.sh}";
-            always = true;
-            notification = false;
-          }
+          # FIXME: processes are not cleaned up proplerly
+          # {
+          #   command = "${./i3-focus-marker.sh}";
+          #   always = true;
+          #   notification = false;
+          # }
         ];
 
         defaultWorkspace = "workspace number 1";
@@ -540,7 +473,7 @@ in
           set $mouse_wheel_right ${cfg.keysyms.mouseWheelRight}
           set $mouse_wheel_up ${cfg.keysyms.mouseWheelUp}
 
-          set $bar_height ${toString barHeight}
+          set $bar_height 40
 
           set $base00 #${colors.base00}
           set $base01 #${colors.base01}
@@ -634,8 +567,8 @@ in
 
           smart_gaps on
 
-          set $gaps_inner_default ${toString configCfg.gaps.inner}
-          set $gaps_outer_default ${toString configCfg.gaps.outer}
+          set $gaps_inner_default ${toString i3Cfg.gaps.inner}
+          set $gaps_outer_default ${toString i3Cfg.gaps.outer}
 
           set $mode_gaps        gaps> [o]uter [i]nner [0]reset [q]uit
           set $mode_gaps_outer  gaps outer> [-|+]all [j|k]current [BS|0]reset [q]uit

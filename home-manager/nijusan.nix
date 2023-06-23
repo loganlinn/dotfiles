@@ -28,6 +28,7 @@ in
     ../nix/home/vscode.nix
     ../nix/home/x11.nix
     ../nix/home/yt-dlp.nix
+    ../nix/home/yubikey.nix
     ../nix/modules/programs/eww
     ../nix/modules/programs/the-way
     ../nix/modules/services

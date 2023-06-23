@@ -9,7 +9,7 @@ in
   programs.mpv = {
     enable = isLinux;
     scripts = with pkgs.mpvScripts; [
-      # autoload # loads playlist entries
+      autoload # loads playlist entries
       mpris # media keys
       thumbnail # in OSC seekbar
       sponsorblock
@@ -22,8 +22,6 @@ in
       # ===== General =====
       hls-bitrate = "max"; # uses max quality for HLS streams
       prefetch-playlist = true; # prefetches the playlist
-      snap-window = true; # Enables windows snapping for Windows 10, 11
-      # priority = "high"; # Makes PC prioritize MPV for allocating resources
       cache= true;
       osc = false;
       hwdec = "auto-safe";
@@ -31,7 +29,7 @@ in
       autofit = "1080";
       # ===== Audio =====
       volume-max = 100; # maximum volume in %, everything above 100 results in amplification
-      volume = 70; # default volume, 100 = unchanged
+      volume = 80; # default volume, 100 = unchanged
       # ===== Video =====
       vo = "gpu-next"; # Sets the video out to an experimental video renderer based on libplacebo
       force-seekable = true;
