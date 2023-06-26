@@ -1,18 +1,20 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 with lib; let
+  inherit (pkgs.stdenv) isLinux isDarwin;
+
   workEmail = "logan@patch.tech";
   workConfig = pkgs.writeText "work.gitconfig" ''
     [user]
     email = ${workEmail}
   '';
-  workDirs = [ "~/src/github.com/patch-tech/" ];
+  workDirs = ["~/src/github.com/patch-tech/"];
   git = getExe pkgs.git;
-in
-{
+in {
   programs.git = {
     enable = true;
     aliases = {
@@ -44,8 +46,8 @@ in
     };
     includes =
       [
-        { path = "~/.config/git/config.local"; }
-        { path = ./git/include/gitalias.txt; }
+        {path = "~/.config/git/config.local";}
+        {path = ./git/include/gitalias.txt;}
       ]
       ++ forEach workDirs (workDir: {
         path = "${workConfig}";
@@ -72,6 +74,10 @@ in
       branch.sort = "-committerdate";
       color.ui = true;
       commit.verbose = true; # include diff in commit message editor
+      commit.gpgsign = true;
+      gpg.format = "ssh";
+      gpg.ssh.program = mkIf isDarwin "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
+      user.signkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
       # core.askPass = optionalString (with config.services.gpg-agent; enable && enableSshSupport) ""; # needs to be empty to use terminal for ask pass
       github.user = "loganlinn";
       help.autocorrect = "prompt";
@@ -84,7 +90,7 @@ in
       stash.showIncludeUntracked = true;
     };
     # hooks
-    ignores = [ ".localinn" ];
+    ignores = [".localinn"];
     signing.key = null; # let GnuPG decide
     userEmail = "logan@llinn.dev";
     userName = "Logan Linn";
