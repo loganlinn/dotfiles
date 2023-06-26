@@ -2,6 +2,11 @@
 
 with lib;
 
+# test using https://tests.peter.sh/notification-generator/
+let
+  inherit (config.modules.theme) fonts;
+  inherit (config.colorScheme) colors;
+in
 {
   services.dunst = {
     enable = true;

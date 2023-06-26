@@ -15,6 +15,7 @@ in
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
     #../nix/home/dev/vala.nix
+    ../nix/home/dunst
     ../nix/home/emacs.nix
     ../nix/home/home-manager.nix
     ../nix/home/kitty

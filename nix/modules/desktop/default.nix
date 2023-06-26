@@ -50,9 +50,8 @@ in {
   };
 
   config = {
-    modules.programs.eww.enable = true;
-
-    programs.eww.enable = true;
+    modules.programs.eww.enable = false;
+    programs.eww.enable = false;
 
     programs.feh.enable = true;
 
@@ -73,12 +72,12 @@ in {
         pango
         networkmanagerapplet # nm-connection-editor
 
-        (conky.override {
-          x11Support = true;
-          curlSupport = true;
-          nvidiaSupport = lib.pathExists "/run/current-system/sw/bin/nvidia-smi";
-          pulseSupport = true;
-        })
+        # (conky.override {
+        #   x11Support = true;
+        #   curlSupport = true;
+        #   nvidiaSupport = lib.pathExists "/run/current-system/sw/bin/nvidia-smi";
+        #   pulseSupport = true;
+        # })
 
         font-manager
         fontpreview

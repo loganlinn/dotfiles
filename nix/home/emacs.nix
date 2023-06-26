@@ -16,7 +16,7 @@ in
   programs.emacs = {
     enable = true;
     # package = pkgs.emacsNativeComp;
-    package = pkgs.emacsUnstable.override {
+    package = pkgs.emacs-unstable.override {
       withGTK3 = true;
       withXwidgets = true;
       withSQLite3 = true;

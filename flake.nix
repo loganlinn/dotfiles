@@ -79,7 +79,7 @@
       overlayAttrs = {
         inherit (inputs'.home-manager.packages) home-manager;
         inherit (inputs'.devenv.packages) devenv;
-        inherit (inputs'.emacs.packages) emacsGit emacsLsp emacsUnstable;
+        inherit (inputs'.emacs.packages) emacs-unstable;
         inherit (config.packages) jdk;
       };
 
