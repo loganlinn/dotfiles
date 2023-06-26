@@ -390,7 +390,6 @@ in
             { title = "Calculator"; }
             { title = "Event Tester"; } # i.e. xev
             { title = "Steam.*"; }
-            { title = "(?i)soundcloud"; }
             { title = "doom-capture"; }
             { title = "Yubico Authenticator"; }
           ];

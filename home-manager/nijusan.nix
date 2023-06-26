@@ -22,6 +22,7 @@ in
     ../nix/home/mpv.nix
     ../nix/home/nnn.nix
     ../nix/home/pretty.nix
+    ../nix/home/ssh.nix
     ../nix/home/sync.nix
     ../nix/home/urxvt.nix
     ../nix/home/vpn.nix
@@ -119,10 +120,11 @@ in
 
   services.betterlockscreen = {
     enable = true;
-    arguments = ["-w" "dim"];
+    arguments = [ "-w" "dim" ];
+    inactiveInterval = 15; # minutes
   };
 
-  services.easyeffects.enable = true;
+  services.easyeffects.enable = false; # causing glitching on twitch streams
 
   #
   #    $ xrandr --query | grep " connected"
@@ -134,7 +136,6 @@ in
   #    110
   #    1600/(367/24.5)
   #    114
-
   xresources.properties."Xft.dpi" = "96";
 
   # services.emanote = {
@@ -157,18 +158,19 @@ in
   manual.json.enable = true;
 
   home.packages = with pkgs; [
-    audacity
-    btrfs-progs
-    wordnet # English thesaurus backend (used by synosaurus.el)
+    # audacity
     # btrfs-snap # https://github.com/jf647/btrfs-snap
-    jetbrains.idea-community
-    dbeaver
-    google-cloud-sdk
     # nemo
-    minikube
-    gcc
-    libreoffice
     (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
+    btrfs-progs
+    dbeaver
+    gcc
+    google-cloud-sdk
+    jetbrains.idea-community
+    libreoffice
+    minikube
+    plantuml
+    wordnet # English thesaurus backend (used by synosaurus.el)
   ];
 
   # TODO move into own module (maybe can reuse settings type from https://github.com/nix-community/home-manager/blob/master/modules/programs/vim.nix)

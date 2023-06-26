@@ -107,88 +107,15 @@ with lib;
         timeout = 0;
       };
 
-      # log_script = {
-
-      # };
-
-      slack_cicd_fail = {
-        appname = "Slack";
-        summary = "*feeds-cicd*";
-        body = "*fail*";
-        foreground = "#3B4252";
-        background = "#D08770";
-        timeout = 120;
-        set_stack_tag = "slack_feeds_cicd";
-      };
-
-      slack_cicd_success = {
-        appname = "Slack";
-        summary = "*feeds-cicd*";
-        body = "*succeed*";
-        foreground = "#3B4252";
-        background = "#A3BE8C";
-        timeout = 30;
-        set_stack_tag = "slack_feeds_cicd";
-      };
-
-      slack_cicd_running = {
-        appname = "Slack";
-        summary = "*feeds-cicd*";
-        body = "*running*";
-        foreground = "#ECEFF4";
-        background = "#4C566A";
-        timeout = 4;
-        set_stack_tag = "slack_feeds_cicd";
-      };
-
-      slack_cicd_skipped = {
-        appname = "Slack";
-        summary = "*feeds-cicd*";
-        body = "*skipped*";
-        skip_display = true;
-        history_ignore = true;
-        set_stack_tag = "slack_feeds_cicd";
-      };
-
-      slack_cicd_not_started = {
-        appname = "Slack";
-        summary = "*feeds-cicd*";
-        body = "*not started*";
-        skip_display = true;
-        history_ignore = true;
-        set_stack_tag = "slack_feeds_cicd";
-      };
-
-      slack_github = {
-        appname = "Slack";
-        summary = "*feeds-github*";
-        timeout = 30;
-        new_icon = "~/.local/share/icons/GitHub-Mark-32px.png";
-      };
-
-      slack_dd_alerts = {
-        appname = "Slack";
-        summary = "*alerts-datadog*";
-        timeout = 30;
-        #new_icon       =  ~/.local/share/icons/Datadog_Mark.png;
-      };
-
-      slack_az_alerts = {
-        appname = "Slack";
-        summary = "*alerts-azure*";
-        timeout = 30;
-        #new_icon       =  ~/.local/share/icons/Azure_Mark.png;
-      };
-
       slack = {
         appname = "Slack";
-        new_icon = "~/.local/share/icons/Slack_Mark.png";
+        new_icon = "${./icons/slack.svg}";
       };
 
       linear = {
         summary = "*Linear*";
         timeout = 60;
-        new_icon = "~/.local/share/icons/Linear-app-icon.png";
+        new_icon = "${./icons/linear.svg}";
       };
     };
 
