@@ -29,28 +29,13 @@ let cfg = config.modules.dev.python; in
       readOnly = true;
       default = cfg.package.withPackages (ps:
         with ps; [
-          black
-          grip # markdown preview. used by emacs grip-mode
-          ipython
-          isort
-          jupyterlab
-          javaproperties
-          javaobj-py3
-          notebook
-          numpy
-          pandas
           pipx
-          ptpython
           pynvim
-          requests
           setuptools
         ] ++ optionals stdenv.isLinux [
           dbus-python
           pygobject3
-          bpython
           pybluez
-          # ] ++ optionals config.programs.obs-studio [
-          #   obspython
         ] ++ optionals config.xsession.windowManager.i3.enable [
           i3ipc
         ]);
