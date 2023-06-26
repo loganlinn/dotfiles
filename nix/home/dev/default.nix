@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  inherit (lib) optionals;
   inherit (pkgs.stdenv.targetPlatform) isLinux;
 in
 {
@@ -145,18 +144,16 @@ in
     nodePackages.bash-language-server
     nodePackages.typescript-language-server
     nodePackages.vim-language-server
-    nodePackages.vscode-langservers-extracted
     pyright
     rnix-lsp # alt? https://github.com/oxalica/nil
     sumneko-lua-language-server
     yaml-language-server
     java-language-server
-
-  ] ++ optionals isLinux [
-
+  ] ++ lib.optionals isLinux [
     # system76-keyboard-configurator
-
-  ];
+  ] ++ lib.optional
+    config.programs.vscode.enable
+    nodePackages.vscode-langservers-extracted;
 
   home.sessionVariables.GRAPHITE_DISABLE_TELEMETRY = "1";
 

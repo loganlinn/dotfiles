@@ -1,14 +1,17 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, nix-colors, ... }:
 
 {
-    imports = [
-      ../nix/modules/fonts.nix
-      ../nix/home/common.nix
-      ../nix/home/dev
-      ../nix/home/pretty.nix
-    ];
+  imports = [
+    nix-colors.homeManagerModule
+    ../nix/modules/fonts.nix
+    ../nix/home/common.nix
+    ../nix/home/dev
+    ../nix/home/pretty.nix
+  ];
 
-    modules.fonts.enable = true;
+  colorScheme = nix-colors.colorSchemes.doom-one;
 
-    home.stateVersion = "22.11";
+  modules.fonts.enable = true;
+
+  home.stateVersion = "22.11";
 }
