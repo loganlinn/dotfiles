@@ -24,7 +24,6 @@ in {
     ../themes
     ./apps
     ./browsers
-    ./dunst.nix
     ./picom.nix
     ./syncthing.nix
     ./tray.nix
