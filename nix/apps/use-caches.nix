@@ -1,6 +1,7 @@
 {
   writeShellApplication,
   cachix,
+  ...
 }:
 writeShellApplication {
   name = "use-caches";

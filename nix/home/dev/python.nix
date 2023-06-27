@@ -50,6 +50,8 @@ let cfg = config.modules.dev.python; in
       poetry
     ];
 
-    home.shellAliases.venv = "${cfg.finalPackage}/bin/python3 -m venv";
+    home.shellAliases.venv = "${cfg.finalPackage}/bin/python3 -m venv --upgrade-deps";
+
+    programs.zsh.initExtra = readFile ./python.sh; # shell helpers
   };
 }

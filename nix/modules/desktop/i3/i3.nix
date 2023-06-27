@@ -158,7 +158,6 @@ in
 
               terminal = {
                 "$mod+Return" = "exec kitty";
-                "$mod+Ctrl+Return" = "exec kitty --title kitty-one --single-instance";
               };
 
               menus = {
@@ -289,7 +288,7 @@ in
               layout = {
                 "$mod+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
                 "$mod+f" = "floating toggle";
-                "$mod+Shift+f" = "floating toggle; sticky toggle";
+                "$mod+p" = "floating toggle; sticky toggle";
                 "$mod+t" = "layout toggle split";
                 "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
                 "$mod+equal" = "exec ${import ./i3-balance-workspace.nix pkgs}/bin/i3_balance_workspace";
@@ -376,8 +375,6 @@ in
             { class = "Thunar"; }
             { class = "blueman-manager"; }
             { class = "file-manager"; }
-            { class = "kitty-floating"; }
-            { class = "kitty-one"; }
             { class = "mpv"; }
             { class = "nm-connection-editor"; }
             { class = "notification*"; }
@@ -529,8 +526,6 @@ in
           # Window rules
           #=====================================
 
-          for_window [class="kitty-one"] move position center
-
           for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
 
           for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
@@ -631,6 +626,17 @@ in
               bindsym n resize shrink width 8 px or 1 ppt
               bindsym s resize shrink height 8 px or 1 ppt
               bindsym t resize grow height 8 px or 1 ppt
+
+              bindsym 1 resize set width 10 ppt
+              bindsym 2 resize set width 20 ppt
+              bindsym 3 resize set width 30 ppt
+              bindsym 4 resize set width 40 ppt
+              bindsym 5 resize set width 50 ppt
+              bindsym Shift+1 resize set width 90 ppt
+              bindsym Shift+2 resize set width 80 ppt
+              bindsym Shift+3 resize set width 70 ppt
+              bindsym Shift+4 resize set width 60 ppt
+              bindsym Shift+5 resize set width 50 ppt
 
               bindsym Shift+w resize grow width 24 px or 3 ppt
               bindsym Shift+n resize shrink width 24 px or 3 ppt

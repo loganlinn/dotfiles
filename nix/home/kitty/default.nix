@@ -1,7 +1,9 @@
 { config, pkgs, lib, ... }:
 
+with lib;
+
 {
-  programs.rofi.terminal = lib.mkDefault "${config.programs.kitty.package}/bin/kitty";
+  programs.rofi.terminal = mkDefault "${config.programs.kitty.package}/bin/kitty";
 
   programs.kitty = {
     enable = true;
@@ -88,7 +90,20 @@
 
 
     extraConfig = ''
-        globinclude kitty.d/**/*.conf
-      '';
+      globinclude kitty.d/**/*.conf
+    '';
   };
+
+  home.packages = with pkgs; optionals config.xsession.windowManager.i3.enable [
+    (writeShellScriptBin "kitty-floating" ''exec kitty --class kitty-floating "$@"'')
+    (writeShellScriptBin "kitty-one" ''exec kitty --class kitty-one --single-instance "$@"'')
+    (writeShellScriptBin "kitty-scratch" ''exec kitty --class kitty-scratch "$@"'')
+  ];
+
+  xsession.windowManager.i3.extraConfig = ''
+    for_window [class="kitty-floating"] floating enable
+    for_window [class="kitty-one"] floating enable, move position center, resize set 1600 1200
+    for_window [class="kitty-scratch"] move scratchpad, scratchpad show
+    bindsym $mod+Ctrl+Return exec kitty-one
+  '';
 }
