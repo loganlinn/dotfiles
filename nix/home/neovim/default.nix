@@ -25,7 +25,7 @@ in {
   programs.neovim = {
     enable = true;
 
-    defaultEditor = true;
+    defaultEditor = !config.services.emacs.defaultEditor;
     withNodeJs = true;
     withPython3 = true;
     vimAlias = true;

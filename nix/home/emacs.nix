@@ -24,7 +24,11 @@ in
     extraPackages = epkgs: [ epkgs.vterm ];
   };
 
-  services.emacs.enable = true;
+  services.emacs = {
+    enable = true;
+    startWithUserSession = true;
+    defaultEditor = false;
+  };
 
   home.packages = with pkgs; [
     binutils # for native-comp

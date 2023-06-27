@@ -29,6 +29,8 @@ let cfg = config.modules.dev.python; in
       readOnly = true;
       default = cfg.package.withPackages (ps:
         with ps; [
+          black
+          isort # used by editors
           pipx
           pynvim
           setuptools
