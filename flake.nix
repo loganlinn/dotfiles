@@ -67,6 +67,7 @@
       ./flake-modules/options.nix # TODO move
       ./home-manager/flake-module.nix
       ./nixos/flake-module.nix
+      ./nix/flake-parts
     ];
 
     debug = true;
@@ -91,6 +92,9 @@
           config.formatter
           inputs'.agenix.packages.agenix
         ];
+        env = {
+          NIX_USER_CONF_FILES = toString ./nix.conf;
+        };
       };
 
       mission-control = {

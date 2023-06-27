@@ -51,5 +51,12 @@ metadata:
 repl dir='.' file='repl.nix':
     nix repl --file {{dir}}/{{ file }}
 
+run app:
+    nix run .#{{ app }}
+
+use-caches: (run "use-caches")
+home-switch: (run "home-switch")
+nixos-switch: (run "nixos-switch")
+
 netrc:
     op inject -i netrc.tpl -o ~/.netrc
