@@ -418,12 +418,13 @@ in
 
         startup = [
           {
-            command = getExe i3-auto-layout;
-            always = true;
+            # systemd user service would be better here
             notification = false;
+            always = true;
+            command = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
           }
           {
-            command = "touch /home/logan/i3-test-marker";
+            command = getExe i3-auto-layout;
             always = true;
             notification = false;
           }

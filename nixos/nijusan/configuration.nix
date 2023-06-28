@@ -76,6 +76,8 @@
     killall
     nixos-option
     pciutils
+    polkit # used by 1password-gui, etc
+    polkit_gnome # polkit agent is required. this seems only option for now
     powertop
     ripgrep
     sysz
