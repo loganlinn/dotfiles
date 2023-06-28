@@ -11,7 +11,7 @@
     serverAliveInterval = 120;
     includes = ["${config.home.homeDirectory}/.ssh/config.local"];
     matchBlocks = {
-      firewalla = {
+      "fire.walla" = {
         user = "pi";
       };
     };
