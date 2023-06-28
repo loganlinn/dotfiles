@@ -22,6 +22,7 @@ in
     ../nix/home/mpd.nix
     ../nix/home/mpv.nix
     ../nix/home/nnn.nix
+    ../nix/home/polkit.nix
     ../nix/home/pretty.nix
     ../nix/home/ssh.nix
     ../nix/home/sync.nix
