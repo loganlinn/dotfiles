@@ -77,7 +77,7 @@ in
       gpg.ssh.program =
         if isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
         else "op-ssh-sign";
-      user.signkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
+      user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
       github.user = "loganlinn";
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
