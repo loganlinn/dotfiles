@@ -47,7 +47,6 @@ in
     pinentry
     procs # ps alternative
     rcm # TODO no longer used (!)
-    ripgrep # grep alternative
     rlwrap
     sd # sed alternative
     silver-searcher # grep alternative
@@ -122,8 +121,16 @@ in
     tmux.enableShellIntegration = config.programs.tmux.enable;
   };
 
-  programs.htop = {
+  programs.ripgrep = {
     enable = true;
+    arguments = [
+      "--type-add" "clj:include:clojure,edn"
+      "--smart-case"
+    ];
+  };
+
+  programs.htop = {
+    # enable = true;
     settings = {
       hide_kernel_threads = 1;
       show_program_path = 1;

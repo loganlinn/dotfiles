@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   inherit (pkgs.stdenv) isLinux isDarwin;
@@ -12,9 +11,10 @@ with lib; let
     [user]
     email = ${workEmail}
   '';
-  workDirs = ["~/src/github.com/patch-tech/"];
+  workDirs = [ "~/src/github.com/patch-tech/" ];
   git = getExe pkgs.git;
-in {
+in
+{
   programs.git = {
     enable = true;
     aliases = {
@@ -46,16 +46,14 @@ in {
     };
     includes =
       [
-        {path = "~/.config/git/config.local";}
-        {path = ./git/include/gitalias.txt;}
+        { path = "~/.config/git/config.local"; }
+        { path = ./git/include/gitalias.txt; }
       ]
       ++ forEach workDirs (workDir: {
         path = "${workConfig}";
         condition = "gitdir:${workDir}";
       });
-    lfs = {
-      enable = true;
-    };
+    lfs.enable = true;
     delta = {
       enable = true;
       options = {
@@ -76,9 +74,10 @@ in {
       commit.verbose = true; # include diff in commit message editor
       commit.gpgsign = true;
       gpg.format = "ssh";
-      gpg.ssh.program = mkIf isDarwin "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
+      gpg.ssh.program =
+        if isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+        else "op-ssh-sign";
       user.signkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
-      # core.askPass = optionalString (with config.services.gpg-agent; enable && enableSshSupport) ""; # needs to be empty to use terminal for ask pass
       github.user = "loganlinn";
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
@@ -88,11 +87,18 @@ in {
       rebase.autosquash = true;
       stash.showPatch = true;
       stash.showIncludeUntracked = true;
+      credential."imap.fastmail.com".helper =
+        let
+          helper = pkgs.writeShellScript "fastmail-imap-credetnial-helper" ''
+            echo "password=op://Personal/cbosmbv3b7kbtk2g7eleeackiq/credential" | op inject
+          '';
+        in
+        "${helper}";
     };
     # hooks
-    ignores = [".localinn"];
+    ignores = [ ".localinn" ];
     signing.key = null; # let GnuPG decide
-    userEmail = "logan@llinn.dev";
+    userEmail = "logan@loganlinn.com";
     userName = "Logan Linn";
   };
 }

@@ -18,7 +18,7 @@
 in {
   imports = [
     ../../home/polybar
-    ../../home/rofi.nix
+    ../../home/rofi
     ../../home/thunar.nix
     ../../home/xdg.nix
     ../themes
@@ -44,6 +44,7 @@ in {
         "file://${config.home.homeDirectory}/.dotfiles"
         "file://${config.home.homeDirectory}/src"
         "file://${config.home.homeDirectory}/src/github.com/patch-tech"
+        "davs://myfiles.fastmail.com/"
       ];
     };
   };

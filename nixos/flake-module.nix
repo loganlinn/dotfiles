@@ -1,8 +1,7 @@
-{
-  self,
-  inputs,
-  withSystem,
-  ...
+{ self
+, inputs
+, withSystem
+, ...
 }: {
   flake.nixosModules = import ./modules;
 
@@ -13,33 +12,33 @@
         inherit (inputs) nixpkgs home-manager;
         # inherit (system.config) packages; # needed?
       };
-      modules = [
+      modules = (with inputs.nixos-hardware.outputs.nixosModules; [
+        common-cpu-intel
+        common-gpu-nvidia-nonprime
+        common-pc-ssd
+      ]) ++ (with self.nixosModules; [
+        bluetooth
+        docker
+        fonts
+        networking
+        nix-path
+        nix-registry
+        nvidia
+        pipewire
+        printing
+        security
+        steam
+        tailscale
+        thunderbolt
+      ] ++ [
         # inputs.home-manager.nixosModules.home-manager
         # inputs.sops-nix.nixosModules.sops
         # inputs.grub2-themes.nixosModules.default
-        inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
-        inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
-        inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
-        # self.nixosModules.minecraft-server
-        self.nixosModules.bluetooth
-        self.nixosModules.docker
-        self.nixosModules.fonts
-        self.nixosModules.networking
-        self.nixosModules.nix-path
-        self.nixosModules.nix-registry
-        self.nixosModules.nvidia
-        self.nixosModules.pipewire
-        self.nixosModules.printing
-        self.nixosModules.security
-        self.nixosModules.steam
-        self.nixosModules.tailscale
-        self.nixosModules.thunar
-        self.nixosModules.thunderbolt
         ./nijusan/configuration.nix
         {
           options.my = system.options.my;
           config.my = system.config.my;
         }
-      ];
+      ]);
     });
 }

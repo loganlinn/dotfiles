@@ -2,7 +2,7 @@
 #
 # @file chrome-history
 # @brief chrome web browser history fuzzy search
-# @author loganlinn <logan@llinn.dev>
+# @author loganlinn <logan@loganlinn.com>
 # @license Unlicense <http://unlicense.org/>
 
 set -eo pipefail

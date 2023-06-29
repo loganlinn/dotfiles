@@ -32,12 +32,14 @@ let cfg = config.modules.dev.python; in
           black
           isort # used by editors
           pipx
-          pynvim
           setuptools
+        ] ++ optionals config.programs.neovim.enable [
+          pynvim
         ] ++ optionals stdenv.isLinux [
+          # pybluez
           dbus-python
           pygobject3
-          pybluez
+          pyxdg
         ] ++ optionals config.xsession.windowManager.i3.enable [
           i3ipc
         ]);

@@ -3,7 +3,7 @@
 #
 # Authors:
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
-#   Logan Linn <logan@llinn.dev>
+#   Logan Linn <logan@loganlinn.com>
 
 # Return if requirements are not found.
 if [[ "$TERM" == 'dumb' ]]; then

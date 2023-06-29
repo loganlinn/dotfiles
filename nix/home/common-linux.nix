@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   ...
@@ -18,4 +19,9 @@ lib.mkIf pkgs.stdenv.isLinux {
     (writeShellScriptBin "open" ''exec ${handlr}/bin/handlr open "$@"'')
     (writeShellScriptBin ''CAPSLOCK'' ''${xdotool}/bin/xdotool key Caps_Lock'') # just in case ;)
   ];
+
+  xdg.configFile."handlr/handlr.toml".text = ''
+    enable_selector = true
+    selector = "${config.programs.rofi.finalPackage} -dmenu -i -p 'Open With: '"
+  '';
 }

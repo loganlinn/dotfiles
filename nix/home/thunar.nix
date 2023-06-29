@@ -43,7 +43,7 @@ in
           <icon>utilities-terminal</icon>
           <name>Open Terminal Here</name>
           <unique-id>1604472351415438-1</unique-id>
-          <command>${pkgs.xfce.exo}/bin/exo-open --launch TerminalEmulator --cwd %f</command>
+          <command>${getExe pkgs.handlr} launch x-scheme-handler/terminal -- --working-directory %f</command>
           <description></description>
           <patterns>*</patterns>
           <startup-notify/>

@@ -64,7 +64,9 @@
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs._1password-gui.polkitPolicyOwners = ["logan"];
+  programs._1password-gui.polkitPolicyOwners = ["logan"]; # for polkit agent process (required to use polkit)
+
+  security.polkit.enable = true;
 
   programs.mosh.enable = true;
 

@@ -61,10 +61,9 @@
           '';
         };
     };
-    # extensions = [
-    #   "dlvhdr/gh-dash"
-    #   "gennaro-tedesco/gh-f"
-    #   "korosuke613/gh-user-stars"
-    # ];
+
+    extensions = with pkgs; [
+      gh-dash
+    ];
   };
 }

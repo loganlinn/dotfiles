@@ -12,7 +12,6 @@
   security = ./security;
   steam = ./steam.nix;
   tailscale = ./tailscale.nix;
-  thunar = ./thunar.nix;
   thunderbolt = ./thunderbolt.nix;
   wayland =  ./wayland.nix;
 }

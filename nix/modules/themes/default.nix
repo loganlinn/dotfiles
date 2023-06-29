@@ -206,7 +206,7 @@ in
     })
 
     {
-      programs.rofi.font = cfg.fonts.mono.name;
+      # programs.rofi.font = cfg.fonts.mono.name;
       # programs.rofi.theme = let
       #   inherit (config.lib.formats.rasi) mkLiteral;
       #   inherit (config.colorScheme) colors;

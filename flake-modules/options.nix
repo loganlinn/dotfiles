@@ -55,7 +55,7 @@ in {
 
           email = mkOption {
             type = types.str;
-            default = "logan@llinn.dev";
+            default = "logan@loganlinn.com";
           };
 
           github.user = mkOption {

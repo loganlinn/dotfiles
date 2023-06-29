@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# @author: Logan Linn <logan@llinn.dev>
+# @author: Logan Linn <logan@loganlinn.com>
 # @brief A script to run Node.js in a container. 
 
 set -e

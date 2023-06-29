@@ -336,6 +336,7 @@ in
         "x-scheme-handler/jetbrains" = "jetbrains-toolbox.desktop";
         "x-scheme-handler/slack" = "slack.desktop";
         "x-scheme-handler/obsidian" = "obsidian.desktop";
+        "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
       };
     associations.removed = {
       "inode/directory" = [ "code.desktop" ];

@@ -94,7 +94,7 @@ in
     '';
 
     initExtra = ''
-      setopt EXTENDED_GLOB        # Use extended globbing syntax.
+      unsetopt EXTENDED_GLOB      # Use extended globbing syntax.
       setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
       setopt EQUALS               # Expansion of =command expands into full pathname of command
       setopt LONG_LIST_JOBS       # List jobs in the long format by default.
