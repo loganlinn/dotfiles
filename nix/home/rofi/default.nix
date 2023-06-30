@@ -28,19 +28,24 @@ with lib; {
     font = "Iosevka Nerd Font 12";
 
     extraConfig = {
-      modi = "drun,run,window,emoji,calc,ssh";
+      modes = "combi,emoji,ssh,keys";
+      modi = "combi,drun,run,window,emoji,calc,ssh,keys,file-browser-extended";
+      combi-modes = "window,drun";
+      location = 6; # bottom center
       show-icons = true;
-      ssh-command = "kitty --hold -- kitten ssh {host} [-p {port}]";
       markup = true;
-      sorting-method = "fzf";
-      display-drun = " 󰀻 app";
-      display-run = " 󰆍  run";
-      display-emoji = " 󰦥  emoji";
-      display-calc = " 󰃬  calc";
-      display-file-browser-extended = " 󰈞  file";
-      display-window = " 󰖲  window";
-      display-ssh = " 󰢩  ssh";
       case-sensitive = false;
+      sort = true;
+      sorting-method = "fzf";
+      display-combi = "󱃵 program";
+      display-drun = "󰀻 app";
+      display-run = "󰆍  run";
+      display-emoji = "󰦥 emoji";
+      display-calc = "󰃬 calc";
+      display-file-browser-extended = "󰈞 file";
+      display-window = "󰖲 window";
+      display-ssh = "󰢩 ssh";
+      ssh-command = "kitty --hold -- kitten ssh {host} [-p {port}]";
       steal-focus = false;
       click-to-exit = true;
       parse-hosts = true;
@@ -113,24 +118,41 @@ with lib; {
         selected-foreground:         #${base00};
         activebg:                    #${base03};
         activefg:                    #${base05};
-        selected-normal-foreground:  @selected-foreground;
-        selected-normal-background:  @selected-background;
-        selected-active-foreground:  @activefg;
-        selected-active-background:  @activebg;
-        selected-urgent-foreground:  @background;
-        selected-urgent-background:  @red;
         normal-foreground:           @foreground;
         normal-background:           @background;
         active-foreground:           @activefg;
         active-background:           @activebg;
         urgent-foreground:           @foreground;
         urgent-background:           @red;
-        alternate-normal-foreground: @foreground2;
+        alternate-normal-foreground: @foreground;
         alternate-normal-background: @background2;
         alternate-active-foreground: @activefg;
         alternate-active-background: @activebg;
         alternate-urgent-foreground: @background;
         alternate-urgent-background: @magenta;
+        selected-normal-foreground:  @selected-foreground;
+        selected-normal-background:  @selected-background;
+        selected-active-foreground:  @selected-foreground;
+        selected-active-background:  @selected-background;
+        selected-urgent-foreground:  @background;
+        selected-urgent-background:  @red;
+    }
+
+    window {
+      width: 25%;
+      padding: 5px;
+    }
+
+    listview {
+      spacing: 5px;
+    }
+
+    element-text {
+      vertical-align: 0.5
+    }
+
+    element {
+      padding: 2px 5px;
     }
     '';
 

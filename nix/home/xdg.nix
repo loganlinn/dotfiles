@@ -289,6 +289,7 @@ let
     "application/x-json"
     "application/x-toml"
     "application/x-clj"
+    "application/json"
   ];
 
   browser = [
@@ -298,8 +299,11 @@ let
     "librewolf.desktop"
   ];
   editor = [
+    "emacsclient.desktop"
     "emacs.desktop"
-    "code.desktop"
+    "neovim.desktop"
+    "vim.desktop"
+    # "code.desktop"
   ];
   viewer = [
     "viewnior.desktop"

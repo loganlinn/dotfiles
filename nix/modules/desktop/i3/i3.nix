@@ -113,8 +113,8 @@ in
               session =
                 {
                   "$mod+Shift+q" = "kill";
-                  "$mod+Shift+x" = "--release exec --no-startup-id ${pkgs.xdotool}/bin/xdotool selectwindow windowclose"; # alternatively, xkill
-                  "$mod+$alt+q" = "--release exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
+                  "--release $mod+Shift+x" = "exec --no-startup-id ${pkgs.xdotool}/bin/xdotool selectwindow windowclose"; # alternatively, xkill
+                  "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
                   "$mod+Ctrl+c" = "restart";
                   "$mod+Shift+c" = "reload";
                   # "$mod+Shift+p" = ''exec --no-startup-id i3-msg exit'';
@@ -161,11 +161,11 @@ in
               };
 
               menus = {
-                "$mod+space" = "exec --no-startup-id ${rofi "drun" {sidebar-mode = true;}}";
-                "$mod+semicolon" = "exec --no-startup-id ${rofi "run" {}}";
-                "$mod+Shift+space" = "--release exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
-                "$mod+Shift+equal" = "exec --no-startup-id ${rofi "calc" {}}";
-                "$menu" = "exec ${pkgs.writeShellScript "rofi-power" ''
+                "--release $mod+space" = "exec --no-startup-id ${rofi "combi" {sidebar-mode = true;}}";
+                "--release $mod+semicolon" = "exec --no-startup-id ${rofi "run" {}}";
+                "--release $mod+Shift+space" = "exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
+                "--release $mod+Shift+equal" = "exec --no-startup-id ${rofi "calc" {}}";
+                "--release $menu" = "exec ${pkgs.writeShellScript "rofi-power" ''
                   ${getExe config.programs.rofi.finalPackage} -show Power -modes "Power:${getExe pkgs.rofi-power-menu}"
                 ''}";
               };
