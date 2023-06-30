@@ -16,7 +16,7 @@ let
 
 in
 {
-  imports = [ ./aliases.nix ];
+  home.shellAliases = import ./aliases.nix;
 
   programs.bash.initExtra = ''
     ${initExtra}

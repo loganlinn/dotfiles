@@ -14,28 +14,43 @@ nixpkgs() {
             echo
             echo "COMMANDS:"
             printf ' %s\n' \
-                ${(ok)commands[(I)nixpkgs-*]} \
-                ${(ok)functions[(I)nixpkgs-*]} \
+                ${(ok)commands[(I)nixpkgs-*]/nixpkgs-/  } \
+                ${(ok)functions[(I)nixpkgs-*]/nixpkgs-/  } \
                 | sort
             ;;
         *)
-            nixpkgs-"$@" ;;
+            nixpkgs-"${@:1}" ;;
     esac
 }
+
 nixpkgs-repl() {
-    nix repl --expr 'builtins // (import <nixpkgs> {})'
+  nix repl --expr '
+    let pkgs = import <nixpkgs> {}; in
+    builtins // pkgs.lib // { inherit pkgs; }'
 }
+
 nixpkgs-shell() {
-    nix shell "nixpkgs#$@"
+  nix shell "${@/#/nixpkgs#}"
 }
+
+nixpkgs-build() {
+  nix build "${@/#/nixpkgs#}"
+}
+
 nixpkgs-run() {
-    nix run "nixpkgs#$@"
+  nix run "nixpkgs#${1?}" "${@:1}"
 }
+
+nixpkgs-develop() {
+    nix develop "${@::-1}" "nixpkgs#${@[-1]}"
+}
+
 nixpkgs-edit() {
-    nix edit "nixpkgs#$@"
+    nix edit "${@::-1}" "nixpkgs#${@[-1]}"
 }
+
 nixpkgs-eval() {
-    nix eval --raw "nixpkgs#$@"
+    nix eval "${@::-1}" "nixpkgs#${@[-1]}"
 }
 
 
