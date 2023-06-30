@@ -25,6 +25,7 @@ in
     xfce.tumbler # thunar thumbnails
     xfce.xfce4-volumed-pulse
     xfce.xfconf # thunar save settings
+    xfce.gigolo # remote filesystems (ftp, ssh, webdav, etc)
 
     # one of the following needed for thunar-archive-plugin
     # see: https://docs.xfce.org/xfce/thunar/archive
@@ -52,5 +53,18 @@ in
       </actions>
     '';
   };
+
+  xdg.configFile."gigolo/config".text = ''
+    [general]
+    file_manager=${pkgs.glib}/bin/gio open
+    terminal=kitty
+    autoconnect_interval=60
+
+    [ui]
+    show_in_systray=true
+    start_in_systray=false
+    show_toolbar=true
+    show_autoconnect_errors=true
+  '';
 
 }
