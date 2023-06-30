@@ -27,3 +27,6 @@ repl-result-out
 # Devenv
 .devenv*
 devenv.local.nix
+
+# Python
+.venv
