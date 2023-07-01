@@ -2,18 +2,31 @@
 
 with lib;
 
+let
+  inherit (pkgs.stdenv) isLinux isDarwin;
+in
 {
   programs.rofi.terminal = "${config.programs.kitty.package}/bin/kitty";
 
   programs.kitty = {
     enable = true;
 
+    # Wrap package to fix apparent issue with how libxkbcommon is (not) loaded:
+    # 'Failed to load libxkbcommon.xkb_keysym_from_name with error: Failed to find libxkbcommon'
+    package = (pkgs.kitty.overrideAttrs ({ buildInputs ? [], postInstall ? "", ... }: {
+      buildInputs = buildInputs ++ [ pkgs.makeWrapper ];
+      postInstall = postInstall + ''
+        wrapProgram $out/bin/kitty \
+            --set LD_PRELOAD "${pkgs.libxkbcommon}/lib/libxkbcommon.so"
+      '';
+    }));
+
     theme = "kanagawabones";
 
     font = {
       package = pkgs.victor-mono;
       name = "Victor Mono";
-      size = if pkgs.stdenv.isDarwin then 14 else 12;
+      size = if isDarwin then 14 else 12;
     };
 
     # https://sw.kovidgoyal.net/kitty/actions/
@@ -47,7 +60,6 @@ with lib;
       "kitty_mod+y>w" = "kitten hints --type word --program @";
       "shift+super+w" = "close_os_window";
       "kitty_mod+/" = ''launch --type=overlay bash -i -c 'rg "^\s*(map|mouse_map)\s+.*" ~/.config/kitty/kitty.conf | fzf' '';
-      "dynamic_background_opacity" = if pkgs.stdenv.isLinux then "on" else "off";
     };
 
     settings = {
@@ -88,17 +100,18 @@ with lib;
       macos_option_as_alt = "yes";
     };
 
-
     extraConfig = ''
       globinclude kitty.d/**/*.conf
     '';
   };
 
-  home.packages = with pkgs; optionals config.xsession.windowManager.i3.enable [
+  home.packages = with pkgs; [
+  ] ++ optionals isLinux [
+    (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
+  ] ++ optionals config.xsession.windowManager.i3.enable [
     (writeShellScriptBin "kitty-floating" ''exec kitty --class kitty-floating "$@"'')
     (writeShellScriptBin "kitty-one" ''exec kitty --class kitty-one --single-instance "$@"'')
     (writeShellScriptBin "kitty-scratch" ''exec kitty --class kitty-scratch "$@"'')
-    (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
   ];
 
   programs.zsh.initExtra = ''

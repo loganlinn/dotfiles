@@ -44,6 +44,8 @@ in
       src = "$HOME/src";
       gh = "$HOME/src/github.com";
       clj = "$HOME/src/github.com/clojure";
+      pkgs = "$HOME/src/github.com/NixOS/nixpkgs";
+      hm = "$HOME/src/github.com/nix-community/home-manager";
     } // lib.optionalAttrs config.xdg.enable {
       cfg = config.xdg.configHome;
       dls = config.xdg.userDirs.download;
