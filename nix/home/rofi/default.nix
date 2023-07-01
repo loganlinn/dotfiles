@@ -29,21 +29,26 @@ with lib; {
 
     extraConfig = {
       modes = "combi,emoji,ssh,keys";
-      modi = "combi,drun,run,window,emoji,calc,ssh,keys,file-browser-extended";
-      combi-modes = "window,drun";
+      modi = "combi,drun,window,run,emoji,calc,ssh,keys,file-browser-extended";
+      combi-hide-mode-prefix = true;
+      combi-modes = "drun,window";
       location = 6; # bottom center
       show-icons = true;
       markup = true;
       case-sensitive = false;
       sort = true;
       sorting-method = "fzf";
+      combi-display-format = "{text}  {mode}"; # <-- tab!
       display-combi = "󱃵 program";
       display-drun = "󰀻 app";
       display-run = "󰆍  run";
       display-emoji = "󰦥 emoji";
       display-calc = "󰃬 calc";
+      display-filebrowser = "󰈞 file";
       display-file-browser-extended = "󰈞 file";
       display-window = "󰖲 window";
+      display-windowcd = "󱇜 windowcd";
+      display-keys = "󰌌 keys";
       display-ssh = "󰢩 ssh";
       ssh-command = "kitty --hold -- kitten ssh {host} [-p {port}]";
       steal-focus = false;
@@ -52,6 +57,7 @@ with lib; {
       parse-known-hosts = true;
       drun-categories = "";
       drun-match-fields = "all";
+      drun-show-actions = true; # expose any additional actions (like opening incoginto window with google-chrome.desktop)
       kb-move-front = "Control+a";
       kb-move-end = "Control+e";
       kb-move-word-back = "Alt+b";
@@ -75,7 +81,7 @@ with lib; {
       kb-row-down = "Down,Control+j";
       kb-clear-line = "Control+u";
       kb-mode-next = "Shift+Right,Control+Tab,Control+l";
-      kb-mode-previous = "Shift+Left,Control+Shift+Tab,Control+h";
+      kb-mode-previous = "Shift+Left,Control_L+ISO_Left_Tab,Control+h"; # ISO_Left_Tab = Shift+Tab
       kb-mode-complete = "Control+t";
       kb-primary-paste = "Control+V,Control+Shift+V";
       ml-row-left = "ScrollLeft";
@@ -88,7 +94,7 @@ with lib; {
       kb-ellipsize = "Alt+period";
       kb-toggle-case-sensitivity = "grave,dead_grave";
       kb-toggle-sort = "Alt+grave";
-      kb-cancel = "Escape,Control+g,Control+bracketleft";
+      kb-cancel = "Escape,Control+g,Control+c,Control+w";
     };
 
     configPath = "${config.xdg.configHome}/rofi/core.rasi";
@@ -139,20 +145,41 @@ with lib; {
     }
 
     window {
-      width: 25%;
+      width: 640px;
       padding: 5px;
+    }
+
+    inputbar {
+      spacing: 8px;
+      padding: 8px;
+    }
+
+    prompt, entry, element-icon, element-text {
+      vertical-align: 0.5;
+    }
+
+    textbox {
+      padding: 8px;
     }
 
     listview {
       spacing: 5px;
-    }
-
-    element-text {
-      vertical-align: 0.5;
+      lines: 8;
+      columns: 1;
+      fixed-height: false;
     }
 
     element {
-      padding: 2px 5px;
+      padding: 8px;
+      spacing: 8px;
+    }
+
+    element-icon {
+      size:   0.8em;
+    }
+
+    element-text {
+      text-color: inherit;
     }
     '';
 

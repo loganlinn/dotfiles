@@ -43,9 +43,6 @@ in
       dots = "$HOME/.dotfiles";
       src = "$HOME/src";
       gh = "$HOME/src/github.com";
-      pat = "$HOME/src/github.com/patch-tech/patch";
-      be = "$HOME/src/github.com/patch-tech/patch/backend";
-      otel = "$HOME/src/github.com/open-telemetry";
       clj = "$HOME/src/github.com/clojure";
     } // lib.optionalAttrs config.xdg.enable {
       cfg = config.xdg.configHome;
@@ -92,7 +89,7 @@ in
     '';
 
     initExtra = ''
-      unsetopt EXTENDED_GLOB      # Use extended globbing syntax.
+      unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
       setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
       setopt EQUALS               # Expansion of =command expands into full pathname of command
       setopt LONG_LIST_JOBS       # List jobs in the long format by default.
@@ -112,12 +109,7 @@ in
 
       ${readFile ./funcs.zsh}
 
-      ${optionalString config.programs.kitty.enable
-        "kitty + complete setup zsh | source /dev/stdin"}
-
-      ${optionalString config.programs.tmux.enable
-        # Fix IntelliJ terminal issue where every keypress was accompanied by 'tmux' or 'tmux;'
-        ''[[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX''}
+      ${readFile ./nixpkgs.zsh}
 
       [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
     '';

@@ -13,6 +13,7 @@ in
     ./git.nix
     ./neovim
     ./nix-path.nix
+    ./ranger.nix
     ./readline.nix
     ./secrets.nix
     ./security.nix
@@ -21,10 +22,10 @@ in
   ];
 
   home.packages = with pkgs; [
+    bandwhich # display current network utilization by process
     bc
     binutils
     cmake
-    comma # github.com/nix-community/comma
     coreutils-full # installs gnu versions
     curl
     dig
@@ -38,18 +39,13 @@ in
     gnused
     gnutar
     gnutls
-    gping # ping alternative
     gzip
-    just
     moreutils
     neofetch
-    nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
     pinentry
     procs # ps alternative
-    rcm # TODO no longer used (!)
     rlwrap
     sd # sed alternative
-    silver-searcher # grep alternative
     sops
     tree
     unzip
@@ -60,8 +56,6 @@ in
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
     DO_NOT_TRACK = "1";
-    HOMEBREW_NO_ANALYTICS = "1";
-    NEXT_TELEMETRY_DISABLED = "1";
   };
 
   home.sessionPath = [
@@ -124,7 +118,8 @@ in
   programs.ripgrep = {
     enable = true;
     arguments = [
-      "--type-add" "clj:include:clojure,edn"
+      "--type-add"
+      "clj:include:clojure,edn"
       "--smart-case"
     ];
   };

@@ -1,20 +1,15 @@
 # USAGE: nix repl ./repl.nix --argstr username <username> --argstr hostname <hostname>
 with builtins;
-
-let
-  currentUsername = getEnv "USER";
-  currentHostname = import ../lib/currentHostname.nix;
-  self = getFlake (toString ./..);
-  inherit (self.inputs.nixpkgs) lib;
-in
-
-{ hostname ? currentHostname
-, username ? currentUsername
+{ hostname ? import ../lib/currentHostname.nix
+, username ? getEnv "USER"
 , system ? currentSystem
 }:
-
-self.legacyPackages.${system}.homeConfigurations."${username}@${hostname}" // {
-  inherit self lib;
+let
+  self = getFlake (toString ./..);
+  inherit (self.inputs) nixpkgs;
+  homeConfiguration = self.legacyPackages.${system}.homeConfigurations."${username}@${hostname}";
+in
+builtins // nixpkgs.lib // homeConfiguration // {
   currentUsername = username;
   currentHostname = hostname;
 }

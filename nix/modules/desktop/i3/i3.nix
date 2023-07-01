@@ -163,9 +163,10 @@ in
               menus = {
                 "--release $mod+space" = "exec --no-startup-id ${rofi "combi" {sidebar-mode = true;}}";
                 "--release $mod+semicolon" = "exec --no-startup-id ${rofi "run" {}}";
-                "--release $mod+Shift+space" = "exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
+                "--release $mod+apostrophe" = "exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
+                "--release $mod+Shift+apostrophe" = "exec --no-startup-id ${rofi "windowcd" {modi = ["window" "windowcd"];}}";
                 "--release $mod+Shift+equal" = "exec --no-startup-id ${rofi "calc" {}}";
-                "--release $menu" = "exec ${pkgs.writeShellScript "rofi-power" ''
+                "--release $mod+Escape" = "exec ${pkgs.writeShellScript "rofi-power" ''
                   ${getExe config.programs.rofi.finalPackage} -show Power -modes "Power:${getExe pkgs.rofi-power-menu}"
                 ''}";
               };
@@ -622,16 +623,16 @@ in
               bindsym s resize shrink height 8 px or 1 ppt
               bindsym t resize grow height 8 px or 1 ppt
 
-              bindsym 1 resize set width 10 ppt
-              bindsym 2 resize set width 20 ppt
-              bindsym 3 resize set width 30 ppt
-              bindsym 4 resize set width 40 ppt
-              bindsym 5 resize set width 50 ppt
-              bindsym Shift+1 resize set width 90 ppt
-              bindsym Shift+2 resize set width 80 ppt
-              bindsym Shift+3 resize set width 70 ppt
-              bindsym Shift+4 resize set width 60 ppt
-              bindsym Shift+5 resize set width 50 ppt
+              bindsym 1 resize set width 10 ppt, mode default
+              bindsym 2 resize set width 20 ppt, mode default
+              bindsym 3 resize set width 30 ppt, mode default
+              bindsym 4 resize set width 40 ppt, mode default
+              bindsym 5 resize set width 50 ppt, mode default
+              bindsym Shift+1 resize set width 90 ppt, mode default
+              bindsym Shift+2 resize set width 80 ppt, mode default
+              bindsym Shift+3 resize set width 70 ppt, mode default
+              bindsym Shift+4 resize set width 60 ppt, mode default
+              bindsym Shift+5 resize set width 50 ppt, mode default
 
               bindsym Shift+w resize grow width 24 px or 3 ppt
               bindsym Shift+n resize shrink width 24 px or 3 ppt

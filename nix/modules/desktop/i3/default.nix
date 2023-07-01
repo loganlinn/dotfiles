@@ -21,6 +21,16 @@ in {
     home.packages = with pkgs;
       [
         i3-layout-manager
+        # give me the name i expect...
+        (writeShellScriptBin "i3-layout-manager" "exec ${i3-layout-manager}/bin/layout_manager $@")
+        # (symlinkJoin {
+        #   name = "i3-layout-manager";
+        #   paths = [ i3-layout-manager ];
+        #   buildInputs = [ makeWrapper ];
+        #   postBuild = ''
+        #     wrapProgram $out/bin/layout_manager
+        #   '';
+        # })
         (writeShellApplication {
             name = "i3-shmlog";
             text = ''

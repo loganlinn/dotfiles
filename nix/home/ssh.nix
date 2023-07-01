@@ -6,7 +6,7 @@
     hashKnownHosts = true;
     forwardAgent = true;
     controlMaster = "auto";
-    controlPath = "~/.ssh/%r@%h:%p";
+    controlPath = "~/.ssh/%C";
     controlPersist = "60m";
     serverAliveInterval = 120;
     includes = ["${config.home.homeDirectory}/.ssh/config.local"];

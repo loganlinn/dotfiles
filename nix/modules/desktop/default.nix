@@ -35,16 +35,14 @@ in {
       default = [
         "file://${config.xdg.userDirs.download}"
         "file://${config.xdg.userDirs.documents}"
+        "file://${config.home.homeDirectory}/Sync"
         "file://${config.xdg.userDirs.pictures}"
         "file://${config.xdg.userDirs.music}"
         "file://${config.xdg.userDirs.videos}"
-        "file://${config.xdg.configHome}"
-        "file://${config.xdg.dataHome}"
-        "file://${config.home.homeDirectory}/Sync"
-        "file://${config.home.homeDirectory}/.dotfiles"
         "file://${config.home.homeDirectory}/src"
         "file://${config.home.homeDirectory}/src/github.com/patch-tech"
-        "davs://myfiles.fastmail.com/"
+        "file:///run/current-system/sw current-system"
+        "davs://myfiles.fastmail.com/ Fastmail Files"
       ];
     };
   };

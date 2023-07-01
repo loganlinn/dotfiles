@@ -3,7 +3,7 @@
 with lib;
 
 {
-  programs.rofi.terminal = mkDefault "${config.programs.kitty.package}/bin/kitty";
+  programs.rofi.terminal = "${config.programs.kitty.package}/bin/kitty";
 
   programs.kitty = {
     enable = true;
@@ -98,7 +98,12 @@ with lib;
     (writeShellScriptBin "kitty-floating" ''exec kitty --class kitty-floating "$@"'')
     (writeShellScriptBin "kitty-one" ''exec kitty --class kitty-one --single-instance "$@"'')
     (writeShellScriptBin "kitty-scratch" ''exec kitty --class kitty-scratch "$@"'')
+    (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
   ];
+
+  programs.zsh.initExtra = ''
+    kitty + complete setup zsh | source /dev/stdin
+  '';
 
   xsession.windowManager.i3.extraConfig = ''
     for_window [class="kitty-floating"] floating enable

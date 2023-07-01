@@ -4,6 +4,8 @@ rec {
   l = "ls -lah";
   mkd = "mkdir -p";
 
+  prunedirs = "fd -td -te -x rmdir -v";
+
   gc = "git commit -v";
   gca = "git commit -v -a";
   gcm = ''git switch "$(git default-branch || echo .)"'';

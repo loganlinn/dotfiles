@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 
 let
-  inherit (pkgs.stdenv.targetPlatform) isLinux;
+  inherit (pkgs.stdenv.targetPlatform) isLinux isDarwin;
 in
 {
   imports = [
@@ -27,7 +27,6 @@ in
     as-tree # ex. find . -name '*.txt' | as-tree
     du-dust
     dua # View disk space usage and delete unwanted data, fast.
-    ranger
     watchexec
 
     # containers
@@ -67,6 +66,7 @@ in
     # tools/utils
     xxd # make a hexdump or do the reverse.
     cloc
+    just # save and run commands
 
     ##########################################################################
     # LANGUAGES
@@ -79,12 +79,16 @@ in
 
     # nix
     alejandra
+    comma # github.com/nix-community/comma
+    deadnix
+    nix-init
+    nix-output-monitor # get additional information while building packages
+    nix-tree # interactively browse dependency graphs of Nix derivations
+    nix-update # swiss-knife for updating nix packages
     nixfmt
     nixpkgs-fmt
     nurl
-    nix-init
-    deadnix
-    statix
+    nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
     toml2nix
 
     # c/c++
@@ -127,8 +131,8 @@ in
     nodejs
     yarn
     yarn-bash-completion
-    deno
-    nodePackages.typescript
+    # deno
+    # nodePackages.typescript
 
     # graphql
     nodePackages.graphql-language-service-cli
@@ -137,8 +141,6 @@ in
     mdsh
     glow
     nodePackages_latest.mermaid-cli
-
-  ] ++ [
 
     # language servers
     nodePackages.bash-language-server
@@ -149,17 +151,16 @@ in
     sumneko-lua-language-server
     yaml-language-server
     java-language-server
-  ] ++ lib.optionals isLinux [
-    # system76-keyboard-configurator
-  ] ++ lib.optional
-    config.programs.vscode.enable
+  ] ++ lib.optional config.programs.vscode.enable
     nodePackages.vscode-langservers-extracted;
 
-  home.sessionVariables.GRAPHITE_DISABLE_TELEMETRY = "1";
-
-  xdg.configFile."ranger/rc.conf".text = ''
-    set vcs_aware false
-    map zg set vcs_aware true
-    setlocal path=${config.xdg.userDirs.download} sort mtime
-  '';
+  home.sessionVariables = {
+    GRAPHITE_DISABLE_TELEMETRY = "1";
+    NEXT_TELEMETRY_DISABLED = "1";
+    NPM_CONFIG_AUDIT = "false";
+    NPM_CONFIG_FUND = "false";
+    NPM_CONFIG_UPDATE_NOTIFIER = "false";
+  } // lib.optionalAttrs isDarwin {
+    HOMEBREW_NO_ANALYTICS = "1";
+  };
 }
