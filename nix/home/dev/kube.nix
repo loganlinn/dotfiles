@@ -10,6 +10,7 @@
     kustomize
     kuttl
     stern # log tailer
+    minikube
     # (pkgs.callPackage ../../pkgs/kubectl-fzf.nix { })
     (pkgs.callPackage ../../pkgs/kubefwd.nix { })
   ];

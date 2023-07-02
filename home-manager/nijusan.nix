@@ -18,6 +18,7 @@ in
     ../nix/home/dunst
     ../nix/home/emacs.nix
     ../nix/home/home-manager.nix
+    ../nix/home/intellij.nix
     ../nix/home/kitty
     ../nix/home/mpd.nix
     ../nix/home/mpv.nix
@@ -166,44 +167,10 @@ in
     (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
     btrfs-progs
     dbeaver
-    gcc
     google-cloud-sdk
-    jetbrains.idea-community
     libreoffice
-    minikube
     plantuml
-    wordnet # English thesaurus backend (used by synosaurus.el)
   ];
-
-  # TODO move into own module (maybe can reuse settings type from https://github.com/nix-community/home-manager/blob/master/modules/programs/vim.nix)
-  xdg.configFile."ideavim/ideavimrc".text = ''
-    Plug 'tpope/vim-surround'
-    Plug 'tpope/vim-commentary'
-
-    packadd matchit
-
-    set hlsearch
-    set ignorecase
-    set incsearch
-    set smartcase
-    set relativenumber
-
-    " use system clipboard
-    set clipboard+=unnamed
-
-    " enable native IntelliJ insertion
-    set clipboard+=ideaput
-
-    " see https://github.com/JetBrains/ideavim/wiki/ideajoin-examples
-    set ideajoin
-
-    set idearefactormode=keep
-
-
-    map <leader>f <Action>(GotoFile)
-    map <leader>g <Action>(FindInPath)
-    map <leader>b <Action>(Switcher)
-  '';
 
   home.username = "logan";
 

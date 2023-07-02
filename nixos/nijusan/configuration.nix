@@ -29,7 +29,7 @@
   ];
   boot.kernelModules = ["kvm-intel"];
 
-  boot.plymouth.enable = true;
+  boot.plymouth.enable = false;
   # boot.plymouth.themesPackages = with pkgs; [
   #   catppuccin-plymouth
   #   adi1090x-plymouth-themes
@@ -69,6 +69,9 @@
   security.polkit.enable = true;
 
   programs.mosh.enable = true;
+
+  services.davfs2.enable = true;
+  services.davfs2.davGroup = "davfs2";
 
   environment.systemPackages = with pkgs; [
     btrbk
@@ -124,7 +127,7 @@
     home = "/home/logan";
     createHome = true;
     shell = pkgs.zsh;
-    extraGroups = ["wheel" "networkmanager" "audio" "video" "docker" "onepassword"];
+    extraGroups = ["wheel" "networkmanager" "audio" "video" "docker" "onepassword" "davfs2"];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa"
     ];

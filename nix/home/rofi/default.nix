@@ -32,7 +32,8 @@ with lib; {
       modi = "combi,drun,window,run,emoji,calc,ssh,keys,file-browser-extended";
       combi-hide-mode-prefix = true;
       combi-modes = "drun,window";
-      location = 6; # bottom center
+      # location = 6; # bottom center
+      location = 0; # center
       show-icons = true;
       markup = true;
       case-sensitive = false;

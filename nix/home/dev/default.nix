@@ -52,6 +52,7 @@ in
     yamllint
     yq-go
     prom2json # prometheus
+    yaml-language-server
 
     # version control
     pre-commit
@@ -60,7 +61,6 @@ in
 
     # apis
     doctl
-    # python3Packages.datadog # conflicts with dog (dns tool)
     # google-cloud-sdk
 
     # tools/utils
@@ -75,7 +75,7 @@ in
     shfmt
     shellcheck
     shellharden
-    ## docopts
+    nodePackages.bash-language-server
 
     # nix
     alejandra
@@ -89,6 +89,7 @@ in
     nixpkgs-fmt
     nurl
     nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
+    rnix-lsp # alt? https://github.com/oxalica/nil
     toml2nix
 
     # c/c++
@@ -131,6 +132,7 @@ in
     nodejs
     yarn
     yarn-bash-completion
+    nodePackages.typescript-language-server
     # deno
     # nodePackages.typescript
 
@@ -142,15 +144,9 @@ in
     glow
     nodePackages_latest.mermaid-cli
 
-    # language servers
-    nodePackages.bash-language-server
-    nodePackages.typescript-language-server
+    # vim
     nodePackages.vim-language-server
-    pyright
-    rnix-lsp # alt? https://github.com/oxalica/nil
     sumneko-lua-language-server
-    yaml-language-server
-    java-language-server
   ] ++ lib.optional config.programs.vscode.enable
     nodePackages.vscode-langservers-extracted;
 

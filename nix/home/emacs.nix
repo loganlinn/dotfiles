@@ -8,14 +8,8 @@ let
   doomDir = "${config.xdg.configHome}/doom";
 in
 {
-
-  imports = [
-
-  ];
-
   programs.emacs = {
     enable = true;
-    # package = pkgs.emacsNativeComp;
     package = pkgs.emacs-unstable.override {
       withGTK3 = true;
       withXwidgets = true;
@@ -39,15 +33,11 @@ in
     imagemagick # for image-dired
     zstd # for undo-fu-session/undo-tree compression
     emacs-all-the-icons-fonts
-    ## Module dependencies
-    # :checkers spell
-    (aspellWithDicts (ds: with ds; [ en en-computers en-science ]))
-    # :tools editorconfig
+    (aspellWithDicts (ds: with ds; [ en en-computers en-science ])) # :checkers spell
+    wordnet # English thesaurus backend (used by synosaurus.el)
     editorconfig-core-c # per-project style config
-    # :tools lookup & :lang org +roam
-    sqlite
-    # :lang latex & :lang org (latex previews)
-    texlive.combined.scheme-medium
+    sqlite # :tools lookup & :lang org +roam
+    texlive.combined.scheme-medium # :lang latex & :lang org (latex previews)
     # doom launch wrapper
     (writeShellScriptBin "doomer" ''doom run "$@" &'')
   ];

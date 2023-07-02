@@ -11,6 +11,7 @@ lib.mkIf pkgs.stdenv.isLinux {
   };
 
   home.packages = with pkgs; [
+    gcc
     cached-nix-shell
     sysz
     trash-cli

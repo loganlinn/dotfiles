@@ -50,6 +50,7 @@ let cfg = config.modules.dev.python; in
     home.packages = with pkgs; [
       cfg.finalPackage
       poetry
+      pyright
     ];
 
     home.shellAliases.venv = "${cfg.finalPackage}/bin/python3 -m venv --upgrade-deps";
