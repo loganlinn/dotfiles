@@ -8,7 +8,6 @@
   home.packages = with pkgs; [
     discord
     obsidian
-    qalculate-gtk
     slack
     vlc
     zoom-us

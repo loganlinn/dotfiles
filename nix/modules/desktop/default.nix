@@ -24,7 +24,6 @@ in {
     ../themes
     ./apps
     ./browsers
-    ./picom.nix
     ./syncthing.nix
     ./tray.nix
   ];
@@ -48,7 +47,6 @@ in {
   };
 
   config = {
-    modules.programs.eww.enable = false;
     programs.eww.enable = false;
 
     programs.feh.enable = true;
@@ -89,9 +87,6 @@ in {
         ponymix # CLI PulseAudio Volume Control
         ncpamixer # An ncurses mixer for PulseAudio inspired by pavucontrol
         playerctl
-
-        libqalculate
-        qalculate-gtk
 
         vlc
         nsxiv # simple image viewer

@@ -38,7 +38,7 @@
 
   powerManagement.enable = true;
   powerManagement.cpuFreqGovernor = "powersave";
-  powerManagement.powertop.enable = true;
+  powerManagement.powertop.enable = false; # aggressively autosuspends usb devices. no config available. disable rather than hacking around.
 
   networking.hostName = "nijusan";
   networking.networkmanager.enable = true;
@@ -61,7 +61,6 @@
     enable = true;
     enableSSHSupport = true;
   };
-
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
   programs._1password-gui.polkitPolicyOwners = ["logan"]; # for polkit agent process (required to use polkit)

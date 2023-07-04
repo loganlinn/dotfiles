@@ -48,11 +48,12 @@ in
       hm = "$HOME/src/github.com/nix-community/home-manager";
     } // lib.optionalAttrs config.xdg.enable {
       cfg = config.xdg.configHome;
-      dls = config.xdg.userDirs.download;
-      docs = config.xdg.userDirs.documents;
-      pics = config.xdg.userDirs.pictures;
-      music = config.xdg.userDirs.music;
-      vids = config.xdg.userDirs.videos;
+      dl = config.xdg.userDirs.download;
+      doc = config.xdg.userDirs.documents;
+      img = config.xdg.userDirs.pictures;
+      mus = config.xdg.userDirs.music;
+      vid = config.xdg.userDirs.videos;
+      trash = "${config.xdg.dataHome}/Trash/files"; # https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
     };
 
     plugins = import ./plugins.nix { inherit config pkgs lib; };

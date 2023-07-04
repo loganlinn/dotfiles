@@ -38,8 +38,8 @@ in
     editorconfig-core-c # per-project style config
     sqlite # :tools lookup & :lang org +roam
     texlive.combined.scheme-medium # :lang latex & :lang org (latex previews)
-    # doom launch wrapper
-    (writeShellScriptBin "doomer" ''doom run "$@" &'')
+    (writeShellScriptBin "doomer" ''doom run "$@" &'') # doom launch wrapper
+    nodePackages.prettier # css, html, js, jsx
   ];
 
 

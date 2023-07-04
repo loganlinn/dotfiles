@@ -49,11 +49,11 @@ in
 
     systemd.user.targets.i3-session = {
       Unit = {
-        Description = "i3 window manager session";
+        Description = "i3 session";
+        Documentation = [ "man:systemd.special(7)" ];
         BindsTo = [ "graphical-session.target" ];
-        Requisite = [ "graphical-session.target" ];
-        # Wants = [ "graphical-session-pre.target" ];
-        # After = [ "graphical-session-pre.target" ];
+        Wants = [ "graphical-session-pre.target" ];
+        After = [ "graphical-session-pre.target" ];
       };
     };
 

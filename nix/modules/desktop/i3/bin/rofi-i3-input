@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# rofi-based implementation of i3-input.
+
+hash rofi i3-msg || exit 1
+
+socket=
+prompt=
+format='%s'
+font=
+
+while (($#)); do
+  case $1 in
+    -s)
+      socket=${2?}
+      shift 2
+      ;;
+    -l)
+      echo "$(basename "$0"): -l is not supported" >&2
+      exit 1
+      ;;
+    -P)
+      prompt=${2?}
+      shift 2
+      ;;
+    -f)
+      font=${2?}
+      shift 2
+      ;;
+  esac
+done
+
+input=$(
+  rofi -dmenu \
+    -lines 0 \
+    -p "$prompt" \
+    -monitor -2 \
+    ${font:+"-font $font"} \
+    -theme-str 'window { border-color: @red; }' \
+    -theme-str 'inputbar { children: [prompt,entry]; }' \
+    -theme-str 'entry { placeholder: ""; }'
+) || exit $?
+
+#shellcheck disable=2059
+i3-msg ${socket:+"-s $socket"} -t command "$(printf "$format" "$input")"

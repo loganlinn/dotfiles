@@ -17,6 +17,7 @@ in
     #../nix/home/dev/vala.nix
     ../nix/home/dunst
     ../nix/home/emacs.nix
+    ../nix/home/eww
     ../nix/home/home-manager.nix
     ../nix/home/intellij.nix
     ../nix/home/kitty
@@ -25,6 +26,7 @@ in
     ../nix/home/nnn.nix
     ../nix/home/polkit.nix
     ../nix/home/pretty.nix
+    ../nix/home/qalculate
     ../nix/home/ssh.nix
     ../nix/home/sync.nix
     ../nix/home/urxvt.nix
@@ -33,7 +35,6 @@ in
     ../nix/home/x11.nix
     ../nix/home/yt-dlp.nix
     ../nix/home/yubikey.nix
-    ../nix/modules/programs/eww
     ../nix/modules/programs/the-way
     ../nix/modules/services
     ../nix/modules/spellcheck.nix
@@ -50,19 +51,13 @@ in
   sops.secrets.github_token.sopsFile = ../secrets/default.yaml;
 
   modules.fonts.enable = true;
-
   modules.spellcheck.enable = true;
-
   modules.desktop.i3 = {
-    enable = true;
     editor.exec = "doom run";
+    terminal.exec = "kitty";
   };
-
-  colorScheme = nix-colors.colorSchemes.doom-one;
-
   modules.theme = {
     active = "arc";
-
     # wallpaper = ../wallpaper/wallhaven-weq8y7.png;
     wallpaper = nixWallpaperFromScheme {
       scheme = config.colorscheme;
@@ -71,22 +66,19 @@ in
       logoScale = 4.0;
     };
   };
+  modules.desktop.browsers = {
+    default = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Profile 1'"; # work
+    alternate = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Default'"; # personal
+  };
+
+  xsession.windowManager.i3.enable = true;
+  gtk.enable = true;
+  colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 
   programs.google-chrome.enable = true;
   programs.firefox.enable = true;
   programs.librewolf.enable = true;
   programs.qutebrowser.enable = true;
-
-  modules.desktop.browsers =
-    let
-      chrome = lib.getExe config.programs.google-chrome.package;
-    in
-    {
-      default = "${chrome} '--profile-directory=Profile 1'"; # work
-      alternate = "${chrome} '--profile-directory=Default'"; # personal
-    };
-
-  gtk.enable = true;
 
   programs.rofi.enable = true;
 
@@ -103,8 +95,8 @@ in
   };
 
   services.dunst.enable = true;
-
   services.polybar.enable = true;
+  services.flameshot.enable = true;
 
   modules.polybar = {
     networks = [

@@ -22,6 +22,8 @@ in
 
   font-awesome = import ./font-awesome.nix;
 
+  rofi = import ./rofi.nix { inherit lib; };
+
   float = import ./float.nix { inherit lib; };
 
   hex = import ./hex.nix { inherit lib; };

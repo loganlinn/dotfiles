@@ -1,46 +1,24 @@
+{ config, lib, pkgs, ... }:
+
+with lib;
+
 {
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-with lib; let
-  cfg = config.modules.desktop.i3;
-in {
-  imports = [./systemd.nix ./i3.nix];
+  imports = [
+    ./i3.nix
+    ./picom.nix
+  ];
 
-  options.modules.desktop.i3 = {
-    enable = mkEnableOption "i3 window manager";
-  };
-
-  config = mkIf cfg.enable {
+  config = mkIf config.xsession.windowManager.i3.enable {
     xsession.enable = true;
-
-    xsession.windowManager.i3.enable = true;
-
+    services.picom.enable = true;
     home.packages = with pkgs;
       [
         i3-layout-manager
-        # give me the name i expect...
-        (writeShellScriptBin "i3-layout-manager" "exec ${i3-layout-manager}/bin/layout_manager $@")
-        # (symlinkJoin {
-        #   name = "i3-layout-manager";
-        #   paths = [ i3-layout-manager ];
-        #   buildInputs = [ makeWrapper ];
-        #   postBuild = ''
-        #     wrapProgram $out/bin/layout_manager
-        #   '';
-        # })
-        (writeShellApplication {
-            name = "i3-shmlog";
-            text = ''
-              # temporarily enable i3 debug logging and stream to stdout
+        (writeShellScriptBin "i3-layout-manager" ''
+          exec ${i3-layout-manager}/bin/layout_manager $@
+        '')
 
-              i3-msg -q shmlog on
-              trap 'i3-msg -q shmlog off' EXIT
-              i3-dump-log -f
-            '';
-          })
+        (pkgs.callPackage ./i3-shmlog.nix { })
 
         (writeShellApplication {
           name = "i3-dump-config";
@@ -49,14 +27,33 @@ in {
             i3-msg --raw --type get_config | jq -r '.included_configs[] | .variable_replaced_contents'
           '';
         })
+
+        (writeShellScriptBin "rofi-i3-msg" ''
+          rofi -dmenu \
+            -lines 0 \
+            -p 'i3-msg: ' \
+            -monitor -2 \
+            -theme-str 'window { border-color: @red; }' \
+            -theme-str 'inputbar { children: [prompt,entry]; }' \
+            -theme-str 'entry { placeholder: ""; }' \
+            | xargs -r i3-msg
+        '')
+
+        (writeShellApplication {
+          name = "i3-focused";
+          runtimeInputs = [ config.programs.jq.package or pkgs.jq ];
+          text = ''
+            i3-msg -t get_tree | jq '.. | select(.focused? == true)'
+          '';
+        })
       ]
       ++ (
         # Create shell script for each i3-msg message type
         # i.e. i3-config, i3-marks, i3-outputs, i3-tree, i3-workspaces
-        forEach ["config" "marks" "outputs" "tree" "workspaces"] (type:
+        forEach [ "config" "marks" "outputs" "tree" "workspaces" ] (type:
           writeShellApplication {
             name = "i3-${type}";
-            runtimeInputs = [];
+            runtimeInputs = [ ];
             text = ''
               exec i3-msg -t get_${type} "$@"
             '';

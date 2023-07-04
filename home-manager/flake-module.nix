@@ -32,9 +32,6 @@ in
             inputs.emacs.overlays.default
           ];
         }
-        {
-          home.shellAliases = lib.mapAttrs (name: _: ''nix run ~/.dotfiles#${name}'') config.apps;
-        }
       ];
     in
     {

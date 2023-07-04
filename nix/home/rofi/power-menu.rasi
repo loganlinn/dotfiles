@@ -1,0 +1,26 @@
+/*-*- mode: css; -*-*/
+@import "config.rasi"
+
+window {
+  anchor: north;
+  location: north;
+  width: 12em;
+}
+
+mainbox {
+  children: [listview];
+}
+
+listview {
+  scrollbar: false;
+  border: none;
+}
+
+element {
+  children: [element-text];
+}
+
+element-text {
+  vertical-align: 0.5;
+  horizontal-align: 0.5;
+}

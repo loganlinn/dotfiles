@@ -1,42 +1,16 @@
-{ self
-, config
-, lib
-, pkgs
-, ...
-}:
+{ config , lib , pkgs , ...}:
 
 with builtins;
-
 with lib;
 
 let
-  i3-auto-layout = import ./i3-auto-layout.nix pkgs;
+  i3-auto-layout = import ./i3-auto-layout.nix pkgs; # callPackage?
 
   cfg = config.modules.desktop.i3;
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
 
-  super = "Mod4";
-  alt = "Mod1";
-  mouseWheelUp = "button4";
-  mouseWheelDown = "button5";
-  mouseWheelRight = "button6";
-  mouseWheelLeft = "button7";
-
-  rofiCommandLineScript = lib.cli.toGNUCommandLineShell rec {
-    mkOptionName = k: "-${k}";
-    mkList = k: v: lib.optionals (v != [ ]) [ (mkOptionName k) (lib.concatStringsSep "," v) ];
-  };
-
-  # create  wrapper script for rofi commands to avoid collisions with i3 config parser
-  rofi = show: options:
-    let
-      exe = "${config.programs.rofi.finalPackage}/bin/rofi";
-      args = rofiCommandLineScript ({ inherit show; } // options);
-    in
-    pkgs.writeShellScript "rofi-${show}" "${exe} ${args}";
-
-  execType = with types; oneOf [ path str ];
+  execType = with types; oneOf [ path str package ];
 
   mkStrOptDefault = default:
     lib.mkOption {
@@ -57,34 +31,13 @@ in
     keysyms.mouseWheelRight = mkStrOptDefault "button7";
     keysyms.menu = mkStrOptDefault "SunProps";
 
-    # sessionLocker ?
-    # ?
-    # i3-input ? "i3-input -f 'pango:Victor Mono 12'"
-    locker.exec = mkOption {
-      type = with types; nullOr execType;
-      default = null;
-    };
-
-    screenshot.exec = mkOption {
-      type = execType;
-      default = "${config.services.flameshot.package}/bin/flameshot gui";
-    };
-
     editor.exec = mkOption {
       type = execType;
-      default = "${pkgs.handlr}/bin/handlr launch text/plain";
     };
 
     terminal.exec = mkOption {
       type = execType;
-      default =
-        if config.programs.kitty.enable
-        then "${config.programs.kitty.package}/bin/kitty"
-        else if config.programs.foot.enable
-        then "${config.programs.foot.package}/bin/foot"
-        else if config.programs.alacritty.enable
-        then "${config.programs.alacritty.package}/bin/alacritty"
-        else "i3-sensible-terminal";
+      default = "kitty";
     };
 
     processManager.exec = mkOption {
@@ -104,230 +57,9 @@ in
     programs.rofi.plugins = with pkgs; [ rofi-calc ]; # depended on below
 
     xsession.windowManager.i3 = {
-      config = lib.mkOptionDefault {
-        modifier = super;
-
-        keybindings =
-          let
-            groups = {
-              session =
-                {
-                  "$mod+Shift+q" = "kill";
-                  "--release $mod+Shift+x" = "exec --no-startup-id ${pkgs.xdotool}/bin/xdotool selectwindow windowclose"; # alternatively, xkill
-                  "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
-                  "$mod+Ctrl+c" = "restart";
-                  "$mod+Shift+c" = "reload";
-                  # "$mod+Shift+p" = ''exec --no-startup-id i3-msg exit'';
-                  "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-                  "$mod+Shift+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
-                  "$mod+Shift+F2" = ''exec ${getExe pkgs.handlr} open ${config.xdg.configHome}/i3/config'';
-                }
-                // optionalAttrs (cfg.locker.exec != null) {
-                  "$mod+Escape" = "exec --no-startup-id ${cfg.locker.exec}";
-                };
-
-              processManager = {
-                "Ctrl+$alt+Delete" = ''exec ${cfg.processManager.exec}'';
-              };
-
-              clipboard = lib.optionalAttrs config.services.clipmenu.enable {
-                "$mod+Shift+backslash" = ''exec --no-startup-id env CM_LAUNCHER=rofi clipmenu'';
-              };
-
-              focusWindow = {
-                "$mod+h" = "focus left";
-                "$mod+j" = "focus down";
-                "$mod+k" = "focus up";
-                "$mod+l" = "focus right";
-                "$mod+backslash" = "focus parent";
-              };
-
-              webBrowser = {
-                "$mod+Shift+Return" = "exec ${config.modules.desktop.browsers.default}";
-                "$mod+$alt+Return" = "exec ${config.modules.desktop.browsers.alternate}";
-              };
-
-              explorer = {
-                "$mod+Shift+n" = ''exec kitty --class Ranger ${pkgs.ranger}/bin/ranger'';
-                "$mod+Shift+e" = ''exec thunar'';
-              };
-
-              editor = {
-                "$mod+e" = ''exec ${cfg.editor.exec}'';
-              };
-
-              terminal = {
-                "$mod+Return" = "exec kitty";
-              };
-
-              menus = {
-                "--release $mod+space" = "exec --no-startup-id ${rofi "combi" {sidebar-mode = true;}}";
-                "--release $mod+semicolon" = "exec --no-startup-id ${rofi "run" {}}";
-                "--release $mod+apostrophe" = "exec --no-startup-id ${rofi "window" {modi = ["window" "windowcd"];}}";
-                "--release $mod+Shift+apostrophe" = "exec --no-startup-id ${rofi "windowcd" {modi = ["window" "windowcd"];}}";
-                "--release $mod+Shift+equal" = "exec --no-startup-id ${rofi "calc" {}}";
-                "--release $mod+Escape" = "exec ${pkgs.writeShellScript "rofi-power" ''
-                  ${getExe config.programs.rofi.finalPackage} -show Power -modes "Power:${getExe pkgs.rofi-power-menu}"
-                ''}";
-              };
-
-              focusWorkspaceAbsolute = {
-                "$mod+1" = "workspace number 1";
-                "$mod+2" = "workspace number 2";
-                "$mod+3" = "workspace number 3";
-                "$mod+4" = "workspace number 4";
-                "$mod+5" = "workspace number 5";
-                "$mod+6" = "workspace number 6";
-                "$mod+7" = "workspace number 7";
-                "$mod+8" = "workspace number 8";
-                "$mod+9" = "workspace number 9";
-                "$mod+0" = "workspace number 10";
-              };
-
-              focusWorkspaceRelative = {
-                "$mod+Tab" = "workspace back_and_forth";
-                "$mod+Shift+Tab" = "move container to workspace back_and_forth";
-                "$mod+Left" = "workspace prev";
-                "$mod+Right" = "workspace next";
-                "$mod+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} focus";
-                "$mod+bracketleft" = "workspace prev";
-                "$mod+bracketright" = "workspace next";
-              };
-
-              jumpWindow = {
-                "$mod+comma" = "[con_mark=_prevFocus0] focus";
-                "$mod+ctrl+comma" = "[con_mark=_prevFocus2] focus";
-              };
-
-              moveWindowPosition = {
-                "$mod+Shift+h" = "move left";
-                "$mod+Shift+j" = "move down";
-                "$mod+Shift+k" = "move up";
-                "$mod+Shift+l" = "move right";
-              };
-
-              moveWindowToWorkspace = {
-                "$mod+Shift+1" = "move container to workspace number 1";
-                "$mod+Shift+2" = "move container to workspace number 2";
-                "$mod+Shift+3" = "move container to workspace number 3";
-                "$mod+Shift+4" = "move container to workspace number 4";
-                "$mod+Shift+5" = "move container to workspace number 5";
-                "$mod+Shift+6" = "move container to workspace number 6";
-                "$mod+Shift+7" = "move container to workspace number 7";
-                "$mod+Shift+8" = "move container to workspace number 8";
-                "$mod+Shift+9" = "move container to workspace number 9";
-                "$mod+Shift+0" = "move container to workspace number 10";
-                "$mod+Shift+Ctrl+1" = "move container to workspace number 11";
-                "$mod+Shift+Ctrl+2" = "move container to workspace number 12";
-                "$mod+Shift+Ctrl+3" = "move container to workspace number 13";
-                "$mod+Shift+Ctrl+4" = "move container to workspace number 14";
-                "$mod+Shift+Ctrl+5" = "move container to workspace number 15";
-                "$mod+Shift+Ctrl+6" = "move container to workspace number 16";
-                "$mod+Shift+Ctrl+7" = "move container to workspace number 17";
-                "$mod+Shift+Ctrl+8" = "move container to workspace number 18";
-                "$mod+Shift+Ctrl+9" = "move container to workspace number 19";
-                "$mod+Shift+Ctrl+0" = "move container to workspace number 20";
-                "$mod+Shift+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} move";
-              };
-
-              carryWindowToWorkspace = {
-                "$mod+$alt+1" = "move container to workspace number 1; workspace number 1";
-                "$mod+$alt+2" = "move container to workspace number 2; workspace number 2";
-                "$mod+$alt+3" = "move container to workspace number 3; workspace number 3";
-                "$mod+$alt+4" = "move container to workspace number 4; workspace number 4";
-                "$mod+$alt+5" = "move container to workspace number 5; workspace number 5";
-                "$mod+$alt+6" = "move container to workspace number 6; workspace number 6";
-                "$mod+$alt+7" = "move container to workspace number 7; workspace number 7";
-                "$mod+$alt+8" = "move container to workspace number 8; workspace number 8";
-                "$mod+$alt+9" = "move container to workspace number 9; workspace number 9";
-                "$mod+$alt+0" = "move container to workspace number 10; workspace number 10;";
-                "$mod+$alt+Ctrl+1" = "move container to workspace number 11; workspace number 11";
-                "$mod+$alt+Ctrl+2" = "move container to workspace number 12; workspace number 12";
-                "$mod+$alt+Ctrl+3" = "move container to workspace number 13; workspace number 13";
-                "$mod+$alt+Ctrl+4" = "move container to workspace number 14; workspace number 14";
-                "$mod+$alt+Ctrl+5" = "move container to workspace number 15; workspace number 15";
-                "$mod+$alt+Ctrl+6" = "move container to workspace number 16; workspace number 16";
-                "$mod+$alt+Ctrl+7" = "move container to workspace number 17; workspace number 17";
-                "$mod+$alt+Ctrl+8" = "move container to workspace number 18; workspace number 18";
-                "$mod+$alt+Ctrl+9" = "move container to workspace number 19; workspace number 19";
-                "$mod+$alt+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} carry";
-              };
-
-              # Ctrl+Shift ~> per-output operations
-              outputs = {
-                "$mod+Ctrl+Shift+Tab" = "workspace next_on_output";
-                "$mod+Ctrl+Shift+grave" = "workspace prev_on_output";
-
-                "$mod+Ctrl+Shift+h" = "move workspace to output left";
-                "$mod+Ctrl+Shift+j" = "move workspace to output down";
-                "$mod+Ctrl+Shift+k" = "move workspace to output up";
-                "$mod+Ctrl+Shift+l" = "move workspace to output right";
-
-                "$mod+Ctrl+Shift+bracketleft" = "workspace prev_on_output";
-                "$mod+Ctrl+Shift+bracketright" = "workspace next_on_output";
-
-                "$mod+Ctrl+Shift+greater" = "move workspace to output primary";
-                "$mod+Ctrl+Shift+less" = "move workspace to output nonprimary";
-              };
-
-              split = {
-                "$mod+v" = "split vertical";
-                "$mod+g" = "split horizontal";
-                "$mod+BackSpace" = "split toggle";
-              };
-
-              ## Modify // Window space
-              fullscreen = {
-                "$mod+m" = "fullscreen toggle";
-              };
-
-              system = {
-                "$mod+s" = "exec --no-startup-id ${getExe pkgs.rofi-systemd}";
-              };
-
-              ## Modify // Window layout
-              layout = {
-                "$mod+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
-                "$mod+f" = "floating toggle";
-                "$mod+p" = "floating toggle; sticky toggle";
-                "$mod+t" = "layout toggle split";
-                "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
-                "$mod+equal" = "exec ${import ./i3-balance-workspace.nix pkgs}/bin/i3_balance_workspace";
-              };
-
-              scratchpad = {
-                "$mod+Shift+grave" = "move scratchpad";
-                "$mod+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
-              };
-
-              media =
-                let
-                  playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
-                  ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} ${args}";
-                in
-                {
-                  "XF86AudioRaiseVolume " = ponymix "increase 5";
-                  "XF86AudioLowerVolume" = ponymix "decrease 5";
-                  "XF86AudioMute" = ponymix "--sink toggle";
-                  "Scroll_Lock" = ponymix "--source toggle";
-                  "XF86AudioPlay" = playerctl "play";
-                  "XF86AudioPause" = playerctl "pause";
-                  "XF86AudioNext" = playerctl "next";
-                  "XF86AudioPrev" = playerctl "previous";
-                };
-
-              backlight = {
-                "XF86MonBrightnessDown" = "exec xbacklight -dec 20";
-                "XF86MonBrightnessUp" = "exec xbacklight -inc 20";
-              };
-
-              capture = {
-                "Print" = "exec --no-startup-id ${cfg.screenshot.exec}";
-              };
-            };
-          in
-          foldl' lib.attrsets.unionOfDisjoint { } (attrValues groups);
-
+      config = {
+        modifier = cfg.keysyms.mod;
+        keybindings = import ./keybindings.nix { inherit config pkgs lib; };
         bars = lib.mkIf config.services.polybar.enable [ ]; # disable for polybar
 
         fonts = {
@@ -441,7 +173,7 @@ in
           # }
         ];
 
-        defaultWorkspace = "workspace number 1";
+        defaultWorkspace = "workspace number $ws1";
         workspaceLayout = "default";
       };
 
@@ -454,6 +186,7 @@ in
           # Variables
           #=====================================
 
+          # keybindings
           set $alt ${cfg.keysyms.alt}
           set $mod ${cfg.keysyms.mod}
           set $menu ${cfg.keysyms.menu}
@@ -465,8 +198,31 @@ in
           set $mouse_wheel_right ${cfg.keysyms.mouseWheelRight}
           set $mouse_wheel_up ${cfg.keysyms.mouseWheelUp}
 
+          # workspaces
+          set $ws1 "1"
+          set $ws2 "2"
+          set $ws3 "3"
+          set $ws4 "4"
+          set $ws5 "5"
+          set $ws6 "6"
+          set $ws7 "7"
+          set $ws8 "8"
+          set $ws9 "9"
+          set $ws10 "10"
+          set $ws11 "11"
+          set $ws12 "12"
+          set $ws13 "13"
+          set $ws14 "14"
+          set $ws15 "15"
+          set $ws16 "16"
+          set $ws17 "17"
+          set $ws18 "18"
+          set $ws19 "19"
+
+          # bars
           set $bar_height 40
 
+          # colors
           set $base00 #${colors.base00}
           set $base01 #${colors.base01}
           set $base02 #${colors.base02}
@@ -500,6 +256,8 @@ in
           set_from_resources $color13 i3wm.color13 #${colors.base06}
           set_from_resources $color14 i3wm.color14 #${colors.base0F}
           set_from_resources $color15 i3wm.color15 #${colors.base07}
+
+          set $i3input ${./bin/rofi-i3-input}
 
           #=====================================
           # General
