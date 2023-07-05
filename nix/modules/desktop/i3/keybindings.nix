@@ -93,6 +93,7 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
       "$mod+Shift+equal" = rofi "calc" { };
       "$mod+Escape" = "rofi-power"; # see nix/home/rofi module
       "$mod+s" = getExe pkgs.rofi-systemd;
+      "$mod+p" = "env REPOSITORY=patch-tech/patch ${../../../home/rofi/scripts/gh.sh}";
     };
 
   focusWorkspaceAbsolute = {
