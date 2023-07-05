@@ -31,10 +31,10 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "$mod+Ctrl+c" = "restart";
     "$mod+Shift+c" = "reload";
     # "$mod+Shift+p" = ''exec --no-startup-id i3-msg exit'';
-    "$mod+Shift+semicolon" = "exec --no-startup-id $i3input -P 'i3-msg: '";
+    "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
     "$mod+F1" = ''exec --no-startup-id thunar'';
     "$mod+F2" = ''exec --no-startup-id kitty bat ${config.xdg.configHome}/i3/config'';
-    "$mod+F6" = ''exec --no-startup-id $i3input -F 'rename workspace to "%s "' -P 'New name: ''''';
+    "$mod+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
     "$mod+F9" = ''exec --no-startup-id rofi-power'';
   };
 
@@ -61,9 +61,9 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
 
   marks = {
     # read 1 character and mark the current window with this character
-    "$mod+m" = ''exec $i3input -F 'mark --replace %s' -l 1 -P "Mark: "'';
+    "$mod+m" = ''exec i3-input -F 'mark --replace %s' -l 1 -P "Mark: "'';
     # read 1 character and go to the window with the character
-    "$mod+g" = ''exec $i3input -F '[con_mark="%s"] focus' -l 1 -P "Goto: "'';
+    "$mod+g" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Goto: "'';
   };
 
   webBrowser = {

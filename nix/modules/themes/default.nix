@@ -49,7 +49,7 @@ in
       mono = mkOption {
         type = fontType;
         default = {
-          package = config.modules.fonts.nerdfonts.package;
+          package = config.modules.fonts.nerdfonts.finalPackage;
           name = "JetBrainsMono Nerd Font Mono";
           size = 11;
         };
@@ -65,7 +65,7 @@ in
       sans = mkOption {
         type = fontType;
         default = {
-          package = config.modules.fonts.nerdfonts.package;
+          package = config.modules.fonts.nerdfonts.finalPackage;
           name = "Noto Sans";
           size = 10;
         };

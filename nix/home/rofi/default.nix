@@ -51,9 +51,8 @@ in
         "ssh"
         "keys"
         "file-browser-extended"
-        "power:${getExe pkgs.rofi-power-menu}"
-      ]; # all modes
-      monitor = -4; # monitor with focused window (default uses cursor)
+      ];
+      monitor = -4; # monitor with focused window (default=-5. monitor where cursor is)
       show-icons = true;
       markup = true;
       case-sensitive = false;
@@ -128,16 +127,17 @@ in
     configPath = "${config.xdg.configHome}/rofi/common.rasi";
   };
 
+  xdg.configFile."rofi/config.rasi".text = ''
+    @import "${config.programs.rofi.configPath}"
+    @import "shared.rasi"
+  '';
   xdg.configFile."rofi/colors.rasi".text = import ./colors.nix config.colorScheme;
   xdg.configFile."rofi/theme.rasi".source = ./theme.rasi;
   xdg.configFile."rofi/shared.rasi".text = ''
     @import "colors.rasi"
     @import "theme.rasi"
   '';
-  xdg.configFile."rofi/config.rasi".text = ''
-    @import "${config.programs.rofi.configPath}"
-    @import "shared.rasi"
-  '';
+  xdg.configFile."rofi/scripts/power.sh".source = getExe pkgs.rofi-power-menu;
 
   home.sessionVariables.ROFI_SYSTEMD_TERM = config.programs.rofi.terminal;
 }

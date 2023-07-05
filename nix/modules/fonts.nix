@@ -15,10 +15,9 @@ in
       default = [ ];
     };
 
-    nerdfonts.package = mkOption {
-      type = types.package;
-      default = pkgs.nerdfonts.override {
-        fonts = [
+    nerdfonts.fonts = mkOption {
+      type = types.listOf types.str;
+      default = [
           # "3270"
           # "Agave"
           "AnonymousPro"
@@ -73,6 +72,19 @@ in
           "UbuntuMono"
           "VictorMono"
         ];
+    };
+
+    nerdfonts.package = mkOption {
+      type = types.package;
+      default = pkgs.nerdfonts;
+    };
+
+    nerdfonts.finalPackage = mkOption {
+      type = types.package;
+      visible = false;
+      readOnly = true;
+      default = cfg.nerdfonts.package.override {
+        fonts = cfg.nerdfonts.fonts;
       };
     };
   };
