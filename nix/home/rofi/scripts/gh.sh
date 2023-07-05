@@ -12,7 +12,7 @@ IFS=" " read -r -a gh_pr_list_opts <<<"$GH_PR_LIST_OPTS"
 IFS=" " read -r -a gh_pr_view_opts <<<"$GH_PR_VIEW_OPTS"
 
 if [[ -n $REPOSITORY ]]; then
-  gh_pr_opts+=(-R "$REPOSITORY")
+  gh_pr_opts+=(--repo "$REPOSITORY")
 fi
 
 gh_pr_list_opts+=(
@@ -28,7 +28,7 @@ log() {
   printf "%b\n" "$*" >&2
 }
 
-menu_set() {
+menu_option() {
   log "setting $1=$(printf "'%s' " "${@:2}")"
   # pass mode/row options
   echo -en "\0${1?}"
@@ -43,24 +43,18 @@ menu_set() {
 menu_row() {
   printf '%b' "$1"
   shift
-  if (($#)); then menu_set "$@"; fi
+  if (($#)); then menu_option "$@"; fi
   echo # menu_delim=$'\n'
 }
 
-### state handlers
-
-menu_exec() {
-  log handling: menu execution
-  local mode
-  mode="$(basename "${0%%.*}")"
-  exec rofi "${rofi_opts[@]}" \
-    -show "$mode" \
-    -modes "$mode:$0"
+menu_action() {
+  local content=$1
+  shift
+  menu_row "$content" info "RUN $*"
+  # NB: handled by menu_entry_selected
 }
 
-menu_init() {
-  log handling: menu initialization
-
+gh_pr_view_menu() {
   local row rows message width
 
   rows=()
@@ -80,31 +74,68 @@ menu_init() {
       --template '{{tablerow "NUMBER" "TITLE" "AUTHOR" "STATE"}}{{range .}}{{tablerow (printf "#%v" .number) (truncate 55 .title) .author.login .state}}{{end}}'
   )
 
-  menu_set prompt "󰊤  PR"
-  menu_set message "$message"
-  menu_set markup-rows true
-  menu_set no-custom true
-  # menu_set keep-selection
-  # menu_set new-selection
-  # menu_set data
-  menu_set theme "window { width: calc(75px + ${width}ch); }"
-  menu_set theme "element { children: [element-text]; }"
+  menu_option prompt "PR"
+  menu_option message "$message"
+  menu_option markup-rows true
+  menu_option no-custom true
+  menu_option use-hot-keys true
+  # menu_option keep-selection
+  # menu_option new-selection
+  # menu_option data
+  menu_option theme "window { width: calc(75px + ${width}ch); }"
+  menu_option theme "element { children: [element-text]; }"
 
+  local pr_number
   for row in "${rows[@]}"; do
     log "row:" "$row"
-    menu_row "$row" info "$(cut -d' ' -f1 <<<"$row")"
+    pr_number="$(cut -d' ' -f1 <<<"$row")"
+    # NOTE: quoted expansion requires bash 4.4
+    menu_action "$row" "gh ${gh_opts[*]@Q} pr ${gh_pr_opts[*]@Q} view ${gh_pr_view_opts[*]@Q} '$pr_number'"
   done
+}
+
+# menu_confirm() {
+#   menu_action Confirm "$1"
+#   menu_action Cancel ""
+# }
+
+### state handlers
+
+menu_exec() {
+  log handling: menu execution
+  local mode
+  mode="$(basename "${0%%.*}")"
+  exec rofi "${rofi_opts[@]}" \
+    -show "$mode" \
+    -modes "$mode:$0"
+}
+
+menu_init() {
+  log handling: menu initialization
+
+  gh_pr_view_menu
 }
 
 menu_entry_selected() {
   log handling: entry selected
 
-  local pr_number="${ROFI_INFO?}"
-
-  log "launching 'gh ${gh_opts[*]} pr ${gh_pr_opts[*]} view ${gh_pr_view_opts[*]} $pr_number'"
-  coproc {
-    gh "${gh_opts[@]}" pr "${gh_pr_opts[@]}" view "${gh_pr_view_opts[@]}" "$pr_number"
-  }
+  case ${ROFI_INFO?} in
+    "CALL "*)
+      log "calling: ${ROFI_INFO#CALL }"
+      eval "${ROFI_INFO#CALL }"
+      ;;
+    "RUN "*)
+      log "evaluating: ${ROFI_INFO#RUN } >&2"
+      eval "${ROFI_INFO#RUN } >&2"
+      ;;
+    # "CONFIRM "*)
+    #   menu_confirm "${ROFI_INFO#CONFIRM }"
+    #   ;;
+    *)
+      log "unexpected ROFI_INFO"
+      exit 1
+      ;;
+  esac
 }
 
 menu_custom_entry_selected() {
@@ -113,12 +144,12 @@ menu_custom_entry_selected() {
 }
 
 menu_custom_keybind_pressed() {
-  log handling: custom keybind
+  log handling: hot-key pressed: "-kb-custom-$1"
 }
 
 ### execute
 
-log "$0: started
+log "$0: BEGIN
 
 ENVIRONMENT:
 $(printenv | grep '^ROFI_' | sed 's/^/    /')
@@ -149,5 +180,5 @@ case "${ROFI_RETV-}" in
     ;;
 esac
 
-log "$0: complete"
+log "$0: END\n"
 exit 0
