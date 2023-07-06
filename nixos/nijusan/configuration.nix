@@ -134,7 +134,7 @@
 
   nix.package = pkgs.nixFlakes;
   nix.extraOptions = ''
-    experimental-features = nix-command flakes
+    experimental-features = nix-command flakes repl-flake
   '';
   nix.settings.trusted-users = ["logan"];
   nix.gc.automatic = true; # see also: nix-store --optimise
