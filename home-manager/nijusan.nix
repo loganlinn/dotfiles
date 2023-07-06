@@ -169,4 +169,9 @@ in
   home.homeDirectory = "/home/logan";
 
   home.stateVersion = "22.11";
+
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+    warn-dirty = false;
+  };
 }
