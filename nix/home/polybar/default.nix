@@ -32,49 +32,6 @@ in
       default = pkgs.polybarFull;
     };
 
-    # bars = mkOption {
-    #   type = with types; attrsOf str (submodule {
-    #     options = {
-    #       left.modules = mkOption {
-    #         type = with types; listOf str;
-    #         default = [ "date" "xwindow" ];
-    #       };
-
-    #       center.modules = mkOption {
-    #         type = with types; listOf str;
-    #         default = optionals config.xsession.windowManager.i3.enable [ "i3" ];
-    #       };
-
-    #       right.modules = mkOption {
-    #         type = with types; listOf str;
-    #       };
-    #     };
-    #   });
-
-    #   defualt = {
-    #     "top" = {
-    #       left.modules = [ "date" "xwindow" ];
-    #       center.modules = [ "i3" ];
-    #       right.modules = [
-    #         "memory"
-    #         "cpu"
-    #         "temperature"
-    #         "sep4"
-    #       ] ++ [
-    #         "pulseaudio"
-    #         "sep3"
-    #       ] ++ optionals config.services.dunst.enable [
-    #         "dunst"
-    #       ] ++ (
-    #         map ({ interface, ... }: "network-${interface}") cfg.networks
-    #       ) ++ [
-    #         "sep1"
-    #         "date"
-    #       ];
-    #     };
-    #   };
-    # };
-
     top.left.modules = mkOption {
       type = with types; listOf str;
       default = [ "date" "xwindow" ];
@@ -397,9 +354,7 @@ in
 
             "module/gpu" = module "custom/script" {
               interval = 5;
-              exec = ''nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits'';
               format.prefix = "GPU";
-              format.sufix = "%";
             };
 
             "module/cpu" = module "internal/cpu" {
@@ -440,16 +395,7 @@ in
             };
 
             "module/temperature" = module "internal/temperature" {
-              interval = 5;
-              thermal-zone = "x86_pkg_temp";
-              # Full path of temperature sysfs path
-              # Use `nix run nixpkgs#lm_sensors` to find preferred temperature source, then run
-              # $ for i in /sys/class/hwmon/hwmon*/temp*_input; do echo "$(<$(dirname $i)/name): $(cat ${i%_*}_label 2>/dev/null || echo $(basename ${i%_*})) $(readlink -f $i)"; done
-              # to find path to desired file
-              # Default reverts to thermal zone setting
-              hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon2/temp1_input"; # Package id 0
-              base.temperature = 50;
-              warn.temperature = 75;
+              interval = 3;
               format = {
                 prefix = "TEMP";
                 text = "<label> <ramp>";

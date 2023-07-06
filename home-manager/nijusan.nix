@@ -94,8 +94,25 @@ in
   };
 
   services.dunst.enable = true;
-  services.polybar.enable = true;
   services.flameshot.enable = true;
+  services.polybar = {
+    enable = true;
+    settings = {
+      "module/temperature" = {
+        # $ for i in /sys/class/thermal/thermal_zone*; do echo "$i: $(<$i/type)"; done
+        thermal-zone = 1; # x86_pkg_temp
+        # $ for i in /sys/class/hwmon/hwmon*/temp*_input; do echo "$(<$(dirname $i)/name): $(cat ${i%_*}_label 2>/dev/null || echo $(basename ${i%_*})) $(readlink -f $i)"; done
+        hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon2/temp1_input"; # Package id 0
+        base.temperature = 50;
+        warn.temperature = 75;
+      };
+      "module/gpu" = {
+        exec = pkgs.writeShellScript "polybar-nvidia-gpu-util" ''
+          printf '%s%%' "$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits)"
+        '';
+      };
+    };
+  };
 
   modules.polybar = {
     networks = [
