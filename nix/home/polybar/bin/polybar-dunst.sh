@@ -2,56 +2,75 @@
 
 set -e
 
-while :; do
-    echo -n '%{A1:dunstctl set-paused toggle:}' # left click
-    echo -n '%{A2:dunstctl close-all:}'         # middle click
-    echo -n '%{A3:dunstctl context:}'           # right click
-    echo -n '%{A4:dunstctl close:}'             # scroll up
-    echo -n '%{A5:dunstctl history-pop:}'       # scroll down
-    if [[ $(dunstctl is-paused) == "true" ]]; then
-        [[ -z $PAUSED_BG ]] || echo -n "%{B$PAUSED_BG}"
-        [[ -z $PAUSED_FG ]] || echo -n "%{F$PAUSED_FG}"
-        echo -n "  "
-        waiting=$(dunstctl count waiting)
-        if [[ $waiting -gt 0 ]]; then
-            [[ -z $ICON_FONT ]] || echo -n "%{T$ICON_FONT}"
-            echo -n "󰂠"
-            [[ -z $ICON_FONT ]] || echo -n "%{T-}"
-            echo -n " ($waiting)"
-        else
-            [[ -z $ICON_FONT ]] || echo -n "%{T$ICON_FONT}"
-            echo -n "󰪓"
-            [[ -z $ICON_FONT ]] || echo -n "%{T-}"
-        fi
-        echo -n "  "
-        [[ -z $PAUSED_FG ]] || echo -n "%{F-}"
-        [[ -z $PAUSED_BG ]] || echo -n "%{B-}"
+fgcolor() {
+  printf '%%{F%s}%s%%{F-}' "$1" "$2"
+}
+
+icon() {
+  if [[ -n $ICON_FONT ]]; then
+    echo -n "%{T$ICON_FONT}$*%{T-}"
+  else
+    echo -n "$*"
+  fi
+}
+
+render() {
+  local paused waiting displayed
+
+  paused=$(dunstctl is-paused)
+  waiting=$(dunstctl count waiting)
+  displayed=$(dunstctl count displayed)
+
+  echo -n '%{A1:dunstctl set-paused toggle:}' # left click
+  echo -n '%{A2:dunstctl close-all:}'         # middle click
+  echo -n '%{A3:dunstctl context:}'           # right click
+  echo -n '%{A4:dunstctl close:}'             # scroll up
+  echo -n '%{A5:dunstctl history-pop:}'       # scroll down
+  if [[ $paused == "true" ]]; then
+    [[ -z $PAUSED_BG ]] || echo -n "%{B$PAUSED_BG}"
+    [[ -z $PAUSED_FG ]] || echo -n "%{F$PAUSED_FG}"
+    echo -n "  "
+    if ((waiting > 0)); then
+      echo -n "$(icon "󰂠") ($waiting)"
     else
-        [[ -z $ACTIVE_BG ]] || echo -n "%{B$ACTIVE_BG}"
-        [[ -z $ACTIVE_FG ]] || echo -n "%{F$ACTIVE_FG}"
-        echo -n "  "
-        if [[ $(dunstctl count displayed) -gt 0 ]]; then
-            [[ -z $ICON_FONT ]] || echo -n "%{T$ICON_FONT}"
-            echo -n "󰵙"
-            [[ -z $ICON_FONT ]] || echo -n "%{T-}"
-        else
-            [[ -z $ICON_FONT ]] || echo -n "%{T$ICON_FONT}"
-            echo -n "󰂚"
-            [[ -z $ICON_FONT ]] || echo -n "%{T-}"
-        fi
-        echo -n "  "
-        [[ -z $ACTIVE_FG ]] || echo -n "%{F-}"
-        [[ -z $ACTIVE_BG ]] || echo -n "%{B-}"
+      icon "󰪓"
     fi
-    echo -n '%{A}' # left click
-    echo -n '%{A}' # middle click
-    echo -n '%{A}' # right click
-    echo -n '%{A}' # scroll up
-    echo -n '%{A}' # scroll down
-    echo
+    echo -n "  "
+    [[ -z $PAUSED_FG ]] || echo -n "%{F-}"
+    [[ -z $PAUSED_BG ]] || echo -n "%{B-}"
+  else
+    [[ -z $ACTIVE_BG ]] || echo -n "%{B$ACTIVE_BG}"
+    [[ -z $ACTIVE_FG ]] || echo -n "%{F$ACTIVE_FG}"
+    echo -n "  "
+    if ((displayed > 0)); then
+      icon "󰵙"
+    else
+      icon "󰂚"
+    fi
+    echo -n "  "
+    [[ -z $ACTIVE_FG ]] || echo -n "%{F-}"
+    [[ -z $ACTIVE_BG ]] || echo -n "%{B-}"
+  fi
+  echo -n '%{A}' # left click
+  echo -n '%{A}' # middle click
+  echo -n '%{A}' # right click
+  echo -n '%{A}' # scroll up
+  echo -n '%{A}' # scroll down
+}
+
+main() {
+  while :; do
+    render 2>/dev/null ||
+      fgcolor "#f00" "    "
+
+    echo # newline required to refresh the module
+
     if [[ -z $INTERVAL ]]; then
-        break
+      break
     else
-        sleep "$INTERVAL"
+      sleep "$INTERVAL"
     fi
-done
+  done
+}
+
+main

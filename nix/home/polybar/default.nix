@@ -442,7 +442,12 @@ in
             "module/temperature" = module "internal/temperature" {
               interval = 5;
               thermal-zone = "x86_pkg_temp";
-              hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon4/temp1_input";
+              # Full path of temperature sysfs path
+              # Use `nix run nixpkgs#lm_sensors` to find preferred temperature source, then run
+              # $ for i in /sys/class/hwmon/hwmon*/temp*_input; do echo "$(<$(dirname $i)/name): $(cat ${i%_*}_label 2>/dev/null || echo $(basename ${i%_*})) $(readlink -f $i)"; done
+              # to find path to desired file
+              # Default reverts to thermal zone setting
+              hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon2/temp1_input"; # Package id 0
               base.temperature = 50;
               warn.temperature = 75;
               format = {
@@ -474,6 +479,7 @@ in
 
             "module/dunst" = {
               type = "custom/script";
+              exec-if = "dunstctl debug";
               exec = "${./bin/polybar-dunst.sh}";
               tail = true;
               env = {
