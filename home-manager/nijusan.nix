@@ -11,7 +11,6 @@ in
 {
   imports = [
     nix-colors.homeManagerModule
-    ../nix
     ../nix/home/common.nix
     ../nix/home/dev # TODO module
     #../nix/home/dev/vala.nix
@@ -170,8 +169,20 @@ in
 
   home.stateVersion = "22.11";
 
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" "repl-flake" ];
-    warn-dirty = false;
+  nix = {
+    enable = true;
+    package = pkgs.nixUnstable;
+    settings = {
+      experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+      warn-dirty = false;
+    };
+  };
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      # https://github.com/nix-community/home-manager/issues/2942
+      allowUnfreePredicate = _pkg: true;
+    };
   };
 }
