@@ -132,12 +132,15 @@
     ];
   };
 
-  nix.package = pkgs.nixFlakes;
-  nix.extraOptions = ''
-    experimental-features = nix-command flakes repl-flake
-  '';
-  nix.settings.trusted-users = ["logan"];
-  nix.gc.automatic = true; # see also: nix-store --optimise
+  nix = {
+    package = pkgs.nixFlakes;
+    settings = {
+      experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+      warn-dirty = false;
+      trusted-users = ["logan"];
+    };
+    gc.automatic = true; # see also: nix-store --optimise
+  };
 
   nixpkgs = {
     config = {
