@@ -55,7 +55,10 @@ in
 
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
+    DOTNET_CLI_TELEMETRY_OPTOUT =  "true";
     DO_NOT_TRACK = "1";
+    TELEMETRY_DISABLED = "1";
+    DISABLE_TELEMETRY = "1";
   };
 
   home.sessionPath = [

@@ -10,6 +10,7 @@ in
     ./kube.nix
     ./gh.nix
     ./python.nix
+    ./nodejs.nix
   ];
 
   home.packages = with pkgs; [
@@ -62,6 +63,10 @@ in
     # apis
     doctl
     # google-cloud-sdk
+
+    # web
+    htmlq # jq for html
+    html2text
 
     # tools/utils
     xxd # make a hexdump or do the reverse.
@@ -153,9 +158,6 @@ in
   home.sessionVariables = {
     GRAPHITE_DISABLE_TELEMETRY = "1";
     NEXT_TELEMETRY_DISABLED = "1";
-    NPM_CONFIG_AUDIT = "false";
-    NPM_CONFIG_FUND = "false";
-    NPM_CONFIG_UPDATE_NOTIFIER = "false";
   } // lib.optionalAttrs isDarwin {
     HOMEBREW_NO_ANALYTICS = "1";
   };

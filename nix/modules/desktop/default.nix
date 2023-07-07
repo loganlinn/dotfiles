@@ -1,10 +1,10 @@
-{
-  config,
-  options,
-  lib,
-  pkgs,
-  ...
-}: let
+{ config
+, options
+, lib
+, pkgs
+, ...
+}:
+let
   inherit
     (lib)
     mkEnableOption
@@ -15,7 +15,8 @@
     ;
 
   cfg = config.modules.desktop;
-in {
+in
+{
   imports = [
     ../../home/polybar
     ../../home/rofi
@@ -59,56 +60,40 @@ in {
 
     gtk.gtk3.bookmarks = cfg.bookmarks;
 
-    home.packages = with pkgs;
-      [
-        arandr
-        gtk3
-        desktop-file-utils # update-desktop-database
-        libnotify
-        pango
-        networkmanagerapplet # nm-connection-editor
+    home.packages = with pkgs; [
+      gtk3
+      desktop-file-utils # update-desktop-database
+      libnotify
+      pango
+      networkmanagerapplet # nm-connection-editor
 
-        # (conky.override {
-        #   x11Support = true;
-        #   curlSupport = true;
-        #   nvidiaSupport = lib.pathExists "/run/current-system/sw/bin/nvidia-smi";
-        #   pulseSupport = true;
-        # })
+      # (conky.override {
+      #   x11Support = true;
+      #   curlSupport = true;
+      #   nvidiaSupport = lib.pathExists "/run/current-system/sw/bin/nvidia-smi";
+      #   pulseSupport = true;
+      # })
 
-        font-manager
-        fontpreview
-        gcolor3
-        gpick
+      font-manager
+      fontpreview
+      gcolor3
+      gpick
 
-        hacksaw # Lightweight selection tool for usage in screenshot scripts etc
-        shotgun # Minimal X screenshot utility
+      hacksaw # Lightweight selection tool for usage in screenshot scripts etc
+      shotgun # Minimal X screenshot utility
 
-        pavucontrol # PulseAudio Volume Control
-        ponymix # CLI PulseAudio Volume Control
-        ncpamixer # An ncurses mixer for PulseAudio inspired by pavucontrol
-        playerctl
+      pavucontrol # PulseAudio Volume Control
+      ponymix # CLI PulseAudio Volume Control
+      ncpamixer # An ncurses mixer for PulseAudio inspired by pavucontrol
+      playerctl
 
-        vlc
-        nsxiv # simple image viewer
-      ]
-      ++ [
-        # x11
-        xdotool # Fake keyboard/mouse input, window management, etc
-        xscreensaver
+      vlc
+      nsxiv # simple image viewer
 
-        xorg.xev
-        xorg.xkill
-        xorg.xprop
-        xorg.xwininfo
-        xorg.xrandr
-        xorg.xkbevd
-        xorg.xmodmap
-        xorg.xdpyinfo
-      ]
-      ++ [
-        obsidian
-        slack
-        inkscape
-      ];
+      # desktop apps
+      obsidian
+      slack
+      inkscape
+    ];
   };
 }

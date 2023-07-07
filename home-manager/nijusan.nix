@@ -51,10 +51,6 @@ in
 
   modules.fonts.enable = true;
   modules.spellcheck.enable = true;
-  modules.desktop.i3 = {
-    editor.exec = "doom run";
-    terminal.exec = "kitty";
-  };
   modules.theme = {
     active = "arc";
     # wallpaper = ../wallpaper/wallhaven-weq8y7.png;
@@ -71,6 +67,8 @@ in
   };
 
   xsession.windowManager.i3.enable = true;
+  xsession.windowManager.i3.config.terminal = "kitty";
+
   gtk.enable = true;
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 

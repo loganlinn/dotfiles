@@ -1,4 +1,5 @@
 { pkgs, lib, ... }: {
+  home.sessionVariables.VSCODE_TELEMETRY_DISABLED = "1";
   programs.vscode = {
     enable = lib.mkDefault true;
     package = lib.mkDefault pkgs.vscode; # TODO pkgs.vscodium

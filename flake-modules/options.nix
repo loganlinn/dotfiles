@@ -48,6 +48,11 @@ in
           # ];
 
           options.my = {
+            name = mkOption {
+              type = types.str;
+              default = "Logan";
+            };
+
             user = mkOption {
               type = types.str;
               default = "logan";
@@ -56,6 +61,11 @@ in
             email = mkOption {
               type = types.str;
               default = "logan@loganlinn.com";
+            };
+
+            website = mkOption {
+              type = types.str;
+              default = "https://loganlinn.com";
             };
 
             github.user = mkOption {

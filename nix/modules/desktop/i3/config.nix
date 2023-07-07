@@ -2,19 +2,18 @@
 
 with builtins;
 with lib;
+with lib.my;
 
 let
-  i3-auto-layout = import ./i3-auto-layout.nix pkgs; # callPackage?
-
   cfg = config.modules.desktop.i3;
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
+  rofiCfg = config.programs.rofi;
 in
 {
-  programs.rofi.plugins = with pkgs; [ rofi-calc ]; # depended on below
-
   xsession.windowManager.i3.config = {
     modifier = cfg.keysyms.mod;
+    menu = "${getPackageExe rofiCfg} -dmenu";
     keybindings = import ./keybindings.nix { inherit config pkgs lib; };
     bars = lib.mkIf config.services.polybar.enable [ ]; # disable for polybar
     fonts = {
@@ -37,7 +36,7 @@ in
       mouseWarping = true;
       newWindow = "focus"; # "smart" "urgent" "none"
       # Whether the window focus commands automatically wrap around the edge of containers. See https://i3wm.org/docs/userguide.html#_focus_wrapping
-      wrapping = "workspace";
+      # wrapping = "workspace";
     };
 
     gaps = {
@@ -114,18 +113,8 @@ in
       ];
 
     startup = [
-      {
-        command = getExe i3-auto-layout;
-        always = true;
-        notification = false;
-      }
       (mkIf (themeCfg.wallpaper != null) {
         command = "${config.programs.feh.package}/bin/feh --no-fehbg --bg-fill ${themeCfg.wallpaper}";
-        always = true;
-        notification = false;
-      })
-      (mkIf config.services.polybar.enable {
-        command = "systemctl --user restart polybar";
         always = true;
         notification = false;
       })
@@ -218,8 +207,6 @@ in
       set_from_resources $color13 i3wm.color13 #${colors.base06}
       set_from_resources $color14 i3wm.color14 #${colors.base0F}
       set_from_resources $color15 i3wm.color15 #${colors.base07}
-
-      set $i3input ${./bin/rofi-i3-input}
 
       #=====================================
       # General

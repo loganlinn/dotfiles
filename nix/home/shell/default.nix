@@ -4,25 +4,28 @@ with lib;
 
 let
 
-  # common init for bash + zsh
-  initExtra = ''
-    ${readFile ./which.sh}
-
-    ${readFile ./op.sh}
-
-    source ${./../../../bin/src-get}
-    # eval "$(src init -)"
-  '';
+  cfg = config.my.shell;
 
 in
 {
-  home.shellAliases = import ./aliases.nix;
+  options.my.shell = {
+    initExtra = mkOption {
+      type = types.lines;
+      description = "Extra commands that should be added to <filename>.zshrc</filename> and <filename>.zshrc</filename>.";
+      default = "";
+    };
+  };
 
-  programs.bash.initExtra = ''
-    ${initExtra}
-  '';
+  config = {
+    home.shellAliases = import ./aliases.nix;
+    programs.bash.initExtra = cfg.initExtra;
+    programs.zsh.initExtra = cfg.initExtra;
+    my.shell.initExtra = ''
+      ${readFile ./which.sh}
 
-  programs.zsh.initExtra = ''
-    ${initExtra}
-  '';
+      ${readFile ./op.sh}
+
+      source ${./../../../bin/src-get}
+    '';
+  };
 }

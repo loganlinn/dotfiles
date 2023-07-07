@@ -2,10 +2,13 @@
 
 with builtins;
 with lib;
+with lib.my;
 
 let
 
   cfg = config.modules.desktop.i3;
+
+  inherit (config.xsession.windowManager.i3.config) terminal;
 
   rofiCommandLineScript = lib.cli.toGNUCommandLineShell rec {
     mkOptionName = k: "-${k}";
@@ -30,33 +33,19 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
     "$mod+Ctrl+c" = "restart";
     "$mod+Shift+c" = "reload";
-    # "$mod+Shift+p" = ''exec --no-startup-id i3-msg exit'';
     "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
+    "Ctrl+$alt+Delete" = ''exec --no-startup-id ${terminal} ${getPackageExe config.programs.btop}'';
+  };
+
+  fkeys = {
     "$mod+F1" = ''exec --no-startup-id thunar'';
     "$mod+F2" = ''exec --no-startup-id kitty bat ${config.xdg.configHome}/i3/config'';
     "$mod+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
     "$mod+F9" = ''exec --no-startup-id rofi-power'';
   };
 
-  processManager = {
-    "Ctrl+$alt+Delete" = ''exec ${cfg.processManager.exec}'';
-  };
-
   clipboard = optionalAttrs config.services.clipmenu.enable {
     "$mod+Shift+backslash" = ''exec --no-startup-id env CM_LAUNCHER=rofi clipmenu'';
-  };
-
-  focusWindow = {
-    "$mod+a" = "focus parent";
-    "$mod+d" = "focus child";
-    "$mod+f" = "focus mode_toggle"; # toggle between floating and tiling
-    "$mod+z" = "focus prev sibling";
-    "$mod+x" = "focus next sibling";
-    "$mod+o" = "focus output next";
-    "$mod+h" = "focus left";
-    "$mod+j" = "focus down";
-    "$mod+k" = "focus up";
-    "$mod+l" = "focus right";
   };
 
   marks = {
@@ -66,21 +55,23 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "$mod+g" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Goto: "'';
   };
 
-  webBrowser = {
+  browser = {
     "$mod+Shift+Return" = "exec ${config.modules.desktop.browsers.default}";
     "$mod+$alt+Return" = "exec ${config.modules.desktop.browsers.alternate}";
   };
 
-  explorer = {
-    "$mod+Shift+n" = ''exec --no-startup-id kitty --class Ranger ${pkgs.ranger}/bin/ranger'';
-  };
-
   editor = {
-    "$mod+e" = ''exec ${cfg.editor.exec}'';
+    "$mod+e" =
+      if config.services.emacs.enable
+      then ''exec --no-startup-id emacsclient -c -a "" -n''
+      else if config.programs.emacs.enable
+      then ''exec --no-startup-id emacs''
+      else ''nop'';
   };
 
   terminal = {
-    "$mod+Return" = "exec kitty";
+    "$mod+Return" = ''exec ${terminal}'';
+    "$mod+Shift+n" = ''exec ${terminal} ${getExe pkgs.ranger}'';
   };
 
   menus = mapAttrs'
@@ -95,6 +86,20 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
       "$mod+s" = getExe pkgs.rofi-systemd;
       "$mod+p" = "env REPOSITORY=patch-tech/patch ${../../../home/rofi/scripts/gh.sh}";
     };
+
+
+  focusWindow = {
+    "$mod+a" = "focus parent";
+    "$mod+d" = "focus child";
+    "$mod+f" = "focus mode_toggle"; # toggle between floating and tiling
+    "$mod+z" = "focus prev sibling";
+    "$mod+x" = "focus next sibling";
+    "$mod+o" = "focus output next";
+    "$mod+h" = "focus left";
+    "$mod+j" = "focus down";
+    "$mod+k" = "focus up";
+    "$mod+l" = "focus right";
+  };
 
   focusWorkspaceAbsolute = {
     "$mod+1" = "workspace number $ws1";
@@ -119,7 +124,7 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "$mod+bracketright" = "workspace next";
   };
 
-  moveWindowPosition = {
+  moveWindow = {
     "$mod+Shift+h" = "move left";
     "$mod+Shift+j" = "move down";
     "$mod+Shift+k" = "move up";
@@ -150,7 +155,7 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "$mod+Shift+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} move";
   };
 
-  carryWindowToWorkspace = {
+  moveAndFocus = {
     "$mod+$alt+1" = "move container to workspace number $ws1; workspace number $ws1";
     "$mod+$alt+2" = "move container to workspace number $ws2; workspace number $ws2";
     "$mod+$alt+3" = "move container to workspace number $ws3; workspace number $ws3";
@@ -224,7 +229,15 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "XF86MonBrightnessUp" = "exec xbacklight -inc 20";
   };
 
-  capture = optionalAttrs config.services.flameshot.enable {
-    "--release Print" = ''exec --no-startup-id ${getExe config.services.flameshot.package} gui'';
+  screenshot = optionalAttrs config.services.flameshot.enable {
+    "--release Print" = ''exec --no-startup-id flameshot gui'';
   };
+
+  bar =
+    if config.services.polybar.enable then
+      {
+        "$mod+Shift+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
+      } else {
+      "$mod+Shift+b" = "bar mode toggle";
+    };
 })
