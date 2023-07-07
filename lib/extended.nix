@@ -1,5 +1,6 @@
 baseLib:
 
-baseLib.extend (self: _: {
-  my = import ./. { lib = self; };
+let mkMyLib = import ./.;
+in baseLib.extend (self: _: {
+  my = mkMyLib { lib = self; };
 })

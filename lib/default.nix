@@ -9,7 +9,7 @@ let
     (mapNullable (p: p.path))
   ];
 in
-{
+rec {
   inherit findNixPath;
 
   importNixosConfig = mapNullable import (findNixPath "nixos-config");
@@ -29,4 +29,6 @@ in
   hex = import ./hex.nix { inherit lib; };
 
   color = import ./color.nix { inherit lib; };
+
+  getPackageExe = attrs: lib.getExe (attrs.finalPackage or attrs.package);
 }

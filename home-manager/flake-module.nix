@@ -14,6 +14,7 @@ in
       inherit (pkgs.stdenv) isLinux isDarwin;
 
       extraSpecialArgs = {
+        lib = (import ../lib/extended.nix lib) // inputs.home-manager.lib;
         inherit (inputs) nixpkgs home-manager emacs;
         inherit (config) flake-root;
         flake = self; # remove usage
@@ -38,7 +39,7 @@ in
       legacyPackages =
         (lib.optionalAttrs (system == "x86_64-linux") {
           homeConfigurations."logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
-            inherit pkgs lib extraSpecialArgs;
+            inherit pkgs extraSpecialArgs;
             modules =
               commonModules
               ++ [
@@ -50,7 +51,7 @@ in
         })
         // (lib.optionalAttrs (system == "aarch64-darwin") {
           darwinConfigurations.patchbook = inputs.darwin.lib.darwinSystem {
-            inherit lib system;
+            inherit system;
             # FIXME: commonModules should be used in both...
             modules = commonModules ++ [
               ../nix-darwin/patchbook.nix

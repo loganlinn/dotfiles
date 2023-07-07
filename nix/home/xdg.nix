@@ -322,6 +322,14 @@ let
     "kitty-open.desktop"
     "emacs.desktop"
   ];
+
+  desktopIconFiles = pipe ../../local/share/icons/hicolor [
+      filesystem.listFilesRecursive
+      (map (path: nameValuePair
+        (removePrefix ((toString ../../local/share) + "/") (toString path))
+        {source = path;}))
+      listToAttrs
+  ];
 in
 {
   xdg.enable = true;
@@ -346,4 +354,6 @@ in
       "inode/directory" = [ "code.desktop" ];
     };
   };
+
+  xdg.dataFile = desktopIconFiles;
 }

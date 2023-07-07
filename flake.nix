@@ -72,8 +72,9 @@
 
     debug = true;
 
+    flake.lib.my = (import ./lib/extended.nix inputs.nixpkgs.lib).my;
+
     perSystem = { config, system, inputs', pkgs, lib, ... }: {
-      _module.args.lib = import ./lib/extended.nix lib;
 
       packages.jdk = lib.mkDefault pkgs.jdk;
 

@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }: {
+{ config, lib, pkgs, ... }:
+
+with lib;
+with lib.my;
+
+{
   programs.gh = {
     enable = true;
     enableGitCredentialHelper = true;
@@ -65,5 +70,28 @@
     extensions = with pkgs; [
       gh-dash
     ];
+  };
+
+  xdg.configFile."gh-dash/config.yml".source = ../../../config/gh-dash/config.yml;
+
+  xdg.desktopEntries.gh-dash = mkIf pkgs.stdenv.isLinux {
+    name = "gh-dash";
+    genericName = "GitHub Dashboard";
+    comment = "Terminal-based dashboard for GitHub Pull Requests and Issues";
+    type = "Application";
+    # StartupWMClass setting below was not working (unclear where it was getting dropped/ignored), so exec kitty directly
+    exec = "${getPackageExe config.programs.kitty} --class=gh-dash --title=gh-dash ${getPackageExe config.programs.gh} extension exec dash";
+    # exec = "${config.programs.gh.package}/bin/gh extension exec dash";
+    # terminal = true;
+    terminal = true;
+    icon = "github"; # i.e. xdg.dataFile."local/share/icons/hicolor/*/apps/github.*"
+    categories = [ "Development" "Utility" "Network" "ConsoleOnly" ];
+    settings = {
+      StartupWMClass = "gh-dash";
+    };
+  };
+
+  xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
+    config.floating.criteria = [{ class = "gh-dash"; }];
   };
 }

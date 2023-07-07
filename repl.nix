@@ -10,11 +10,13 @@ with builtins;
 let
   # assumption: flake-parts debug is used (https://flake.parts/debug.html)
   mkScopeAttrs = flake:
-    builtins // flake // {
+    let inherit (flake.currentSystem.allModuleArgs) config options pkgs;
+    in builtins // flake // {
       self = flake;
 
-      inherit (flake.currentSystem.allModuleArgs)
-        config options pkgs lib;
+      inherit config options pkgs;
+
+      lib = pkgs.lib;
 
       hm = let inherit (flake.currentSystem.legacyPackages) homeConfigurations; in
         homeConfigurations."${user}@${hostname}" or
