@@ -1,7 +1,8 @@
 toplevel@{ self, inputs, ... }:
 
 let
-
+  mkHmLib = import "${inputs.home-manager}/modules/lib/stdlib-extended.nix";
+  mkMyLib = import ../lib/extended.nix;
 in
 {
   # flake = rec {
@@ -14,11 +15,11 @@ in
       inherit (pkgs.stdenv) isLinux isDarwin;
 
       extraSpecialArgs = {
-        lib = (import ../lib/extended.nix lib) // inputs.home-manager.lib;
+        lib = mkHmLib (mkMyLib lib); # extend lib with .my and .hm
         inherit (inputs) nixpkgs home-manager emacs;
         inherit (config) flake-root;
         flake = self; # remove usage
-        nerdfonts = import ../lib/nerdfonts;
+        nerdfonts = import ../lib/nerdfonts; # TODO can get rid of this now with lib.my.nerdfonts
         nix-colors = import ../nix-colors/extended.nix inputs;
       };
 
@@ -50,6 +51,7 @@ in
           };
         })
         // (lib.optionalAttrs (system == "aarch64-darwin") {
+          # TODO move to nix-darwin
           darwinConfigurations.patchbook = inputs.darwin.lib.darwinSystem {
             inherit system;
             # FIXME: commonModules should be used in both...
