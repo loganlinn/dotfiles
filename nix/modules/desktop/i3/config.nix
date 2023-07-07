@@ -35,7 +35,9 @@ in
       followMouse = false;
       forceWrapping = false;
       mouseWarping = true;
-      newWindow = "focus";
+      newWindow = "focus"; # "smart" "urgent" "none"
+      # Whether the window focus commands automatically wrap around the edge of containers. See https://i3wm.org/docs/userguide.html#_focus_wrapping
+      wrapping = "workspace";
     };
 
     gaps = {
@@ -50,6 +52,7 @@ in
     };
 
     floating = {
+      titlebar = true;
       border = 2;
       criteria = [
         { class = "1Password.*"; }
@@ -93,16 +96,22 @@ in
       "0" = [ ];
     };
 
-    workspaceOutputAssign = [
-      {
-        workspace = "9";
-        output = "nonprimary";
-      }
-      {
-        workspace = "0";
-        output = "nonprimary";
-      }
-    ];
+    workspaceOutputAssign =
+      (forEach (range 1 8)
+        (n: {
+          workspace = toString n;
+          output = "primary";
+        })
+      ) ++ [
+        {
+          workspace = "9";
+          output = "nonprimary";
+        }
+        {
+          workspace = "0";
+          output = "nonprimary";
+        }
+      ];
 
     startup = [
       {

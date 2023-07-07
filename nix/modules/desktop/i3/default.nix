@@ -87,8 +87,7 @@ in
             i3-msg -t get_tree | jq '.. | select(.focused? == true)'
           '';
         })
-      ]
-      ++ (
+      ] ++ (
         # Create shell script for each i3-msg message type
         # i.e. i3-config, i3-marks, i3-outputs, i3-tree, i3-workspaces
         forEach [ "config" "marks" "outputs" "tree" "workspaces" ] (type:
