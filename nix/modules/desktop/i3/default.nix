@@ -2,11 +2,52 @@
 
 with lib;
 
+let
+  cfg = config.modules.desktop.i3;
+in
 {
   imports = [
-    ./i3.nix
+    ./config.nix
     ./picom.nix
   ];
+
+  options.modules.desktop.i3 =
+    let
+      mkStrOptDefault = default: mkOption { type = types.str; inherit default; };
+      execType = with types; oneOf [ path str package ];
+    in
+    {
+      keysyms.mod = mkStrOptDefault "Mod4";
+      keysyms.alt = mkStrOptDefault "Mod1";
+      keysyms.mouseButtonLeft = mkStrOptDefault "button1";
+      keysyms.mouseButtonMiddle = mkStrOptDefault "button2";
+      keysyms.mouseButtonRight = mkStrOptDefault "button3";
+      keysyms.mouseWheelUp = mkStrOptDefault "button4";
+      keysyms.mouseWheelDown = mkStrOptDefault "button5";
+      keysyms.mouseWheelLeft = mkStrOptDefault "button6";
+      keysyms.mouseWheelRight = mkStrOptDefault "button7";
+
+      editor.exec = mkOption {
+        type = execType;
+      };
+
+      terminal.exec = mkOption {
+        type = execType;
+        default = "kitty";
+      };
+
+      processManager.exec = mkOption {
+        type = types.str;
+        default =
+          if config.programs.btop.enable
+          then "${cfg.terminal.exec} --class ProcessManager ${config.programs.btop.package}/bin/btop"
+          else if config.programs.bottom.enable
+          then "${cfg.terminal.exec} --class ProcessManager ${config.programs.bottom.package}/bin/btm"
+          else if config.programs.htop.enable
+          then "${cfg.terminal.exec} --class ProcessManager ${config.programs.htop.package}/bin/htop"
+          else "${cfg.terminal.exec} --class ProcessManager ${config.programs.proc.package}/bin/top";
+      };
+    };
 
   config = mkIf config.xsession.windowManager.i3.enable {
     xsession.enable = true;
