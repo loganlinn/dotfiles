@@ -15,5 +15,6 @@ python3Packages.buildPythonPackage rec {
     description = "Balance windows and workspaces in i3wm";
     homepage = "https://github.com/atreyasha/i3-balance-workspace";
     license = lib.licenses.mit;
+    mainProgram = "i3_balance_workspace";
   };
 }

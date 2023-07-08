@@ -1,4 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config
+, lib
+, pkgs
+, ...
+}:
 
 with builtins;
 with lib;
@@ -9,13 +13,15 @@ let
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
   rofiCfg = config.programs.rofi;
+  polybarCfg = config.services.polybar;
+  polybarCfg' = config.modules.polybar; # TODO config.my.polybar;
 in
 {
   xsession.windowManager.i3.config = {
     modifier = cfg.keysyms.mod;
-    menu = "${getPackageExe rofiCfg} -dmenu";
+    menu = mkIf rofiCfg.enable "${getPackageExe rofiCfg} -dmenu";
     keybindings = import ./keybindings.nix { inherit config pkgs lib; };
-    bars = lib.mkIf config.services.polybar.enable [ ]; # disable for polybar
+    bars = lib.mkIf polybarCfg.enable [ ]; # disable for polybar
     fonts = {
       names = [
         "pango:${themeCfg.fonts.mono.name} ${toString themeCfg.fonts.mono.size}px"
@@ -51,7 +57,7 @@ in
     };
 
     floating = {
-      titlebar = true;
+      titlebar = false;
       border = 2;
       criteria = [
         { class = "1Password.*"; }
@@ -96,12 +102,14 @@ in
     };
 
     workspaceOutputAssign =
-      (forEach (range 1 8)
-        (n: {
-          workspace = toString n;
-          output = "primary";
-        })
-      ) ++ [
+      (
+        forEach (range 1 8)
+          (n: {
+            workspace = toString n;
+            output = "primary";
+          })
+      )
+      ++ [
         {
           workspace = "9";
           output = "nonprimary";
@@ -134,9 +142,9 @@ in
       colors = config.colorScheme.colors;
     in
     ''
-      #=====================================
+      ################################################################################
       # Variables
-      #=====================================
+      ################################################################################
 
       # keybindings
       set $alt ${cfg.keysyms.alt}
@@ -171,7 +179,7 @@ in
       set $ws19 "19"
 
       # bars
-      set $bar_height 40
+      set $bar_height ${toString polybarCfg'.bars.top.height}
 
       # colors
       set $base00 #${colors.base00}
@@ -208,41 +216,51 @@ in
       set_from_resources $color14 i3wm.color14 #${colors.base0F}
       set_from_resources $color15 i3wm.color15 #${colors.base07}
 
-      #=====================================
+      ################################################################################
       # General
-      #=====================================
+      ################################################################################
 
       include ${config.xdg.configHome}/i3/config.d/*.conf
 
       default_orientation auto
 
-      #=====================================
+      ################################################################################
       # Keybindings, cont.
-      #=====================================
+      ################################################################################
 
       bindsym --whole-window --border $mod+$mouse_wheel_up focus up
       bindsym --whole-window --border $mod+$mouse_wheel_down focus down
       bindsym --whole-window --border $mod+$mouse_wheel_left focus left
       bindsym --whole-window --border $mod+$mouse_wheel_right focus right
 
-      #=====================================
+      ################################################################################
       # Window rules
-      #=====================================
+      ################################################################################
 
       for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
-
       for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
-
       for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, move position center
-
       for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
 
-      #=====================================
-      # Notifications
-      #=====================================
+      ################################################################################
+      # Gaps
+      ################################################################################
+
+      smart_gaps on
+
+      set $gaps_inner_default ${toString i3Cfg.gaps.inner}
+      set $gaps_outer_default ${toString i3Cfg.gaps.outer}
+
+
+      bindsym $mod+Shift+g mode "$mode_gaps"
+
+      ################################################################################
+      # Modes
+      ################################################################################
+
+      ### Notifications (dunst)
 
       set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
-
       mode --pango_markup "$mode_notifications" {
           bindsym Return       exec "dunstctl action 0"        , mode "default"
           bindsym Shift+Return exec dunstctl context           , mode "default"
@@ -258,60 +276,42 @@ in
           bindsym Ctrl+g mode "default"
       }
 
-      #=====================================
-      # Gaps
-      #=====================================
-
-      smart_gaps on
-
-      set $gaps_inner_default ${toString i3Cfg.gaps.inner}
-      set $gaps_outer_default ${toString i3Cfg.gaps.outer}
+      ### Gaps
 
       set $mode_gaps        gaps> [o]uter [i]nner [0]reset [q]uit
       set $mode_gaps_outer  gaps outer> [-|+]all [j|k]current [BS|0]reset [q]uit
       set $mode_gaps_inner  gaps inner> [-|+]all [j|k]current [BS|0]reset [q]uit
-
-      bindsym $mod+Shift+g mode "$mode_gaps"
-
       mode --pango_markup "$mode_gaps" {
-          bindsym o          mode "$mode_gaps_outer"
-          bindsym i          mode "$mode_gaps_inner"
-
-          bindsym BackSpace  gaps outer current set $gaps_outer_default, gaps inner current set $gaps_inner_default, mode default
-          bindsym 0          gaps outer all set $gaps_outer_default    , gaps inner all set $gaps_inner_default    , mode  default
-
+          bindsym o            mode "$mode_gaps_outer"
+          bindsym i            mode "$mode_gaps_inner"
+          bindsym BackSpace    gaps outer current set $gaps_outer_default, gaps inner current set $gaps_inner_default, mode default
+          bindsym 0            gaps outer all set $gaps_outer_default    , gaps inner all set $gaps_inner_default    , mode  default
           bindsym q            mode "default"
           bindsym Return       mode "$mode_gaps"
           bindsym Escape       mode "default"
           bindsym Ctrl+c       mode "default"
           bindsym Ctrl+g       mode "default"
       }
-
       mode --pango_markup "$mode_gaps_outer" {
           bindsym equal       gaps outer all plus 5
           bindsym minus       gaps outer all minus 5
           bindsym k           gaps outer current plus 5
           bindsym j           gaps outer current minus 5
-
           bindsym BackSpace   gaps current outer set $gaps_outer_default, mode default
           bindsym 0           gaps outer all set $gaps_outer_default    , mode default
-
           bindsym Tab         mode "$mode_gaps_inner"
           bindsym Return      mode "$mode_gaps"
           bindsym Escape      mode "default"
           bindsym Ctrl+c      mode "default"
           bindsym Ctrl+g      mode "default"
       }
-
       mode "$mode_gaps_inner" {
           bindsym equal       gaps inner all plus 5
           bindsym minus       gaps inner all minus 5
           bindsym k           gaps inner current plus 5
           bindsym j           gaps inner current minus 5
-
           bindsym BackSpace   gaps current inner set $gaps_inner_default, mode default
           bindsym 0           gaps all inner set $gaps_inner_default    , mode default
-
           bindsym Tab         mode "$mode_gaps_outer"
           bindsym Return      mode "$mode_gaps"
           bindsym Escape      mode "default"
@@ -319,64 +319,68 @@ in
           bindsym Ctrl+g      mode "default"
       }
 
-      #=====================================
+      ################################################################################
       # Window size
-      #=====================================
+      ################################################################################
 
       set $mode_resize resize> [w]ider [n]arrower [s]horter [t]aller [=]balance [g]aps
       mode "$mode_resize" {
-          bindsym w resize grow width 8 px or 1 ppt
-          bindsym n resize shrink width 8 px or 1 ppt
-          bindsym s resize shrink height 8 px or 1 ppt
-          bindsym t resize grow height 8 px or 1 ppt
+          # Direction (fine)
+          bindsym h resize grow width 8 px or 1 ppt
+          bindsym j resize shrink height 8 px or 1 ppt
+          bindsym k resize grow height 8 px or 1 ppt
+          bindsym l resize shrink width 8 px or 1 ppt
+          bindsym Left resize grow width 8 px or 1 ppt
+          bindsym Down resize shrink height 8 px or 1 ppt
+          bindsym Up resize grow height 8 px or 1 ppt
+          bindsym Right resize shrink width 8 px or 1 ppt
 
+          # Direction (coarse)
+          bindsym Shift+h resize shrink width 24 px or 3 ppt
+          bindsym Shift+j resize grow height 24 px or 3 ppt
+          bindsym Shift+k resize shrink height 24 px or 3 ppt
+          bindsym Shift+l resize grow width 24 px or 3 ppt
+          bindsym Shift+Left resize shrink width 24 px or 3 ppt
+          bindsym Shift+Down resize grow height 24 px or 3 ppt
+          bindsym Shift+Up resize shrink height 24 px or 3 ppt
+          bindsym Shift+Right resize grow width 24 px or 3 ppt
+
+          # Percentages
           bindsym 1 resize set width 10 ppt, mode default
           bindsym 2 resize set width 20 ppt, mode default
           bindsym 3 resize set width 30 ppt, mode default
           bindsym 4 resize set width 40 ppt, mode default
           bindsym 5 resize set width 50 ppt, mode default
+          bindsym 6 resize set width 60 ppt, mode default
+          bindsym 7 resize set width 70 ppt, mode default
+          bindsym 8 resize set width 80 ppt, mode default
+          bindsym 9 resize set width 90 ppt, mode default
           bindsym Shift+1 resize set width 90 ppt, mode default
           bindsym Shift+2 resize set width 80 ppt, mode default
           bindsym Shift+3 resize set width 70 ppt, mode default
           bindsym Shift+4 resize set width 60 ppt, mode default
           bindsym Shift+5 resize set width 50 ppt, mode default
-
-          bindsym Shift+w resize grow width 24 px or 3 ppt
-          bindsym Shift+n resize shrink width 24 px or 3 ppt
-          bindsym Shift+t resize grow height 24 px or 3 ppt
-          bindsym Shift+s resize shrink height 24 px or 3 ppt
-
-          bindsym h resize grow width 8 px or 1 ppt
-          bindsym j resize shrink height 8 px or 1 ppt
-          bindsym k resize grow height 8 px or 1 ppt
-          bindsym l resize shrink width 8 px or 1 ppt
-
-          bindsym Shift+h resize shrink width 24 px or 3 ppt
-          bindsym Shift+j resize grow height 24 px or 3 ppt
-          bindsym Shift+k resize shrink height 24 px or 3 ppt
-          bindsym Shift+l resize grow width 24 px or 3 ppt
+          bindsym Shift+6 resize set width 40 ppt, mode default
+          bindsym Shift+7 resize set width 30 ppt, mode default
+          bindsym Shift+8 resize set width 20 ppt, mode default
+          bindsym Shift+9 resize set width 10 ppt, mode default
 
           bindsym $mod+h focus left
           bindsym $mod+j focus down
           bindsym $mod+k focus up
           bindsym $mod+l focus right
 
-          bindsym $mouse_left move position mouse
-          bindsym $mouse_right exec --no-startup-id ${./scripts/draw-resize.sh}
-          bindsym $mouse_wheel_up move up 1 ppt
-          bindsym $mouse_wheel_down move down 1 ppt
-          bindsym $mouse_wheel_right move right 1 ppt
-          bindsym $mouse_wheel_left move left 1 ppt
+          bindsym f floating enable
 
-          bindsym g mode "$mode_gaps"
-          bindsym = exec i3_balance_workspace;
+          bindsym s floating enable, resize set width 66 ppt height 66 ppt, move position center, mode "default"
+          bindsym a floating enable, resize set width 33 ppt height 66 ppt, move position center, move left 33 ppt, mode "default"
+          bindsym d floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 33 ppt, mode "default"
+          bindsym q floating enable, resize set width 33 ppt height 66 ppt, move position center, move left 17 ppt, mode "default"
+          bindsym e floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 17 ppt, mode "default"
 
-          bindsym plus resize grow width 10 px or 2 ppt, resize grow height 10px or 2 ppt
-          bindsym minus resize shrink width 10 px or 2 ppt, resize shrink height 10px or 2 ppt
-          bindsym 0 floating enable, resize set width 50 ppt height 50 ppt, move position center, mode "default"
-          bindsym 1 floating enable, resize set width 33 ppt height 97 ppt, move position 0 ppt $bar_height px, mode "default"
-          bindsym 2 floating enable, resize set width 33 ppt height 97 ppt, move position 33 ppt $bar_height px, mode "default"
-          bindsym 3 floating enable, resize set width 33 ppt height 97 ppt, move position 67 ppt $bar_height px, mode "default"
+          bindsym equal exec --no-startup-id ${getExe (pkgs.callPackage ./i3-balance-workspace.nix {})};
+          bindsym Shift+equal resize grow width 10 px or 5 ppt, resize grow height 10 px or 5 ppt
+          bindsym minus resize shrink width 10 px or 5 ppt, resize shrink height 10 px or 5 ppt
 
           bindsym $mod+r mode default
           bindsym Escape mode default
@@ -387,31 +391,59 @@ in
       bindsym $mod+r mode "$mode_resize"
       bindsym $mod+n mode "$mode_notifications"
 
-      #=====================================
-      # Colors
-      #=====================================
 
-      # # class                 border   bg       fg       ind      child_border
-      # client.focused          $color11 $color10 $color7  $color3  $color11
-      # client.focused_inactive $color8  $color4  $color5  $color3  $color4
-      # client.unfocused        $color3  $color0  $color4  $color3  $color3
-      # client.urgent           $color2  $color15 $color5  $color15 $color15
-      # client.placeholder      $color0  $color1  $color5  $color0  $color1
-      # client.background       $color5
-
-      # client.focused          #${colors.base02} #${colors.base01} #${colors.base05} #${colors.base0A} #${colors.base02}
-      # client.focused_inactive #${colors.base03} #${colors.base04} #${colors.base05} #${colors.base03} #${colors.base04}
-      # client.unfocused        #${colors.base03} #${colors.base00} #${colors.base04} #${colors.base03} #${colors.base03}
-      # client.urgent           #${colors.base02} #${colors.base0F} #${colors.base05} #${colors.base0F} #${colors.base0F}
-      # client.placeholder      #${colors.base00} #${colors.base01} #${colors.base05} #${colors.base00} #${colors.base01}
-      # client.background       #${colors.base05}
-
-      # Property Name         Border  BG      Text    Indicator Child Border
-      client.focused          $base05 $base0D $base00 $base0D $base0C
-      client.focused_inactive $base01 $base01 $base05 $base03 $base01
-      client.unfocused        $base01 $base00 $base05 $base01 $base01
-      client.urgent           $base08 $base08 $base00 $base08 $base08
-      client.placeholder      $base00 $base00 $base05 $base00 $base00
-      client.background       $base07
     '';
+  #
+  # | Color Selector           | Description     |
+  # | ------------------------ | --------------- |
+  # | client.focused           | A client which currently has the focus.
+  # | client.focused_inactive  | A client which is the focused one of its container, but it does not have the focus at the moment.
+  # | client.focused_tab_title | Tab or stack container title that is the parent of the focused container but not directly focused. Defaults to focused_inactive if not specified and does not use the indicator and child_border colors.
+  # | client.unfocused         | A client which is not the focused one of its container.
+  # | client.urgent            | A client which has its urgency hint activated.
+  # | client.placeholder       | Background and text color are used to draw placeholder window contents (when restoring layouts). Border and indicator are ignored.
+  # | client.background        | Background color which will be used to paint the background of the client window on top of which the client will be rendered. Only clients which do not cover the whole area of this window expose the color. Note that this colorclass only takes a single color.
+  #
+  # NOTE: for window decorations, the color around the child window is the "child_border", and "border" color is only the two thin lines around the titlebar.
+  #
+  xsession.windowManager.i3.config.colors =
+    with (mapAttrs (_: color: "#${color}") config.colorScheme.colors);
+    {
+      background = base08;
+      focused = {
+        background = base0D;
+        border = base05;
+        childBorder = base0C;
+        indicator = base0D;
+        text = base00;
+      };
+      focusedInactive = {
+        background = base01;
+        border = base01;
+        childBorder = base01;
+        indicator = base03;
+        text = base05;
+      };
+      placeholder = {
+        background = base00;
+        border = base00;
+        childBorder = base00;
+        indicator = base00;
+        text = base05;
+      };
+      unfocused = {
+        background = base00;
+        border = base01;
+        childBorder = base01;
+        indicator = base01;
+        text = base05;
+      };
+      urgent = {
+        background = base08;
+        border = base08;
+        childBorder = base08;
+        indicator = base08;
+        text = base00;
+      };
+    };
 }

@@ -12,22 +12,24 @@ in
     ./picom.nix
   ];
 
-  options.modules.desktop.i3 =
-    let
-      mkStrOptDefault = default: mkOption { type = types.str; inherit default; };
-      execType = with types; oneOf [ path str package ];
-    in
-    {
-      keysyms.mod = mkStrOptDefault "Mod4";
-      keysyms.alt = mkStrOptDefault "Mod1";
-      keysyms.mouseButtonLeft = mkStrOptDefault "button1";
-      keysyms.mouseButtonMiddle = mkStrOptDefault "button2";
-      keysyms.mouseButtonRight = mkStrOptDefault "button3";
-      keysyms.mouseWheelUp = mkStrOptDefault "button4";
-      keysyms.mouseWheelDown = mkStrOptDefault "button5";
-      keysyms.mouseWheelLeft = mkStrOptDefault "button6";
-      keysyms.mouseWheelRight = mkStrOptDefault "button7";
-    };
+  options = {
+    modules.desktop.i3 =
+      let
+        mkStrOptDefault = default: mkOption { type = types.str; inherit default; };
+        execType = with types; oneOf [ path str package ];
+      in
+        {
+          keysyms.mod = mkStrOptDefault "Mod4";
+          keysyms.alt = mkStrOptDefault "Mod1";
+          keysyms.mouseButtonLeft = mkStrOptDefault "button1";
+          keysyms.mouseButtonMiddle = mkStrOptDefault "button2";
+          keysyms.mouseButtonRight = mkStrOptDefault "button3";
+          keysyms.mouseWheelUp = mkStrOptDefault "button4";
+          keysyms.mouseWheelDown = mkStrOptDefault "button5";
+          keysyms.mouseWheelLeft = mkStrOptDefault "button6";
+          keysyms.mouseWheelRight = mkStrOptDefault "button7";
+        };
+  };
 
   config = mkIf config.xsession.windowManager.i3.enable {
     xsession.enable = true;

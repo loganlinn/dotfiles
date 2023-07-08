@@ -200,7 +200,7 @@ foldl' attrsets.unionOfDisjoint { } (attrValues {
     "$mod+t" = "layout toggle split";
     "$mod+BackSpace" = "split toggle";
     "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
-    "$mod+equal" = "exec ${import ./i3-balance-workspace.nix pkgs}/bin/i3_balance_workspace";
+    "$mod+equal" = "exec --no-startup-id ${getExe (pkgs.callPackage ./i3-balance-workspace.nix {})}";
   };
 
   scratchpad = {

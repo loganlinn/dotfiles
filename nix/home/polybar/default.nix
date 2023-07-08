@@ -32,33 +32,41 @@ in
       default = pkgs.polybarFull;
     };
 
-    top.left.modules = mkOption {
-      type = with types; listOf str;
-      default = [ "date" "xwindow" ];
-    };
+    # TODO convert to submodule
+    bars.top = {
+      height = mkOption {
+        type = types.number;
+        default = 40;
+      };
 
-    top.center.modules = mkOption {
-      type = with types; listOf str;
-      default = optionals config.xsession.windowManager.i3.enable [ "i3" ];
-    };
+      modules-left = mkOption {
+        type = with types; listOf str;
+        default = [ "date" "xwindow" ];
+      };
 
-    top.right.modules = mkOption {
-      type = with types; listOf str;
-      default = [
-        "memory"
-        "gpu"
-        "cpu"
-        "temperature"
-        "sep4"
-        "pulseaudio"
-        "sep3"
-      ]
-      ++ optional config.services.dunst.enable "dunst"
-      ++ (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
-      ++ [
-        "sep1"
-        "date"
-      ];
+      modules-center = mkOption {
+        type = with types; listOf str;
+        default = optionals config.xsession.windowManager.i3.enable [ "i3" ];
+      };
+
+      modules-right = mkOption {
+        type = with types; listOf str;
+        default = [
+          "memory"
+          "gpu"
+          "cpu"
+          "temperature"
+          "sep4"
+          "pulseaudio"
+          "sep3"
+        ]
+        ++ optional config.services.dunst.enable "dunst"
+        ++ (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
+        ++ [
+          "sep1"
+          "date"
+        ];
+      };
     };
     networks = mkOption {
       type = with types; listOf attrs;
@@ -169,13 +177,13 @@ in
               monitor.fallback = "";
               monitor.strict = false;
 
-              modules.left = concatStringsSep " " cfg.top.left.modules;
-              modules.center = concatStringsSep " " cfg.top.center.modules;
-              modules.right = concatStringsSep " " cfg.top.right.modules;
+              modules.left = concatStringsSep " " cfg.bars.top.modules-left;
+              modules.center = concatStringsSep " " cfg.bars.top.modules-center;
+              modules.right = concatStringsSep " " cfg.bars.top.modules-right;
 
               bottom = false;
               width = "100%";
-              height = 36;
+              height = cfg.bars.top.height;
               offset.x = "0%";
               offset.y = "0%";
               fixed-center = true;
@@ -475,7 +483,7 @@ in
           cfg.settings;
 
       # TODO finish converting to services.polybar.settings
-      config = fold recursiveUpdate {} (forEach cfg.networks ({ interface, interface-type, ... }@settings:
+      config = fold recursiveUpdate { } (forEach cfg.networks ({ interface, interface-type, ... }@settings:
         (mkModule "network-${interface}" "internal/network" ({
           inherit interface;
 

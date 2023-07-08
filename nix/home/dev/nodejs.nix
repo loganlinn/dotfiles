@@ -49,8 +49,9 @@ in
       NODE_REPL_HISTORY = "${config.xdg.stateHome}/nodejs/repl_history";
     };
 
-    programs.zsh.initExtra = shellInit;
-    programs.bash.initExtra = shellInit;
+    home.sessionPath = [ "${config.home.sessionVariables.NPM_CONFIG_PREFIX}/bin" ];
+
+    my.shell.initExtra = shellInit;
 
     # https://docs.npmjs.com/cli/v8/using-npm/config
     # $ npm config ls -l

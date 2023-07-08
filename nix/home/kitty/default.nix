@@ -119,7 +119,7 @@ in
   '';
 
   xsession.windowManager.i3.extraConfig = ''
-    for_window [class="kitty-floating"] floating enable
+    for_window [class="kitty-floating"] floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 17 ppt
     for_window [class="kitty-one"] floating enable, move position center, resize set 1600 1200
     for_window [class="kitty-scratch"] move scratchpad, scratchpad show
     bindsym $mod+Ctrl+Return exec kitty-one
