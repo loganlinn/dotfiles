@@ -16,7 +16,7 @@ let
 
       inherit config options pkgs;
 
-      lib = pkgs.lib;
+      lib = import ./lib/extended.nix pkgs.lib;
 
       hm = let inherit (flake.currentSystem.legacyPackages) homeConfigurations; in
         homeConfigurations."${user}@${hostname}" or

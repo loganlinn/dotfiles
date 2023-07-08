@@ -61,7 +61,7 @@ in
       scroll-method = 0; # 0: Page, 1: Centered
       window-format = "{w}    {c}   {t}"; # w (desktop name), t (title), n (name), r (role), c (class)
       combi-hide-mode-prefix = true;
-      combi-modes = [ "drun" "window" "power"];
+      combi-modes = [ "drun" "window" "power" ];
       combi-display-format = "{mode}  {text}"; # uses tab for styling with tab-stops
       display-combi = modeDisplay "combi" nerdfonts.md.apps;
       display-drun = modeDisplay "drun" nerdfonts.md.application;
@@ -127,17 +127,22 @@ in
     configPath = "${config.xdg.configHome}/rofi/common.rasi";
   };
 
-  xdg.configFile."rofi/config.rasi".text = ''
-    @import "${config.programs.rofi.configPath}"
-    @import "shared.rasi"
-  '';
-  xdg.configFile."rofi/colors.rasi".text = import ./colors.nix config.colorScheme;
-  xdg.configFile."rofi/theme.rasi".source = ./theme.rasi;
-  xdg.configFile."rofi/shared.rasi".text = ''
-    @import "colors.rasi"
-    @import "theme.rasi"
-  '';
-  xdg.configFile."rofi/scripts/power.sh".source = getExe pkgs.rofi-power-menu;
+  xdg.configFile = {
+    "rofi/config.rasi".text = ''
+      @import "${config.programs.rofi.configPath}"
+      @import "shared.rasi"
+    '';
+    "rofi/colors.rasi".text = import ./colors.nix config.colorScheme;
+    "rofi/theme.rasi".source = ./theme.rasi;
+    "rofi/shared.rasi".text = ''
+      @import "colors.rasi"
+      @import "theme.rasi"
+    '';
+    "rofi/scripts/power.sh".source = getExe pkgs.rofi-power-menu;
+  } // lib.my.fileSourceSet {
+    dir = ./scripts;
+    prefix = "rofi/scripts/";
+  };
 
   home.sessionVariables.ROFI_SYSTEMD_TERM = config.programs.rofi.terminal;
 }

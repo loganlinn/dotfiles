@@ -62,7 +62,7 @@
       inputs.flake-parts.flakeModules.easyOverlay
       inputs.flake-root.flakeModule
       inputs.mission-control.flakeModule
-      # inputs.nixos-flake.flakeModule # FIXME: conflicts with flake.lib
+      # inputs.nixos-flake.flakeModule # FIXME: conflicts with flake.lib (edit: still?)
       # inputs.emanote.flakeModule
       ./flake-modules/options.nix # TODO move
       ./home-manager/flake-module.nix
@@ -70,12 +70,7 @@
       ./nix/flake-parts
     ];
 
-    debug = true;
-
-    flake.lib.my = (import ./lib/extended.nix inputs.nixpkgs.lib).my;
-
     perSystem = { config, system, inputs', pkgs, lib, ... }: {
-
       packages.jdk = lib.mkDefault pkgs.jdk;
 
       overlayAttrs = {
@@ -93,9 +88,7 @@
           config.formatter
           inputs'.agenix.packages.agenix
         ];
-        env = {
-          NIX_USER_CONF_FILES = toString ./nix.conf;
-        };
+        env.NIX_USER_CONF_FILES = toString ./nix.conf;
       };
 
       mission-control = {
@@ -123,5 +116,11 @@
           };
       };
     };
+
+    flake = {
+      lib.my = (import ./lib/extended.nix inputs.nixpkgs.lib).my;
+    };
+
+    debug = true; # https://flake.parts/debug.html, https://flake.parts/options/flake-parts.html#opt-debug
   };
 }

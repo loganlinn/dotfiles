@@ -24,15 +24,18 @@ in
       };
 
       commonModules = [
-        {
-          options.my = ctx.options.my;
-          config.my = ctx.config.my;
-        }
+        inputs.sops-nix.homeManagerModule
+        # inputs.emanote.homeManagerModule
         {
           nixpkgs.overlays = [
             inputs.rust-overlay.overlays.default
             inputs.emacs.overlays.default
           ];
+        }
+        {
+          # TODO make into homeManagerModules.my?
+          options.my = ctx.options.my;
+          config.my = ctx.config.my;
         }
       ];
     in
@@ -41,13 +44,7 @@ in
         (lib.optionalAttrs (system == "x86_64-linux") {
           homeConfigurations."logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs extraSpecialArgs;
-            modules =
-              commonModules
-              ++ [
-                inputs.sops-nix.homeManagerModule
-                # inputs.emanote.homeManagerModule
-                ../home-manager/nijusan.nix
-              ];
+            modules = commonModules ++ [ ./nijusan.nix ];
           };
         })
         // (lib.optionalAttrs (system == "aarch64-darwin") {

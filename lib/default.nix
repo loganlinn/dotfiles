@@ -31,4 +31,16 @@ rec {
   color = import ./color.nix { inherit lib; };
 
   getPackageExe = attrs: lib.getExe (attrs.finalPackage or attrs.package);
+
+  ensurePrefix = prefix: content: if hasPrefix prefix content then content else "${content}${prefix}";
+
+  ensureSuffix = suffix: content: if hasSuffix suffix content then content else "${content}${suffix}";
+
+  fileSourceSet = { dir, base ? dir, prefix ? "" }:
+    listToAttrs
+      (forEach (filesystem.listFilesRecursive dir)
+        (source: {
+          name = "${prefix}${removePrefix ((toString base) + "/") (toString source)}";
+          value = { inherit source; };
+        }));
 }

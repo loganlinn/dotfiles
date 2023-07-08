@@ -323,13 +323,6 @@ let
     "emacs.desktop"
   ];
 
-  desktopIconFiles = pipe ../../local/share/icons/hicolor [
-      filesystem.listFilesRecursive
-      (map (path: nameValuePair
-        (removePrefix ((toString ../../local/share) + "/") (toString path))
-        {source = path;}))
-      listToAttrs
-  ];
 in
 {
   xdg.enable = true;
@@ -355,5 +348,8 @@ in
     };
   };
 
-  xdg.dataFile = desktopIconFiles;
+  xdg.dataFile = lib.my.fileSourceSet {
+    dir = ../../local/share/icons/hicolor;
+    base = ../../local/share;
+  };
 }
