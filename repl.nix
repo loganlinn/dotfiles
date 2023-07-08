@@ -8,26 +8,25 @@ with builtins;
     else (getEnv "HOSTNAME")
   )
 }:
+
 let
-  # assumption: flake-parts debug is used (https://flake.parts/debug.html)
-  mkScopeAttrs = flake:
-    let inherit (flake.currentSystem.allModuleArgs) config options pkgs;
-    in builtins // flake // {
-      self = flake;
 
-      inherit config options pkgs;
+  flake = getFlake (toString ./.);
 
-      lib = import ./lib/extended.nix pkgs.lib;
+  lib = import ./lib/extended.nix flake.currentSystem.allModuleArgs.pkgs.lib;
 
-      hm = let inherit (flake.currentSystem.legacyPackages) homeConfigurations; in
-        homeConfigurations."${user}@${hostname}" or
-          homeConfigurations'.${hostname} or
-            null;
-
-      nixos = let inherit (flake) nixosConfigurations; in
-        nixosConfigurations."${user}@${hostname}" or
-          nixosConfigurations.${hostname} or
-            null;
-    };
 in
-mkScopeAttrs (getFlake (toString ./.))
+
+builtins // flake.currentSystem.allModuleArgs // lib // {
+  inherit lib;
+
+  hm = let inherit (flake.currentSystem.legacyPackages) homeConfigurations; in
+    homeConfigurations."${user}@${hostname}" or
+      homeConfigurations'.${hostname} or
+        null;
+
+  nixos = let inherit (flake) nixosConfigurations; in
+    nixosConfigurations."${user}@${hostname}" or
+      nixosConfigurations.${hostname} or
+        null;
+}
