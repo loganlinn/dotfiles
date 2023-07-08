@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 
 with lib;
-let cfg = config.modules.dev.python; in
+let cfg = config.my.python; in
 {
 
-  options.modules.dev.python = {
+  options.my.python = {
     package = mkOption {
       type = types.package;
       default = pkgs.python3;
@@ -53,6 +53,6 @@ let cfg = config.modules.dev.python; in
       pyright
     ];
 
-    programs.zsh.initExtra = readFile ./python.bash; # shell helpers
+    my.shell.initExtra = readFile ./venv.bash; # shell helpers
   };
 }

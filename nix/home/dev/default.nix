@@ -9,7 +9,7 @@ in
     ./jvm.nix
     ./kube.nix
     ./gh.nix
-    ./python.nix
+    ../python
     ./nodejs.nix
   ];
 

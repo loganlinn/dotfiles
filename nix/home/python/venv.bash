@@ -29,32 +29,35 @@ venv-activate() {
 
 venv() {
   # wrapper for python3's built-in venv module.
-  # adds additional options:
-  #     --[no-]activate
-
+  # * sets default options:
+  #     --upgrade-deps
+  #
+  # * adds additional options:
+  #   --[no-]activate
+  #   --no-upgrade-deps
   local activate=true
-  local params arg
+  local upgrade_deps=true
+  local args_out=()
+  local arg_in
 
-  # use --upgrade-deps by default if python >= 3.9
-  # shellcheck disable=2207
-  params=($(python -c 'import sys; sys.version_info >= (3, 9) and print("--upgrade-deps")'))
-
-  # Build up params from input args.
-  # Allow auto-activation and modified defaults to be negated.
-  for arg; do
-    case $arg in
+  for arg_in; do
+    case $arg_in in
       --activate) activate=true ;;
-      --no-activate) activate=false ;;
-      --no-upgrade-deps) params=("${params[@]/--upgrade-deps/}") ;;
-      *) params+=("$arg") ;;
+      --no-activate) activate= ;;
+      --no-upgrade-deps) upgrade_deps= ;;
+      *) args_out+=("$arg_in") ;;
     esac
   done
 
-  if ! python3 -m venv "${params[@]}"; then
-    return $?
+  # add --upgrade-deps arg, which was added python 3.9
+  if [[ $upgrade_deps == true ]] && python3 -c 'import sys; sys.version_info >= (3, 9) or sys.exit(1)'; then
+    args_out=(--upgrade-deps "${args_out[@]}")
   fi
 
-  if [[ $activate == true ]] && [[ -d "${params[-1]}" ]]; then
-    venv-activate "${params[-1]}"
+  python3 -m venv "${args_out[@]}" || return $?
+
+  local env_dir="${args_out[-1]}"
+  if [[ $activate == true ]] && [[ -d $env_dir ]]; then
+    venv-activate "$env_dir"
   fi
 }
