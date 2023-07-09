@@ -18,7 +18,6 @@ in
     ./secrets.nix
     ./security.nix
     ./shell
-    ./zsh
   ];
 
   home.packages = with pkgs; [
@@ -71,11 +70,6 @@ in
   ];
 
   programs.home-manager.enable = true;
-
-  programs.bash = {
-    enable = true;
-    enableCompletion = true;
-  };
 
   programs.btop = {
     enable = true;

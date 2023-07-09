@@ -8,6 +8,11 @@ let
 
 in
 {
+  imports = [
+    ../bash
+    ../zsh
+  ];
+
   options.my.shell = {
     initExtra = mkOption {
       type = types.lines;
@@ -18,11 +23,11 @@ in
 
   config = {
     home.shellAliases = import ./aliases.nix;
-    home.packages = with pkgs; [
-      bashInteractive
-    ];
+
     programs.bash.initExtra = cfg.initExtra;
+
     programs.zsh.initExtra = cfg.initExtra;
+
     my.shell.initExtra = ''
       ${readFile ./which.sh}
 
