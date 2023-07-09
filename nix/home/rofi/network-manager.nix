@@ -11,10 +11,9 @@ let
 
 in
 {
-
   home.packages = with pkgs; [
     networkmanager
-    networkmanager-applet
+    networkmanagerapplet
     qrencode
     (writeShellScriptBin "rofi-network-manager" ''
       export NOTIFICATIONS=true

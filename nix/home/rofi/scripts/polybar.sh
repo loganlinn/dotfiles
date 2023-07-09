@@ -29,13 +29,14 @@ case $ROFI_RETV in
     menu_option theme "inputbar { children: [prompt,entry]; }"
     menu_option theme "element { children: [element-text]; }"
 
+    echo toggle
+    echo restart
     echo hide
     echo show
-    echo toggle
     echo quit
-    echo restart
     echo start
     echo stop
+    echo kill
     echo enable
     echo disable
     echo cancel
@@ -45,7 +46,7 @@ case $ROFI_RETV in
       quit | hide | show | toggle)
         polybar-msg cmd "$1" >&2
         ;;
-      start | stop | restart | enable | disable)
+      start | stop | restart | enable | disable | kill)
         systemctl --user "$1" polybar.service
         ;;
       cancel)

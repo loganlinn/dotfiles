@@ -46,6 +46,8 @@ in
     ];
 
     home.packages = with pkgs; [
+      libnotify
+      ponymix
       rofi-systemd
       i3-layout-manager
       i3-auto-layout

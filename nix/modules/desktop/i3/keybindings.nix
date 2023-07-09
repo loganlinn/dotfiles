@@ -63,21 +63,23 @@ foldl' attrsets.unionOfDisjoint { }
       mapAttrs' (keybind: exec: nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}")
         {
           "$mod+space" = "${rofi} -show combi -sidebar-mode true";
-          "$mod+semicolon" = "${rofi} -show run -modi run#drun";
-          "$mod+apostrophe" = "${rofi} -show window -modi window#windowcd";
-          "$mod+Shift+apostrophe" = "${rofi} -show windowcd -modi window#windowcd";
-          "$mod+Shift+equal" = "${rofi} -show calc";
+          "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
+          "$mod+w" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
+          "$mod+Shift+w" = "${rofi} -show windowcd -modi window#windowcd -sidebar-mode true";
+          "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
           "$mod+Escape" = "rofi-power";
           "$mod+s" = getExe pkgs.rofi-systemd;
-          "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} ${../../../home/rofi/scripts/gh.sh}";
+          "$mod+a" = "${getExe pkgs.rofi-pulse-select} sink";
+          "$mod+Shift+a" = "${getExe pkgs.rofi-pulse-select} source";
+          "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
         };
 
     focusWindow = {
-      "$mod+a" = "focus parent";
-      "$mod+d" = "focus child";
+      "$mod+Up" = "focus parent";
+      "$mod+Down" = "focus child";
+      "$mod+Left" = "focus prev sibling";
+      "$mod+Right" = "focus next sibling";
       "$mod+f" = "focus mode_toggle"; # toggle between floating and tiling
-      "$mod+z" = "focus prev sibling";
-      "$mod+x" = "focus next sibling";
       "$mod+o" = "focus output next";
       "$mod+h" = "focus left";
       "$mod+j" = "focus down";
@@ -101,8 +103,8 @@ foldl' attrsets.unionOfDisjoint { }
     focusWorkspaceRelative = {
       "$mod+Tab" = "workspace back_and_forth";
       "$mod+Shift+Tab" = "move container to workspace back_and_forth";
-      "$mod+Left" = "workspace prev";
-      "$mod+Right" = "workspace next";
+      # "$mod+Left" = "workspace prev";
+      # "$mod+Right" = "workspace next";
       "$mod+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} focus";
       "$mod+bracketleft" = "workspace prev";
       "$mod+bracketright" = "workspace next";
@@ -179,8 +181,8 @@ foldl' attrsets.unionOfDisjoint { }
     layout = {
       "$mod+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
       "$mod+Shift+f" = "floating toggle";
+      "$mod+Ctrl+f" = "fullscreen toggle";
       "$mod+Shift+p" = "floating toggle; sticky toggle"; # "pin"
-      "$mod+F11" = "fullscreen toggle";
       "$mod+t" = "layout toggle split";
       "$mod+BackSpace" = "split toggle";
       "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
@@ -192,16 +194,24 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
     };
 
+    audio =
+      let
+        ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} --notify ${args}";
+      in
+      {
+        "XF86AudioRaiseVolume " = ponymix "--output increase 5";
+        "XF86AudioLowerVolume" = ponymix "--output decrease 5";
+        "XF86AudioMute" = ponymix "--output toggle";
+        "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
+        "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
+        "Shift+XF86AudioMute" = ponymix "--input toggle";
+      };
+
     media =
       let
         playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
-        ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} ${args}";
       in
       {
-        "XF86AudioRaiseVolume " = ponymix "increase 5";
-        "XF86AudioLowerVolume" = ponymix "decrease 5";
-        "XF86AudioMute" = ponymix "--sink toggle";
-        "Scroll_Lock" = ponymix "--source toggle";
         "XF86AudioPlay" = playerctl "play";
         "XF86AudioPause" = playerctl "pause";
         "XF86AudioNext" = playerctl "next";
@@ -220,8 +230,8 @@ foldl' attrsets.unionOfDisjoint { }
     bar =
       if config.services.polybar.enable then
         {
-          "$mod+Shift+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
+          "$mod+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
         } else {
-        "$mod+Shift+b" = "bar mode toggle";
-      };
+          "$mod+b" = "bar mode toggle";
+        };
   })

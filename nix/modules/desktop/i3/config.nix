@@ -261,6 +261,7 @@ in
       ### Notifications (dunst)
 
       set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
+      bindsym $mod+n mode "$mode_notifications"
       mode --pango_markup "$mode_notifications" {
           bindsym Return       exec "dunstctl action 0"        , mode "default"
           bindsym Shift+Return exec dunstctl context           , mode "default"
@@ -324,6 +325,7 @@ in
       ################################################################################
 
       set $mode_resize resize> [w]ider [n]arrower [s]horter [t]aller [=]balance [g]aps
+      bindsym $mod+r mode "$mode_resize"
       mode "$mode_resize" {
           # Direction (fine)
           bindsym h resize grow width 8 px or 1 ppt
@@ -346,17 +348,17 @@ in
           bindsym Shift+Right resize grow width 24 px or 3 ppt
 
           # Percentages
-          bindsym 1 resize set width 10 ppt, mode default
-          bindsym 2 resize set width 20 ppt, mode default
-          bindsym 3 resize set width 30 ppt, mode default
-          bindsym 4 resize set width 40 ppt, mode default
+          bindsym 1 resize set width 90 ppt, mode default
+          bindsym 2 resize set width 80 ppt, mode default
+          bindsym 3 resize set width 70 ppt, mode default
+          bindsym 4 resize set width 60 ppt, mode default
           bindsym 5 resize set width 50 ppt, mode default
-          bindsym 6 resize set width 60 ppt, mode default
-          bindsym 7 resize set width 70 ppt, mode default
-          bindsym 8 resize set width 80 ppt, mode default
-          bindsym 9 resize set width 90 ppt, mode default
-          bindsym Shift+1 resize set width 90 ppt, mode default
-          bindsym Shift+2 resize set width 80 ppt, mode default
+          bindsym 6 resize set width 40 ppt, mode default
+          bindsym 7 resize set width 30 ppt, mode default
+          bindsym 8 resize set width 20 ppt, mode default
+          bindsym 9 resize set width 10 ppt, mode default
+          bindsym Shift+9 resize set width 90 ppt, mode default
+          bindsym Shift+8 resize set width 80 ppt, mode default
           bindsym Shift+3 resize set width 70 ppt, mode default
           bindsym Shift+4 resize set width 60 ppt, mode default
           bindsym Shift+5 resize set width 50 ppt, mode default
@@ -387,11 +389,6 @@ in
           bindsym Ctrl+c mode default
           bindsym Ctrl+g mode default
       }
-
-      bindsym $mod+r mode "$mode_resize"
-      bindsym $mod+n mode "$mode_notifications"
-
-
     '';
   #
   # | Color Selector           | Description     |

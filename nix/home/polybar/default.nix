@@ -269,6 +269,9 @@ in
               use-ui-max = false; # uses PA_VOLUME_NORM (maxes at 100%)
             };
 
+            # "module/pulseaudio_source" = module "custom/script" {
+            # };
+
             "module/xwindow" = module "internal/xwindow" {
               format = {
                 prefix = nerdfonts.md.dock_window;
