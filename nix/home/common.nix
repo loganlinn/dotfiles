@@ -21,7 +21,6 @@ in
   ];
 
   home.packages = with pkgs; [
-    bandwhich # display current network utilization by process
     bc
     binutils
     cmake

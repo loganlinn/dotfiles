@@ -11,6 +11,7 @@ lib.mkIf pkgs.stdenv.isLinux {
   };
 
   home.packages = with pkgs; [
+    bandwhich # display current network utilization by process
     gcc
     cached-nix-shell
     sysz
