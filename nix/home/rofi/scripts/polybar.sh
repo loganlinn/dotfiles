@@ -42,7 +42,7 @@ case $ROFI_RETV in
     ;;
   1)
     case $1 in
-      quit | hide | show)
+      quit | hide | show | toggle)
         polybar-msg cmd "$1" >&2
         ;;
       start | stop | restart | enable | disable)

@@ -14,6 +14,10 @@ let
 
 in
 {
+  imports = [
+    ./network-manager.nix
+  ];
+
   home.packages = with pkgs; [
     # wrappers (not plugins)
     rofi-systemd
