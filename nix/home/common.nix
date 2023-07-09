@@ -10,7 +10,7 @@ in
     ./clipboard.nix
     ./common-linux.nix
     ./fzf.nix
-    ./git.nix
+    ./git
     ./neovim
     ./nix-path.nix
     ./ranger.nix

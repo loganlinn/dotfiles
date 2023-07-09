@@ -1,13 +1,13 @@
 { pkgs, ... }: {
   imports = [
     ../nix/modules/fonts.nix
-    ./modules/common.nix
-    ./modules/dev
-    ./modules/emacs.nix
-    ./modules/git.nix
-    ./modules/pretty.nix
-    ./modules/sync.nix
-    ./modules/xdg.nix
+    ../nix/home/common.nix
+    ../nix/home/dev
+    ../nix/home/emacs.nix
+    ../nix/home/git
+    ../nix/home/pretty.nix
+    ../nix/home/sync.nix
+    ../nix/home/xdg.nix
   ];
 
   home = {

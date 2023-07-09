@@ -94,7 +94,8 @@ in
     nixpkgs-fmt
     nurl
     nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
-    rnix-lsp # alt? https://github.com/oxalica/nil
+    rnix-lsp # lanaguage-server
+    nil # language-server
     toml2nix
 
     # c/c++

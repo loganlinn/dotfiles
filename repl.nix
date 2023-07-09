@@ -11,22 +11,23 @@ with builtins;
 
 let
 
-  flake = getFlake (toString ./.);
+  self = getFlake (toString ./.);
 
-  lib = import ./lib/extended.nix flake.currentSystem.allModuleArgs.pkgs.lib;
+  inherit (self.currentSystem.allModuleArgs) config options pkgs;
 
+  lib = import ./lib/extended.nix pkgs.lib;
 in
 
-builtins // flake.currentSystem.allModuleArgs // lib // {
-  inherit lib;
+builtins // self // lib // {
+  inherit self pkgs lib config options;
 
-  hm = let inherit (flake.currentSystem.legacyPackages) homeConfigurations; in
+  hm = let inherit (self.currentSystem.legacyPackages) homeConfigurations; in
     homeConfigurations."${user}@${hostname}" or
       homeConfigurations'.${hostname} or
         null;
 
-  nixos = let inherit (flake) nixosConfigurations; in
-    nixosConfigurations."${user}@${hostname}" or
-      nixosConfigurations.${hostname} or
+  nixos =
+    self.nixosConfigurations."${user}@${hostname}" or
+      self nixosConfigurations.${hostname} or
         null;
 }

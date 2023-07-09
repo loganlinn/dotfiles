@@ -47,7 +47,7 @@ in
     includes =
       [
         { path = "~/.config/git/config.local"; }
-        { path = ./git/include/gitalias.txt; }
+        { path = ./include/gitalias.txt; }
       ]
       ++ forEach workDirs (workDir: {
         path = "${workConfig}";
