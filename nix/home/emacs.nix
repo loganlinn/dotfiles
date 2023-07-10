@@ -19,7 +19,7 @@ in
   };
 
   services.emacs = {
-    enable = true;
+    enable = false;
     startWithUserSession = true;
     defaultEditor = false;
   };

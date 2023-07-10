@@ -133,6 +133,8 @@ in
     inactiveInterval = 15; # minutes
   };
 
+  xdg.configFile."betterlockscreen/betterlockscreenrc".source = ../config/betterlockscreen/betterlockscreenrc;
+
   services.easyeffects.enable = false; # causing glitching on twitch streams
 
   #

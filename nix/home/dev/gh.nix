@@ -80,7 +80,7 @@ with lib.my;
     comment = "Terminal-based dashboard for GitHub Pull Requests and Issues";
     type = "Application";
     # StartupWMClass setting below was not working (unclear where it was getting dropped/ignored), so exec kitty directly
-    exec = "${getPackageExe config.programs.kitty} --class=gh-dash --title=gh-dash ${getPackageExe config.programs.gh} extension exec dash";
+    exec = "${getPackageExe config.programs.kitty} --class=gh-dash --title=gh-dash --detach ${getPackageExe config.programs.gh} extension exec dash";
     # exec = "${config.programs.gh.package}/bin/gh extension exec dash";
     # terminal = true;
     terminal = true;

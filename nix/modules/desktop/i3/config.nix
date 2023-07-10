@@ -359,13 +359,13 @@ in
           bindsym 9 resize set width 10 ppt, mode default
           bindsym Shift+9 resize set width 90 ppt, mode default
           bindsym Shift+8 resize set width 80 ppt, mode default
-          bindsym Shift+3 resize set width 70 ppt, mode default
-          bindsym Shift+4 resize set width 60 ppt, mode default
+          bindsym Shift+7 resize set width 70 ppt, mode default
+          bindsym Shift+6 resize set width 60 ppt, mode default
           bindsym Shift+5 resize set width 50 ppt, mode default
-          bindsym Shift+6 resize set width 40 ppt, mode default
-          bindsym Shift+7 resize set width 30 ppt, mode default
-          bindsym Shift+8 resize set width 20 ppt, mode default
-          bindsym Shift+9 resize set width 10 ppt, mode default
+          bindsym Shift+4 resize set width 40 ppt, mode default
+          bindsym Shift+3 resize set width 30 ppt, mode default
+          bindsym Shift+2 resize set width 20 ppt, mode default
+          bindsym Shift+1 resize set width 10 ppt, mode default
 
           bindsym $mod+h focus left
           bindsym $mod+j focus down
