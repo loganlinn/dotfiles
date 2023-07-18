@@ -1,0 +1,81 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p curl p7zip font-manager
+
+set -eo pipefail
+
+: "${FONT_DIR:="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"}"
+
+download() {
+    curl -LfO "$1" "https://devimages-cdn.apple.com/design/resources/download/$1"
+}
+
+install() {
+    local fonts=()
+    local dmg
+
+    for dmg; do
+        local pkg work
+
+        if ! [[ -f $dmg ]]; then
+            echo "no such file: $dmg" >&2
+            return 1
+        elif ! [[ $dmg == *".dmg" ]]; then
+            echo "unexpected dmg filename: $dmg" >&2
+            return 1
+        fi
+
+        pkg="$(sed -e 's/-/ /' -e 's/\.dmg$/ Fonts.pkg/' <<<"$dmg")"
+        work="$(mktemp -d "$(basename "$dmg").XXXXXXX")"
+
+        7z e -y -o"$work" '-i!*/'"$pkg" "$dmg" >/dev/null
+        7z e -y -o"$work" "$work/$pkg" >/dev/null
+        7z e -y -o"$work" '-ir!*.otf' '-ir!*.ttf' "$work/Payload~" >/dev/null
+
+        mkdir -p "$FONT_DIR"
+
+        local a b
+        for a in "$work"/*.otf "$work"/*.ttf; do
+            if ! [[ -f $a ]]; then
+                continue
+            fi
+
+            b="$FONT_DIR/$(basename "$a")"
+            if [[ -f $b ]]; then
+                echo "skipping: $b" >&2
+                continue
+            fi
+            cp "$a" "$b"
+            fonts+=("$b")
+        done
+    done
+
+    rm -r "$work"
+
+    if [[ ${#fonts} -eq 0 ]]; then
+        echo "nothing to do" >&2
+        return
+    fi
+
+    echo "installing ${#fonts} fonts:" >&2
+    printf '  %s\n' "${fonts[@]}" >&2
+
+    font-manager --install "${fonts[@]}"
+}
+
+if [[ $# -gt 0 ]]; then
+    dmgs=("$@")
+else
+    dmgs=(
+        "SF-Pro.dmg"
+        "SF-Compact.dmg"
+        "SF-Mono.dmg"
+        "SF-Arabic.dmg"
+        "NY.dmg"
+    )
+fi
+
+for dmg in "${dmgs[@]}"; do
+    [[ -f "$dmg" ]] || download "$dmg"
+    install "$dmg"
+done
+exit 0

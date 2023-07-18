@@ -39,6 +39,8 @@
     nixos-flake.url = "github:srid/nixos-flake";
     sops-nix.url = "github:Mic92/sops-nix";
     agenix.url = "github:ryantm/agenix";
+    rime.url = "github:aakropotkin/rime";
+    rime.inputs.nixpkgs.follows = "nixpkgs";
     # process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
 
     ## shells

@@ -11,6 +11,7 @@ in
     ./gh.nix
     ../python
     ./nodejs.nix
+    ../just
   ];
 
   home.packages = with pkgs; [
