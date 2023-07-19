@@ -78,6 +78,7 @@ in
         { class = "pop-up"; }
         { class = "(?i)syncthing"; }
         { class = "zoom"; }
+        { class = "(?i)xmessage"; }
         { title = "Artha"; }
         { title = "Screen Layout Editor"; } # i.e. arandr
         { title = "Calculator"; }

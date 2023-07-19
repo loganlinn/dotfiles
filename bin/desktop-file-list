@@ -8,17 +8,21 @@
 
 set -e
 
+: "${XDG_DATA_HOME:-$HOME/.local/share}"
 : "${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}"
 
 
 xdg-desktop-dirs() {
-  tr ':' '\n' <<<"$XDG_DATA_DIRS" | sed -e 's,/*$,/applications,'
+  printf "%s" "$XDG_DATA_HOME:$XDG_DATA_DIRS" |
+    tr ':' '\0' |
+    xargs -0 stat --printf '%n\0' 2>/dev/null |
+    xargs -0 fd -td applications
 }
 
 xdg-desktop-list(){
   for dir in $(xdg-desktop-dirs); do
     if [ -d "$dir" ]; then
-      printf "%s\n" "$dir"/*.desktop
+      printf "%s\n" "$dir"*.desktop
     fi
   done
 }
