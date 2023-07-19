@@ -15,8 +15,9 @@ in
       inherit (pkgs.stdenv) isLinux isDarwin;
 
       extraSpecialArgs = {
+        inherit inputs;
+        # inherit (inputs) home-manager; # TODO find what's referencing this
         lib = mkHmLib (mkMyLib lib); # extend lib with .my and .hm
-        inherit (inputs) nixpkgs home-manager emacs;
         inherit (config) flake-root;
         flake = self; # remove usage
         nerdfonts = import ../lib/nerdfonts; # TODO can get rid of this now with lib.my.nerdfonts

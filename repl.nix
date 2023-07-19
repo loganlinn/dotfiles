@@ -18,7 +18,7 @@ let
   lib = import ./lib/extended.nix pkgs.lib;
 in
 
-builtins // self // lib // {
+builtins // self // lib // rec {
   inherit self pkgs lib config options;
 
   hm = let inherit (self.currentSystem.legacyPackages) homeConfigurations; in
@@ -26,8 +26,8 @@ builtins // self // lib // {
       homeConfigurations'.${hostname} or
         null;
 
-  nixos =
+  nixos = 
     self.nixosConfigurations."${user}@${hostname}" or
-      self nixosConfigurations.${hostname} or
+      self.nixosConfigurations.${hostname} or
         null;
 }

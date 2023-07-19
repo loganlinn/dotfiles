@@ -1,4 +1,4 @@
-{ config, lib, pkgs, flake-root, ... }:
+{ config, lib, ... }:
 
 with lib;
 let

@@ -325,31 +325,47 @@ let
 
 in
 {
-  xdg.enable = true;
-  xdg.userDirs = {
-    enable = true;
-  };
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications =
-      (genAttrs urls (_: browser)) //
-      (genAttrs code (_: editor)) //
-      (genAttrs images (_: viewer)) //
-      (genAttrs audioVideo (_: player)) //
-      { "inode/directory" = filemanager; } //
-      {
-        "x-scheme-handler/jetbrains" = "jetbrains-toolbox.desktop";
-        "x-scheme-handler/slack" = "slack.desktop";
-        "x-scheme-handler/obsidian" = "obsidian.desktop";
-        "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
-      };
-    associations.removed = {
-      "inode/directory" = [ "code.desktop" ];
+  options.xdg = {
+    # a la  https://www.pathname.com/fhs/pub/fhs-2.3.html#USRSRCSOURCECODE2
+    userDirs.sourceCode = mkOption {
+      type = with types; nullOr (coercedTo path toString str);
+      default = "${config.home.homeDirectory}/src";
+      defaultText =
+        literalExpression ''"''${config.home.homeDirectory}/Code"'';
+      description = "The source code directory.";
     };
   };
 
-  xdg.dataFile = lib.my.fileSourceSet {
-    dir = ../../local/share/icons/hicolor;
-    base = ../../local/share;
+  config = {
+    xdg.enable = true;
+    xdg.userDirs = {
+      enable = true;
+      extraConfig = {
+        "XDG_SOURCECODE_DIR" = config.xdg.userDirs.sourceCode;
+      };
+    };
+    xdg.mimeApps = {
+      enable = true;
+      defaultApplications =
+        (genAttrs urls (_: browser)) //
+        (genAttrs code (_: editor)) //
+        (genAttrs images (_: viewer)) //
+        (genAttrs audioVideo (_: player)) //
+        { "inode/directory" = filemanager; } //
+        {
+          "x-scheme-handler/jetbrains" = "jetbrains-toolbox.desktop";
+          "x-scheme-handler/slack" = "slack.desktop";
+          "x-scheme-handler/obsidian" = "obsidian.desktop";
+          "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
+        };
+      associations.removed = {
+        "inode/directory" = [ "code.desktop" ];
+      };
+    };
+
+    xdg.dataFile = lib.my.fileSourceSet {
+      dir = ../../local/share/icons/hicolor;
+      base = ../../local/share;
+    };
   };
 }

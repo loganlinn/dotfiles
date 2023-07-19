@@ -1,13 +1,11 @@
-{ options, config, lib, pkgs, nix-colors, home-manager, ... }:
+{ inputs, options, config, lib, pkgs, nix-colors, ... }:
 
 with lib;
 let
-  inherit (home-manager.lib.hm.types) fontType;
+  inherit (inputs.home-manager.lib.hm.types) fontType;
   inherit (nix-colors.lib.contrib { inherit pkgs; }) vimThemeFromScheme shellThemeFromScheme;
 
   cfg = config.modules.theme;
-
-  colorCfg = config.colorScheme.colors;
 in
 {
   imports = [
@@ -77,10 +75,11 @@ in
       default = { };
     };
 
-    # colors = with types; submodule {
-    #   options = {
-    #   };
-    # };
+    vimTheme = mkOption {
+      type = types.package;
+      readOnly = true;
+      default = vimThemeFromScheme { scheme = config.colorScheme; };
+    };
   };
 
   config = mkIf (cfg.active != null) (mkMerge [

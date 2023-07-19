@@ -1,6 +1,7 @@
 {
-  nixpkgs,
-  home-manager,
+  inputs ? (builtins.getFlake (builtins.toString ../..)).inputs,
+  nixpkgs ? inputs.nixpkgs,
+  home-manager ? inputs.home-manager,
   ...
 }: {
   nix.nixPath = [

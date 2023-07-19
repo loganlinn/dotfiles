@@ -38,8 +38,6 @@ rec {
 
   s = "kitty +kitten ssh";
 
-  bb = "rlwrap bb";
-
   now = "date +%s";
   today = "date -Idate";
 }

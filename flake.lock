@@ -20,25 +20,6 @@
         "type": "github"
       }
     },
-    "ak-nix": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
-      },
-      "locked": {
-        "lastModified": 1688836388,
-        "narHash": "sha256-Fm6cH4b7s2tZnriP/cOwqu7/UGDPosz2wqt6dYNxDLU=",
-        "owner": "aakropotkin",
-        "repo": "ak-nix",
-        "rev": "946451fdeb5d1851bcd5fcbf103402a863b59657",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "ref": "main",
-        "repo": "ak-nix",
-        "type": "github"
-      }
-    },
     "base16-schemes": {
       "flake": false,
       "locked": {
@@ -561,20 +542,6 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1688798537,
-        "narHash": "sha256-+3QEnDgBiso8lgUJpMagn6xCujmarc6zCWfKYAd6nqU=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "842e90934a352f517d23963df3ec0474612e483c",
-        "type": "github"
-      },
-      "original": {
-        "id": "nixpkgs",
-        "type": "indirect"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
         "lastModified": 1688188316,
         "narHash": "sha256-CXuQllDKCxtZaB/umnZOvoJ/d4kJguYgffeTA9l1B3o=",
         "owner": "NixOS",
@@ -617,27 +584,6 @@
         "type": "github"
       }
     },
-    "rime": {
-      "inputs": {
-        "ak-nix": "ak-nix",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1688844454,
-        "narHash": "sha256-n5npsN71uHJN+sw1Qc3+FcKrm7kXcfwiWqgEn1rxDU4=",
-        "owner": "aakropotkin",
-        "repo": "rime",
-        "rev": "60a2e58e1b18d195666b473469faeff696622e0b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "repo": "rime",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -654,9 +600,9 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "rime": "rime",
         "rust-overlay": "rust-overlay",
-        "sops-nix": "sops-nix"
+        "sops-nix": "sops-nix",
+        "yants": "yants"
       }
     },
     "rust-overlay": {
@@ -682,7 +628,7 @@
     },
     "sops-nix": {
       "inputs": {
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_3",
         "nixpkgs-stable": "nixpkgs-stable_3"
       },
       "locked": {
@@ -741,6 +687,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "yants": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1686863218,
+        "narHash": "sha256-kooxYm3/3ornWtVBNHM3Zh020gACUyFX2G0VQXnB+mk=",
+        "owner": "divnix",
+        "repo": "yants",
+        "rev": "8f0da0dba57149676aa4817ec0c880fbde7a648d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "divnix",
+        "repo": "yants",
         "type": "github"
       }
     }

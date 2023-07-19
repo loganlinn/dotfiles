@@ -1,12 +1,12 @@
-{ nixpkgs, home-manager, ... }: {
+{ inputs, ... }: {
   nix.registry = {
     nixpkgs.to = {
       type = "path";
-      path = nixpkgs;
+      path = inputs.nixpkgs;
     };
     home-manager.to = {
       type = "path";
-      path = home-manager;
+      path = inputs.home-manager;
     };
   };
 }

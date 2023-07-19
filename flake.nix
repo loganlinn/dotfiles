@@ -32,6 +32,8 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
+    yants.url = "github:divnix/yants";
+    yants.inputs.nixpkgs.follows = "nixpkgs";
     grub2-themes.inputs.nixpkgs.follows = "nixpkgs";
     grub2-themes.url = "github:AnotherGroupChat/grub2-themes-png";
     mission-control.url = "github:Platonic-Systems/mission-control";
@@ -39,8 +41,8 @@
     nixos-flake.url = "github:srid/nixos-flake";
     sops-nix.url = "github:Mic92/sops-nix";
     agenix.url = "github:ryantm/agenix";
-    rime.url = "github:aakropotkin/rime";
-    rime.inputs.nixpkgs.follows = "nixpkgs";
+    # rime.url = "github:aakropotkin/rime";
+    # rime.inputs.nixpkgs.follows = "nixpkgs";
     # process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
 
     ## shells

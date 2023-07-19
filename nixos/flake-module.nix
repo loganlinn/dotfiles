@@ -8,8 +8,7 @@
   flake.nixosConfigurations.nijusan = withSystem "x86_64-linux" (system:
     inputs.nixpkgs.lib.nixosSystem {
       specialArgs = {
-        inherit inputs; # TODO remove
-        inherit (inputs) nixpkgs home-manager;
+        inherit inputs;
         # inherit (system.config) packages; # needed?
       };
       modules = (with inputs.nixos-hardware.outputs.nixosModules; [

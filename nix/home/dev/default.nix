@@ -72,7 +72,6 @@ in
     # tools/utils
     xxd # make a hexdump or do the reverse.
     cloc
-    just # save and run commands
 
     ##########################################################################
     # LANGUAGES
