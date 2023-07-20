@@ -10,18 +10,16 @@ in
   #   homeManagerModule = homeManagerModules.default;
   # };
 
-  perSystem = ctx@{ options, config, self', inputs', pkgs, lib, system, ... }:
+  perSystem = ctx@{ options, config, self', inputs', pkgs, system, ... }:
     let
-      inherit (pkgs.stdenv) isLinux isDarwin;
+      lib = mkHmLib (mkMyLib ctx.lib); # extend lib with .my and .hm
 
       extraSpecialArgs = {
-        inherit inputs;
-        # inherit (inputs) home-manager; # TODO find what's referencing this
-        lib = mkHmLib (mkMyLib lib); # extend lib with .my and .hm
+        inherit inputs lib;
         inherit (config) flake-root;
         flake = self; # remove usage
-        nerdfonts = import ../lib/nerdfonts; # TODO can get rid of this now with lib.my.nerdfonts
         nix-colors = import ../nix-colors/extended.nix inputs;
+        # nerdfonts = import ../lib/nerdfonts; # TODO can get rid of this now with lib.my.nerdfonts
       };
 
       commonModules = [
@@ -29,6 +27,7 @@ in
         # inputs.emanote.homeManagerModule
         {
           nixpkgs.overlays = [
+            self.overlays.default
             inputs.rust-overlay.overlays.default
             inputs.emacs.overlays.default
           ];

@@ -79,6 +79,8 @@ in
         { class = "(?i)syncthing"; }
         { class = "zoom"; }
         { class = "(?i)xmessage"; }
+        { class = "(?i)yad"; }
+        { class = "(?i)zenity"; }
         { title = "Artha"; }
         { title = "Screen Layout Editor"; } # i.e. arandr
         { title = "Calculator"; }

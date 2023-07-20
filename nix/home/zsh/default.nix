@@ -44,15 +44,18 @@ in
       src = "$HOME/src";
       gh = "$HOME/src/github.com";
       clj = "$HOME/src/github.com/clojure";
-      pkgs = "$HOME/src/github.com/NixOS/nixpkgs";
+      nixpkgs = "$HOME/src/github.com/NixOS/nixpkgs";
+      nixos = "$HOME/src/github.com/NixOS";
+      doom = "${config.xdg.configHome}/doom";
+      emacs = "${config.xdg.configHome}/emacs";
       hm = "$HOME/src/github.com/nix-community/home-manager";
     } // lib.optionalAttrs config.xdg.enable {
       cfg = config.xdg.configHome;
-      dl = config.xdg.userDirs.download;
-      doc = config.xdg.userDirs.documents;
-      img = config.xdg.userDirs.pictures;
-      mus = config.xdg.userDirs.music;
-      vid = config.xdg.userDirs.videos;
+      dls = config.xdg.userDirs.download;
+      docs = config.xdg.userDirs.documents;
+      pics = config.xdg.userDirs.pictures;
+      music = config.xdg.userDirs.music;
+      vids = config.xdg.userDirs.videos;
       trash = "${config.xdg.dataHome}/Trash/files"; # https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
     };
 

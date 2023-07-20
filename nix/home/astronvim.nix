@@ -1,9 +1,10 @@
 { config, pkgs, lib, ... }:
 
 with lib;
-with lib.my;
+
 
 let
+  inherit (lib.my) getPackageExe;
 
   cfg = config.my.astronvim;
 

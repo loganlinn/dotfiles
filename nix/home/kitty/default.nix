@@ -1,19 +1,23 @@
 { config, pkgs, lib, ... }:
 
 with lib;
+with lib.my;
 
 let
-  inherit (pkgs.stdenv) isLinux isDarwin;
+
+  writeKittyBin = name: args:
+    pkgs.writeShellScriptBin "kitty-${name}" ''exec kitty ${escapeShellArgs (map toString (toList args))} "$@"'';
+
 in
 {
-  programs.rofi.terminal = "${config.programs.kitty.package}/bin/kitty";
+  programs.rofi.terminal = getPackageExe config.programs.kitty;
 
   programs.kitty = {
     enable = true;
 
     # Wrap package to fix apparent issue with how libxkbcommon is (not) loaded:
     # 'Failed to load libxkbcommon.xkb_keysym_from_name with error: Failed to find libxkbcommon'
-    package = (pkgs.kitty.overrideAttrs ({ buildInputs ? [], postInstall ? "", ... }: {
+    package = (pkgs.kitty.overrideAttrs ({ buildInputs ? [ ], postInstall ? "", ... }: {
       buildInputs = buildInputs ++ [ pkgs.makeWrapper ];
       postInstall = postInstall + ''
         wrapProgram $out/bin/kitty \
@@ -26,7 +30,7 @@ in
     font = {
       package = pkgs.victor-mono;
       name = "Victor Mono";
-      size = if isDarwin then 14 else 12;
+      size = if pkgs.stdenv.isDarwin then 14 else 12;
     };
 
     # https://sw.kovidgoyal.net/kitty/actions/
@@ -106,13 +110,23 @@ in
   };
 
   home.packages = with pkgs; [
-  ] ++ optionals isLinux [
+    (writeKittyBin "diff" ["+kitten" "diff"])
+    (writeKittyBin "ssh" ["+kitten" "ssh"])
+    (writeKittyBin "cat" ["+kitten" "icat"])
+    (writeKittyBin "panel" ["+kitten" "panel"])
+    (writeKittyBin "ask" ["+kitten" "ask"])
+  ] ++ optionals pkgs.stdenv.isLinux [
     (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
   ] ++ optionals config.xsession.windowManager.i3.enable [
-    (writeShellScriptBin "kitty-floating" ''exec kitty --class kitty-floating "$@"'')
-    (writeShellScriptBin "kitty-one" ''exec kitty --class kitty-one --single-instance "$@"'')
-    (writeShellScriptBin "kitty-scratch" ''exec kitty --class kitty-scratch "$@"'')
+    (writeKittyBin "floating" ["--class" "kitty-floating"])
+    (writeKittyBin "one" ["--class" "kitty-one" "--single-instance"])
+    (writeKittyBin "scratch" ["--class" "kitty-scratch" "--single-instance"])
   ];
+
+  home.shellAliases = {
+    s = "kitty +kitten ssh";
+    d = "kitty +kitten diff";
+  };
 
   programs.zsh.initExtra = ''
     kitty + complete setup zsh | source /dev/stdin
@@ -122,6 +136,7 @@ in
     for_window [class="kitty-floating"] floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 17 ppt
     for_window [class="kitty-one"] floating enable, move position center, resize set 1600 1200
     for_window [class="kitty-scratch"] move scratchpad, scratchpad show
+    for_window [class="kitty-panel"] floating enable, move window to position cursor
     bindsym $mod+Ctrl+Return exec kitty-one
   '';
 }

@@ -13,13 +13,22 @@ let
 
   self = getFlake (toString ./.);
 
-  inherit (self.currentSystem.allModuleArgs) config options pkgs;
+  inherit (self.currentSystem.allModuleArgs) pkgs;
 
   lib = import ./lib/extended.nix pkgs.lib;
 in
 
-builtins // self // lib // rec {
-  inherit self pkgs lib config options;
+builtins // lib // rec {
+  inherit self lib;
+  inherit (self.currentSystem.allModuleArgs)
+    config
+    options
+    inputs
+    inputs'
+    self'
+    system
+    pkgs;
+
 
   hm = let inherit (self.currentSystem.legacyPackages) homeConfigurations; in
     homeConfigurations."${user}@${hostname}" or

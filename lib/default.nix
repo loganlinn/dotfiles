@@ -22,6 +22,8 @@ rec {
 
   font-awesome = import ./font-awesome.nix;
 
+  types = import ./types.nix { inherit lib; };
+
   rofi = import ./rofi.nix { inherit lib; };
 
   float = import ./float.nix { inherit lib; };

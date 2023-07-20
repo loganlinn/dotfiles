@@ -16,7 +16,7 @@ function nixpkgs() {
 }
 
 function nixpkgs-repl() {
-  nix repl --expr 'let pkgs = import <nixpkgs> {}; in builtins // pkgs.lib // { inherit pkgs; }'
+  nix repl --expr 'let pkgs = import <nixpkgs> {}; in builtins // pkgs.lib // { inherit pkgs; inherit (pkgs) lib; }'
 }
 
 function nixpkgs-shell() {

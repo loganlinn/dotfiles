@@ -192,6 +192,18 @@ in
     settings = {
       experimental-features = [ "nix-command" "flakes" "repl-flake" ];
       warn-dirty = false;
+      accept-flake-config = true;
+      # bash-prompt = ;
+      # bash-prompt-prefix = ;
+      # bash-prompt-suffix = ;
+      # plugin-files = [];
+      run-diff-hook = true;
+      show-trace = true;
+      # use-xdg-base-directories = true; # Warning: This changes the location of some well-known symlinks that Nix creates, which might break tools that rely on the old, non-XDG-conformant locations.
+      # In particular, the following locations change:
+      # ~/.nix-profile  => $XDG_STATE_HOME/nix/profile
+      # ~/.nix-defexpr  => $XDG_STATE_HOME/nix/defexpr
+      # ~/.nix-channels => $XDG_STATE_HOME/nix/channels
     };
   };
 

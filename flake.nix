@@ -27,15 +27,16 @@
     # eww.url = "github:elkowar/eww";
     # eww.inputs.nixpkgs.follows = "nixpkgs";
     # nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
+    # nixgl.url = "github:guibou/nixGL";
 
     ## libs + data
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
-    yants.url = "github:divnix/yants";
-    yants.inputs.nixpkgs.follows = "nixpkgs";
-    grub2-themes.inputs.nixpkgs.follows = "nixpkgs";
-    grub2-themes.url = "github:AnotherGroupChat/grub2-themes-png";
+    haumea.url= "github:nix-community/haumea/v0.2.2";
+    haumea.inputs.nixpkgs.follows = "nixpkgs";
+    # yants.url = "github:divnix/yants";
+    # yants.inputs.nixpkgs.follows = "nixpkgs";
     mission-control.url = "github:Platonic-Systems/mission-control";
     nix-colors.url = "github:misterio77/nix-colors";
     nixos-flake.url = "github:srid/nixos-flake";
@@ -60,7 +61,7 @@
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = [ "x86_64-linux" "aarch64-darwin" "aarch64-linux" ];
+    systems = [ "x86_64-linux" "aarch64-darwin" ];
 
     imports = [
       inputs.flake-parts.flakeModules.easyOverlay
@@ -77,11 +78,11 @@
     perSystem = { config, system, inputs', pkgs, lib, ... }: {
       packages.jdk = lib.mkDefault pkgs.jdk;
 
-      overlayAttrs = {
+      overlayAttrs = config.packages // {
+
         inherit (inputs'.home-manager.packages) home-manager;
         inherit (inputs'.devenv.packages) devenv;
         inherit (inputs'.emacs.packages) emacs-unstable;
-        inherit (config.packages) jdk;
       };
 
       formatter = pkgs.nixpkgs-fmt;

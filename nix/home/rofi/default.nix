@@ -1,8 +1,6 @@
 { config
-, options
 , lib
 , pkgs
-, nerdfonts
 , ...
 }:
 
@@ -10,14 +8,12 @@ with lib;
 
 let
 
+  inherit (lib.my) nerdfonts;
+
   modeDisplay = label: icon: "${icon} ${label}";
 
 in
 {
-  imports = [
-    ./network-manager.nix
-  ];
-
   home.packages = with pkgs; [
     # wrappers (not plugins)
     rofi-systemd

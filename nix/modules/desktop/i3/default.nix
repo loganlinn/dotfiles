@@ -46,6 +46,7 @@ in
     ];
 
     home.packages = with pkgs; [
+      yad # display GTK+ dialogs in shell scripts (fork of zenity)
       libnotify
       ponymix
       rofi-systemd

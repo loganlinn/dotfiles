@@ -1,4 +1,4 @@
-rec {
+{
   "'..'" = "cd ..";
   "'...'" = "cd ...";
   l = "ls -lah";
@@ -35,8 +35,6 @@ rec {
   kctx = "kubectx";
   kk = "kustomize";
   kkb = "kustomize build";
-
-  s = "kitty +kitten ssh";
 
   now = "date +%s";
   today = "date -Idate";

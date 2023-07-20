@@ -250,23 +250,24 @@
         "type": "github"
       }
     },
-    "grub2-themes": {
+    "haumea": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1668792917,
-        "narHash": "sha256-jLYxy20zaoGHLB43trcWgCHDJKUux029unUpzaB1P74=",
-        "owner": "AnotherGroupChat",
-        "repo": "grub2-themes-png",
-        "rev": "7e8a1ea75881090ebf2576d9db9ab243c4d6f783",
+        "lastModified": 1685133229,
+        "narHash": "sha256-FePm/Gi9PBSNwiDFq3N+DWdfxFq0UKsVVTJS3cQPn94=",
+        "owner": "nix-community",
+        "repo": "haumea",
+        "rev": "34dd58385092a23018748b50f9b23de6266dffc2",
         "type": "github"
       },
       "original": {
-        "owner": "AnotherGroupChat",
-        "repo": "grub2-themes-png",
+        "owner": "nix-community",
+        "ref": "v0.2.2",
+        "repo": "haumea",
         "type": "github"
       }
     },
@@ -592,7 +593,7 @@
         "emacs": "emacs",
         "flake-parts": "flake-parts",
         "flake-root": "flake-root",
-        "grub2-themes": "grub2-themes",
+        "haumea": "haumea",
         "home-manager": "home-manager_2",
         "mission-control": "mission-control",
         "nix-colors": "nix-colors",
@@ -601,8 +602,7 @@
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "rust-overlay": "rust-overlay",
-        "sops-nix": "sops-nix",
-        "yants": "yants"
+        "sops-nix": "sops-nix"
       }
     },
     "rust-overlay": {
@@ -687,26 +687,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "yants": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1686863218,
-        "narHash": "sha256-kooxYm3/3ornWtVBNHM3Zh020gACUyFX2G0VQXnB+mk=",
-        "owner": "divnix",
-        "repo": "yants",
-        "rev": "8f0da0dba57149676aa4817ec0c880fbde7a648d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "divnix",
-        "repo": "yants",
         "type": "github"
       }
     }

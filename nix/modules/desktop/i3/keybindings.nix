@@ -14,6 +14,7 @@ foldl' attrsets.unionOfDisjoint { }
 
     session = {
       "$mod+Shift+q" = "kill";
+      "$mod+w" = "exec --no-startup-id ${getExe (pkgs.callPackage ../../../pkgs/x-window-focus-close.nix {})}";
       "--release $mod+Shift+x" = "exec --no-startup-id ${pkgs.xdotool}/bin/xdotool selectwindow windowclose"; # alternatively, xkill
       "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
       "$mod+Ctrl+c" = "restart";
@@ -64,8 +65,8 @@ foldl' attrsets.unionOfDisjoint { }
         {
           "$mod+space" = "${rofi} -show combi -sidebar-mode true";
           "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
-          "$mod+w" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
-          "$mod+Shift+w" = "${rofi} -show windowcd -modi window#windowcd -sidebar-mode true";
+          "$mod+comma" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
+          "$mod+period" = "${rofi} -show windowcd -modi window#windowcd -sidebar-mode true";
           "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
           "$mod+Escape" = "rofi-power";
           "$mod+s" = getExe pkgs.rofi-systemd;

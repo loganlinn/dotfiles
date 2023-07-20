@@ -1,9 +1,11 @@
-{ config, lib, pkgs, nerdfonts, ... }:
+{ config, lib, pkgs, ... }:
 
 with builtins;
 with lib;
 
 let
+  inherit (lib.my) nerdfonts;
+
   cfg = config.modules.polybar;
 
   # helpers

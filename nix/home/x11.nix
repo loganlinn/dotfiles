@@ -9,6 +9,7 @@
     xdo # Perform actions on windows
     wmctrl
     xscreensaver
+    (pkgs.callPackage ../pkgs/x-window-focus-close.nix {})
   ] ++ (with pkgs.xorg; [
     # https://www.x.org/releases/current/doc/man/man1/index.xhtml
     # -----------------------------------------------------------
