@@ -1,12 +1,11 @@
 { pkgs, lib, ... }: {
-  home.sessionVariables.VSCODE_TELEMETRY_DISABLED = "1";
-  programs.vscode = {
-    enable = lib.mkDefault true;
-    package = lib.mkDefault pkgs.vscode; # TODO pkgs.vscodium
 
-    enableUpdateCheck = true;
-    enableExtensionUpdateCheck = true;
-    mutableExtensionsDir = true;
+  home.sessionVariables.VSCODE_TELEMETRY_DISABLED = "1";
+
+  programs.vscode = {
+    # enableUpdateCheck = true;
+    # enableExtensionUpdateCheck = true;
+    # mutableExtensionsDir = true;
 
     # https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/editors/vscode/extensions
     extensions = with pkgs.vscode-extensions; [

@@ -341,10 +341,10 @@ in
           bindsym Right resize shrink width 8 px or 1 ppt
 
           # Direction (coarse)
-          bindsym Shift+h resize shrink width 24 px or 3 ppt
-          bindsym Shift+j resize grow height 24 px or 3 ppt
-          bindsym Shift+k resize shrink height 24 px or 3 ppt
-          bindsym Shift+l resize grow width 24 px or 3 ppt
+          bindsym Shift+h resize grow width 24 px or 3 ppt
+          bindsym Shift+j resize shrink height 24 px or 3 ppt
+          bindsym Shift+k resize grow height 24 px or 3 ppt
+          bindsym Shift+l resize shrink grow width 24 px or 3 ppt
           bindsym Shift+Left resize shrink width 24 px or 3 ppt
           bindsym Shift+Down resize grow height 24 px or 3 ppt
           bindsym Shift+Up resize shrink height 24 px or 3 ppt

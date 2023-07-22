@@ -1,6 +1,6 @@
 { lib , rustPlatform , fetchFromGitHub , ...}:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage {
   pname = "i3-auto-layout";
   version = "unstable-2022-03-29";
 

@@ -33,7 +33,7 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
-    haumea.url= "github:nix-community/haumea/v0.2.2";
+    haumea.url = "github:nix-community/haumea/v0.2.2";
     haumea.inputs.nixpkgs.follows = "nixpkgs";
     # yants.url = "github:divnix/yants";
     # yants.inputs.nixpkgs.follows = "nixpkgs";
@@ -67,19 +67,32 @@
       inputs.flake-parts.flakeModules.easyOverlay
       inputs.flake-root.flakeModule
       inputs.mission-control.flakeModule
-      # inputs.nixos-flake.flakeModule # FIXME: conflicts with flake.lib (edit: still?)
       # inputs.emanote.flakeModule
       ./flake-modules/options.nix # TODO move
+      ./lib/flake-module.nix
       ./home-manager/flake-module.nix
       ./nixos/flake-module.nix
       ./nix/flake-parts
     ];
 
     perSystem = { config, system, inputs', pkgs, lib, ... }: {
+
       packages.jdk = lib.mkDefault pkgs.jdk;
+      packages.kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix {};
+      packages.i3-auto-layout = pkgs.callPackage ./nix/pkgs/i3-auto-layout.nix {};
+      # packages.i3-balance-workspace = pkgs.callPackage ./nix/pkgs/i3-balance-workspace.nix {};
+      # https://github.com/NixOS/nixpkgs/pull/244153
+      packages.graphite-cli = pkgs.nodePackages.graphite-cli.override (prev: {
+        nativeBuildInputs = with pkgs; [ installShellFiles pkg-config ];
+        buildInputs = with pkgs; [
+          pixman
+          pango
+          cairo
+        ];
+      });
 
-      overlayAttrs = config.packages // {
-
+      overlayAttrs = {
+        inherit (config.packages) jdk kubefwd i3-auto-layout;
         inherit (inputs'.home-manager.packages) home-manager;
         inherit (inputs'.devenv.packages) devenv;
         inherit (inputs'.emacs.packages) emacs-unstable;
@@ -120,10 +133,6 @@
             meta = { description = "Show flake"; exec = wrap "nix flake metadata"; };
           };
       };
-    };
-
-    flake = {
-      lib.my = (import ./lib/extended.nix inputs.nixpkgs.lib).my;
     };
 
     debug = true; # https://flake.parts/debug.html, https://flake.parts/options/flake-parts.html#opt-debug

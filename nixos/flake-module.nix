@@ -8,9 +8,9 @@
   flake.nixosConfigurations.nijusan = withSystem "x86_64-linux" (system:
     inputs.nixpkgs.lib.nixosSystem {
       specialArgs = {
-        inherit inputs;
-        # inherit (system.config) packages; # needed?
+        inherit self inputs;
       };
+
       modules = (with inputs.nixos-hardware.outputs.nixosModules; [
         common-cpu-intel
         common-gpu-nvidia-nonprime
@@ -20,7 +20,6 @@
         docker
         fonts
         networking
-        nix-path
         nix-registry
         nvidia
         pipewire
@@ -30,6 +29,9 @@
         tailscale
         thunderbolt
       ] ++ [
+        {
+          nixpkgs.overlays = [self.overlays.default];
+        }
         # inputs.home-manager.nixosModules.home-manager
         # inputs.sops-nix.nixosModules.sops
         # inputs.grub2-themes.nixosModules.default

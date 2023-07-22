@@ -4,7 +4,7 @@ with lib;
 
 let
   cfg = config.xsession.windowManager.i3;
-  i3-auto-layout = pkgs.callPackage ../../../pkgs/i3-auto-layout.nix {};
+  i3-auto-layout = pkgs.callPackage ../../../pkgs/i3-auto-layout.nix {}; # TODO should be able to used overlay now
 in
 {
   imports = [

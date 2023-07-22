@@ -16,6 +16,7 @@ in
 
   home.packages = with pkgs; [
     openssl
+    libossp_uuid # uuid command
 
     # benchmarking
     ## hey
@@ -58,7 +59,6 @@ in
 
     # version control
     pre-commit
-    nodePackages_latest.graphite-cli
     delta
 
     # apis
@@ -148,7 +148,7 @@ in
     # markdown
     mdsh
     glow
-    nodePackages_latest.mermaid-cli
+    nodePackages.mermaid-cli
 
     # vim
     nodePackages.vim-language-server

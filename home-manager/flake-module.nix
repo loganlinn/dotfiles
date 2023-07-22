@@ -14,12 +14,12 @@ in
     let
       lib = mkHmLib (mkMyLib ctx.lib); # extend lib with .my and .hm
 
+      nix-colors = import ../nix-colors/extended.nix inputs;
+
       extraSpecialArgs = {
-        inherit inputs lib;
+        inherit inputs lib self' inputs' nix-colors;
         inherit (config) flake-root;
         flake = self; # remove usage
-        nix-colors = import ../nix-colors/extended.nix inputs;
-        # nerdfonts = import ../lib/nerdfonts; # TODO can get rid of this now with lib.my.nerdfonts
       };
 
       commonModules = [

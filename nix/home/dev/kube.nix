@@ -12,7 +12,6 @@
     stern # log tailer
     minikube
     # (pkgs.callPackage ../../pkgs/kubectl-fzf.nix { })
-    (pkgs.callPackage ../../pkgs/kubefwd.nix { })
   ];
 
   programs.k9s.enable = true;

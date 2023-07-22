@@ -36,6 +36,13 @@
   kk = "kustomize";
   kkb = "kustomize build";
 
-  now = "date +%s";
+  epoch = "date +%s";
   today = "date -Idate";
+
+  dotfiles-run = ''() { ( cd "''${DOTFILES_DIR-$HOME/.dotfiles}" && nix run ".#''${@}"; ) }'';
+  dotfiles-repl = "dotfiles-run flake-repl";
+  home-repl = "dotfiles-run home-repl";
+  home-switch = "dotfiles-run home-switch";
+  nixos-repl = "dotfiles-run nixos-repl";
+  nixos-switch = "dotfiles-run nixos-switch";
 }

@@ -1,9 +1,13 @@
+{ inputs
+, config
+, pkgs
+, lib
+, ...
+}:
+
+with lib;
+
 {
-  config,
-  pkgs,
-  lib,
-  ...
-}: {
   # Things to try
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
@@ -12,33 +16,56 @@
     ./xserver.nix
   ];
 
-  modules.tailscale = {
-    enable = true;
-    ssh.enable = true;
+  services.tailscale.enable = true;
+  my.tailscale.ssh.enable = true;
+
+  boot.loader = {
+    timeout = 3;
+    systemd-boot = {
+      enable = true;
+    };
+
+    grub = {
+      enable = false; # TODO
+      device = "/dev/disk/by-uuid/C7EA-9458";
+    };
+
+    efi = {
+      canTouchEfiVariables = true;
+      efiSysMountPoint = "/boot";
+    };
+
   };
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.extraModprobeConfig = lib.mkMerge [
-    "options snd_hda_intel power_save=1" # idle audio card after one second
-  ];
+  boot.plymouth = {
+    # enable = false;
+    # font = ;
+    # logo = ;
+    # theme = ;
+    # themesPackages = with pkgs; [
+    #   catppuccin-plymouth
+    #   adi1090x-plymouth-themes
+    #   nixos-bgrt-plymouth
+    # ];
+  };
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [
     "i915.enable_psr=1"
     "i915.force_probe=a780"
   ];
-  boot.kernelModules = ["kvm-intel"];
+  boot.kernelModules = [
+    "kvm-intel"
+  ];
+  boot.extraModprobeConfig = lib.mkMerge [
+    "options snd_hda_intel power_save=1" # idle audio card after one second
+  ];
 
-  boot.plymouth.enable = false;
-  # boot.plymouth.themesPackages = with pkgs; [
-  #   catppuccin-plymouth
-  #   adi1090x-plymouth-themes
-  #   nixos-bgrt-plymouth
-  # ];
-
-  powerManagement.enable = true;
-  powerManagement.cpuFreqGovernor = "powersave";
-  powerManagement.powertop.enable = false; # aggressively autosuspends usb devices. no config available. disable rather than hacking around.
+  powerManagement = {
+    enable = true;
+    cpuFreqGovernor = "powersave";
+    powertop.enable = false; # aggressively autosuspends usb devices. no config available. disable rather than hacking around.
+  };
 
   networking.hostName = "nijusan";
   networking.networkmanager.enable = true;
@@ -63,7 +90,7 @@
   };
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs._1password-gui.polkitPolicyOwners = ["logan"]; # for polkit agent process (required to use polkit)
+  programs._1password-gui.polkitPolicyOwners = [ "logan" ]; # for polkit agent process (required to use polkit)
 
   security.polkit.enable = true;
 
@@ -89,7 +116,7 @@
     usbutils
     xdg-utils
     # linuxPackages_latest.perf
-    ((vim_configurable.override {}).customize {
+    ((vim_configurable.override { }).customize {
       name = "vim";
       vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
         start = [
@@ -103,7 +130,7 @@
           vim-surround
           vim-unimpaired
         ];
-        opt = [];
+        opt = [ ];
       };
       vimrcConfig.customRC = ''
         let mapleader = "\<Space>"
@@ -121,26 +148,36 @@
     })
   ];
 
-  users.users.logan = {
+  my.user = "logan";
+
+  users.users.${config.my.user} = {
     isNormalUser = true;
     home = "/home/logan";
     createHome = true;
     shell = pkgs.zsh;
-    extraGroups = ["wheel" "networkmanager" "audio" "video" "docker" "onepassword" "davfs2"];
+    packages = with pkgs; [ kubefwd ];
+    extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" "davfs2" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwurIVpZjNpRjFva/8loWMCZobZQ3FSATVLC8LX2TDB"
     ];
   };
 
+  security.sudo.enable = true;
+
   nix = {
     package = pkgs.nixFlakes;
     settings = {
       experimental-features = [ "nix-command" "flakes" "repl-flake" ];
       warn-dirty = false;
-      trusted-users = ["logan"];
+      trusted-users = [ "logan" ];
     };
     gc.automatic = true; # see also: nix-store --optimise
+
+    nixPath = [
+      "nixpkgs=${inputs.nixpkgs}"
+      "home-manager=${inputs.home-manager}"
+    ];
   };
 
   nixpkgs = {
@@ -153,6 +190,7 @@
         };
       };
     };
+
   };
 
   system.stateVersion = "23.05";

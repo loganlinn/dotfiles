@@ -1,8 +1,8 @@
-{ nix-colors
+{ self'
 , config
 , pkgs
 , lib
-, system
+, nix-colors
 , ...
 }:
 let
@@ -43,6 +43,8 @@ in
     ../nix/modules/desktop/browsers/firefox.nix
     ../nix/modules/desktop/i3
   ];
+
+  programs.vscode.enable = false;
 
   sops.defaultSopsFile = ../secrets/default.yaml;
   sops.age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
@@ -169,6 +171,7 @@ in
   manual.json.enable = true;
 
   home.packages = with pkgs; [
+    self'.packages.graphite-cli
     # audacity
     # btrfs-snap # https://github.com/jf647/btrfs-snap
     # nemo
@@ -178,6 +181,7 @@ in
     google-cloud-sdk
     libreoffice
     plantuml
+    # github-desktop # requires gnome-keyring...
   ];
 
   home.username = "logan";
@@ -212,6 +216,9 @@ in
       allowUnfree = true;
       # https://github.com/nix-community/home-manager/issues/2942
       allowUnfreePredicate = _pkg: true;
+      permittedInsecurePackages = [
+        "openssl-1.1.1u"
+      ];
     };
   };
 }

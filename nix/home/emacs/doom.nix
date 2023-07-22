@@ -49,7 +49,7 @@ in
       editorconfig-core-c # per-project style config
       sqlite # :tools lookup & :lang org +roam
       texlive.combined.scheme-medium # :lang latex & :lang org (latex previews)
-      (writeShellScriptBin "doomer" ''doom run "$@" &'') # doom launch wrapper
+      (writeShellScriptBin "doomer" ''${pkgs.coreutils}/bin/nohup doom run "$@" >/dev/null 2>&1&'') # doom run detached
       nodePackages.prettier # css, html, js, jsx
     ];
 

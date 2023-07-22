@@ -4,7 +4,6 @@
   fonts = ./fonts.nix;
   minecraft-server = ./minecraft-server.nix;
   networking = ./networking;
-  nix-path = ./nix-path.nix;
   nix-registry = ../../nix/modules/nix-registry.nix;
   nvidia = ./nvidia.nix;
   pipewire = ./pipewire.nix;

@@ -52,7 +52,15 @@ foldl' attrsets.unionOfDisjoint { }
         then ''exec --no-startup-id emacsclient -c -a "" -n''
         else if config.programs.emacs.enable
         then ''exec --no-startup-id emacs''
-        else ''nop'';
+        else "nop";
+      "$mod+$alt+e" =
+        if !config.my.emacs.doom.enable then
+          "nop"
+        else if config.services.emacs.enable then
+          ''emacsclient --eval "(emacs-everywhere)"''
+        else
+          "exec --no-startup-id doom +everywhere"
+      ;
     };
 
     terminal = {
@@ -233,6 +241,6 @@ foldl' attrsets.unionOfDisjoint { }
         {
           "$mod+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
         } else {
-          "$mod+b" = "bar mode toggle";
-        };
+        "$mod+b" = "bar mode toggle";
+      };
   })
