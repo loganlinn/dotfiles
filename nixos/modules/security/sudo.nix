@@ -18,7 +18,7 @@ in
           };
           options = mkOption {
             type = with types; listOf (enum [ "NOPASSWD" "PASSWD" "NOEXEC" "EXEC" "SETENV" "NOSETENV" "LOG_INPUT" "NOLOG_INPUT" "LOG_OUTPUT" "NOLOG_OUTPUT" ]);
-            default = [ ];
+            default = ["NOPASSWD" "SETENV"];
           };
         };
       }));
@@ -30,6 +30,7 @@ in
       package = pkgs.sudo.override { withInsults = true; }; # do your worst.
       extraRules = [{
         inherit (cfg) commands;
+        users = [ config.my.user.name ];
         groups = [ "wheel" ];
       }];
     };

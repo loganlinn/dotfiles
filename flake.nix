@@ -3,23 +3,25 @@
 
   inputs = {
     ## packages
-    nixpkgs.url = "nixpkgs/nixos-unstable";
-    nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
+
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
     ## builders
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    darwin.url = "github:lnl7/nix-darwin";
-    darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:lnl7/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     # hyprland.url = "github:vaxerski/Hyprland/v0.21.0beta";
     # hyprland.inputs.nixpkgs.follows = "nixpkgs";
     # nixos-shell.url = "github:Mic92/nixos-shell";
     # nixinate.url = "github:matthewcroughan/nixinate";
 
     ## overlays
-    emacs.url = "github:nix-community/emacs-overlay";
-    emacs.inputs.nixpkgs.follows = "nixpkgs";
+    emacs-overlay.url = "github:nix-community/emacs-overlay";
+    emacs-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     # fenix.url = "github:nix-community/fenix";
@@ -30,18 +32,18 @@
     # nixgl.url = "github:guibou/nixGL";
 
     ## libs + data
-    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    nixos-flake.url = "github:srid/nixos-flake"; # demands nix-darwin
     flake-root.url = "github:srid/flake-root";
-    haumea.url = "github:nix-community/haumea/v0.2.2";
-    haumea.inputs.nixpkgs.follows = "nixpkgs";
-    # yants.url = "github:divnix/yants";
-    # yants.inputs.nixpkgs.follows = "nixpkgs";
-    mission-control.url = "github:Platonic-Systems/mission-control";
+    mission-control.url = "github:Platonic-Systems/mission-control"; # demands flake-root (and agenix?)
     nix-colors.url = "github:misterio77/nix-colors";
-    nixos-flake.url = "github:srid/nixos-flake";
     sops-nix.url = "github:Mic92/sops-nix";
     agenix.url = "github:ryantm/agenix";
+    # haumea.url = "github:nix-community/haumea/v0.2.2";
+    # haumea.inputs.nixpkgs.follows = "nixpkgs";
+    # yants.url = "github:divnix/yants";
+    # yants.inputs.nixpkgs.follows = "nixpkgs";
     # rime.url = "github:aakropotkin/rime";
     # rime.inputs.nixpkgs.follows = "nixpkgs";
     # process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
@@ -65,31 +67,21 @@
 
     imports = [
       inputs.flake-parts.flakeModules.easyOverlay
+      inputs.nixos-flake.flakeModule
       inputs.flake-root.flakeModule
       inputs.mission-control.flakeModule
-      # inputs.emanote.flakeModule
-      ./flake-modules/options.nix # TODO move
-      ./lib/flake-module.nix
-      ./home-manager/flake-module.nix
-      ./nixos/flake-module.nix
-      ./nix/flake-parts
+      ./flake-module.nix
     ];
 
     perSystem = { config, system, inputs', pkgs, lib, ... }: {
 
-      packages.jdk = lib.mkDefault pkgs.jdk;
-      packages.kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix {};
-      packages.i3-auto-layout = pkgs.callPackage ./nix/pkgs/i3-auto-layout.nix {};
-      # packages.i3-balance-workspace = pkgs.callPackage ./nix/pkgs/i3-balance-workspace.nix {};
-      # https://github.com/NixOS/nixpkgs/pull/244153
-      packages.graphite-cli = pkgs.nodePackages.graphite-cli.override (prev: {
-        nativeBuildInputs = with pkgs; [ installShellFiles pkg-config ];
-        buildInputs = with pkgs; [
-          pixman
-          pango
-          cairo
-        ];
-      });
+      packages = {
+        jdk = lib.mkDefault pkgs.jdk; # needed?
+        kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix {};
+      } // lib.optionalAttrs pkgs.stdenv.isLinux {
+        i3-auto-layout = pkgs.callPackage ./nix/pkgs/os-specific/linux/i3-auto-layout.nix {};
+        graphite-cli = pkgs.callPackage ./nix/pkgs/os-specific/linux/graphite-cli.nix {};
+      };
 
       overlayAttrs = {
         inherit (config.packages) jdk kubefwd i3-auto-layout;
@@ -101,7 +93,10 @@
       formatter = pkgs.nixpkgs-fmt;
 
       devShells.default = pkgs.mkShell {
-        inputsFrom = [ config.mission-control.devShell ];
+        inputsFrom = [
+          config.flake-root.devShell # sets FLAKE_ROOT
+          config.mission-control.devShell
+        ];
         buildInputs = [
           config.formatter
           inputs'.agenix.packages.agenix

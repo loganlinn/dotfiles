@@ -40,6 +40,11 @@ in
       tailscalePkg
     ];
 
+    services.tailscale = {
+      # useRoutingFeatures = "client";
+      permitCertUid = config.my.user.name;
+    };
+
     my.sudo.commands = [{
       command = tailscaleExe;
     }];
@@ -47,6 +52,7 @@ in
     # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups.
     networking.firewall = {
       checkReversePath = mkDefault "loose";
+      trustedInterfaces = [ tailscaleCfg.interfaceName ];
       allowedUDPPorts = [ tailscaleCfg.port ];
       allowedTCPPorts = mkIf cfg.ssh.enable cfg.ssh.ports;
     };

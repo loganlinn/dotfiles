@@ -15,7 +15,7 @@ let
 
   inherit (self.currentSystem.allModuleArgs) pkgs;
 
-  lib = import ./lib/extended.nix pkgs.lib;
+  lib = self.lib.mkLib pkgs.lib;
 in
 
 builtins // lib // rec {

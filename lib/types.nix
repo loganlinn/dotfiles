@@ -7,8 +7,6 @@ types // {
 
   pathStr = with types; coercedTo path toString str;
 
-  exeType = with types; coercedTo package getExe str;
-
   # home-manager/modules/programs/gpg.nix
   publicKeySubmodule = with types; submodule ({ config, ... }: {
     options = {

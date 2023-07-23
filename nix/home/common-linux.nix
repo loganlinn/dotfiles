@@ -13,6 +13,7 @@ lib.mkIf pkgs.stdenv.isLinux {
   home.packages = with pkgs; [
     gcc
     cached-nix-shell
+    usbutils # usb-devices
     sysz
     trash-cli
     xdg-utils

@@ -13,68 +13,18 @@ with lib;
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
   imports = [
     ./hardware-configuration.nix
+    ./kernel-configuration.nix
     ./xserver.nix
   ];
 
-  services.tailscale.enable = true;
+  my.user.name = "logan";
   my.tailscale.ssh.enable = true;
-
-  boot.loader = {
-    timeout = 3;
-    systemd-boot = {
-      enable = true;
-    };
-
-    grub = {
-      enable = false; # TODO
-      device = "/dev/disk/by-uuid/C7EA-9458";
-    };
-
-    efi = {
-      canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot";
-    };
-
-  };
-
-  boot.plymouth = {
-    # enable = false;
-    # font = ;
-    # logo = ;
-    # theme = ;
-    # themesPackages = with pkgs; [
-    #   catppuccin-plymouth
-    #   adi1090x-plymouth-themes
-    #   nixos-bgrt-plymouth
-    # ];
-  };
-
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelParams = [
-    "i915.enable_psr=1"
-    "i915.force_probe=a780"
-  ];
-  boot.kernelModules = [
-    "kvm-intel"
-  ];
-  boot.extraModprobeConfig = lib.mkMerge [
-    "options snd_hda_intel power_save=1" # idle audio card after one second
-  ];
-
-  powerManagement = {
-    enable = true;
-    cpuFreqGovernor = "powersave";
-    powertop.enable = false; # aggressively autosuspends usb devices. no config available. disable rather than hacking around.
-  };
 
   networking.hostName = "nijusan";
   networking.networkmanager.enable = true;
 
   time.timeZone = "America/Los_Angeles";
-
   i18n.defaultLocale = "en_US.UTF-8";
-
-  # services.flatpak.enable = true;
 
   programs.git.enable = true;
 
@@ -88,6 +38,7 @@ with lib;
     enable = true;
     enableSSHSupport = true;
   };
+
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
   programs._1password-gui.polkitPolicyOwners = [ "logan" ]; # for polkit agent process (required to use polkit)
@@ -96,9 +47,17 @@ with lib;
 
   programs.mosh.enable = true;
 
+  services.tailscale.enable = true;
+
   services.davfs2.enable = true;
   services.davfs2.davGroup = "davfs2";
 
+  # services.tumbler.enable = mkDefault true; # thunar thumbnail support for images
+  services.gvfs.enable = lib.mkDefault true; # thunar mount, trash, and other functionalities
+  # services.flatpak.enable = true;
+
+  environment.homeBinInPath = true; # Add ~/bin to PATH
+  environment.localBinInPath = true; # Add ~/.local/bin to PATH
   environment.systemPackages = with pkgs; [
     btrbk
     cachix
@@ -113,7 +72,6 @@ with lib;
     ripgrep
     sysz
     tree
-    usbutils
     xdg-utils
     # linuxPackages_latest.perf
     ((vim_configurable.override { }).customize {
@@ -148,22 +106,29 @@ with lib;
     })
   ];
 
-  my.user = "logan";
-
-  users.users.${config.my.user} = {
+  users.users.${config.my.user.name} = {
     isNormalUser = true;
-    home = "/home/logan";
+    home = "/home/${config.my.user.name}";
     createHome = true;
-    shell = pkgs.zsh;
+    shell = config.my.user.shell;
     packages = with pkgs; [ kubefwd ];
     extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" "davfs2" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwurIVpZjNpRjFva/8loWMCZobZQ3FSATVLC8LX2TDB"
-    ];
+    openssh.authorizedKeys = config.my.user.authorizedKeys;
   };
 
   security.sudo.enable = true;
+
+  xdg.portal = {
+    enable = true;
+    xdgOpenUsePortal = true;
+  };
+
+  documentation.enable = true;
+  documentation.dev.enable = true;
+  # documentation.man-db.enable = true;
+  documentation.nixos.extraModules  = [
+
+  ];
 
   nix = {
     package = pkgs.nixFlakes;

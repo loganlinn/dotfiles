@@ -1,6 +1,6 @@
 { writeShellApplication, ... }:
 writeShellApplication {
-  name = "flake-repl";
+  name = "repl";
   text = ''
     nix repl --file "${../../.}/repl.nix" "$@"
   '';

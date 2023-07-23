@@ -242,8 +242,10 @@ in
 
       for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
       for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
-      for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, move position center
       for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
+      for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, move position center
+
+      assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
 
       ################################################################################
       # Gaps
@@ -331,35 +333,35 @@ in
       bindsym $mod+r mode "$mode_resize"
       mode "$mode_resize" {
           # Direction (fine)
-          bindsym h resize grow width 8 px or 1 ppt
-          bindsym j resize shrink height 8 px or 1 ppt
-          bindsym k resize grow height 8 px or 1 ppt
-          bindsym l resize shrink width 8 px or 1 ppt
-          bindsym Left resize grow width 8 px or 1 ppt
-          bindsym Down resize shrink height 8 px or 1 ppt
-          bindsym Up resize grow height 8 px or 1 ppt
-          bindsym Right resize shrink width 8 px or 1 ppt
+          bindsym h     resize grow   width  8 px or 1 ppt
+          bindsym j     resize shrink height 8 px or 1 ppt
+          bindsym k     resize grow   height 8 px or 1 ppt
+          bindsym l     resize shrink width  8 px or 1 ppt
+          bindsym Left  resize grow   width  8 px or 1 ppt
+          bindsym Down  resize shrink height 8 px or 1 ppt
+          bindsym Up    resize grow   height 8 px or 1 ppt
+          bindsym Right resize shrink width  8 px or 1 ppt
 
           # Direction (coarse)
-          bindsym Shift+h resize grow width 24 px or 3 ppt
-          bindsym Shift+j resize shrink height 24 px or 3 ppt
-          bindsym Shift+k resize grow height 24 px or 3 ppt
-          bindsym Shift+l resize shrink grow width 24 px or 3 ppt
-          bindsym Shift+Left resize shrink width 24 px or 3 ppt
-          bindsym Shift+Down resize grow height 24 px or 3 ppt
-          bindsym Shift+Up resize shrink height 24 px or 3 ppt
-          bindsym Shift+Right resize grow width 24 px or 3 ppt
+          bindsym Shift+h     resize grow   width  24 px or 4 ppt
+          bindsym Shift+j     resize shrink height 24 px or 4 ppt
+          bindsym Shift+k     resize grow   height 24 px or 4 ppt
+          bindsym Shift+l     resize shrink width  24 px or 4 ppt
+          bindsym Shift+Left  resize shrink width  24 px or 4 ppt
+          bindsym Shift+Down  resize grow   height 24 px or 4 ppt
+          bindsym Shift+Up    resize shrink height 24 px or 4 ppt
+          bindsym Shift+Right resize grow   width  24 px or 4 ppt
 
           # Percentages
-          bindsym 1 resize set width 90 ppt, mode default
-          bindsym 2 resize set width 80 ppt, mode default
-          bindsym 3 resize set width 70 ppt, mode default
-          bindsym 4 resize set width 60 ppt, mode default
-          bindsym 5 resize set width 50 ppt, mode default
-          bindsym 6 resize set width 40 ppt, mode default
-          bindsym 7 resize set width 30 ppt, mode default
-          bindsym 8 resize set width 20 ppt, mode default
-          bindsym 9 resize set width 10 ppt, mode default
+          bindsym 1       resize set width 90 ppt, mode default
+          bindsym 2       resize set width 80 ppt, mode default
+          bindsym 3       resize set width 70 ppt, mode default
+          bindsym 4       resize set width 60 ppt, mode default
+          bindsym 5       resize set width 50 ppt, mode default
+          bindsym 6       resize set width 40 ppt, mode default
+          bindsym 7       resize set width 30 ppt, mode default
+          bindsym 8       resize set width 20 ppt, mode default
+          bindsym 9       resize set width 10 ppt, mode default
           bindsym Shift+9 resize set width 90 ppt, mode default
           bindsym Shift+8 resize set width 80 ppt, mode default
           bindsym Shift+7 resize set width 70 ppt, mode default

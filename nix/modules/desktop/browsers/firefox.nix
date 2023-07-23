@@ -7,7 +7,7 @@
   config = {
     programs.firefox = {
       enable = true;
-      profiles."${config.my.user}".settings = {
+      profiles."${config.my.user.name}".settings = {
         # Enable WebRTC VA-API decoding support
         # https://bugzilla.mozilla.org/show_bug.cgi?id=1646329
         # https://github.com/elFarto/nvidia-vaapi-driver/

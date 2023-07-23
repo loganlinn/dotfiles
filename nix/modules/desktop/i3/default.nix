@@ -4,7 +4,6 @@ with lib;
 
 let
   cfg = config.xsession.windowManager.i3;
-  i3-auto-layout = pkgs.callPackage ../../../pkgs/i3-auto-layout.nix {}; # TODO should be able to used overlay now
 in
 {
   imports = [
@@ -13,33 +12,34 @@ in
   ];
 
   options = {
-    modules.desktop.i3 =
-      let
-        mkStrOptDefault = default: mkOption { type = types.str; inherit default; };
-        execType = with types; oneOf [ path str package ];
-      in
+    modules.desktop.i3 = {
+      keysyms = mapAttrs
+        (name: default: mkOption { type = types.singleLineStr; inherit default; })
         {
-          keysyms.mod = mkStrOptDefault "Mod4";
-          keysyms.alt = mkStrOptDefault "Mod1";
-          keysyms.mouseButtonLeft = mkStrOptDefault "button1";
-          keysyms.mouseButtonMiddle = mkStrOptDefault "button2";
-          keysyms.mouseButtonRight = mkStrOptDefault "button3";
-          keysyms.mouseWheelUp = mkStrOptDefault "button4";
-          keysyms.mouseWheelDown = mkStrOptDefault "button5";
-          keysyms.mouseWheelLeft = mkStrOptDefault "button6";
-          keysyms.mouseWheelRight = mkStrOptDefault "button7";
+          mod = "Mod4";
+          alt = "Mod1";
+          mouseButtonLeft = "button1";
+          mouseButtonMiddle = "button2";
+          mouseButtonRight = "button3";
+          mouseWheelUp = "button4";
+          mouseWheelDown = "button5";
+          mouseWheelLeft = "button6";
+          mouseWheelRight = "button7";
         };
+    };
   };
 
   config = mkIf config.xsession.windowManager.i3.enable {
     xsession.enable = true;
+
     services.picom.enable = true;
+
     programs.rofi.enable = true;
     programs.rofi.plugins = [ pkgs.rofi-calc ];
 
     xsession.windowManager.i3.config.startup = [
       {
-        command = getExe i3-auto-layout;
+        command = getExe pkgs.i3-auto-layout;
         always = true;
         notification = false;
       }

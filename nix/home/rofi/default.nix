@@ -142,6 +142,9 @@ in
   } // lib.my.fileSourceSet {
     dir = ./scripts;
     prefix = "rofi/scripts/";
+  } // lib.my.fileSourceSet {
+    dir = ./libexec;
+    prefix = "rofi/libexec/";
   };
 
   home.sessionVariables.ROFI_SYSTEMD_TERM = config.programs.rofi.terminal;

@@ -1,9 +1,5 @@
-toplevel@{ self, inputs, ... }:
+{ self, inputs, ... }:
 
-let
-  mkHmLib = import "${inputs.home-manager}/modules/lib/stdlib-extended.nix";
-  mkMyLib = import ../lib/extended.nix;
-in
 {
   # flake = rec {
   #   homeManagerModules.default = import ./module.nix;
@@ -12,14 +8,13 @@ in
 
   perSystem = ctx@{ options, config, self', inputs', pkgs, system, ... }:
     let
-      lib = mkHmLib (mkMyLib ctx.lib); # extend lib with .my and .hm
+      lib = self.lib.mkHmLib ctx.lib;
 
       nix-colors = import ../nix-colors/extended.nix inputs;
 
       extraSpecialArgs = {
         inherit inputs lib self' inputs' nix-colors;
-        inherit (config) flake-root;
-        flake = self; # remove usage
+        flake = { inherit self inputs; };
       };
 
       commonModules = [
@@ -29,7 +24,7 @@ in
           nixpkgs.overlays = [
             self.overlays.default
             inputs.rust-overlay.overlays.default
-            inputs.emacs.overlays.default
+            inputs.emacs-overlay.overlays.default
           ];
         }
         {
@@ -49,7 +44,7 @@ in
         })
         // (lib.optionalAttrs (system == "aarch64-darwin") {
           # TODO move to nix-darwin
-          darwinConfigurations.patchbook = inputs.darwin.lib.darwinSystem {
+          darwinConfigurations.patchbook = inputs.nix-darwin.lib.darwinSystem {
             inherit system;
             # FIXME: commonModules should be used in both...
             modules = commonModules ++ [

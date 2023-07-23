@@ -3,7 +3,7 @@
   #   ublock-origin
   #   vim-vixen
   # ];
-  programs.firefox.profiles."${config.my.user}".settings = {
+  programs.firefox.profiles."${config.my.user.name}".settings = {
     id = 0;
     settings = {
       # General settings
