@@ -38,5 +38,6 @@ in
     jet
     neil
     zprint
+    rep
   ];
 }
