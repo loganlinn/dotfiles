@@ -46,6 +46,23 @@ in
 
   programs.vscode.enable = false;
 
+  programs.kakoune = {
+    enable = true;
+    config.numberLines.relative = true;
+    plugins = with pkgs.kakounePlugins; [
+      auto-pairs-kak
+      connect-kak
+      fzf-kak
+      kak-lsp
+      kak-ansi
+      kakoune-rainbow
+      # parinfer-rust
+      powerline-kak
+      prelude-kak
+      rep
+    ];
+  };
+
   sops.defaultSopsFile = ../secrets/default.yaml;
   sops.age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
   sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
