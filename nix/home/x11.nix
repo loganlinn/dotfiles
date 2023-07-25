@@ -9,6 +9,7 @@
     xdo # Perform actions on windows
     wmctrl
     xscreensaver
+    xautolock
     (pkgs.callPackage ../pkgs/x-window-focus-close.nix {})
   ] ++ (with pkgs.xorg; [
     # https://www.x.org/releases/current/doc/man/man1/index.xhtml
@@ -51,9 +52,9 @@
     xrandr # primitive command line interface to RandR extension
     xrdb # X server resource database utility
     # xrefresh # refresh all or part of an X screen
-    # xset # user preference utility for X
+    xset # user preference utility for X
     # xsetroot # root window parameter setting
-    # xsm # X Session Manager
+    xsm # X Session Manager
     # xstdcmap # X standard colormap utility
     # xvinfo # Print out X-Video extension adaptor information
     # xwd # dump an image of an X window
