@@ -20,15 +20,8 @@ in
 
 builtins // lib // rec {
   inherit self lib;
-  inherit (self.currentSystem.allModuleArgs)
-    config
-    options
-    inputs
-    inputs'
-    self'
-    system
-    pkgs;
-
+  inherit (self) inputs;
+  inherit (self.currentSystem.allModuleArgs) inputs' self' config options system pkgs;
 
   hm = let inherit (self.currentSystem.legacyPackages) homeConfigurations; in
     homeConfigurations."${user}@${hostname}" or
