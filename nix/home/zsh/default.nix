@@ -44,14 +44,14 @@ in
       src = "$HOME/src";
       gh = "$HOME/src/github.com";
       clj = "$HOME/src/github.com/clojure";
-      nixpkgs = "$HOME/src/github.com/NixOS/nixpkgs";
+      pkgs = "$HOME/src/github.com/NixOS/nixpkgs";
       nixos = "$HOME/src/github.com/NixOS";
       doom = "${config.xdg.configHome}/doom";
       emacs = "${config.xdg.configHome}/emacs";
       hm = "$HOME/src/github.com/nix-community/home-manager";
     } // lib.optionalAttrs config.xdg.enable {
       cfg = config.xdg.configHome;
-      dls = config.xdg.userDirs.download;
+      dl = config.xdg.userDirs.download;
       docs = config.xdg.userDirs.documents;
       pics = config.xdg.userDirs.pictures;
       music = config.xdg.userDirs.music;
