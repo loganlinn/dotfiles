@@ -241,10 +241,12 @@ in
       ################################################################################
 
       for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
-      for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
-      for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
-      for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, move position center
 
+      for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
+
+      for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
+
+      for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, sticky enable, move position center
       assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
 
       ################################################################################

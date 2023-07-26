@@ -188,7 +188,7 @@ foldl' attrsets.unionOfDisjoint { }
     };
 
     layout = {
-      "$mod+y" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
+      "$mod+Shift+r" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
       "$mod+Shift+f" = "floating toggle";
       "$mod+Ctrl+f" = "fullscreen toggle";
       "$mod+Shift+p" = "floating toggle; sticky toggle"; # "pin"

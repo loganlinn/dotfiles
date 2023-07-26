@@ -3,7 +3,7 @@
     ../nix/modules/fonts.nix
     ../nix/home/common.nix
     ../nix/home/dev
-    ../nix/home/emacs.nix
+    ../nix/home/emacs
     ../nix/home/git
     ../nix/home/pretty.nix
     ../nix/home/sync.nix

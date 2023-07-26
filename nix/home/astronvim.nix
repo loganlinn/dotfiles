@@ -44,7 +44,7 @@ in
 
     home.activation.astrovimUser = mkIf (cfg.userConfigRepo != null) (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       if ! [[ -d ${config.xdg.configHome}/astronvim ]]; then
-        $DRY_RUN_CMD ${git} clone $VERBOSE_ARG --depth 1 "${cfg.userConfigRepo}" "${config.xdg.configHome}/astronvim"
+        $DRY_RUN_CMD ${git} clone $VERBOSE_ARG --depth 1 "${cfg.userConfigRepo}" "${config.xdg.configHome}/astronvim/lua/user"
       fi
     '');
   };
