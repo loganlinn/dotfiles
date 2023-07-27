@@ -17,6 +17,7 @@ in
   home.packages = with pkgs; [
     openssl
     libossp_uuid # uuid command
+    universal-ctags
 
     # benchmarking
     ## hey

@@ -83,17 +83,26 @@ foldl' attrsets.unionOfDisjoint { }
           "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
         };
 
-    focusWindow = {
-      "$mod+Up" = "focus parent";
-      "$mod+Down" = "focus child";
-      "$mod+Left" = "focus prev sibling";
-      "$mod+Right" = "focus next sibling";
-      "$mod+f" = "focus mode_toggle"; # toggle between floating and tiling
-      "$mod+o" = "focus output next";
+    focusNeighbor = {
       "$mod+h" = "focus left";
       "$mod+j" = "focus down";
       "$mod+k" = "focus up";
       "$mod+l" = "focus right";
+    };
+
+    focusTree = {
+      "$mod+Up" = "focus parent";
+      "$mod+Down" = "focus child";
+      "$mod+Left" = "focus prev sibling";
+      "$mod+Right" = "focus next sibling";
+    };
+
+    focusMode = {
+      "$mod+f" = "focus mode_toggle"; # toggle between floating and tiling
+    };
+
+    focusOutput = {
+      "$mod+o" = "focus output next";
     };
 
     focusWorkspaceAbsolute = {
@@ -137,40 +146,25 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Shift+8" = "move container to workspace number $ws8";
       "$mod+Shift+9" = "move container to workspace number $ws9";
       "$mod+Shift+0" = "move container to workspace number $ws10";
-      "$mod+Shift+Ctrl+1" = "move container to workspace number $ws11";
-      "$mod+Shift+Ctrl+2" = "move container to workspace number $ws12";
-      "$mod+Shift+Ctrl+3" = "move container to workspace number $ws13";
-      "$mod+Shift+Ctrl+4" = "move container to workspace number $ws14";
-      "$mod+Shift+Ctrl+5" = "move container to workspace number $ws15";
-      "$mod+Shift+Ctrl+6" = "move container to workspace number $ws16";
-      "$mod+Shift+Ctrl+7" = "move container to workspace number $ws17";
-      "$mod+Shift+Ctrl+8" = "move container to workspace number $ws18";
-      "$mod+Shift+Ctrl+9" = "move container to workspace number $ws19";
-      "$mod+Shift+Ctrl+0" = "move container to workspace number $ws20";
       "$mod+Shift+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} move";
     };
 
     moveAndFocus = {
-      "$mod+$alt+1" = "move container to workspace number $ws1; workspace number $ws1";
-      "$mod+$alt+2" = "move container to workspace number $ws2; workspace number $ws2";
-      "$mod+$alt+3" = "move container to workspace number $ws3; workspace number $ws3";
-      "$mod+$alt+4" = "move container to workspace number $ws4; workspace number $ws4";
-      "$mod+$alt+5" = "move container to workspace number $ws5; workspace number $ws5";
-      "$mod+$alt+6" = "move container to workspace number $ws6; workspace number $ws6";
-      "$mod+$alt+7" = "move container to workspace number $ws7; workspace number $ws7";
-      "$mod+$alt+8" = "move container to workspace number $ws8; workspace number $ws8";
-      "$mod+$alt+9" = "move container to workspace number $ws9; workspace number $ws9";
-      "$mod+$alt+0" = "move container to workspace number $ws10; workspace number $ws10;";
-      "$mod+$alt+Ctrl+1" = "move container to workspace number $ws11; workspace number $ws11";
-      "$mod+$alt+Ctrl+2" = "move container to workspace number $ws12; workspace number $ws12";
-      "$mod+$alt+Ctrl+3" = "move container to workspace number $ws13; workspace number $ws13";
-      "$mod+$alt+Ctrl+4" = "move container to workspace number $ws14; workspace number $ws14";
-      "$mod+$alt+Ctrl+5" = "move container to workspace number $ws15; workspace number $ws15";
-      "$mod+$alt+Ctrl+6" = "move container to workspace number $ws16; workspace number $ws16";
-      "$mod+$alt+Ctrl+7" = "move container to workspace number $ws17; workspace number $ws17";
-      "$mod+$alt+Ctrl+8" = "move container to workspace number $ws18; workspace number $ws18";
-      "$mod+$alt+Ctrl+9" = "move container to workspace number $ws19; workspace number $ws19";
-      "$mod+$alt+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} carry";
+      "$mod+Ctrl+1" = "move container to workspace number $ws1; workspace number $ws1";
+      "$mod+Ctrl+2" = "move container to workspace number $ws2; workspace number $ws2";
+      "$mod+Ctrl+3" = "move container to workspace number $ws3; workspace number $ws3";
+      "$mod+Ctrl+4" = "move container to workspace number $ws4; workspace number $ws4";
+      "$mod+Ctrl+5" = "move container to workspace number $ws5; workspace number $ws5";
+      "$mod+Ctrl+6" = "move container to workspace number $ws6; workspace number $ws6";
+      "$mod+Ctrl+7" = "move container to workspace number $ws7; workspace number $ws7";
+      "$mod+Ctrl+8" = "move container to workspace number $ws8; workspace number $ws8";
+      "$mod+Ctrl+9" = "move container to workspace number $ws9; workspace number $ws9";
+      "$mod+Ctrl+0" = "move container to workspace number $ws10; workspace number $ws10;";
+      "$mod+Ctrl+Tab" = "move container to workspace back_and_forth; workspace back_and_forth;";
+      "$mod+Ctrl+bracketleft" = "move container to workspace prev; workspace prev;";
+      "$mod+Ctrl+bracketright" = "move container to workspace next; workspace next;";
+      "$mod+Ctrl+grave" = "exec --no-startup-id ${./i3-next-workspace.sh} carry";
+      # "$mod+Ctrl+minus" = "nop"; # reserved sequence
     };
 
     # Ctrl+Shift ~> per-output operations

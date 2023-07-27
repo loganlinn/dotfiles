@@ -249,6 +249,8 @@ in
       for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, sticky enable, move position center
       assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
 
+      for_window [class="(?i)git-citool"] floating enable, move position mouse
+
       ################################################################################
       # Gaps
       ################################################################################

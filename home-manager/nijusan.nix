@@ -26,7 +26,6 @@ in
     ../nix/home/polkit.nix
     ../nix/home/pretty.nix
     ../nix/home/qalculate
-    ../nix/home/ssh.nix
     ../nix/home/sync.nix
     ../nix/home/urxvt.nix
     ../nix/home/vpn.nix
@@ -110,8 +109,32 @@ in
     ];
   };
 
+  programs.ssh = {
+    enable = true;
+    hashKnownHosts = true;
+    forwardAgent = true;
+    controlMaster = "auto";
+    controlPath = "~/.ssh/%C";
+    controlPersist = "60m";
+    serverAliveInterval = 120;
+    includes = ["${config.home.homeDirectory}/.ssh/config.local"];
+    matchBlocks = {
+      "fire.walla" = {
+        user = "pi";
+      };
+    };
+    extraConfig = ''
+      TCPKeepAlive yes
+
+      Host *
+        IdentityAgent ~/.1password/agent.sock
+    '';
+  };
+
   services.dunst.enable = true;
+
   services.flameshot.enable = true;
+
   services.polybar = {
     enable = true;
     settings = {
@@ -196,9 +219,9 @@ in
     btrfs-progs
     dbeaver
     google-cloud-sdk
-    libreoffice
     plantuml
     # github-desktop # requires gnome-keyring...
+    etcd
   ];
 
   home.username = "logan";
