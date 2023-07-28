@@ -44,10 +44,10 @@ case $ROFI_RETV in
   1)
     case $1 in
       quit | hide | show | toggle)
-        polybar-msg cmd "$1" >&2
+        coproc { polybar-msg cmd "$1" >&2; }
         ;;
       start | stop | restart | enable | disable | kill)
-        systemctl --user "$1" polybar.service
+        coproc { systemctl --user "$1" polybar >/dev/null 2>&1; }
         ;;
       cancel)
         exit 0

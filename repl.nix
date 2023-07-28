@@ -10,10 +10,9 @@ with builtins;
 }:
 
 let
-
   self = getFlake (toString ./.);
 
-  inherit (self.currentSystem.allModuleArgs) pkgs;
+  inherit (self.currentSystem.allModuleArgs) pkgs; # TODO match overlays used in (home|nixos)Configurations
 
   lib = self.lib.mkLib pkgs.lib;
 in

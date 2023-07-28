@@ -82,6 +82,7 @@ in
         { class = "(?i)yad"; }
         { class = "(?i)zenity"; }
         { title = "Artha"; }
+        { title = "NVIDIA Settings"; }
         { title = "Screen Layout Editor"; } # i.e. arandr
         { title = "Calculator"; }
         { title = "Event Tester"; } # i.e. xev
@@ -143,6 +144,25 @@ in
   xsession.windowManager.i3.extraConfig =
     let
       colors = config.colorScheme.colors;
+
+      modeCommonFocus = ''
+          bindsym $mod+h focus left
+          bindsym $mod+j focus down
+          bindsym $mod+k focus up
+          bindsym $mod+l focus right
+      '';
+      modeCommonEscape = ''
+          bindsym Escape mode default
+          bindsym Ctrl+c mode default
+          bindsym Ctrl+g mode default
+      '';
+      # modeStr = name: { title ? name, enableMarkup ? true, extraConfig ? "" }: ''
+      #   set $$${name} ${title}
+      #   mode ${optionalString enableMarkup "--pango_markup "} "$$${name}" {
+      #     ${modeCommonEscape}
+      #     ${extraConfig}
+      #   }
+      # '';
     in
     ''
       ################################################################################
@@ -171,15 +191,6 @@ in
       set $ws8 "8"
       set $ws9 "9"
       set $ws10 "10"
-      set $ws11 "11"
-      set $ws12 "12"
-      set $ws13 "13"
-      set $ws14 "14"
-      set $ws15 "15"
-      set $ws16 "16"
-      set $ws17 "17"
-      set $ws18 "18"
-      set $ws19 "19"
 
       # bars
       set $bar_height ${toString polybarCfg'.bars.top.height}
@@ -240,9 +251,9 @@ in
       # Window rules
       ################################################################################
 
-      for_window [class="(?i)conky"] floating enable, move position mouse, move down $height px
+      for_window [class="(?i)conky"] floating enable, move position mouse, move down $bar_height px
 
-      for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $height px
+      for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $bar_height px
 
       for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
 
@@ -250,6 +261,13 @@ in
       assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
 
       for_window [class="(?i)git-citool"] floating enable, move position mouse
+
+      for_window [title="lnav$"] floating enable, resize set 80 ppt 40 ppt, move position center, move down 40 ppt
+
+      for_window [title="k9s"] scratchpad move, scratchpad, resize set 50 ppt 95 ppt, move position center, move
+
+      for_window [class="^kitty-left"]  move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move left 20 ppt
+      for_window [class="^kitty-right"] move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move right 20 ppt
 
       ################################################################################
       # Gaps
@@ -260,9 +278,6 @@ in
       set $gaps_inner_default ${toString i3Cfg.gaps.inner}
       set $gaps_outer_default ${toString i3Cfg.gaps.outer}
 
-
-      bindsym $mod+Shift+g mode "$mode_gaps"
-
       ################################################################################
       # Modes
       ################################################################################
@@ -271,7 +286,7 @@ in
 
       set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
       bindsym $mod+n mode "$mode_notifications"
-      mode --pango_markup "$mode_notifications" {
+      mode "$mode_notifications" {
           bindsym Return       exec "dunstctl action 0"        , mode "default"
           bindsym Shift+Return exec dunstctl context           , mode "default"
           bindsym k            exec dunstctl close             , mode "default"
@@ -280,10 +295,7 @@ in
           bindsym n            exec dunstctl close
           bindsym p            exec dunstctl history-pop
 
-          bindsym q mode "default"
-          bindsym Escape mode "default"
-          bindsym Ctrl+c mode "default"
-          bindsym Ctrl+g mode "default"
+          ${modeCommonEscape}
       }
 
       ### Gaps
@@ -291,18 +303,15 @@ in
       set $mode_gaps        gaps> [o]uter [i]nner [0]reset [q]uit
       set $mode_gaps_outer  gaps outer> [-|+]all [j|k]current [BS|0]reset [q]uit
       set $mode_gaps_inner  gaps inner> [-|+]all [j|k]current [BS|0]reset [q]uit
-      mode --pango_markup "$mode_gaps" {
+      mode "$mode_gaps" {
           bindsym o            mode "$mode_gaps_outer"
           bindsym i            mode "$mode_gaps_inner"
           bindsym BackSpace    gaps outer current set $gaps_outer_default, gaps inner current set $gaps_inner_default, mode default
           bindsym 0            gaps outer all set $gaps_outer_default    , gaps inner all set $gaps_inner_default    , mode  default
           bindsym q            mode "default"
-          bindsym Return       mode "$mode_gaps"
-          bindsym Escape       mode "default"
-          bindsym Ctrl+c       mode "default"
-          bindsym Ctrl+g       mode "default"
+          ${modeCommonEscape}
       }
-      mode --pango_markup "$mode_gaps_outer" {
+      mode "$mode_gaps_outer" {
           bindsym equal       gaps outer all plus 5
           bindsym minus       gaps outer all minus 5
           bindsym k           gaps outer current plus 5
@@ -311,9 +320,7 @@ in
           bindsym 0           gaps outer all set $gaps_outer_default    , mode default
           bindsym Tab         mode "$mode_gaps_inner"
           bindsym Return      mode "$mode_gaps"
-          bindsym Escape      mode "default"
-          bindsym Ctrl+c      mode "default"
-          bindsym Ctrl+g      mode "default"
+          ${modeCommonEscape}
       }
       mode "$mode_gaps_inner" {
           bindsym equal       gaps inner all plus 5
@@ -324,9 +331,7 @@ in
           bindsym 0           gaps all inner set $gaps_inner_default    , mode default
           bindsym Tab         mode "$mode_gaps_outer"
           bindsym Return      mode "$mode_gaps"
-          bindsym Escape      mode "default"
-          bindsym Ctrl+c      mode "default"
-          bindsym Ctrl+g      mode "default"
+          ${modeCommonEscape}
       }
 
       ################################################################################
@@ -376,13 +381,7 @@ in
           bindsym Shift+2 resize set width 20 ppt, mode default
           bindsym Shift+1 resize set width 10 ppt, mode default
 
-          bindsym $mod+h focus left
-          bindsym $mod+j focus down
-          bindsym $mod+k focus up
-          bindsym $mod+l focus right
-
           bindsym f floating enable
-
           bindsym s floating enable, resize set width 66 ppt height 66 ppt, move position center, mode "default"
           bindsym a floating enable, resize set width 33 ppt height 66 ppt, move position center, move left 33 ppt, mode "default"
           bindsym d floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 33 ppt, mode "default"
@@ -393,12 +392,102 @@ in
           bindsym Shift+equal resize grow width 10 px or 5 ppt, resize grow height 10 px or 5 ppt
           bindsym minus resize shrink width 10 px or 5 ppt, resize shrink height 10 px or 5 ppt
 
-          bindsym $mod+r mode default
-          bindsym Escape mode default
-          bindsym Ctrl+c mode default
-          bindsym Ctrl+g mode default
+         ${modeCommonFocus}
+         ${modeCommonEscape}
       }
+
+      ################################################################################
+      # Killing things
+      ################################################################################
+
+      set $mode_kill kill <${nerdfonts.md.keyboard_return}|f> <z|x|c|v>
+      set $mode_kill_focused kill:focused> [w]orkspace, [f]loating, [c]lass, [r]ole, [t]itle
+
+      mode "$mode_kill" {
+         bindsym f mode "$mode_kill_focused"
+
+         bindsym z focus prev sibling, kill, mode default
+         bindsym x focus next sibling, kill, mode default
+         bindsym c focus child, kill, mode default
+         bindsym v focus parent, kill, mode default
+
+         bindsym $mod+z focus prev sibling
+         bindsym $mod+x focus next sibling
+         bindsym $mod+c focus child
+         bindsym $mod+v focus parent
+
+         ${modeCommonFocus}
+         ${modeCommonEscape}
+      }
+
+      mode "$mode_kill_focused" {
+         bindsym w [workspace=__focused__] kill, mode default
+         bindsym c [class=__focused__] kill, mode default
+         bindsym r [role=__focused__] kill, mode default
+         bindsym t [title=__focused__] kill, mode default
+
+         ${modeCommonFocus}
+         ${modeCommonEscape}
+      }
+
+      bindsym $mod+q mode "$mode_kill"
+
+      ################################################################################
+      # Marks menu
+      ################################################################################
+
+      set $mode_mark marks: [l]ist; [a]dd [r]eplace [u]nmark; [m]ove [s]wap [f]ocus [k]ill; show [y]es [n]o
+      mode "$mode_mark" {
+        bindsym l exec i3-marks-dmenu                                                     ; mode default
+        bindsym u exec i3-marks-unmark                                                    ; mode default
+        bindsym r exec i3-input -F 'mark --replace %s' -l 1 -P "mark replace"             ; mode default
+        bindsym a exec i3-input -F 'mark --add %s' -l 1 -P "mark add"                     ; mode default
+        bindsym A exec i3-input -F 'mark --add --toggle %s' -l 1 -P "toggle"              ; mode default
+        bindsym m exec i3-input -F 'move window to mark %s' -l 1 -P "move window"         ; mode default
+        bindsym M exec i3-input -F 'move container to mark %s' -l 1 -P "move container"   ; mode default
+        bindsym f exec i3-input -F '[con_mark="%s"] fous' -l 1 -P "focus"                 ; mode default
+        bindsym s exec i3-input -F 'swap container with %s' -l 1 -P "swap container with" ; mode default
+        bindsym k exec i3-input -F '[con_mark="^%s$"] kill' -l 1 -P "kill"                ; mode default
+        bindsym y show_marks yes                                                          ; mode default
+        bindsym n show_marks no                                                           ; mode default
+
+        ${modeCommonEscape}
+      }
+
+      bindsym $mod+$alt+m mode "$mode_mark"
+
     '';
+
+  home.packages = with pkgs; [
+    (writeShellScriptBin "i3-marks-dmenu" ''
+        i3-msg -t get_marks |
+        ${getExe pkgs.jq} -r '.[]' |
+        ${getPackageExe config.programs.rofi} -dmenu -p "mark" -no-custom "$@"
+    '')
+    (writeShellScriptBin "i3-marks-unmark" ''
+        for mark in $(i3-marks-dmenu -multi-select); do
+          i3-msg "unmark $mark"
+        done
+    '')
+    # (writeShellScriptBin "i3-focus-or" ''
+    #   usage() {
+    #     echo "usage: $(basename "$0") <criteria> <command> [args...]"
+    #   }
+    #   if [[ $1 == (-h|--help) ]]; then
+    #     usage
+    #     exit 0
+    #   elif [[ $# -lt 2 ]]; then
+    #     usage
+    #     exit 1
+    #   fi
+    #   criteria=$1
+    #   shift
+    #   if ! i3-msg "$(printf '[%s] focus' "$criteria")"; then
+    #     i3-msg "exec $*"
+    #   fi
+    #   '')
+  ];
+
   #
   # | Color Selector           | Description     |
   # | ------------------------ | --------------- |

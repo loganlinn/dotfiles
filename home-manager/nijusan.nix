@@ -15,7 +15,7 @@ in
     ../nix/home/dev # TODO module
     #../nix/home/dev/vala.nix
     ../nix/home/dunst
-    ../nix/home/emacs.nix
+    ../nix/home/emacs
     ../nix/home/eww
     ../nix/home/home-manager.nix
     ../nix/home/intellij.nix
@@ -211,6 +211,7 @@ in
   manual.json.enable = true;
 
   home.packages = with pkgs; [
+    hexchat
     self'.packages.graphite-cli
     # audacity
     # btrfs-snap # https://github.com/jf647/btrfs-snap
@@ -222,6 +223,7 @@ in
     plantuml
     # github-desktop # requires gnome-keyring...
     etcd
+    lnav
   ];
 
   home.username = "logan";

@@ -8,7 +8,7 @@ let
 
 in
 {
-  imports = [ ./emacs/doom.nix ];
+  imports = [ ./doom.nix ];
 
   my.emacs.doom.enable = mkDefault true;
 
@@ -30,6 +30,7 @@ in
 
   home.shellAliases = {
     et = "emacs -nw";
+    emacs-eval = "emacsclient -n --eval";
     erepl = "rlwrap doom run --repl";
   };
 }

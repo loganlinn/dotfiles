@@ -78,7 +78,7 @@ in
 
       # Behavior
       shell_integration = "enabled";
-      allow_remote_control = false;
+      allow_remote_control = "socket-only";
       confirm_os_window_close = 0;
 
       # Links
@@ -119,7 +119,8 @@ in
     (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
   ] ++ optionals config.xsession.windowManager.i3.enable [
     (writeKittyBin "floating" ["--class" "kitty-floating"])
-    (writeKittyBin "one" ["--class" "kitty-one" "--single-instance"])
+    (writeKittyBin "left" ["--name" "kitty-left" "--class" "kitty-floating"])
+    (writeKittyBin "right" ["--name" "kitty-right" "--class" "kitty-floating"])
     (writeKittyBin "scratch" ["--class" "kitty-scratch" "--single-instance"])
   ];
 
@@ -133,10 +134,12 @@ in
   '';
 
   xsession.windowManager.i3.extraConfig = ''
-    for_window [class="kitty-floating"] floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 17 ppt
-    for_window [class="kitty-one"] floating enable, move position center, resize set 1600 1200
+    for_window [class="^kitty-left"]  move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move left 20 ppt
+    for_window [class="^kitty-right"] move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move right 20 ppt
+
+    bindsym $mod+Ctrl+Return exec --no-startup-id i3-msg "i3-msg exec kitty-left && i3-msg exec kitty-right"
+
+    for_window [class="kitty-floating"] floating enable, move position, resize set width 72 ppt height 72 ppt, move position center
     for_window [class="kitty-scratch"] move scratchpad, scratchpad show
-    for_window [class="kitty-panel"] floating enable, move window to position cursor
-    bindsym $mod+Ctrl+Return exec kitty-one
   '';
 }
