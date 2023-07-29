@@ -13,22 +13,25 @@ let
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
   rofiCfg = config.programs.rofi;
+  rofiExe = getPackageExe rofiCfg;
   polybarCfg = config.services.polybar;
   polybarCfg' = config.modules.polybar; # TODO config.my.polybar;
 in
 {
   xsession.windowManager.i3.config = {
     modifier = cfg.keysyms.mod;
-    menu = mkIf rofiCfg.enable "${getPackageExe rofiCfg} -dmenu";
+    menu = mkIf rofiCfg.enable "${rofiExe} -dmenu";
+
     keybindings = import ./keybindings.nix { inherit config pkgs lib; };
+
     bars = lib.mkIf polybarCfg.enable [ ]; # disable for polybar
+
     fonts = {
       names = [
-        "pango:${themeCfg.fonts.mono.name} ${toString themeCfg.fonts.mono.size}px"
-        "pango:${themeCfg.fonts.sans.name} ${toString themeCfg.fonts.sans.size}px"
+        themeCfg.fonts.mono.name
         "FontAwesome"
       ];
-      size = 10.0;
+      size = 1.0 * themeCfg.fonts.mono.size; # needs to be float
     };
 
     window = {
@@ -462,7 +465,7 @@ in
     (writeShellScriptBin "i3-marks-dmenu" ''
         i3-msg -t get_marks |
         ${getExe pkgs.jq} -r '.[]' |
-        ${getPackageExe config.programs.rofi} -dmenu -p "mark" -no-custom "$@"
+        ${i3Cfg.menu} -p "mark" -no-custom "$@"
     '')
     (writeShellScriptBin "i3-marks-unmark" ''
         for mark in $(i3-marks-dmenu -multi-select); do

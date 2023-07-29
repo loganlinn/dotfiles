@@ -134,9 +134,6 @@ in
   '';
 
   xsession.windowManager.i3.extraConfig = ''
-    for_window [class="^kitty-left"]  move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move left 20 ppt
-    for_window [class="^kitty-right"] move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move right 20 ppt
-
     bindsym $mod+Ctrl+Return exec --no-startup-id i3-msg "i3-msg exec kitty-left && i3-msg exec kitty-right"
 
     for_window [class="kitty-floating"] floating enable, move position, resize set width 72 ppt height 72 ppt, move position center

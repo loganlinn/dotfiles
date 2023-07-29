@@ -6,7 +6,6 @@ with lib.my;
 
 let
   inherit (config.xsession.windowManager.i3.config) terminal;
-  cfg = config.modules.desktop.i3;
 in
 
 foldl' attrsets.unionOfDisjoint { }
