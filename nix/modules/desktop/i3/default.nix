@@ -8,6 +8,7 @@ in
 {
   imports = [
     ./config.nix
+    ./kitty.nix
     ./picom.nix
   ];
 

@@ -117,11 +117,6 @@ in
     (writeKittyBin "ask" ["+kitten" "ask"])
   ] ++ optionals pkgs.stdenv.isLinux [
     (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
-  ] ++ optionals config.xsession.windowManager.i3.enable [
-    (writeKittyBin "floating" ["--class" "kitty-floating"])
-    (writeKittyBin "left" ["--name" "kitty-left" "--class" "kitty-floating"])
-    (writeKittyBin "right" ["--name" "kitty-right" "--class" "kitty-floating"])
-    (writeKittyBin "scratch" ["--class" "kitty-scratch" "--single-instance"])
   ];
 
   home.shellAliases = {

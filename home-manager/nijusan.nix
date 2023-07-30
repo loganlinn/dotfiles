@@ -85,7 +85,6 @@ in
   };
 
   xsession.windowManager.i3.enable = true;
-  xsession.windowManager.i3.config.terminal = "kitty";
 
   gtk.enable = true;
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors

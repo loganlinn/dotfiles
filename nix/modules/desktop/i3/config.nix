@@ -16,6 +16,7 @@ let
   rofiExe = getPackageExe rofiCfg;
   polybarCfg = config.services.polybar;
   polybarCfg' = config.modules.polybar; # TODO config.my.polybar;
+  barHeight = toString polybarCfg'.bars.top.height;
 in
 {
   xsession.windowManager.i3.config = {
@@ -26,17 +27,53 @@ in
 
     bars = lib.mkIf polybarCfg.enable [ ]; # disable for polybar
 
+    # List of font names list used for window titles. Only FreeType fonts are supported.
+    # The order here is important (e.g. icons font should go before the one used for text).
     fonts = {
       names = [
-        themeCfg.fonts.mono.name
         "FontAwesome"
+        "Victor Mono"
       ];
-      size = 1.0 * themeCfg.fonts.mono.size; # needs to be float
+      style = "Bold Semi-Condensed";
+      size = 11.0;
     };
 
     window = {
       border = 2;
-      titlebar = false;
+      titlebar = true;
+      hideEdgeBorders = "smart";
+
+      # List of commands that should be executed on specific windows (i.e. for_window)
+      commands = [
+        {
+          criteria.class = "(?i)conky";
+          command = "floating enable, move position mouse, move down ${barHeight} px";
+        }
+        {
+          criteria.class = "(?i)Qalculate";
+          command = "floating enable, move position mouse, move down ${barHeight} px";
+        }
+        {
+          criteria.class = "(?i)pavucontrol";
+          command = "floating enable, move position mouse, move down ${barHeight} px";
+        }
+        {
+          criteria = { class = "^zoom$"; title = "^.*(?<!Zoom Meeting)$"; };
+          command = "floating enable, sticky enable, move position center";
+        }
+        {
+          criteria.class = "(?i)git-citool";
+          command = "floating enable, move position mouse";
+        }
+        {
+          criteria.title = "lnav$";
+          command = "floating enable, resize set 80 ppt 40 ppt, move position center, move down 40 ppt";
+        }
+        {
+          criteria.title = "k9s";
+          command = "scratchpad move, scratchpad, resize set 50 ppt 95 ppt, move position center, move";
+        }
+      ];
     };
 
     focus = {
@@ -106,6 +143,9 @@ in
       "8" = [ ];
       "9" = [{ class = "Slack"; }];
       "0" = [ ];
+      "output primary" = [
+        { class="^zoom$"; title="^.*(?<!Zoom Meeting)$"; }
+      ];
     };
 
     workspaceOutputAssign =
@@ -149,15 +189,15 @@ in
       colors = config.colorScheme.colors;
 
       modeCommonFocus = ''
-          bindsym $mod+h focus left
-          bindsym $mod+j focus down
-          bindsym $mod+k focus up
-          bindsym $mod+l focus right
+        bindsym $mod+h focus left
+        bindsym $mod+j focus down
+        bindsym $mod+k focus up
+        bindsym $mod+l focus right
       '';
       modeCommonEscape = ''
-          bindsym Escape mode default
-          bindsym Ctrl+c mode default
-          bindsym Ctrl+g mode default
+        bindsym Escape mode default
+        bindsym Ctrl+c mode default
+        bindsym Ctrl+g mode default
       '';
       # modeStr = name: { title ? name, enableMarkup ? true, extraConfig ? "" }: ''
       #   set $$${name} ${title}
@@ -196,7 +236,7 @@ in
       set $ws10 "10"
 
       # bars
-      set $bar_height ${toString polybarCfg'.bars.top.height}
+      set $bar_height ${barHeight}
 
       # colors
       set $base00 #${colors.base00}
@@ -254,23 +294,7 @@ in
       # Window rules
       ################################################################################
 
-      for_window [class="(?i)conky"] floating enable, move position mouse, move down $bar_height px
-
-      for_window [class="(?i)Qalculate"] floating enable, move position mouse, move down $bar_height px
-
-      for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $bar_height px
-
-      for_window [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] floating enable, sticky enable, move position center
-      assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
-
-      for_window [class="(?i)git-citool"] floating enable, move position mouse
-
-      for_window [title="lnav$"] floating enable, resize set 80 ppt 40 ppt, move position center, move down 40 ppt
-
-      for_window [title="k9s"] scratchpad move, scratchpad, resize set 50 ppt 95 ppt, move position center, move
-
-      for_window [class="^kitty-left"]  move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move left 20 ppt
-      for_window [class="^kitty-right"] move scratchpad, scratchpad show, resize set width 36 ppt height 66 ppt, move position center, move right 20 ppt
+      # assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
 
       ################################################################################
       # Gaps
@@ -463,14 +487,14 @@ in
 
   home.packages = with pkgs; [
     (writeShellScriptBin "i3-marks-dmenu" ''
-        i3-msg -t get_marks |
-        ${getExe pkgs.jq} -r '.[]' |
-        ${i3Cfg.menu} -p "mark" -no-custom "$@"
+      i3-msg -t get_marks |
+      ${getExe pkgs.jq} -r '.[]' |
+      ${i3Cfg.menu} -p "mark" -no-custom "$@"
     '')
     (writeShellScriptBin "i3-marks-unmark" ''
-        for mark in $(i3-marks-dmenu -multi-select); do
-          i3-msg "unmark $mark"
-        done
+      for mark in $(i3-marks-dmenu -multi-select); do
+        i3-msg "unmark $mark"
+      done
     '')
     # (writeShellScriptBin "i3-focus-or" ''
     #   usage() {
