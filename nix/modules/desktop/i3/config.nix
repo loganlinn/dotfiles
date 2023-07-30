@@ -34,7 +34,7 @@ in
         "FontAwesome"
         "Victor Mono"
       ];
-      style = "Bold Semi-Condensed";
+      style = "Normal";
       size = 11.0;
     };
 
@@ -70,8 +70,8 @@ in
           command = "floating enable, resize set 80 ppt 40 ppt, move position center, move down 40 ppt";
         }
         {
-          criteria.title = "k9s";
-          command = "scratchpad move, scratchpad, resize set 50 ppt 95 ppt, move position center, move";
+          criteria.class = "^emacs|google-chrome|firefox|librewolf$";
+          command = "border none";
         }
       ];
     };
@@ -88,8 +88,8 @@ in
     gaps = {
       # horizontal = 10;
       # vertical = 10;
-      inner = 5;
-      outer = 5;
+      inner = 3;
+      outer = 3;
       # Smart borders will draw borders on windows only if there is more than one window in a workspace.
       # This feature can also be enabled only if the gap size between window and screen edge is 0.
       # Possible values are: on, off, no_gaps
@@ -280,6 +280,9 @@ in
       include ${config.xdg.configHome}/i3/config.d/*.conf
 
       default_orientation auto
+
+      for_window [all] title_window_icon on
+      for_window [all] title_window_icon padding 3px
 
       ################################################################################
       # Keybindings, cont.
@@ -533,10 +536,10 @@ in
     {
       background = base08;
       focused = {
-        background = base0D;
-        border = base05;
-        childBorder = base0C;
-        indicator = base0D;
+        background = base02;
+        border = base02;
+        childBorder = base02;
+        indicator = base02;
         text = base00;
       };
       focusedInactive = {
