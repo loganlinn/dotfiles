@@ -144,7 +144,7 @@ in
       "9" = [{ class = "Slack"; }];
       "0" = [ ];
       "output primary" = [
-        { class="^zoom$"; title="^.*(?<!Zoom Meeting)$"; }
+        { class = "^zoom$"; title = "^.*(?<!Zoom Meeting)$"; }
       ];
     };
 

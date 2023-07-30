@@ -60,10 +60,10 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+e" =
         "focus parent, " +
         (if config.services.emacs.enable
-         then ''exec emacsclient -c -a "" -n''
-         else if config.programs.emacs.enable
-         then ''exec emacs''
-         else "nop");
+        then ''exec emacsclient -c -a "" -n''
+        else if config.programs.emacs.enable
+        then ''exec emacs''
+        else "nop");
 
       "$mod+$alt+e" =
         if !config.my.emacs.doom.enable
@@ -78,20 +78,22 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Shift+n" = ''exec ${terminal} ${getExe pkgs.ranger}'';
     };
 
-    menus = let rofi = getPackageExe config.programs.rofi; in
-            mapAttrs' (keybind: exec: nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}")
-              {
-                "$mod+space" = "${rofi} -show combi -sidebar-mode true";
-                "$mod+Shift+space" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
-                "$mod+$alt+space" = "${rofi} -show emoji -modi emoji#file-browser-extended -sidebar-mode true";
-                "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
-                "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
-                "$mod+Escape" = "rofi-power";
-                "$mod+s" = getExe pkgs.rofi-systemd;
-                "$mod+a" = "${getExe pkgs.rofi-pulse-select} sink";
-                "$mod+Shift+a" = "${getExe pkgs.rofi-pulse-select} source";
-                "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
-              };
+    menus =
+      let
+        rofi = getPackageExe config.programs.rofi;
+      in
+      mapAttrs' (keybind: exec: nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}") {
+        "$mod+space" = "${rofi} -show combi -sidebar-mode true";
+        "$mod+Shift+space" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
+        "$mod+$alt+space" = "${rofi} -show emoji -modi emoji#file-browser-extended -sidebar-mode true";
+        "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
+        "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
+        "$mod+Escape" = "rofi-power";
+        "$mod+s" = getExe pkgs.rofi-systemd;
+        "$mod+a" = "${getExe pkgs.rofi-pulse-select} sink";
+        "$mod+Shift+a" = "${getExe pkgs.rofi-pulse-select} source";
+        "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
+      };
 
     focusNeighbor = {
       "$mod+h" = "focus left";
@@ -217,25 +219,25 @@ foldl' attrsets.unionOfDisjoint { }
       let
         ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} --notify ${args}";
       in
-        {
-          "XF86AudioRaiseVolume " = ponymix "--output increase 5";
-          "XF86AudioLowerVolume" = ponymix "--output decrease 5";
-          "XF86AudioMute" = ponymix "--output toggle";
-          "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
-          "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
-          "Shift+XF86AudioMute" = ponymix "--input toggle";
-        };
+      {
+        "XF86AudioRaiseVolume " = ponymix "--output increase 5";
+        "XF86AudioLowerVolume" = ponymix "--output decrease 5";
+        "XF86AudioMute" = ponymix "--output toggle";
+        "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
+        "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
+        "Shift+XF86AudioMute" = ponymix "--input toggle";
+      };
 
     media =
       let
         playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
       in
-        {
-          "XF86AudioPlay" = playerctl "play";
-          "XF86AudioPause" = playerctl "pause";
-          "XF86AudioNext" = playerctl "next";
-          "XF86AudioPrev" = playerctl "previous";
-        };
+      {
+        "XF86AudioPlay" = playerctl "play";
+        "XF86AudioPause" = playerctl "pause";
+        "XF86AudioNext" = playerctl "next";
+        "XF86AudioPrev" = playerctl "previous";
+      };
 
     backlight = {
       "XF86MonBrightnessDown" = "exec xbacklight -dec 20";
@@ -251,6 +253,6 @@ foldl' attrsets.unionOfDisjoint { }
         {
           "$mod+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
         } else {
-          "$mod+b" = "bar mode toggle";
-        };
+        "$mod+b" = "bar mode toggle";
+      };
   })
