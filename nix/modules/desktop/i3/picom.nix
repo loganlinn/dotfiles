@@ -9,8 +9,8 @@
       "0:_NET_WM_STATE@[0]:32a = '_NET_WM_STATE_HIDDEN'"
       "99:class_g = 'Pale moon' && !_NET_WM_STATE@:32a"
       "99:class_g = 'mpv' && !_NET_WM_STATE@:32a"
-      "80:class_g = 'kitty' && I3_FLOATING_WINDOW@:c && !focused"
-      "99:I3_FLOATING_WINDOW@:c"
+      # "80:class_g = 'kitty' && I3_FLOATING_WINDOW@:c && !focused"
+      "98:I3_FLOATING_WINDOW@:c"
       "99:_NET_WM_STATE@:32a = '_NET_WM_STATE_FULLSCREEN'"
       # Art/image programs where we need fidelity
       "100:class_g = 'Blender'"

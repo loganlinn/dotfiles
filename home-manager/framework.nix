@@ -1,6 +1,5 @@
 { pkgs, ... }: {
   imports = [
-    ../nix/modules/fonts.nix
     ../nix/home/common.nix
     ../nix/home/dev
     ../nix/home/emacs

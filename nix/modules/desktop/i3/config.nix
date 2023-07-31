@@ -41,7 +41,7 @@ in
     window = {
       border = 2;
       titlebar = true;
-      hideEdgeBorders = "smart";
+      hideEdgeBorders = "none"; # none, vertical, horizontal, both, smart
 
       # List of commands that should be executed on specific windows (i.e. for_window)
       commands = [
@@ -67,7 +67,7 @@ in
         }
         {
           criteria.title = "lnav$";
-          command = "floating enable, resize set 80 ppt 40 ppt, move position center, move down 40 ppt";
+          command = "floating enable, resize set 80 ppt 50 ppt, move position center, move down 40 ppt";
         }
         {
           criteria.class = "^emacs|google-chrome|firefox|librewolf$";
@@ -79,7 +79,7 @@ in
     focus = {
       followMouse = false;
       forceWrapping = false;
-      mouseWarping = true;
+      mouseWarping = false;
       newWindow = "focus"; # "smart" "urgent" "none"
       # Whether the window focus commands automatically wrap around the edge of containers. See https://i3wm.org/docs/userguide.html#_focus_wrapping
       # wrapping = "workspace";
@@ -100,11 +100,11 @@ in
       titlebar = false;
       border = 2;
       criteria = [
-        { class = "1Password.*"; }
-        { class = "Gcolor*"; }
-        { class = "Gpick*"; }
-        { class = "Pavucontrol"; }
-        { class = "Qalculate.*"; }
+        { class = "(?i)1password.*"; }
+        { class = "(?i)gcolor*"; }
+        { class = "(?i)gpick*"; }
+        { class = "(?i)pavucontrol"; }
+        { class = "(?i)qalculate"; }
         { class = "System76 Keyboard Configurator"; }
         { class = "ProcessManager"; }
         { class = "Thunar"; }
@@ -117,18 +117,17 @@ in
         { class = "obs"; }
         { class = "pop-up"; }
         { class = "(?i)syncthing"; }
-        { class = "zoom"; }
         { class = "(?i)xmessage"; }
         { class = "(?i)yad"; }
         { class = "(?i)zenity"; }
-        { title = "Artha"; }
+        { title = "(?i)artha"; }
         { title = "NVIDIA Settings"; }
         { title = "Screen Layout Editor"; } # i.e. arandr
         { title = "Calculator"; }
         { title = "Event Tester"; } # i.e. xev
-        { title = "Steam.*"; }
+        { title = "(?i)steam"; }
         { title = "doom-capture"; }
-        { title = "Yubico Authenticator"; }
+        { title = "(?i)yubico authenticator"; }
       ];
     };
 

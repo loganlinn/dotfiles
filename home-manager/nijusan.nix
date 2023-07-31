@@ -36,7 +36,6 @@ in
     ../nix/modules/programs/the-way
     ../nix/modules/services
     ../nix/modules/spellcheck.nix
-    ../nix/modules/fonts.nix
     ../nix/modules/desktop
     ../nix/modules/desktop/browsers
     ../nix/modules/desktop/browsers/firefox.nix
@@ -67,7 +66,6 @@ in
   sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
   sops.secrets.github_token.sopsFile = ../secrets/default.yaml;
 
-  modules.fonts.enable = true;
   modules.spellcheck.enable = true;
   modules.theme = {
     active = "arc";

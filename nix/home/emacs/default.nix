@@ -27,10 +27,4 @@ in
     startWithUserSession = true;
     defaultEditor = false;
   };
-
-  home.shellAliases = {
-    et = "emacs -nw";
-    emacs-eval = "emacsclient -n --eval";
-    erepl = "rlwrap doom run --repl";
-  };
 }

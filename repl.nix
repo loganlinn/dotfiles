@@ -14,7 +14,7 @@ let
 
   inherit (self.currentSystem.allModuleArgs) pkgs; # TODO match overlays used in (home|nixos)Configurations
 
-  lib = self.lib.mkLib pkgs.lib;
+  lib = self.lib.mkHmLib pkgs.lib;
 in
 
 builtins // lib // rec {

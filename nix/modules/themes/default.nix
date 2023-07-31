@@ -1,15 +1,13 @@
-{ inputs, options, config, lib, pkgs, nix-colors, ... }:
+{ config, lib, pkgs, nix-colors, ... }:
 
 with lib;
 let
-  inherit (inputs.home-manager.lib.hm.types) fontType;
   inherit (nix-colors.lib.contrib { inherit pkgs; }) vimThemeFromScheme shellThemeFromScheme;
 
   cfg = config.modules.theme;
 in
 {
   imports = [
-    ../fonts.nix
     ./dracula
     ./arc
   ];
@@ -43,33 +41,6 @@ in
         else v;
     };
 
-    fonts = {
-      mono = mkOption {
-        type = fontType;
-        default = {
-          package = config.modules.fonts.nerdfonts.finalPackage;
-          name = "JetBrainsMono Nerd Font Mono";
-          size = 11;
-        };
-      };
-      serif = mkOption {
-        type = fontType;
-        default = {
-          package = pkgs.noto-fonts;
-          name = "Noto Serif";
-          size = 10;
-        };
-      };
-      sans = mkOption {
-        type = fontType;
-        default = {
-          package = config.modules.fonts.nerdfonts.finalPackage;
-          name = "Noto Sans";
-          size = 10;
-        };
-      };
-    };
-
     onReload = mkOption {
       type = with types; attrsOf lines;
       default = { };
@@ -84,18 +55,18 @@ in
 
   config = mkIf (cfg.active != null) (mkMerge [
     {
-      modules.fonts.enable = true;
+      home.packages = with pkgs; [
+        # zafiro-icons
+        paper-icon-theme
+        pywal
+        wpgtk # gui for pywal ('wpg' command)
+        siji # iconic bitmap font
 
-      home.packages = with pkgs;
-        [
-          # zafiro-icons
-          paper-icon-theme
-          pywal
-          wpgtk # gui for pywal ('wpg' command)
-          siji # iconic bitmap font
-        ]
-        ++ optional (cfg.fonts.mono.package != null) cfg.fonts.mono.package
-        ++ optional (cfg.fonts.sans.package != null) cfg.fonts.sans.package;
+        config.my.fonts.sans.package
+        config.my.fonts.serif.package
+        config.my.fonts.mono.package
+        config.my.fonts.terminal.package
+      ] ++ config.my.fonts.packages;
 
       xdg.dataFile."nix-colors.sh" = {
         text = (shellThemeFromScheme { scheme = config.colorScheme; }).text;
@@ -171,7 +142,7 @@ in
     }
 
     (mkIf config.gtk.enable {
-      gtk.font = cfg.fonts.sans;
+      gtk.font = config.my.fonts.sans;
 
       gtk.iconTheme = mkOptionDefault {
         package = pkgs.paper-gtk-theme;

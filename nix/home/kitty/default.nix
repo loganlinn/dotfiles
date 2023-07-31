@@ -27,11 +27,7 @@ in
 
     theme = "kanagawabones";
 
-    font = {
-      package = pkgs.victor-mono;
-      name = "Victor Mono";
-      size = if pkgs.stdenv.isDarwin then 14 else 12;
-    };
+    font = config.my.fonts.terminal;
 
     # https://sw.kovidgoyal.net/kitty/actions/
     keybindings = {
@@ -126,12 +122,5 @@ in
 
   programs.zsh.initExtra = ''
     kitty + complete setup zsh | source /dev/stdin
-  '';
-
-  xsession.windowManager.i3.extraConfig = ''
-    bindsym $mod+Ctrl+Return exec --no-startup-id i3-msg "i3-msg exec kitty-left && i3-msg exec kitty-right"
-
-    for_window [class="kitty-floating"] floating enable, move position, resize set width 72 ppt height 72 ppt, move position center
-    for_window [class="kitty-scratch"] move scratchpad, scratchpad show
   '';
 }

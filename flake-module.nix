@@ -1,11 +1,11 @@
 top@{ self, inputs, config, flake-parts-lib, ... }:
 
-
 let
-  compose = g: f: x: g (f x);
+  inherit (flake-parts-lib) mkPerSystemOption;
 
   mkLib = import ./lib/extended.nix;
-  mkHmLib = compose (import "${inputs.home-manager}/modules/lib/stdlib-extended.nix") mkLib;
+  mkHmLib = let compose = g: f: x: g (f x); in
+    compose (import "${inputs.home-manager}/modules/lib/stdlib-extended.nix") mkLib;
 in
 {
   imports = [
@@ -13,9 +13,11 @@ in
     ./nixos/flake-module.nix
   ];
 
-  options.perSystem = flake-parts-lib.mkPerSystemOption (ctx@{ pkgs, ... }:
-    with top.lib;
-    let cfg = ctx.config.my; in
+  options.perSystem = mkPerSystemOption (ctx@{ pkgs, ... }:
+    with (mkHmLib top.lib);
+    let
+      cfg = ctx.config.my;
+    in
     {
       options.my = mkOption {
         default = { };
@@ -105,6 +107,105 @@ in
             flakeRoot = mkOption {
               type = types.path;
               default = "${cfg.dotfilesDir}";
+            };
+
+            fonts.serif = mkOption {
+              type = hm.types.fontType;
+              default = {
+                package = pkgs.noto-fonts;
+                name = "DejaVu Serif";
+                size = if pkgs.stdenv.isDarwin then 12 else 10;
+              };
+            };
+
+            fonts.sans = mkOption {
+              type = hm.types.fontType;
+              default = {
+                package = pkgs.noto-fonts;
+                name = "DejaVu Sans";
+                size = if pkgs.stdenv.isDarwin then 12 else 10;
+              };
+            };
+
+            fonts.mono = mkOption {
+              type = hm.types.fontType;
+              default = {
+                package = cfg.fonts.nerdfonts.package;
+                name = "DejaVu Sans Mono";
+                size = if pkgs.stdenv.isDarwin then 12 else 10;
+              };
+            };
+
+            fonts.terminal = mkOption {
+              type = hm.types.fontType;
+              default = {
+                package = cfg.fonts.nerdfonts.package;
+                name = "VictorMono Nerd Font";
+                size = if pkgs.stdenv.isDarwin then 14 else 12;
+              };
+            };
+
+            fonts.nerdfonts = mkOption {
+              readOnly = true;
+              type = hm.types.fontType;
+              default = {
+                package = pkgs.nerdfonts.override {
+                  fonts = [
+                    "AnonymousPro"
+                    "DejaVuSansMono"
+                    "FiraCode"
+                    "FiraMono"
+                    "Go-Mono"
+                    "Hack"
+                    "Hasklig"
+                    "IBMPlexMono"
+                    "Inconsolata"
+                    "Iosevka"
+                    "JetBrainsMono"
+                    "LiberationMono"
+                    "Lilex"
+                    "Meslo"
+                    "NerdFontsSymbolsOnly"
+                    "Noto"
+                    "OpenDyslexic"
+                    "ProFont"
+                    "RobotoMono"
+                    "SourceCodePro"
+                    "SpaceMono"
+                    "Terminus"
+                    "Ubuntu"
+                    "UbuntuMono"
+                    "VictorMono"
+                  ];
+                };
+              };
+            };
+
+            fonts.packages = mkOption {
+              type = with types; listOf package;
+              default = with pkgs; [
+                open-sans
+                ankacoder
+                cascadia-code
+                dejavu_fonts
+                fira # sans
+                fira-code
+                fira-code-symbols
+                font-awesome
+                font-awesome_5
+                hack-font
+                iosevka
+                jetbrains-mono
+                liberation_ttf
+                material-design-icons # https://materialdesignicons.com/
+                material-icons
+                noto-fonts
+                noto-fonts-cjk
+                noto-fonts-emoji
+                recursive
+                ubuntu_font_family
+                victor-mono
+              ];
             };
           };
 
@@ -204,12 +305,12 @@ in
           (fold recursiveUpdate { })
         ];
         # TODO checks.repl.default = mkNixReplCheck ./repl.nix
-        };
-
-        flake = {
-          lib = (mkLib top.lib).my // {
-            inherit mkLib mkHmLib;
-          };
-        };
       };
-  }
+
+    flake = {
+      lib = (mkLib top.lib).my // {
+        inherit mkLib mkHmLib;
+      };
+    };
+  };
+}

@@ -3,7 +3,6 @@
 {
   imports = [
     nix-colors.homeManagerModule
-    ../nix/modules/fonts.nix
     ../nix/home/common.nix
     ../nix/home/dev
     ../nix/home/pretty.nix

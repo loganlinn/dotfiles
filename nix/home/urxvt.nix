@@ -1,14 +1,8 @@
 { config, lib, pkgs, ... }:
 
-let
-  inherit (builtins) toString;
-  inherit (config.modules.theme) fonts;
-in
+with builtins;
+
 {
-  home.packages = with pkgs; [
-    material-design-icons
-    fonts.mono.package
-  ];
   programs.urxvt = {
     enable = true;
     iso14755 = true; # support for viewing and entering unicode characters
@@ -24,9 +18,12 @@ in
       keepPosition = true;
       lines = 10000;
     };
-    fonts = with config.modules.theme; [
-      "xft:${fonts.mono.name}:size=${if fonts.mono.size == null then 12 else (toString fonts.mono.size)}:antialias=true"
+    fonts = let cfg = config.my.fonts.terminal; in [
+      "xft:${cfg.name}:size=${if cfg.size == null then 12 else (toString cfg.size)}:antialias=true"
       "xft:Material Design Icons:size=14:minspace=false"
     ];
   };
+  home.packages = with pkgs; [
+    material-design-icons
+  ];
 }

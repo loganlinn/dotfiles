@@ -20,12 +20,12 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Ctrl+c" = "restart";
       "$mod+Shift+c" = "reload";
       "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-      "Ctrl+$alt+Delete" = ''exec --no-startup-id ${terminal} ${getPackageExe config.programs.btop}'';
+      "Ctrl+$alt+Delete" = ''exec --no-startup-id ${getPackageExe config.programs.urxvt} -e ${getPackageExe config.programs.btop}'';
     };
 
     fkeys = {
       "$mod+F1" = ''exec --no-startup-id thunar'';
-      "$mod+F2" = ''exec --no-startup-id kitty bat ${config.xdg.configHome}/i3/config'';
+      "$mod+F2" = ''exec --no-startup-id kitty --class kitty-floating less ${config.xdg.configHome}/i3/config'';
       "$mod+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
       "$mod+F9" = ''exec --no-startup-id rofi-power'';
     };
@@ -120,6 +120,7 @@ foldl' attrsets.unionOfDisjoint { }
 
     focusOutput = {
       "$mod+o" = "focus output next";
+      "$mod+Shift+o" = "move output next";
     };
 
     focusWorkspaceAbsolute = {

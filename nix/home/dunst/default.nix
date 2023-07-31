@@ -4,7 +4,6 @@ with lib;
 
 # test using https://tests.peter.sh/notification-generator/
 let
-  inherit (config.modules.theme) fonts;
   inherit (config.colorScheme) colors;
 in
 {
@@ -13,13 +12,14 @@ in
 
     iconTheme = config.gtk.iconTheme;
 
-    settings = rec {
+    settings = {
       global = {
         browser = "${pkgs.xdg-utils}/bin/xdg-open";
         dmenu = "${config.programs.rofi.finalPackage}/bin/rofi -dmenu -p dunst:";
         monitor = 0;
         follow = "none";
-        font = "${fonts.mono.name} Light 10";
+        font = with (config.my.fonts.notifications or config.my.fonts.mono);
+          "${name}${optionalString (size != null) " ${toString size}"}";
         # For a complete markup reference, see <https://docs.gtk.org/Pango/pango_markup.html>.
         # %a appname
         # %s summary
@@ -83,12 +83,12 @@ in
         mouse_middle_click = "close_current";
         mouse_right_click = "context";
 
-        frame_color = "#${colors.base01}";
         separator_color = "auto";
 
         background = "#${colors.base01}";
         foreground = "#${colors.base05}";
-        highlight = "#${colors.base0A}";
+        highlight = "#${colors.base0B}"; # i.e. progress bar
+        frame_color = "#${colors.base01}";
       };
 
       urgency_low = {
@@ -101,14 +101,14 @@ in
       urgency_normal = {
         background = "#${colors.base01}";
         foreground = "#${colors.base05}";
-        frame_color = "#${colors.base02}";
+        frame_color = "#${colors.base09}";
         timeout = 60;
       };
 
       urgency_critical = {
         background = "#${colors.base01}";
         foreground = "#${colors.base05}";
-        frame_color = "#${colors.base0E}"; # i.e. vcs-modified
+        frame_color = "#${colors.base09}";
         timeout = 0;
       };
 
