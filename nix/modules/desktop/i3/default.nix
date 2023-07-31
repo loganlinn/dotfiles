@@ -47,6 +47,7 @@ in
     ];
 
     home.packages = with pkgs; [
+      i3status
       yad # display GTK+ dialogs in shell scripts (fork of zenity)
       libnotify
       ponymix

@@ -32,7 +32,7 @@ in
     fonts = {
       names = [
         "FontAwesome"
-        "Victor Mono"
+        config.my.fonts.mono.name
       ];
       style = "Normal";
       size = 11.0;
@@ -40,17 +40,25 @@ in
 
     window = {
       border = 2;
-      titlebar = true;
+      titlebar = false;
       hideEdgeBorders = "none"; # none, vertical, horizontal, both, smart
 
       # List of commands that should be executed on specific windows (i.e. for_window)
       commands = [
         {
+          criteria.title = "^Emacs Everywhere";
+          command = "floating enable, resize set 35 ppt 25 ppt, move position mouse";
+        }
+        {
           criteria.class = "(?i)conky";
           command = "floating enable, move position mouse, move down ${barHeight} px";
         }
         {
-          criteria.class = "(?i)Qalculate";
+          criteria.class = "(?i)nm-connection-editor";
+          command = "floating enable, move position center";
+        }
+        {
+          criteria.class = "(?i)qalculate";
           command = "floating enable, move position mouse, move down ${barHeight} px";
         }
         {
@@ -66,12 +74,20 @@ in
           command = "floating enable, move position mouse";
         }
         {
+          criteria.class = "^emacs$";
+          command = "resize set 70 ppt";
+        }
+        {
           criteria.title = "lnav$";
           command = "floating enable, resize set 80 ppt 50 ppt, move position center, move down 40 ppt";
         }
         {
-          criteria.class = "^emacs|google-chrome|firefox|librewolf$";
-          command = "border none";
+          criteria.class = "^i3floating$";
+          command = "floating enable";
+        }
+        {
+          criteria.class = "kitty";
+          command = "border normal"; # show window title
         }
       ];
     };
@@ -98,7 +114,7 @@ in
 
     floating = {
       titlebar = false;
-      border = 2;
+      border = 3;
       criteria = [
         { class = "(?i)1password.*"; }
         { class = "(?i)gcolor*"; }
@@ -391,31 +407,31 @@ in
           bindsym Shift+Right resize grow   width  24 px or 4 ppt
 
           # Percentages
-          bindsym 1       resize set width 90 ppt, mode default
-          bindsym 2       resize set width 80 ppt, mode default
-          bindsym 3       resize set width 70 ppt, mode default
-          bindsym 4       resize set width 60 ppt, mode default
-          bindsym 5       resize set width 50 ppt, mode default
-          bindsym 6       resize set width 40 ppt, mode default
-          bindsym 7       resize set width 30 ppt, mode default
-          bindsym 8       resize set width 20 ppt, mode default
-          bindsym 9       resize set width 10 ppt, mode default
-          bindsym Shift+9 resize set width 90 ppt, mode default
-          bindsym Shift+8 resize set width 80 ppt, mode default
-          bindsym Shift+7 resize set width 70 ppt, mode default
-          bindsym Shift+6 resize set width 60 ppt, mode default
-          bindsym Shift+5 resize set width 50 ppt, mode default
-          bindsym Shift+4 resize set width 40 ppt, mode default
-          bindsym Shift+3 resize set width 30 ppt, mode default
-          bindsym Shift+2 resize set width 20 ppt, mode default
-          bindsym Shift+1 resize set width 10 ppt, mode default
+          bindsym 1       resize set 90 ppt, mode default
+          bindsym 2       resize set 80 ppt, mode default
+          bindsym 3       resize set 70 ppt, mode default
+          bindsym 4       resize set 60 ppt, mode default
+          bindsym 5       resize set 50 ppt, mode default
+          bindsym 6       resize set 40 ppt, mode default
+          bindsym 7       resize set 30 ppt, mode default
+          bindsym 8       resize set 20 ppt, mode default
+          bindsym 9       resize set 10 ppt, mode default
+          bindsym Shift+9 resize set 90 ppt, mode default
+          bindsym Shift+8 resize set 80 ppt, mode default
+          bindsym Shift+7 resize set 70 ppt, mode default
+          bindsym Shift+6 resize set 60 ppt, mode default
+          bindsym Shift+5 resize set 50 ppt, mode default
+          bindsym Shift+4 resize set 40 ppt, mode default
+          bindsym Shift+3 resize set 30 ppt, mode default
+          bindsym Shift+2 resize set 20 ppt, mode default
+          bindsym Shift+1 resize set 10 ppt, mode default
 
           bindsym f floating enable
-          bindsym s floating enable, resize set width 66 ppt height 66 ppt, move position center, mode "default"
-          bindsym a floating enable, resize set width 33 ppt height 66 ppt, move position center, move left 33 ppt, mode "default"
-          bindsym d floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 33 ppt, mode "default"
-          bindsym q floating enable, resize set width 33 ppt height 66 ppt, move position center, move left 17 ppt, mode "default"
-          bindsym e floating enable, resize set width 33 ppt height 66 ppt, move position center, move right 17 ppt, mode "default"
+          bindsym s floating enable, resize set 66 ppt 66 ppt, move position center, mode "default"
+          bindsym a floating enable, resize set 33 ppt 66 ppt, move position center, move left 33 ppt, mode "default"
+          bindsym d floating enable, resize set 33 ppt 66 ppt, move position center, move right 33 ppt, mode "default"
+          bindsym q floating enable, resize set 33 ppt 66 ppt, move position center, move left 17 ppt, mode "default"
+          bindsym e floating enable, resize set 33 ppt 66 ppt, move position center, move right 17 ppt, mode "default"
 
           bindsym equal exec --no-startup-id ${getExe (pkgs.callPackage ./i3-balance-workspace.nix {})};
           bindsym Shift+equal resize grow width 10 px or 5 ppt, resize grow height 10 px or 5 ppt
@@ -488,6 +504,31 @@ in
     '';
 
   home.packages = with pkgs; [
+    (writeShellScriptBin "i3-cmd" ''
+      flags=(-t command)
+      while [[ $# -gt 0 ]]; do
+        case $1 in
+        -h | --help)
+          echo "usage: $(basename "$0") [-q] [-v] [-r] [-s] command..."
+          exit 0
+          ;;
+        -v | --verbose | -q | --quiet | -r | --raw)
+          flags+=("$1")
+          shift
+          ;;
+        -s | --socket)
+          flags+=("$1" "$2")
+          shift 2
+          ;;
+        -*)
+          echo "unrecoginized flag: $1" >&2
+          exit 1
+          ;;
+        *) break ;;
+        esac
+      done
+      exec i3-msg "''${flags[@]}" "$*"
+    '')
     (writeShellScriptBin "i3-marks-dmenu" ''
       i3-msg -t get_marks |
       ${getExe pkgs.jq} -r '.[]' |
@@ -538,7 +579,7 @@ in
         background = base02;
         border = base02;
         childBorder = base02;
-        indicator = base02;
+        indicator = base0A;
         text = base00;
       };
       focusedInactive = {

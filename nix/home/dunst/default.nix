@@ -101,14 +101,14 @@ in
       urgency_normal = {
         background = "#${colors.base01}";
         foreground = "#${colors.base05}";
-        frame_color = "#${colors.base09}";
+        frame_color = "#${colors.base0A}";
         timeout = 60;
       };
 
       urgency_critical = {
         background = "#${colors.base01}";
         foreground = "#${colors.base05}";
-        frame_color = "#${colors.base09}";
+        frame_color = "#${colors.base0E}";
         timeout = 0;
       };
 

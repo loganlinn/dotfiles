@@ -21,11 +21,21 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Shift+c" = "reload";
       "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
       "Ctrl+$alt+Delete" = ''exec --no-startup-id ${getPackageExe config.programs.urxvt} -e ${getPackageExe config.programs.btop}'';
+      # inspect current window properties
+      "--release $mod+i" = "exec --no-startup-id ${
+        pkgs.writeShellScript "xprop-hud" ''
+          eval "$(${getExe pkgs.xdotool} getwindowfocus getwindowgeometric --shell)" || exit $?
+
+          ${getExe pkgs.xst} -a -w "$WINDOW" -e sh -c "
+              ${getExe pkgs.xorg.xprop} -id '$WINDOW' -spy;
+              "
+        ''
+      }";
     };
 
     fkeys = {
       "$mod+F1" = ''exec --no-startup-id thunar'';
-      "$mod+F2" = ''exec --no-startup-id kitty --class kitty-floating less ${config.xdg.configHome}/i3/config'';
+      "$mod+F2" = ''exec --no-startup-id kitty --class kitty-floating vim -M {config.xdg.configHome}/i3/config'';
       "$mod+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
       "$mod+F9" = ''exec --no-startup-id rofi-power'';
     };
@@ -45,7 +55,7 @@ foldl' attrsets.unionOfDisjoint { }
 
     logs = {
       "$mod+Shift+s" = ''exec --no-startup-id kitty --name systemlnav --class kitty-floating ${
-        pkgs.writeShellScript "systemlnav" ''
+        pkgs.writeShellScriptBin "systemlnav" ''
            journalctl --dmesg --follow --since=today --output=json | ${getExe pkgs.lnav}
         ''
       }'';
@@ -151,7 +161,8 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Shift+j" = "move down";
       "$mod+Shift+k" = "move up";
       "$mod+Shift+l" = "move right";
-      "$mod+shift+g" = "move up; move left"; # Semi-hacky way to pull the current window out of the tab group.
+      "$mod+shift+comma" = "move up; move left";
+      "$mod+shift+period" = "move up; move right";
     };
 
     moveWindowToWorkspace = {
