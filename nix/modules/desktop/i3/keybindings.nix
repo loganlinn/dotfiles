@@ -6,6 +6,9 @@ with lib.my;
 
 let
   inherit (config.xsession.windowManager.i3.config) terminal;
+
+  i3-input = prompt: limit: format: ''exec --no-startup-id "i3-input -P '${prompt}' -l ${limit} -F '${format}' -f 'pango:${config.my.fonts.mono.name}, ' '';
+
 in
 
 foldl' attrsets.unionOfDisjoint { }
@@ -22,9 +25,12 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
       "Ctrl+$alt+Delete" = ''exec --no-startup-id ${getPackageExe config.programs.urxvt} -e ${getPackageExe config.programs.btop}'';
       # inspect current window properties
-      "--release $mod+i" = "exec --no-startup-id ${
+      "--release $mod+i" = "exec ${
         pkgs.writeShellScript "xprop-hud" ''
-          eval "$(${getExe pkgs.xdotool} getwindowfocus getwindowgeometric --shell)" || exit $?
+          # toggling behavior
+          pkill --full "$0" && exit 0
+
+          eval "$(${getExe pkgs.xdotool} getwindowfocus getwindowgeometry --shell)" || exit $?
 
           ${getExe pkgs.xst} -a -w "$WINDOW" -e sh -c "
               ${getExe pkgs.xorg.xprop} -id '$WINDOW' -spy;
@@ -35,7 +41,7 @@ foldl' attrsets.unionOfDisjoint { }
 
     fkeys = {
       "$mod+F1" = ''exec --no-startup-id thunar'';
-      "$mod+F2" = ''exec --no-startup-id kitty --class kitty-floating vim -M {config.xdg.configHome}/i3/config'';
+      "$mod+F2" = ''exec --no-startup-id kitty --class kitty-floating vim -u NORC --noplugin -M -R "${config.xdg.configHome}/i3/config"'';
       "$mod+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
       "$mod+F9" = ''exec --no-startup-id rofi-power'';
     };
@@ -47,8 +53,9 @@ foldl' attrsets.unionOfDisjoint { }
     marks = {
       # read 1 character and mark the current window with this character
       "$mod+m" = ''exec i3-input -F 'mark --replace %s' -l 1 -P "Mark as: "'';
+      "$mod+g" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Swap: "'';
+      "$mod+Shift+g" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap: "'';
       # apostrophe a la vim. read 1 character and go to the window with the character
-      "$mod+apostrophe" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Go to"'';
       "$mod+Shift+apostrophe" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap with: "'';
       "$mod+Ctrl+apostrophe" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Move to: "'';
     };
@@ -157,12 +164,12 @@ foldl' attrsets.unionOfDisjoint { }
     };
 
     moveWindow = {
-      "$mod+Shift+h" = "move left";
-      "$mod+Shift+j" = "move down";
-      "$mod+Shift+k" = "move up";
-      "$mod+Shift+l" = "move right";
-      "$mod+shift+comma" = "move up; move left";
-      "$mod+shift+period" = "move up; move right";
+      "$mod+Shift+h" = "move left 10 ppt";
+      "$mod+Shift+j" = "move down 10 ppt";
+      "$mod+Shift+k" = "move up 10 ppt";
+      "$mod+Shift+l" = "move right 10 ppt";
+      "$mod+shift+comma" = "move up; move left; mark h";
+      "$mod+shift+period" = "move up; move right; mark l";
     };
 
     moveWindowToWorkspace = {

@@ -21,10 +21,4 @@ in
     };
     extraPackages = epkgs: [ epkgs.vterm ];
   };
-
-  services.emacs = {
-    enable = false;
-    startWithUserSession = true;
-    defaultEditor = false;
-  };
 }

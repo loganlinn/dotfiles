@@ -68,3 +68,48 @@ in
   '';
 
 }
+
+# { config, lib, pkgs, ... }:
+
+# with lib;
+
+# {
+
+#   home.packages = with pkgs; [
+#     xfce.exo # thunar "open terminal here"
+#     xfce.gigolo # remote filesystems (ftp, ssh, webdav, etc)
+#   ];
+
+#   xdg.configFile."gigolo/config".text = ''
+#     [general]
+#     file_manager=${pkgs.glib}/bin/gio open
+#     terminal=kitty
+#     autoconnect_interval=60
+
+#     [ui]
+#     show_in_systray=true
+#     start_in_systray=false
+#     show_toolbar=true
+#     show_autoconnect_errors=true
+#   '';
+
+#   xdg.configFile.thunar_actions = {
+#     target = "Thunar/uca.xml";
+#     text = ''
+#       <?xml version="1.0" encoding="UTF-8"?>
+#       <actions>
+#         <action>
+#           <icon>utilities-terminal</icon>
+#           <name>Open Terminal Here</name>
+#           <unique-id>1604472351415438-1</unique-id>
+#           <command>${getExe pkgs.handlr} launch x-scheme-handler/terminal -- --working-directory %f</command>
+#           <description></description>
+#           <patterns>*</patterns>
+#           <startup-notify/>
+#           <directories/>
+#         </action>
+#       </actions>
+#     '';
+#   };
+
+# }

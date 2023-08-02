@@ -140,8 +140,8 @@ in
               type = hm.types.fontType;
               default = {
                 package = cfg.fonts.nerdfonts.package;
-                name = "VictorMono Nerd Font";
-                size = if pkgs.stdenv.isDarwin then 14 else 12;
+                name = "FiraCode Nerd Font Light";
+                size = 11;
               };
             };
 
@@ -151,6 +151,7 @@ in
               default = {
                 package = pkgs.nerdfonts.override {
                   fonts = [
+                    # "3720"
                     "AnonymousPro"
                     "DejaVuSansMono"
                     "FiraCode"
@@ -158,6 +159,7 @@ in
                     "Go-Mono"
                     "Hack"
                     "Hasklig"
+                    "FantasqueSansMono"
                     "IBMPlexMono"
                     "Inconsolata"
                     "Iosevka"

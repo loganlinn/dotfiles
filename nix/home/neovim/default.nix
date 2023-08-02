@@ -31,7 +31,7 @@
     godef
     luarocks
     nodePackages.bash-language-server
-    sumneko-lua-language-server
+    lua-language-server
     rnix-lsp
     statix
     yamllint

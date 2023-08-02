@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  withSystemd = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
 in
 {
   imports = [
@@ -11,6 +10,7 @@ in
     ./common-linux.nix
     ./fzf.nix
     ./git
+    ./gpg.nix
     ./neovim
     ./nix-path.nix
     ./ranger.nix
@@ -30,7 +30,8 @@ in
     dogdns # dig on steroids
     du-dust # du alternative
     duf # df alternative
-    fd # find alternative
+    envsubst
+    fd
     gawk
     gnugrep
     gnumake
@@ -38,6 +39,7 @@ in
     gnutar
     gnutls
     gzip
+    lsof
     moreutils
     neofetch
     pinentry
@@ -78,10 +80,6 @@ in
     };
   };
 
-  programs.command-not-found.enable = !config.programs.nix-index.enable;
-
-  programs.nix-index.enable = lib.mkDefault false;
-
   programs.direnv = {
     enable = true;
     enableZshIntegration = true;
@@ -100,10 +98,6 @@ in
     };
   };
 
-  programs.go.enable = true;
-
-  programs.gpg.enable = true;
-
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
@@ -120,20 +114,6 @@ in
     ];
   };
 
-  programs.htop = {
-    # enable = true;
-    settings = {
-      hide_kernel_threads = 1;
-      show_program_path = 1;
-      show_cpu_usage = 1;
-      show_cpu_frequency = 0;
-      show_cpu_temperature = 1;
-      degree_fahrenheit = 0;
-      enable_mouse = 1;
-      tree_view = 0;
-    };
-  };
-
   programs.jq.enable = true;
 
   programs.lsd = {
@@ -142,18 +122,4 @@ in
   };
 
   programs.tealdeer.enable = true; # tldr command
-
-  services.gpg-agent = {
-    enable = withSystemd;
-    enableSshSupport = true;
-    enableBashIntegration = true;
-    enableZshIntegration = true;
-    defaultCacheTtl = lib.mkDefault 86400;
-    maxCacheTtl = lib.mkDefault 86400;
-    pinentryFlavor = "tty";
-    extraConfig = ''
-      allow-emacs-pinentry
-      allow-loopback-pinentry
-    '';
-  };
 }

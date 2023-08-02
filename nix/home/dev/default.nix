@@ -32,6 +32,7 @@ in
     du-dust
     dua # View disk space usage and delete unwanted data, fast.
     watchexec
+    entr      # better than watchexec?
 
     # containers
     dive
@@ -57,6 +58,9 @@ in
     yq-go
     prom2json # prometheus
     yaml-language-server
+    # cue
+    # cue
+    # cuelsp
 
     # version control
     pre-commit
@@ -85,7 +89,6 @@ in
 
     # nix
     alejandra
-    comma # github.com/nix-community/comma
     deadnix
     nix-init
     nix-output-monitor # get additional information while building packages
@@ -99,52 +102,21 @@ in
     nil # language-server
     toml2nix
 
-    # c/c++
+    # c+++++++++++++
     ccls
     clang-tools
-
-    # cue
-    cue
-    cuelsp
-
-    # rust
-    # rustc
-    # cargo
-    # rustfmt
-    # rust-analyzer
+    # vlang
+    # zig
 
     # golang
     gopls
 
-    # vlang
-    vlang
-
-    # zig
-    zig
-
-    # java
-    # [INFO] Scanning for projects...
-    # [INFO]
-    # [INFO] ---------------------< org.javacs:javac-services >----------------------
-    # [INFO] Building javac-services 0.1-SNAPSHOT
-    # [INFO]   from pom.xml
-    # [INFO] --------------------------------[ jar ]---------------------------------
-    # [WARNING] The POM for org.apache.maven.plugins:maven-resources-plugin:jar:3.3.1 is missing, no dependency information available
-    # [INFO] ------------------------------------------------------------------------
-    # [INFO] BUILD FAILURE
-    # [INFO] ------------------------------------------------------------------------
-    # [INFO] Total time:  0.051 s
-    # [INFO] Finished at: 2023-07-30T17:00:15Z
-    # [INFO] ------------------------------------------------------------------------
-    # [ERROR] Plugin org.apache.maven.plugins:maven-resources-plugin:3.3.1 or one of its dependencies could not be resolved: The following artifacts could not be resolved: org.apache.maven.plugins:maven-resources-pl>
-    # [ERROR]
-    # [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-    # [ERROR] Re-run Maven using the -X switch to enable full debug logging.
-    # [ERROR]
-    # [ERROR] For more information about the errors and possible solutions, please read the following articles:
-    # [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/PluginResolutionException
-    # java-language-server
-    # visualvm # conflicts with pkgs.graalvm-ce
+    lua
+    luarocks
+    luaformatter
+    lua-language-server
+    fennel
+    fnlfmt
 
     # ruby
     ruby
@@ -173,9 +145,10 @@ in
 
     # vim
     nodePackages.vim-language-server
-    sumneko-lua-language-server
   ] ++ lib.optional config.programs.vscode.enable
     nodePackages.vscode-langservers-extracted;
+
+  programs.go.enable = true;
 
   home.sessionVariables = {
     GRAPHITE_DISABLE_TELEMETRY = "1";

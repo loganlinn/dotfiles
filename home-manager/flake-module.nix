@@ -39,10 +39,25 @@
         (lib.optionalAttrs (system == "x86_64-linux") {
           homeConfigurations."logan@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs extraSpecialArgs;
-            modules = commonModules ++ [ ./nijusan.nix ];
+            modules = commonModules ++ [
+              ./nijusan.nix
+            ];
           };
-        })
-        // (lib.optionalAttrs (system == "aarch64-darwin") {
+        }) //
+        # (lib.optionalAttrs (system == "x86_64-linux") {
+        #   homeConfigurations."awesome@nijusan" = inputs.home-manager.lib.homeManagerConfiguration {
+        #     inherit pkgs extraSpecialArgs;
+        #     modules = commonModules ++ [
+        #       ./nijusan.nix
+        #       {
+        #         xsession.windowManager.i3.enable = lib.mkForce false;
+        #         xsession.windowManager.awesome.enable = lib.mkForce true;
+
+        #       }
+        #     ];
+        #   };
+        # })
+        (lib.optionalAttrs (system == "aarch64-darwin") {
           # TODO move to nix-darwin
           darwinConfigurations.patchbook = inputs.nix-darwin.lib.darwinSystem {
             inherit system;

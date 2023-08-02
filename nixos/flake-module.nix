@@ -18,7 +18,6 @@
       ]) ++ (with self.nixosModules; [
         bluetooth
         docker
-        fonts
         networking
         nix-registry
         nvidia
@@ -27,6 +26,7 @@
         security
         steam
         tailscale
+        thunar
         thunderbolt
       ] ++ [
         {

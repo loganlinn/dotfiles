@@ -10,7 +10,5 @@
 
   colorScheme = nix-colors.colorSchemes.doom-one;
 
-  modules.fonts.enable = true;
-
   home.stateVersion = "22.11";
 }

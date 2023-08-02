@@ -1,7 +1,6 @@
 {
   bluetooth = ./bluetooth.nix;
   docker = ./docker.nix;
-  fonts = ./fonts.nix;
   minecraft-server = ./minecraft-server.nix;
   networking = ./networking;
   nix-registry = ../../nix/modules/nix-registry.nix;
@@ -11,6 +10,7 @@
   security = ./security;
   steam = ./steam.nix;
   tailscale = ./tailscale.nix;
+  thunar = ./thunar.nix;
   thunderbolt = ./thunderbolt.nix;
   wayland =  ./wayland.nix;
 }

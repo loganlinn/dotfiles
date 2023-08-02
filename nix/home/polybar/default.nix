@@ -26,6 +26,12 @@ let
     } // settings;
   };
 
+  kubebar = pkgs.writeShellApplication {
+    name = "kubebar";
+    runtimeInputs = with pkgs; [ kubectl entr jq envsubst ];
+    text = builtins.readFile ./kubebar.bash;
+  };
+
 in
 {
   options.modules.polybar = {
@@ -43,7 +49,13 @@ in
 
       modules-left = mkOption {
         type = with types; listOf str;
-        default = [ "date" "xwindow" ];
+        default = [
+          "date"
+          "sep"
+          "xwindow"
+          "sep"
+          "kubernetes"
+        ];
       };
 
       modules-center = mkOption {
@@ -54,18 +66,19 @@ in
       modules-right = mkOption {
         type = with types; listOf str;
         default = [
+          "sep"
           "memory"
           "gpu"
           "cpu"
           "temperature"
-          "sep4"
+          "sep"
           "pulseaudio"
-          "sep3"
+          "sep"
         ]
         ++ optional config.services.dunst.enable "dunst"
         ++ (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
         ++ [
-          "sep1"
+          "sep"
           "date"
         ];
       };
@@ -89,6 +102,10 @@ in
   };
 
   config = {
+    home.packages = [
+      kubebar
+    ];
+
     services.polybar = {
       package = cfg.package;
 
@@ -451,32 +468,35 @@ in
               };
             };
 
-            # TODO reuse separator module?
-            "module/sep1" = {
-              type = "custom/text";
-              content = {
-                text = " ";
-                foreground = "\${colors.transparent}";
-                background = "\${colors.transparent}";
+            "module/kubernetes" = {
+              type = "custom/script";
+              exec-if = "kubectl version --client=true";
+              # tail = true;
+              # exec = "${kubebar}/bin/kubebar --watch";
+              exec = "${kubebar}/bin/kubebar --no-watch";
+              env = {
+                KUBEBAR_ESCAPE = "@";
+                KUBEBAR_FORMAT = concatStrings [
+                  "%{A1:kitty-floating k9s &:}"
+                  "%{F#${config.colorScheme.colors.base04}}${iconText nerdfonts.md.kubernetes}%{F-} "
+                  "@{KUBE_CURRENT_CONTEXT}/@{KUBE_CURRENT_NAMESPACE}"
+                  "%{A}"
+                ];
               };
+              tail = false;
+              interval = 5;
+              background = "\${colors.background}";
+              foreground = "\${colors.foreground}";
+              format-background = "\${colors.background}";
+              format-foreground = "\${colors.foreground}";
+              format-prefix-foreground = "\${colors.foreground-dark}";
+              format-suffix-foreground = "\${colors.foreground-dark}";
+              format-prefix-padding = 1;
+              format-padding = 2;
+
             };
-            "module/sep2" = {
-              type = "custom/text";
-              content = {
-                text = " ";
-                foreground = "\${colors.transparent}";
-                background = "\${colors.transparent}";
-              };
-            };
-            "module/sep3" = {
-              type = "custom/text";
-              content = {
-                text = " ";
-                foreground = "\${colors.transparent}";
-                background = "\${colors.transparent}";
-              };
-            };
-            "module/sep4" = {
+
+            "module/sep" = {
               type = "custom/text";
               content = {
                 text = " ";

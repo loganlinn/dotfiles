@@ -82,10 +82,6 @@ in
           command = "floating enable, resize set 80 ppt 50 ppt, move position center, move down 40 ppt";
         }
         {
-          criteria.class = "^i3floating$";
-          command = "floating enable";
-        }
-        {
           criteria.class = "kitty";
           command = "border normal"; # show window title
         }
@@ -121,6 +117,7 @@ in
         { class = "(?i)gpick*"; }
         { class = "(?i)pavucontrol"; }
         { class = "(?i)qalculate"; }
+        { class = "(?i)xarchiver"; }
         { class = "System76 Keyboard Configurator"; }
         { class = "ProcessManager"; }
         { class = "Thunar"; }
@@ -144,6 +141,7 @@ in
         { title = "(?i)steam"; }
         { title = "doom-capture"; }
         { title = "(?i)yubico authenticator"; }
+        { class = "^i3-floating$"; } # generic
       ];
     };
 
@@ -493,13 +491,13 @@ in
         bindsym f exec i3-input -F '[con_mark="%s"] fous' -l 1 -P "focus"                 ; mode default
         bindsym s exec i3-input -F 'swap container with %s' -l 1 -P "swap container with" ; mode default
         bindsym k exec i3-input -F '[con_mark="^%s$"] kill' -l 1 -P "kill"                ; mode default
-        bindsym y show_marks yes                                                          ; mode default
-        bindsym n show_marks no                                                           ; mode default
 
         ${modeCommonEscape}
       }
 
       bindsym $mod+$alt+m mode "$mode_mark"
+      show_marks yes
+
 
     '';
 

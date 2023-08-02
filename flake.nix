@@ -40,6 +40,8 @@
     nix-colors.url = "github:misterio77/nix-colors";
     sops-nix.url = "github:Mic92/sops-nix";
     agenix.url = "github:ryantm/agenix";
+    nix-index-database.url = "github:Mic92/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     # haumea.url = "github:nix-community/haumea/v0.2.2";
     # haumea.inputs.nixpkgs.follows = "nixpkgs";
     # yants.url = "github:divnix/yants";
@@ -54,7 +56,7 @@
     # devshellurl = "github:numtide/devshell";
     # devshell.inputs.nixpkgs.follows = "nixpkgs";
 
-    ## applications
+    ## apps
     # emanote.url = "github:srid/emanote";
     # hci.url = "github:hercules-ci/hercules-ci-agent";
     # nixos-vscode-server.flake = false;

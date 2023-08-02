@@ -20,7 +20,6 @@ in
   imports = [
     ../../home/polybar
     ../../home/rofi
-    ../../home/thunar.nix
     ../../home/xdg.nix
     ../themes
     ./apps
