@@ -1,6 +1,7 @@
 { pkgs, ... }: {
   imports = [
     ./autorandr.nix
+    ./betterlockscreen.nix
   ];
 
   home.packages = with pkgs; [
@@ -9,7 +10,7 @@
     xdo # Perform actions on windows
     wmctrl
     xscreensaver
-    xautolock
+    xautolock # ac
     (pkgs.callPackage ../pkgs/x-window-focus-close.nix {})
   ] ++ (with pkgs.xorg; [
     # https://www.x.org/releases/current/doc/man/man1/index.xhtml

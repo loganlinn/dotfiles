@@ -72,6 +72,11 @@ in
 
   programs.home-manager.enable = true;
 
+  programs.less.enable = true;
+  programs.less.keys = '''';
+
+  programs.man.enable = true;
+
   programs.btop = {
     enable = true;
     settings = {

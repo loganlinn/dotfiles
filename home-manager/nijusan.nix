@@ -94,6 +94,8 @@ in
         IdentityAgent ~/.1password/agent.sock
     '';
   };
+  programs.nix-index.enable = false;
+  programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
 
   services.picom.enable = true;
   services.dunst.enable = true;
@@ -116,13 +118,6 @@ in
     };
   };
   services.flameshot.enable = true;
-
-  services.betterlockscreen = {
-    enable = true;
-    arguments = [ "-w" "dim" ];
-    inactiveInterval = 15; # minutes
-  };
-  xdg.configFile."betterlockscreen/betterlockscreenrc".source = ../config/betterlockscreen/betterlockscreenrc;
 
   #    $ xrandr --query | grep " connected"
   #    DP-0 connected primary 3840x1600+2560+985 (normal left inverted right x axis y axis) 880mm x 367mm
