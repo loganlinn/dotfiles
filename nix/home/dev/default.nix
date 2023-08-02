@@ -111,12 +111,12 @@ in
     # golang
     gopls
 
-    lua
-    luarocks
-    luaformatter
-    lua-language-server
-    fennel
-    fnlfmt
+    # lua
+    # luarocks-nix
+    # luaformatter
+    # lua-language-server
+    # fennel
+    # fnlfmt
 
     # ruby
     ruby

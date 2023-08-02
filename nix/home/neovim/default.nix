@@ -29,7 +29,7 @@
     deadnix
     gopls
     godef
-    luarocks
+    luarocks-nix
     nodePackages.bash-language-server
     lua-language-server
     rnix-lsp

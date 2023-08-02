@@ -12,6 +12,7 @@ in
   imports = [
     nix-colors.homeManagerModule
     ../nix/home/common.nix
+    ../nix/home/awesomewm.nix
     ../nix/home/dev # TODO module
     #../nix/home/dev/vala.nix
     ../nix/home/dunst
@@ -44,6 +45,8 @@ in
   ];
 
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
+
+  my.awesomewm.enable = true;
 
   modules.polybar.networks = [
     { interface = "eno3"; interface-type = "wired"; }
