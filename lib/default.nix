@@ -19,7 +19,7 @@ let
 
   toExe = input:
     if isDerivation input then getExe input
-    else if isAttrs input then (input.finalPackage or input.package)
+    else if isAttrs input then getExe (input.finalPackage or input.package)
     else throw "Cannot coerce ${input} to main executable program path.";
 
   currentHostname =
