@@ -1,26 +1,30 @@
-top@{ self, inputs, config, flake-parts-lib, ... }:
-
-let
+top @ {
+  self,
+  inputs,
+  config,
+  flake-parts-lib,
+  ...
+}: let
   inherit (flake-parts-lib) mkPerSystemOption;
 
   mkLib = import ./lib/extended.nix;
-  mkHmLib = let compose = g: f: x: g (f x); in
-    compose (import "${inputs.home-manager}/modules/lib/stdlib-extended.nix") mkLib;
-in
-{
+
+  mkHmLib = let comp = g: f: x: g (f x); in comp (import "${inputs.home-manager}/modules/lib/stdlib-extended.nix") mkLib;
+
+  lib' = mkHmLib top.lib;
+  # hasNonEmptyAttr = attrPath: self: lib'.attrByPath attrPath {} self != {};
+in {
   imports = [
     ./home-manager/flake-module.nix
     ./nixos/flake-module.nix
   ];
 
-  options.perSystem = mkPerSystemOption (ctx@{ pkgs, ... }:
-    with (mkHmLib top.lib);
-    let
+  options.perSystem = mkPerSystemOption (ctx @ {pkgs, ...}:
+    with lib'; let
       cfg = ctx.config.my;
-    in
-    {
+    in {
       options.my = mkOption {
-        default = { };
+        default = {};
         type = types.submodule {
           options = {
             name = mkOption {
@@ -52,7 +56,7 @@ in
                     };
                     keyFiles = mkOption {
                       type = types.listOf types.path;
-                      default = [ ];
+                      default = [];
                     };
                   };
                 };
@@ -114,7 +118,10 @@ in
               default = {
                 package = pkgs.noto-fonts;
                 name = "DejaVu Serif";
-                size = if pkgs.stdenv.isDarwin then 12 else 10;
+                size =
+                  if pkgs.stdenv.isDarwin
+                  then 12
+                  else 10;
               };
             };
 
@@ -123,7 +130,10 @@ in
               default = {
                 package = pkgs.noto-fonts;
                 name = "DejaVu Sans";
-                size = if pkgs.stdenv.isDarwin then 12 else 10;
+                size =
+                  if pkgs.stdenv.isDarwin
+                  then 12
+                  else 10;
               };
             };
 
@@ -132,7 +142,10 @@ in
               default = {
                 package = cfg.fonts.nerdfonts.package;
                 name = "DejaVu Sans Mono";
-                size = if pkgs.stdenv.isDarwin then 12 else 10;
+                size =
+                  if pkgs.stdenv.isDarwin
+                  then 12
+                  else 10;
               };
             };
 
@@ -278,40 +291,94 @@ in
       #       environment.shells = optional (cfg.user.shell != null) cfg.user.shell;
       #     };
       #   };
-
-      # homeManagerModules.my = {
-      #   options.my = ctx.options.my;
-      #   config.my = ctx.config.my;
-      # };
     });
 
-  config = {
-    perSystem = { pkgs, config, ... }:
-      with top.lib;
-      let
-        appDerivations = pipe ./nix/apps [
-          filesystem.listFilesRecursive
-          (remove (hasPrefix "_"))
-          (filter (hasSuffix ".nix"))
-          (map (removeSuffix "default.nix"))
-          (map (file: pkgs.callPackage file { }))
-        ];
-      in
-      {
-        apps = pipe appDerivations [
-          (map (drv: { "${drv.name}" = { type = "app"; program = getExe drv; }; }))
-          (fold recursiveUpdate { })
-        ];
-        checks = pipe appDerivations [
-          (map (drv: { "app-${drv.name}" = drv; }))
-          (fold recursiveUpdate { })
-        ];
-        # TODO checks.repl.default = mkNixReplCheck ./repl.nix
+  config = with lib'; {
+    perSystem = {
+      pkgs,
+      config,
+      ...
+    }: let
+      appDerivations = pipe ./nix/apps [
+        filesystem.listFilesRecursive
+        (remove (hasPrefix "_"))
+        (filter (hasSuffix ".nix"))
+        (map (removeSuffix "default.nix"))
+        (map (file: pkgs.callPackage file {}))
+      ];
+    in {
+      apps = pipe appDerivations [
+        (map (drv: {
+          "${drv.name}" = {
+            type = "app";
+            program = getExe drv;
+          };
+        }))
+        (fold recursiveUpdate {})
+      ];
+      checks = pipe appDerivations [
+        (map (drv: {"app-${drv.name}" = drv;}))
+        (fold recursiveUpdate {})
+      ];
+      # TODO checks.repl.default = mkNixReplCheck ./repl.nix
+    };
+
+    flake = let
+      specialArgsFor = rec {
+        common = {
+          flake = {inherit self inputs config;};
+        };
+        nixos = common;
+        darwin =
+          common
+          // {
+            # rosettaPkgs = import inputs.nixpkgs {system = "x86_64-darwin";};
+          };
+      };
+    in {
+      # TODO: choose this vs dotfiles.lib
+      lib = {
+        inherit mkLib mkHmLib;
+        inherit (lib') my;
       };
 
-    flake = {
-      lib = (mkLib top.lib).my // {
-        inherit mkLib mkHmLib;
+      dotfiles.lib = {
+        inherit specialArgsFor;
+
+        mkLinuxSystem = system: mod:
+          inputs.nixpkgs.lib.nixosSystem {
+            inherit system;
+            specialArgs = specialArgsFor.nixos;
+            modules = [mod];
+          };
+
+        mkMacosSystem = system: mod:
+          inputs.nix-darwin.lib.darwinSystem {
+            inherit system;
+            specialArgs = specialArgsFor.darwin;
+            modules = [mod];
+          };
+
+        mkHomeConfiguration = pkgs: mod:
+          inputs.home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            extraSpecialArgs = specialArgsFor.common;
+            modules = [mod];
+          };
+      };
+
+      dotfiles.nix-colors = import ./nix-colors/extended.nix inputs;
+
+      # macOS home-manager module
+      darwinModules.home-manager = {
+        imports = [
+          inputs.home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = common;
+          }
+        ];
       };
     };
   };

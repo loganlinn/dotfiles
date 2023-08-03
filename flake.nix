@@ -64,74 +64,145 @@
     # nixpkgs-match.url = "github:srid/nixpkgs-match";
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = [ "x86_64-linux" "aarch64-darwin" ];
+  outputs = inputs @ { self, ...}:
+    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = ["x86_64-linux" "aarch64-darwin"];
 
-    imports = [
-      inputs.flake-parts.flakeModules.easyOverlay
-      inputs.nixos-flake.flakeModule
-      inputs.flake-root.flakeModule
-      inputs.mission-control.flakeModule
-      ./flake-module.nix
-    ];
+      imports = [
+        inputs.flake-parts.flakeModules.easyOverlay
+        inputs.nixos-flake.flakeModule
+        inputs.flake-root.flakeModule
+        inputs.mission-control.flakeModule
+        ./flake-module.nix
+      ];
 
-    perSystem = { config, system, inputs', pkgs, lib, ... }: {
+      perSystem = {
+        config,
+        system,
+        inputs',
+        pkgs,
+        lib,
+        ...
+      }: {
+        packages =
+          {
+            jdk = lib.mkDefault pkgs.jdk; # needed?
+            kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix {};
+          }
+          // lib.optionalAttrs pkgs.stdenv.isLinux {
+            i3-auto-layout = pkgs.callPackage ./nix/pkgs/os-specific/linux/i3-auto-layout.nix {};
+            graphite-cli = pkgs.callPackage ./nix/pkgs/os-specific/linux/graphite-cli.nix {};
+          };
 
-      packages = {
-        jdk = lib.mkDefault pkgs.jdk; # needed?
-        kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix {};
-      } // lib.optionalAttrs pkgs.stdenv.isLinux {
-        i3-auto-layout = pkgs.callPackage ./nix/pkgs/os-specific/linux/i3-auto-layout.nix {};
-        graphite-cli = pkgs.callPackage ./nix/pkgs/os-specific/linux/graphite-cli.nix {};
-      };
+        overlayAttrs = {
+          inherit (config.packages) jdk kubefwd i3-auto-layout;
+          inherit (inputs'.home-manager.packages) home-manager;
+          inherit (inputs'.devenv.packages) devenv;
+          inherit (inputs'.emacs.packages) emacs-unstable;
+        };
 
-      overlayAttrs = {
-        inherit (config.packages) jdk kubefwd i3-auto-layout;
-        inherit (inputs'.home-manager.packages) home-manager;
-        inherit (inputs'.devenv.packages) devenv;
-        inherit (inputs'.emacs.packages) emacs-unstable;
-      };
+        formatter = pkgs.nixpkgs-fmt;
 
-      formatter = pkgs.nixpkgs-fmt;
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            config.flake-root.devShell # sets FLAKE_ROOT
+            config.mission-control.devShell
+          ];
+          buildInputs = [
+            config.formatter
+            inputs'.agenix.packages.agenix
+          ];
+          env.NIX_USER_CONF_FILES = toString ./nix.conf;
+        };
 
-      devShells.default = pkgs.mkShell {
-        inputsFrom = [
-          config.flake-root.devShell # sets FLAKE_ROOT
-          config.mission-control.devShell
-        ];
-        buildInputs = [
-          config.formatter
-          inputs'.agenix.packages.agenix
-        ];
-        env.NIX_USER_CONF_FILES = toString ./nix.conf;
-      };
-
-      mission-control = {
-        wrapperName = ",,"; # play nice with nix-community/comma
-        scripts =
-          let
+        mission-control = {
+          wrapperName = ",,"; # play nice with nix-community/comma
+          scripts = let
             inherit (lib) getExe;
             withArgs = cmd: ''${cmd} "$@"'';
             withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
-            wrap = cmd: lib.pipe cmd [ withArgs withCows ];
+            wrap = cmd: lib.pipe cmd [withArgs withCows];
             pkgExec = p: withArgs (getExe p);
             replExec = f: wrap ''nix repl --file "${f}"'';
-          in
-          {
-            z = { description = "Start flake REPL"; exec = replExec "repl.nix"; };
-            b = { description = "Build configuration"; exec = ''homie build "$@"''; };
-            s = { description = "Build + activate configuration"; exec = withArgs "homie switch"; };
-            f = { description = "Run nix fmt"; exec = withArgs "nix fmt"; };
-            hm = { description = "Run home-manager"; exec = pkgExec inputs'.home-manager.packages.home-manager; };
-            zh = { description = "Start home-manger REPL"; exec = replExec "home-manager/repl.nix"; };
-            zo = { description = "Start nixos REPL"; exec = replExec "nixos/repl.nix"; };
-            up = { description = "Update flake.lock"; exec = wrap "nix flake update --commit-lock-file"; };
-            show = { description = "Show flake outputs"; exec = wrap "nix flake show"; };
-            meta = { description = "Show flake"; exec = wrap "nix flake metadata"; };
+          in {
+            z = {
+              description = "Start flake REPL";
+              exec = replExec "repl.nix";
+            };
+            b = {
+              description = "Build configuration";
+              exec = ''homie build "$@"'';
+            };
+            s = {
+              description = "Build + activate configuration";
+              exec = withArgs "homie switch";
+            };
+            f = {
+              description = "Run nix fmt";
+              exec = withArgs "nix fmt";
+            };
+            hm = {
+              description = "Run home-manager";
+              exec = pkgExec inputs'.home-manager.packages.home-manager;
+            };
+            zh = {
+              description = "Start home-manger REPL";
+              exec = replExec "home-manager/repl.nix";
+            };
+            zo = {
+              description = "Start nixos REPL";
+              exec = replExec "nixos/repl.nix";
+            };
+            up = {
+              description = "Update flake.lock";
+              exec = wrap "nix flake update --commit-lock-file";
+            };
+            show = {
+              description = "Show flake outputs";
+              exec = wrap "nix flake show";
+            };
+            meta = {
+              description = "Show flake";
+              exec = wrap "nix flake metadata";
+            };
           };
+        };
       };
-    };
 
-    debug = true; # https://flake.parts/debug.html, https://flake.parts/options/flake-parts.html#opt-debug
-  };
+      flake = {
+        darwinConfigurations.patchbook = self.dotfiles.lib.mkMacosSystem "aarch64-darwin" {
+          imports = [
+            # ./nix-darwin/patchbook.nix
+            # self.darwinModules.home-manager
+            # {
+            #   home-manager.users.logan = {
+            #     options,
+            #     config,
+            #     ...
+            #   }: {
+            #     imports = [
+            #       # self.homeModules.default
+            #     ];
+            #     home.stateVersion = "22.11";
+            #   };
+            # }
+          ];
+        };
+
+        homeModules.default = {pkgs, ...}: {
+          imports = [
+            ./nix/nixpkgs.nix
+            ./nix/home/common.nix
+            ./nix/home/dev
+            ./nix/home/pretty.nix
+            inputs.nix-colors.homeManagerModule
+          ];
+
+          colorScheme = self.dotfiles.nix-colors.colorSchemes.doom-one;
+        };
+      };
+
+      # https://flake.parts/debug.html, https://flake.parts/options/flake-parts.html#opt-debug
+      debug = true;
+    };
 }
