@@ -53,6 +53,6 @@ let cfg = config.my.python; in
       pyright
     ];
 
-    my.shell.initExtra = readFile ./venv.bash; # shell helpers
+    my.shellInitExtra = readFile ./venv.bash; # shell helpers
   };
 }

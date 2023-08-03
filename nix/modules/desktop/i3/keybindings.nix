@@ -23,7 +23,7 @@ foldl' attrsets.unionOfDisjoint { }
       "$mod+Ctrl+c" = "restart";
       "$mod+Shift+c" = "reload";
       "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-      "Ctrl+$alt+Delete" = ''exec --no-startup-id ${getPackageExe config.programs.urxvt} -e ${getPackageExe config.programs.btop}'';
+      "Ctrl+$alt+Delete" = ''exec --no-startup-id ${toExe config.programs.urxvt} -e ${toExe config.programs.btop}'';
       # inspect current window properties
       "--release $mod+i" = "exec ${
         pkgs.writeShellScript "xprop-hud" ''
@@ -97,7 +97,7 @@ foldl' attrsets.unionOfDisjoint { }
 
     menus =
       let
-        rofi = getPackageExe config.programs.rofi;
+        rofi = toExe config.programs.rofi;
       in
       mapAttrs' (keybind: exec: nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}") {
         "$mod+space" = "${rofi} -show combi -sidebar-mode true";

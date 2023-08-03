@@ -130,11 +130,6 @@ in
   #    114
   xresources.properties."Xft.dpi" = "96";
 
-  sops.defaultSopsFile = ../secrets/default.yaml;
-  sops.age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
-  sops.age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt";
-  sops.secrets.github_token.sopsFile = ../secrets/default.yaml;
-
   # Install a JSON formatted list of all Home Manager options. This can be located at <profile directory>/share/doc/
   # home-manager/options.json, and may be used for navigating definitions, auto-completing, and other miscellaneous tasks.
   manual.json.enable = true;

@@ -4,7 +4,7 @@ with lib;
 
 let
 
-  cfg = config.my.shell;
+  cfg = config.my;
 
 in
 {
@@ -13,8 +13,8 @@ in
     ../zsh
   ];
 
-  options.my.shell = {
-    initExtra = mkOption {
+  options.my = {
+    shellInitExtra = mkOption {
       type = types.lines;
       description = "Extra commands that should be added to <filename>.zshrc</filename> and <filename>.zshrc</filename>.";
       default = "";
@@ -24,11 +24,11 @@ in
   config = {
     home.shellAliases = import ./aliases.nix { inherit config lib pkgs; };
 
-    programs.bash.initExtra = cfg.initExtra;
+    programs.bash.initExtra = cfg.shellInitExtra;
 
-    programs.zsh.initExtra = cfg.initExtra;
+    programs.zsh.initExtra = cfg.shellInitExtra;
 
-    my.shell.initExtra = ''
+    my.shellInitExtra = ''
       ${readFile ./which.sh}
 
       ${readFile ./op.sh}

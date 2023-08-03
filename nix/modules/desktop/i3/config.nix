@@ -13,7 +13,7 @@ let
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
   rofiCfg = config.programs.rofi;
-  rofiExe = getPackageExe rofiCfg;
+  rofiExe = toExe rofiCfg;
   polybarCfg = config.services.polybar;
   polybarCfg' = config.modules.polybar; # TODO config.my.polybar;
   barHeight = toString polybarCfg'.bars.top.height;

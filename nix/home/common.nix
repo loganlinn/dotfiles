@@ -62,8 +62,8 @@ in
   };
 
   home.sessionPath = [
-    "${config.my.dotfilesDir}/bin"
-    "${config.my.dotfilesDir}/local/bin"
+    "$HOME/.dotfiles/bin"
+    "$HOME/.dotfiles/local/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.krew/bin"

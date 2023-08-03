@@ -3,26 +3,11 @@
 with lib;
 
 let
-  # Searches Nix path by prefix
-  findNixPath = prefix: pipe builtins.nixPath [
-    (findFirst (p: p.prefix == prefix) null)
-    (mapNullable (p: p.path))
-  ];
-in
-rec {
-  inherit findNixPath;
-
-  importNixosConfig = mapNullable import (findNixPath "nixos-config");
-
-  kebabCaseToCamelCase = replaceStrings (map (s: "-${s}") lowerChars) upperChars;
-
-  substitueStrings = m: replaceStrings (attrNames m) (map toString (attrValues m));
+  types = import ./types.nix { inherit lib; };
 
   nerdfonts = import ./nerdfonts;
 
   font-awesome = import ./font-awesome.nix;
-
-  types = import ./types.nix { inherit lib; };
 
   rofi = import ./rofi.nix { inherit lib; };
 
@@ -32,17 +17,47 @@ rec {
 
   color = import ./color.nix { inherit lib; };
 
-  getPackageExe = attrs: lib.getExe (attrs.finalPackage or attrs.package);
+  toExe = input:
+    if isDerivation input then getExe input
+    else if isAttrs input then (input.finalPackage or input.package)
+    else throw "Cannot coerce ${input} to main executable program path.";
 
-  ensurePrefix = prefix: content: if hasPrefix prefix content then content else "${content}${prefix}";
+  currentHostname =
+    if pathIsRegularFile "/etc/hostname" then
+      pipe "/etc/hostname" [ readFile (match "^([^#].*)\n$") head ]
+    else
+      pipe "HOSTNAME" [ getEnv (warn "Unable to detect system hostname") ];
 
-  ensureSuffix = suffix: content: if hasSuffix suffix content then content else "${content}${suffix}";
+  files = {
+    sourceSet = { dir, base ? dir, prefix ? "" }:
+      listToAttrs
+        (forEach (filesystem.listFilesRecursive dir)
+          (source: {
+            name = "${prefix}${removePrefix ((toString base) + "/") (toString source)}";
+            value = { inherit source; };
+          }));
+  };
 
-  fileSourceSet = { dir, base ? dir, prefix ? "" }:
-    listToAttrs
-      (forEach (filesystem.listFilesRecursive dir)
-        (source: {
-          name = "${prefix}${removePrefix ((toString base) + "/") (toString source)}";
-          value = { inherit source; };
-        }));
+  strings = {
+    substitute = dict: replaceStrings (attrNames dict) (map toString (attrValues dict));
+    ensurePrefix = prefix: content: if hasPrefix prefix content then content else "${content}${prefix}";
+    ensureSuffix = suffix: content: if hasSuffix suffix content then content else "${content}${suffix}";
+  };
+
+in
+{
+  inherit
+    types
+    options
+    nerdfonts font-awesome
+    rofi
+    float
+    hex
+    color
+    toExe
+    currentHostname
+    files
+    strings
+    mkSystemRepl
+    ;
 }
