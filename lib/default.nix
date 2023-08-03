@@ -1,8 +1,6 @@
-{ lib, ... }:
-
-with lib;
-
-let
+with builtins;
+{ lib ? (getFlake (toString ../.)).inputs.nixpkgs.lib, ... }:
+with lib; let
   types = import ./types.nix { inherit lib; };
 
   nerdfonts = import ./nerdfonts;
@@ -18,18 +16,19 @@ let
   color = import ./color.nix { inherit lib; };
 
   toExe = input:
-    if isDerivation input then getExe input
-    else if isAttrs input then getExe (input.finalPackage or input.package)
+    if isDerivation input
+    then getExe input
+    else if isAttrs input
+    then getExe (input.finalPackage or input.package)
     else throw "Cannot coerce ${input} to main executable program path.";
 
   currentHostname =
-    if pathIsRegularFile "/etc/hostname" then
-      pipe "/etc/hostname" [ readFile (match "^([^#].*)\n$") head ]
-    else
-      pipe "HOSTNAME" [ getEnv (warn "Unable to detect system hostname") ];
+    if pathExists "/etc/hostname"
+    then pipe "/etc/hostname" [ readFile (match "^([^#].*)\n$") head ]
+    else pipe "HOSTNAME" [ getEnv (warn "Unable to detect system hostname") ];
 
   files = {
-    sourceSet = { dir, base ? dir, prefix ? "" }:
+    sourceSet = { dir , base ? dir , prefix ? "" ,}:
       listToAttrs
         (forEach (filesystem.listFilesRecursive dir)
           (source: {
@@ -40,16 +39,22 @@ let
 
   strings = {
     substitute = dict: replaceStrings (attrNames dict) (map toString (attrValues dict));
-    ensurePrefix = prefix: content: if hasPrefix prefix content then content else "${content}${prefix}";
-    ensureSuffix = suffix: content: if hasSuffix suffix content then content else "${content}${suffix}";
+    ensurePrefix = prefix: content:
+      if hasPrefix prefix content
+      then content
+      else "${content}${prefix}";
+    ensureSuffix = suffix: content:
+      if hasSuffix suffix content
+      then content
+      else "${content}${suffix}";
   };
-
 in
 {
   inherit
     types
     options
-    nerdfonts font-awesome
+    nerdfonts
+    font-awesome
     rofi
     float
     hex

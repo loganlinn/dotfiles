@@ -25,8 +25,14 @@ let
 
   universalModule = {
     imports = [
-      (import ./nix/nixpkgs.nix self) # configures nixpkgs.overlays
       universalOptions
+      {
+        nixpkgs.overlays = [
+          self.overlays.default
+          inputs.rust-overlay.overlays.default
+          inputs.emacs-overlay.overlays.default
+        ];
+      }
     ];
   };
 
@@ -135,24 +141,39 @@ in
             modules = [ module ];
           };
 
-        mkSystemRepl = (builtins // {
-          inherit self;
-          inherit (self) inputs debug;
-          inherit (self.currentSystem) legacyPackages;
-          inherit (self.currentSystem.allModuleArgs) inputs' self' config options system pkgs;
+        mkReplAttrs = attrs: (
+          builtins
+          // self
+          // {
+            inherit
+              self;
+            inherit (self.currentSystem)
+              legacyPackages;
+            inherit (self.currentSystem.allModuleArgs) # i.e. perSystem module context
+              inputs'
+              self'
+              config
+              options
+              system
+              pkgs;
+          }
+          // rec {
+            lib = mkHmLib top.lib;
+            getNixos = { hostname ? lib.my.currentHostname }: self.nixosConfigurations.${hostname} or null;
+            getDarwin = { hostname ? lib.my.currentHostname }: self.darwinConfigurations.${hostname} or null;
+            getHome = { user ? (builtins.getEnv "USER"), hostname ? lib.my.currentHostname, system ? builtins.currentSystem }:
+              let inherit (self.legacyPackages.${system}) homeConfigurations; in
+                homeConfigurations."${user}@${hostname}"
+                  or homeConfigurations.${user}
+                  or homeConfigurations.${hostname}
+                  or null;
 
-          getNixos = { hostname ? lib.my.currentHostname }: self.nixosConfigurations.${hostname};
-          getDarwin = { hostname ? lib.my.currentHostname }: self.darwinConfigurations.${hostname};
-          getHome = { user ? getEnv ("USER"), hostname ? lib.my.currentHostname, system ? currentSystem }:
-            let inherit (flake.legacyPackages.${system}) homeConfigurations; in
-              homeConfigurations."${user}@${hostname}"
-                or homeConfigurations.${user}
-                or homeConfigurations.${hostname};
-
-          nixos = getNixos { };
-          darwin = getDarwin { };
-          home = getHome { };
-        });
+            nixos = getNixos { };
+            darwin = getDarwin { };
+            hm = getHome { };
+          }
+          // attrs
+        );
       };
     };
   };

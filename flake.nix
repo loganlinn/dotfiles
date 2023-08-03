@@ -93,11 +93,11 @@
           scripts =
             let
               inherit (lib) getExe;
-              withArgs = cmd: ''${cmd} "$@"'';
+              withPrintNixEnv = cmd: ''printenv | grep '^NIX'; ${cmd}'';
               withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
-              wrap = cmd: lib.pipe cmd [ withArgs withCows ];
-              pkgExec = p: withArgs (getExe p);
-              replExec = f: wrap ''nix repl --file "${f}"'';
+              replExec = f: withPrintNixEnv (withCows ''
+                nix repl --debugger --ignore-try --verbose --trace-verbose --file "${f}" "$@"
+              '');
             in
             {
               z = {
@@ -106,19 +106,19 @@
               };
               b = {
                 description = "Build configuration";
-                exec = ''homie build "$@"'';
+                exec = ''home-manager build --flake "$@"'';
               };
               s = {
                 description = "Build + activate configuration";
-                exec = withArgs "homie switch";
+                exec = withCows "home-manager switch --flake ~/.";
               };
               f = {
                 description = "Run nix fmt";
-                exec = withArgs "nix fmt";
+                exec = "nix fmt";
               };
               hm = {
                 description = "Run home-manager";
-                exec = pkgExec inputs'.home-manager.packages.home-manager;
+                exec = getExe inputs'.home-manager.packages.home-manager;
               };
               zh = {
                 description = "Start home-manger REPL";
@@ -130,15 +130,15 @@
               };
               up = {
                 description = "Update flake.lock";
-                exec = wrap "nix flake update --commit-lock-file";
+                exec = ''nix flake update --commit-lock-file "$@"'';
               };
               show = {
                 description = "Show flake outputs";
-                exec = wrap "nix flake show";
+                exec = ''nix flake show "$@"'';
               };
               meta = {
                 description = "Show flake";
-                exec = wrap "nix flake metadata";
+                exec = ''nix flake metadata "$@"'';
               };
             };
         };
