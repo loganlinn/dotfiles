@@ -34,7 +34,6 @@
     lua-language-server
     rnix-lsp
     statix
-    yamllint
   ];
 
   xdg.dataFile."nvim/runtime/colors/nix-colors.vim".source =

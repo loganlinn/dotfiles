@@ -13,17 +13,27 @@ let
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
   rofiCfg = config.programs.rofi;
-  rofiExe = getPackageExe rofiCfg;
+  rofiExe = toExe rofiCfg;
   polybarCfg = config.services.polybar;
   polybarCfg' = config.modules.polybar; # TODO config.my.polybar;
   barHeight = toString polybarCfg'.bars.top.height;
+
+  bindings = import ./keybindings.nix { inherit config pkgs lib; };
+
+  # i3-completion = pkgs.fetchFromGitHub {
+  #   owner = "cornerman";
+  #   repo = "i3-completion";
+  #   rev = "01b9030500812403988ea78bd9bf2b47a7a0ae6d";
+  #   hash = "sha256-efw45V0sfsPjSd8bYygDl+5oETgoRaRBnW6jNoIcpo0=";
+  # };
+
 in
 {
   xsession.windowManager.i3.config = {
     modifier = cfg.keysyms.mod;
     menu = mkIf rofiCfg.enable "${rofiExe} -dmenu";
 
-    keybindings = import ./keybindings.nix { inherit config pkgs lib; };
+    keybindings = foldl' attrsets.unionOfDisjoint { } (attrValues bindings);
 
     bars = lib.mkIf polybarCfg.enable [ ]; # disable for polybar
 
@@ -78,14 +88,25 @@ in
           command = "resize set 70 ppt";
         }
         {
-          criteria.title = "lnav$";
-          command = "floating enable, resize set 80 ppt 50 ppt, move position center, move down 40 ppt";
+          criteria.title = "journalctl";
+          criteria.class = "scratchpad";
+          command = "move scratchpad, scratchpad show, move position center, resize set 80 ppt 50 ppt, move down 40 ppt";
         }
         {
           criteria.class = "kitty";
           command = "border normal"; # show window title
         }
-      ];
+      ]
+      ++ (forEach [
+        { window_role = "^pop-up$"; }
+        { class = "obsidian"; }
+        { class = "^scratchpad$"; }
+        { title = "^scratchpad$"; }
+      ]
+        (criteria: {
+          inherit criteria;
+          command = "move scratchpad, scratchpad show";
+        }));
     };
 
     focus = {
@@ -98,13 +119,10 @@ in
     };
 
     gaps = {
-      # horizontal = 10;
-      # vertical = 10;
-      inner = 3;
-      outer = 3;
-      # Smart borders will draw borders on windows only if there is more than one window in a workspace.
-      # This feature can also be enabled only if the gap size between window and screen edge is 0.
-      # Possible values are: on, off, no_gaps
+      top = 2;
+      left = 4;
+      right = 4;
+      bottom = 0;
       smartBorders = "on";
     };
 
@@ -290,8 +308,7 @@ in
       # General
       ################################################################################
 
-      include ${config.xdg.configHome}/i3/config.d/*.conf
-
+      show_marks yes
       default_orientation auto
 
       for_window [all] title_window_icon on
@@ -305,12 +322,6 @@ in
       bindsym --whole-window --border $mod+$mouse_wheel_down focus down
       bindsym --whole-window --border $mod+$mouse_wheel_left focus left
       bindsym --whole-window --border $mod+$mouse_wheel_right focus right
-
-      ################################################################################
-      # Window rules
-      ################################################################################
-
-      # assign [class="^zoom$" title="^.*(?<!Zoom Meeting)$"] output primary
 
       ################################################################################
       # Gaps
@@ -494,14 +505,28 @@ in
 
         ${modeCommonEscape}
       }
-
       bindsym $mod+$alt+m mode "$mode_mark"
-      show_marks yes
 
+      ################################################################################
+      # Includes
+      ################################################################################
 
+      include ${config.xdg.configHome}/i3/config.d/*.conf
     '';
 
   home.packages = with pkgs; [
+    (
+      # TODO a proper derivation for this
+      let
+        i3-scratchpad = fetchFromGitLab {
+          owner = "aquator";
+          repo = "i3-scratchpad";
+          rev = "9a89586183c3541dc2d0dce008db05992e9a37a6";
+          hash = "sha256-cene9tp2heTLp5pSZBupur1+wGvhmTlGGNtr1ISuxIE=";
+        };
+      in
+      writeShellScriptBin "i3-scratchpad" (readFile "${i3-scratchpad}/i3-scratchpad")
+    )
     (writeShellScriptBin "i3-cmd" ''
       flags=(-t command)
       while [[ $# -gt 0 ]]; do

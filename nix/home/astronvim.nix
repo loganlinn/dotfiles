@@ -4,11 +4,11 @@ with lib;
 
 
 let
-  inherit (lib.my) getPackageExe;
+  inherit (lib.my) toExe;
 
   cfg = config.my.astronvim;
 
-  git = getPackageExe config.programs.git;
+  git = toExe config.programs.git;
 
 in
 {

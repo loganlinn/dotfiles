@@ -10,7 +10,7 @@ let
 
 in
 {
-  programs.rofi.terminal = getPackageExe config.programs.kitty;
+  programs.rofi.terminal = "${config.programs.kitty.package}/bin/kitty";
 
   programs.kitty.enable = true;
   # Wrap package to fix apparent issue with how libxkbcommon is (not) loaded:

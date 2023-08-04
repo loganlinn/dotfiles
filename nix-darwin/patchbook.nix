@@ -1,12 +1,12 @@
 { inputs, pkgs, lib, ... }: {
 
   imports = [
-    ./common.nix
-    ./modules/security.nix
-    ./modules/homebrew.nix
-    ./modules/skhd.nix
-    ./modules/yabai.nix
-    ./modules/tailscale.nix
+    # ./common.nix
+    # ./modules/security.nix
+    # ./modules/homebrew.nix
+    # ./modules/skhd.nix
+    # ./modules/yabai.nix
+    # ./modules/tailscale.nix
   ];
 
   system.defaults = {
@@ -48,8 +48,4 @@
     enableKeyMapping = true;
     remapCapsLockToControl = true;
   };
-
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 4;
 }

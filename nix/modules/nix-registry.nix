@@ -1,12 +1,27 @@
-{ inputs, ... }: {
-  nix.registry = {
-    nixpkgs.to = {
-      type = "path";
-      path = inputs.nixpkgs;
+{ flake, config, lib, ... }:
+
+with lib;
+
+let
+  inherit (flake) inputs;
+
+  cfg = config.my.nix-registry;
+
+in
+{
+  options.my.nix-registry = {
+    fromInputs = mkOption {
+      type = types.listOf types.str;
+      default = [ "nixpkgs" "home-manager" ];
     };
-    home-manager.to = {
-      type = "path";
-      path = inputs.home-manager;
-    };
+  };
+
+  config = {
+    nix.registry = genAttrs cfg.fromInputs (name: {
+      to = {
+        type = "path";
+        path = inputs."${name}";
+      };
+    });
   };
 }

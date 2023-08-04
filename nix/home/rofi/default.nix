@@ -139,10 +139,10 @@ in
       @import "theme.rasi"
     '';
     "rofi/scripts/power.sh".source = getExe pkgs.rofi-power-menu;
-  } // lib.my.fileSourceSet {
+  } // lib.my.files.sourceSet {
     dir = ./scripts;
     prefix = "rofi/scripts/";
-  } // lib.my.fileSourceSet {
+  } // lib.my.files.sourceSet {
     dir = ./libexec;
     prefix = "rofi/libexec/";
   };

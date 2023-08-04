@@ -2,7 +2,7 @@
 
 with lib;
 let
-  flakeDirectory = config.my.dotfilesDir;# or "${config.home.homeDirectory}/.dotfiles";
+  flakeDirectory = "${config.home.homeDirectory}/.dotfiles";
   hmConfigDir = "${config.xdg.configHome}/home-manager";
 in
 {

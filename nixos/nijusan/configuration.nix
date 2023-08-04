@@ -1,4 +1,4 @@
-{ inputs
+{ flake
 , config
 , pkgs
 , lib
@@ -8,6 +8,7 @@
 with lib;
 
 {
+
   # Things to try
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
@@ -107,13 +108,13 @@ with lib;
   ];
 
   users.users.${config.my.user.name} = {
+    shell = config.my.shell;
     isNormalUser = true;
     home = "/home/${config.my.user.name}";
     createHome = true;
-    shell = config.my.user.shell;
     packages = with pkgs; [ kubefwd ];
     extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" "davfs2" ];
-    openssh.authorizedKeys = config.my.user.authorizedKeys;
+    openssh.authorizedKeys.keys = config.my.authorizedKeys;
   };
 
   security.sudo.enable = true;
@@ -140,8 +141,8 @@ with lib;
     gc.automatic = true; # see also: nix-store --optimise
 
     nixPath = [
-      "nixpkgs=${inputs.nixpkgs}"
-      "home-manager=${inputs.home-manager}"
+      "nixpkgs=${flake.inputs.nixpkgs}"
+      "home-manager=${flake.inputs.home-manager}"
     ];
   };
 

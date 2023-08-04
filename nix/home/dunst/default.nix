@@ -32,12 +32,13 @@ in
         format = "<b>%s</b>\\n%b";
         icon_theme = "${config.gtk.iconTheme.name}, Adwaita";
         frame_width = 2;
-        gap_size = 2;
-        width = 440;
+        gap_size = 4;
+        width = 480;
         height = "(24, 320)";
         offset = "-36, +36";
         origin = "top-right";
-        corner_radius = 2;
+        # origin = "bottom-right";
+        corner_radius = 0;
         padding = 12;
         horizontal_padding = 16;
         icon_position = "right";
@@ -50,7 +51,7 @@ in
         indicate_hidden = true;
         notification_limit = 8;
         min_icon_size = 0;
-        max_icon_size = 64;
+        max_icon_size = 32;
         markup = "full";
         separator_height = 4;
         transparency = 0;

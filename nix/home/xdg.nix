@@ -363,7 +363,7 @@ in
       };
     };
 
-    xdg.dataFile = lib.my.fileSourceSet {
+    xdg.dataFile = lib.my.files.sourceSet {
       dir = ../../local/share/icons/hicolor;
       base = ../../local/share;
     };

@@ -41,7 +41,4 @@
   today = "date -Idate";
 
   flake = ''nix flake'';
-
-  ".nix" = ''env -C "''${FLAKE_ROOT-${config.my.flakeRoot}}" nix'';
-  ".flake" = ''env -C "''${FLAKE_ROOT-${config.my.flakeRoot}}" nix flake'';
 }
