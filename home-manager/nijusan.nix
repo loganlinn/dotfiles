@@ -70,6 +70,7 @@ in
 
   gtk.enable = true;
 
+  my.programs.eww.enable = true;
   programs.emacs.enable = true;
   programs.rofi.enable = true;
   programs.google-chrome.enable = true;

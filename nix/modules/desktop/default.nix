@@ -5,8 +5,7 @@
 , ...
 }:
 let
-  inherit
-    (lib)
+  inherit (lib)
     mkEnableOption
     mkIf
     mkMerge
@@ -47,8 +46,6 @@ in
   };
 
   config = {
-    programs.eww.enable = false;
-
     programs.feh.enable = true;
 
     services.playerctld.enable = true;

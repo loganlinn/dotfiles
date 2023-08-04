@@ -515,18 +515,6 @@ in
     '';
 
   home.packages = with pkgs; [
-    (
-      # TODO a proper derivation for this
-      let
-        i3-scratchpad = fetchFromGitLab {
-          owner = "aquator";
-          repo = "i3-scratchpad";
-          rev = "9a89586183c3541dc2d0dce008db05992e9a37a6";
-          hash = "sha256-cene9tp2heTLp5pSZBupur1+wGvhmTlGGNtr1ISuxIE=";
-        };
-      in
-      writeShellScriptBin "i3-scratchpad" (readFile "${i3-scratchpad}/i3-scratchpad")
-    )
     (writeShellScriptBin "i3-cmd" ''
       flags=(-t command)
       while [[ $# -gt 0 ]]; do

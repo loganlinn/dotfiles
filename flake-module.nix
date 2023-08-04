@@ -15,17 +15,23 @@ let
 
   mkHmLib = stdlib: import "${inputs.home-manager}/modules/lib/stdlib-extended.nix" (mkLib stdlib);
 
-  mkSpecialArgs = mergeAttrs {
-    inherit inputs;
-    flake = { inherit self inputs config; };
-    nix-colors = import ./nix-colors/extended.nix inputs;
-  };
+  mkSpecialArgs =
+    # mapAttrs
+    #   (name: value:
+    #     if (hasPrefix "self" name) || (hasPrefix "name" "inputs")
+    #     then (warn "Inconsistent reference to flake attribute: ${name}" value)
+    #     else value)
+      (mergeAttrs {
+        inherit inputs;
+        flake = { inherit self inputs config; };
+        nix-colors = import ./nix-colors/extended.nix inputs;
+      });
 
-  universalOptions = import ./options.nix;
+  mkCommonOptions = import ./options.nix;
 
-  universalModule = {
+  mkCommonModule = {
     imports = [
-      universalOptions
+      mkCommonOptions
       {
         nixpkgs.overlays = [
           self.overlays.default
@@ -38,13 +44,11 @@ let
 
 in
 {
-  imports = [
-    ./home-manager/flake-module.nix
-    ./nixos/flake-module.nix
-  ];
-
+  #
   options = {
-    perSystem = mkPerSystemOption universalOptions;
+    # REVIEW could moduleWithSystem be used instead?
+    # https://flake.parts/module-arguments#modulewithsystem
+    perSystem = mkPerSystemOption mkCommonOptions;
   };
 
   config = {
@@ -57,7 +61,7 @@ in
       # NixOS home-manager module
       nixosModules = {
         common = {
-          imports = [ universalModule ];
+          imports = [ mkCommonModule ];
         };
 
         home-manager = {
@@ -75,32 +79,34 @@ in
       } // (import ./nixos/modules);
 
 
-      darwinModules.common = {
-        imports = [ universalModule ];
-      };
+      darwinModules = {
+        common = {
+          imports = [ mkCommonModule ];
+        };
 
-      darwinModules.home-manager = {
-        imports = [
-          inputs.home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = mkSpecialArgs { };
-          }
-        ];
+        home-manager = {
+          imports = [
+            inputs.home-manager.darwinModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = mkSpecialArgs { };
+            }
+          ];
+        };
       };
 
       homeModules = {
         common = {
           imports = [
-            universalModule
+            mkCommonModule
             ./nix/home/common.nix
           ];
         };
 
         basic = {
           imports = [
-            universalModule
+            mkCommonModule
             ./nix/home/common.nix
             ./nix/home/dev
             ./nix/home/pretty.nix
@@ -131,12 +137,15 @@ in
             modules = [ module ];
           };
 
-        mkHomeConfiguration = args@{ self', inputs', pkgs, ... }: module:
+        mkHomeConfiguration = args@{ inputs', self', pkgs, ... }: module:
           inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             extraSpecialArgs = mkSpecialArgs {
-              inherit self' inputs';
               lib = mkHmLib args.lib;
+              inputs' = # lib.warn "Stop using inputs' outside of flake-module"
+                inputs';
+              self' = # lib.warn "Stop using self' outside of flake-module"
+                self';
             };
             modules = [ module ];
           };

@@ -13,6 +13,22 @@ with lib;
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
   imports = [
+    flake.inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
+    flake.inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
+    flake.inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
+    flake.nixosModules.common
+    flake.nixosModules.bluetooth
+    flake.nixosModules.docker
+    flake.nixosModules.networking
+    flake.nixosModules.nix-registry
+    flake.nixosModules.nvidia
+    flake.nixosModules.pipewire
+    flake.nixosModules.printing
+    flake.nixosModules.security
+    flake.nixosModules.steam
+    flake.nixosModules.tailscale
+    flake.nixosModules.thunar
+    flake.nixosModules.thunderbolt
     ./hardware-configuration.nix
     ./kernel-configuration.nix
     ./xserver.nix
@@ -27,26 +43,21 @@ with lib;
   time.timeZone = "America/Los_Angeles";
   i18n.defaultLocale = "en_US.UTF-8";
 
+  programs._1password.enable = true;
+  programs._1password-gui.enable = true;
+  programs._1password-gui.polkitPolicyOwners = [ "logan" ]; # for polkit agent process (required to use polkit)
   programs.git.enable = true;
-
   programs.htop.enable = true;
-
   programs.dconf.enable = true;
-
   programs.zsh.enable = true;
-
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
   };
-
-  programs._1password.enable = true;
-  programs._1password-gui.enable = true;
-  programs._1password-gui.polkitPolicyOwners = [ "logan" ]; # for polkit agent process (required to use polkit)
+  programs.mosh.enable = true;
 
   security.polkit.enable = true;
 
-  programs.mosh.enable = true;
 
   services.tailscale.enable = true;
 

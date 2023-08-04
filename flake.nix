@@ -57,7 +57,7 @@
 
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
-      perSystem = { config, system, inputs', pkgs, lib, ... }: {
+      perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
         packages = {
           jdk = lib.mkDefault pkgs.jdk; # needed?
           kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix { };
@@ -142,52 +142,40 @@
               };
             };
         };
+
+        # FIXME: there's probably a flake.parts facility for this
+        legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
+          homeConfigurations = {
+            "logan@nijusan" = self.lib.dotfiles.mkHomeConfiguration ctx {
+              imports = [
+                self.homeModules.common
+                ./home-manager/nijusan.nix
+              ];
+            };
+          };
+        };
       };
 
       flake = {
-        darwinConfigurations.patchbook = self.lib.dotfiles.lib.mkMacosSystem "aarch64-darwin" {
-          imports = [
-            # ./nix-darwin/patchbook.nix
-            # self.darwinModules.home-manager
-            # {
-            #   home-manager.users.logan = {
-            #     options,
-            #     config,
-            #     ...
-            #   }: {
-            #     imports = [
-            #       # self.homeModules.default
-            #     ];
-            #     home.stateVersion = "22.11";
-            #   };
-            # }
-          ];
-        };
-
         nixosConfigurations = {
           nijusan = self.lib.dotfiles.mkNixosSystem "x86_64-linux" {
             imports = [
-              inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
-              inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
-              inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
-              self.nixosModules.common
-              self.nixosModules.bluetooth
-              self.nixosModules.docker
-              self.nixosModules.networking
-              self.nixosModules.nix-registry
-              self.nixosModules.nvidia
-              self.nixosModules.pipewire
-              self.nixosModules.printing
-              self.nixosModules.security
-              self.nixosModules.steam
-              self.nixosModules.tailscale
-              self.nixosModules.thunar
-              self.nixosModules.thunderbolt
-              # inputs.home-manager.nixosModules.home-manager
-              # inputs.grub2-themes.nixosModules.default
               ./nixos/nijusan/configuration.nix
             ];
           };
+        };
+
+        darwinConfigurations.patchbook = self.lib.dotfiles.lib.mkMacosSystem "aarch64-darwin" {
+          imports = [
+            self.darwinModules.home-manager
+            ./nix-darwin/patchbook.nix
+            {
+              home-manager.users.logan = { options, config, ... }: {
+                imports = [ self.homeModules.default ];
+                home.stateVersion = "22.11";
+              };
+            }
+          ];
         };
       };
     };

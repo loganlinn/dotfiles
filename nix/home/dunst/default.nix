@@ -4,22 +4,25 @@ with lib;
 
 # test using https://tests.peter.sh/notification-generator/
 let
+  inherit (lib.my) coalesce;
+
   inherit (config.colorScheme) colors;
+
+  font = config.my.fonts.dunst
+    or config.my.fonts.dunst
+    or config.my.fonts.notifications
+    or config.my.fonts.mono;
 in
 {
   services.dunst = {
-    enable = true;
-
     iconTheme = config.gtk.iconTheme;
-
     settings = {
       global = {
         browser = "${pkgs.xdg-utils}/bin/xdg-open";
         dmenu = "${config.programs.rofi.finalPackage}/bin/rofi -dmenu -p dunst:";
         monitor = 0;
         follow = "none";
-        font = with (config.my.fonts.notifications or config.my.fonts.mono);
-          "${name}${optionalString (size != null) " ${toString size}"}";
+        font = "${if font.name != null then font.name else "monospace"}${optionalString (font.size != null) " ${toString font.size}"}";
         # For a complete markup reference, see <https://docs.gtk.org/Pango/pango_markup.html>.
         # %a appname
         # %s summary
@@ -34,9 +37,9 @@ in
         frame_width = 2;
         gap_size = 4;
         width = 480;
-        height = "(24, 320)";
-        offset = "-36, +36";
-        origin = "top-right";
+        height = "(28, 320)"; # (min, max)
+        origin = "center-right";
+        offset = "100, 0";
         # origin = "bottom-right";
         corner_radius = 0;
         padding = 12;
@@ -44,14 +47,14 @@ in
         icon_position = "right";
         text_icon_padding = 0;
         progress_bar = true;
-        progress_bar_height = 10;
+        progress_bar_height = (if font.size != null then font.size else 10) + 2;
         progress_bar_frame_width = 1;
         progress_bar_min_width = 150;
         progress_bar_max_width = 300;
         indicate_hidden = true;
         notification_limit = 8;
         min_icon_size = 0;
-        max_icon_size = 32;
+        max_icon_size = 42;
         markup = "full";
         separator_height = 4;
         transparency = 0;

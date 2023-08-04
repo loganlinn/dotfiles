@@ -1,40 +1,54 @@
 { config, lib, pkgs, ... }:
 
-with lib; let
-  serviceCfg = config.services.eww;
+with lib;
+
+# home-manager's eww module forces configuration be in-store and doesn't have service,
+# hence we write our own.
+let
+  programCfg = config.my.programs.eww; # part of home-manager
+  serviceCfg = config.my.services.eww; # "overlayed" options
 in
 {
-  options.services.eww = {
-    enable = mkEnableOption "ElKowars wacky widgets daemon";
-    package = mkOption {
-      type = types.package;
-      default = config.programs.eww.finalPackage or config.programs.eww.package;
+  imports = [
+    # (mkRenamedOptionsModule [ "programs" "eww" "configDir" ] [ "programs" "eww" "configPath" ])
+  ];
+
+  options.my = {
+    programs.eww = {
+      enable = mkEnableOption "ElKowars wacky widgets";
+      package = mkPackageOption pkgs "eww" { };
+      # configPath = mkOption {
+      #   type = types.nullOr types.path;
+      #   default = mkIf config.xdg.enable "${config.xdg.configHome}/eww";
+      # };
+    };
+    services.eww = {
+      enable = mkEnableOption "ElKowars wacky widgets daemon";
+      package = mkOption {
+        type = types.package;
+        default = config.programs.eww.package;
+      };
     };
   };
 
   config = {
-    programs.eww.configDir = ../../../../config/eww;
-
-    # home.activation.ewwConfigDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    #   ln -s "$(${flakeRootBin})/config/eww" "${config.xdg.configHome}/eww"
-    # '';
-
+    home.packages = optional programCfg.enable programCfg.package;
     systemd.user.services.eww = mkIf serviceCfg.enable {
+      assertions = [ (lib.hm.assertions.assertPlatform "services.eww" pkgs lib.platforms.linux) ];
       Unit = {
-        Description = "Eww Daemon";
+        Description = "eww daemon";
         PartOf = [ "graphical-session.target" ];
       };
       Service = {
         Environment =
-          let path = lib.makeBinPath [
-            "/run/wrappers"
-            "${config.home.homeDirectory}/.nix-profile"
-            "/etc/profiles/per-user/${config.home.username}"
-            "/nix/var/nix/profiles/default"
-            "/run/current-system/sw"
-          ];
-          in lib.mkForce "PATH=${path}";
-
+          let
+            path = lib.makeBinPath [
+              "${programCfg.package}"
+              "${config.home.homeDirectory}/.nix-profile"
+              "/run/wrappers/bin"
+            ];
+          in
+          lib.mkForce "PATH=${path}";
         ExecStart = "${serviceCfg.package}/bin/eww daemon --no-daemonize";
         Restart = "on-failure";
       };

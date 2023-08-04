@@ -63,9 +63,9 @@ in
         type = with types; listOf str;
         default =
           [
-            "date"
-            "sep"
             "time"
+            "sep"
+            "date"
             "sep"
           ] ++ (optionals config.xsession.windowManager.i3.enable [
             # "sep"
@@ -609,11 +609,9 @@ in
           ramp-signal-3 = iconText nerdfonts.md.wifi_strength_4;
         } // settings))));
 
-      # extraConfig = ''
-      #   ${let extraConfigDir = "${config.xdg.configHome}/polybar/config.d"; in
-      #     optionalString (pathExists extraConfigDir)
-      #       "include-directory = ${extraConfigDir}"}
-      # '';
+      extraConfig = ''
+        include-directory ${config.xdg.configHome}/polybar/polybar.d
+      '';
 
       script =
         let
