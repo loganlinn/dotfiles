@@ -50,22 +50,38 @@ in
       modules-left = mkOption {
         type = with types; listOf str;
         default = [
-          "date"
+        ] ++ (optionals config.xsession.windowManager.i3.enable [
+          "i3"
           "sep"
+          # "sep"
+        ]) ++ [
           "xwindow"
-          "sep"
-          "kubernetes"
         ];
       };
 
       modules-center = mkOption {
         type = with types; listOf str;
-        default = optionals config.xsession.windowManager.i3.enable [ "i3" ];
+        default =
+          [
+            "date"
+            "sep"
+            "time"
+            "sep"
+          ] ++ (optionals config.xsession.windowManager.i3.enable [
+            # "sep"
+            # "i3"
+            # "sep"
+          ]) ++ [
+          ];
       };
 
       modules-right = mkOption {
         type = with types; listOf str;
         default = [
+          "sep"
+          "gh"
+          "sep"
+          "kubernetes"
           "sep"
           "memory"
           "gpu"
@@ -79,7 +95,6 @@ in
         ++ (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
         ++ [
           "sep"
-          "date"
         ];
       };
     };
@@ -161,10 +176,10 @@ in
               # NOTE: fonts are defined with 0-indexing, but referenced with 1-indexing
               # font-N = <fontconfig pattern>;<vertical offset>
               font = [
-                "JetBrainsMono Nerd Font:size=10;3"
-                "JetBrainsMono Nerd Font:size=10:style=Bold;3"
-                "Symbols Nerd Font:size=12;3"
-                "Symbols Nerd Font:size=16;3"
+                "JetBrainsMono Nerd Font:size=10;3" # T1
+                "JetBrainsMono Nerd Font:size=10:style=Bold;3" # T2
+                "Symbols Nerd Font:size=12;3" # T3
+                "Symbols Nerd Font:size=16;3" # T4
               ];
 
               line.size = 3;
@@ -173,7 +188,7 @@ in
               border = {
                 color = "\${colors.transparent}";
                 bottom.size = 0;
-                top.size = 4;
+                top.size = 1;
                 left.size = 5;
                 right.size = 5;
               };
@@ -200,7 +215,7 @@ in
               modules.center = concatStringsSep " " cfg.bars.top.modules-center;
               modules.right = concatStringsSep " " cfg.bars.top.modules-right;
 
-              bottom = false;
+              bottom = true;
               width = "100%";
               height = cfg.bars.top.height;
               offset.x = "0%";
@@ -242,13 +257,20 @@ in
 
             "module/date" = module "internal/date" {
               interval = 1;
-              time.text = "%I:%M %p";
-              date.text = "%a %b %d";
-              time.alt = "%l:%M:%S";
-              date.alt = " ";
+              date.text = "%x";
+              date.alt = "%A, %B %0e";
               format.text = "<label>";
-              format.prefix = nerdfonts.md.calendar_clock;
-              label = "%date% %time%";
+              format.prefix = iconText nerdfonts.md.calendar;
+              label = "%date%";
+            };
+
+            "module/time" = module "internal/date" {
+              interval = 1;
+              time.text = "%r";
+              time.alt = "%F-%T%z";
+              format.text = "<label>";
+              format.prefix = iconText nerdfonts.md.clock;
+              label = "%time%";
             };
 
             "module/pulseaudio" = module "internal/pulseaudio" {
@@ -387,6 +409,51 @@ in
               format.prefix = "GPU";
             };
 
+            "module/gh" = module "custom/script" {
+              interval = 60;
+              # exec-if = "gh auth status";
+              label = "%output%";
+              label-fail = "${iconText nerdfonts.seti.error} ${iconText nerdfonts.oct.mark_github} %output%";
+              exec =
+                pkgs.writeShellScript "github" ''
+                  export PATH=${makeBinPath [
+                    config.programs.gh.package
+                    config.programs.jq.package
+                    config.programs.rofi.finalPackage
+                    pkgs.xdg-utils
+                    pkgs.moreutils
+                  ]}:$PATH
+
+                  get_pr_awaiting_review() {
+                    gh api \
+                      -X GET search/issues \
+                      -f q='type:pr state:open draft:false user-review-requested:@me -reviewed-by:@me -org:optimizely'
+                  }
+
+                  pr_icon() {
+                    echo -en "${iconText nerdfonts.oct.git_pull_request}"
+                  }
+
+                  display_prs() {
+                    local data=$(get_pr_awaiting_review)
+                    local count=$(jq -r .total_count <<<"$data")
+
+                    echo -e "$(pr_icon) $count"
+                    # case $count in
+                       # 0) ;;
+                       # *) echo -en "%{A:xdg-open "$(jq -r '.items[0].html_url | @uri' <<<"$data")":} $(pr_icon) 1 %{A}" ;;
+                       # *) echo -en "%{A:jq -r '.items[].html_url | @uri' <<<"$data" | rofi -dmenu | ifne xargs xdg-open } $(pr_icon) $count %{A}" ;;
+                    # esac
+                  }
+
+                  display_full() {
+                    display_prs
+                  }
+
+                  display_full
+                '';
+            };
+
             "module/cpu" = module "internal/cpu" {
               interval = 2;
               format = {
@@ -484,7 +551,7 @@ in
                 ];
               };
               tail = false;
-              interval = 5;
+              interval = 10;
               background = "\${colors.background}";
               foreground = "\${colors.foreground}";
               format-background = "\${colors.background}";

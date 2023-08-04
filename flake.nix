@@ -24,8 +24,8 @@
     emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
-    # eww.url = "github:elkowar/eww";
-    # eww.inputs.nixpkgs.follows = "nixpkgs";
+    eww.url = "github:elkowar/eww";
+    eww.inputs.nixpkgs.follows = "nixpkgs";
     # nixpkgs-wayland.url = "github:nix-community/nixpkgs-wayland";
     # nixgl.url = "github:guibou/nixGL";
 
@@ -96,7 +96,7 @@
               withPrintNixEnv = cmd: ''printenv | grep '^NIX'; ${cmd}'';
               withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
               replExec = f: withPrintNixEnv (withCows ''
-                nix repl --debugger --ignore-try --verbose --trace-verbose --file "${f}" "$@"
+                nix repl --verbose --trace-verbose --file "${f}" "$@"
               '');
             in
             {

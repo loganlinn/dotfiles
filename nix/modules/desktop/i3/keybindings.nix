@@ -59,16 +59,14 @@ in
   };
 
   logs = {
-    "$mod+Shift+s" = ''exec --no-startup-id kitty --name systemlnav --class kitty-floating ${
-      pkgs.writeShellScriptBin "systemlnav" ''
-           journalctl --dmesg --follow --since=today --output=json | ${getExe pkgs.lnav}
-        ''
-    }'';
+    "$mod+Shift+s" = ''exec kitty --title journalctl --class scratchpad -- bash -c 'journalctl --dmesg --follow --since=today --output=json | ${pkgs.lnav}/bin/lnav';'';
   };
 
   browser = {
     "$mod+Shift+Return" = "exec ${config.modules.desktop.browsers.default}";
     "$mod+$alt+Return" = "exec ${config.modules.desktop.browsers.alternate}";
+  } // optionalAttrs config.programs.qutebrowser.enable {
+    "$mod+Ctrl+Return" = "exec RESOURCE_NAME=scratchpad ${toExe config.programs.qutebrowser}";
   };
 
   editor = {
@@ -167,6 +165,11 @@ in
     "$mod+Shift+l" = "move right 10 ppt";
     "$mod+shift+comma" = "move up; move left; mark h";
     "$mod+shift+period" = "move up; move right; mark l";
+  };
+
+  resize = {
+    "$mod+comma" = "resize shrink width 32 px or 6 ppt";
+    "$mod+period" = "resize grow width 32 px or 6 ppt";
   };
 
   move = {
