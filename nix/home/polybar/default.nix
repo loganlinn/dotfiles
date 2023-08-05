@@ -78,11 +78,12 @@ in
       modules-right = mkOption {
         type = with types; listOf str;
         default = [
+          "kubernetes"
           "sep"
           "gh"
           "sep"
-          "kubernetes"
-          "sep"
+          (optionalString config.services.dunst.enable "dunst")
+          (optionalString config.services.dunst.enable "sep")
           "memory"
           "gpu"
           "cpu"
@@ -91,11 +92,8 @@ in
           "pulseaudio"
           "sep"
         ]
-        ++ optional config.services.dunst.enable "dunst"
         ++ (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
-        ++ [
-          "sep"
-        ];
+        ;
       };
     };
     networks = mkOption {
@@ -218,8 +216,8 @@ in
               bottom = true;
               width = "100%";
               height = cfg.bars.top.height;
-              offset.x = "0%";
-              offset.y = "0%";
+              # offset.x = "0%";
+              # offset.y = "0%";
               fixed-center = true;
 
               module.margin.left = 0;
@@ -610,7 +608,7 @@ in
         } // settings))));
 
       extraConfig = ''
-        include-directory ${config.xdg.configHome}/polybar/polybar.d
+        include-directory = ${config.xdg.configHome}/polybar/polybar.d
       '';
 
       script =
