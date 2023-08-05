@@ -49,7 +49,7 @@ in
     };
 
     window = {
-      border = 2;
+      border = 4;
       titlebar = false;
       hideEdgeBorders = "none"; # none, vertical, horizontal, both, smart
 
@@ -119,11 +119,11 @@ in
     };
 
     gaps = {
-      top = 2;
+      top = 4;
       left = 4;
       right = 4;
-      bottom = 0;
-      smartBorders = "on";
+      bottom = 4;
+      smartBorders = "off";
     };
 
     floating = {
@@ -594,31 +594,31 @@ in
         text = base00;
       };
       focusedInactive = {
-        background = base01;
-        border = base01;
-        childBorder = base01;
-        indicator = base03;
-        text = base05;
+        background = base00;
+        border = base00;
+        childBorder = base00;
+        indicator = base01;
+        text = base03;
       };
       placeholder = {
         background = base00;
         border = base00;
         childBorder = base00;
-        indicator = base00;
-        text = base05;
+        indicator = base01;
+        text = base03;
       };
       unfocused = {
         background = base00;
         border = base01;
         childBorder = base01;
         indicator = base01;
-        text = base05;
+        text = base03;
       };
       urgent = {
-        background = base08;
-        border = base08;
-        childBorder = base08;
-        indicator = base08;
+        background = base09;
+        border = base09;
+        childBorder = base09;
+        indicator = base09;
         text = base00;
       };
     };

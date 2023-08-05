@@ -24,17 +24,17 @@ with lib;
     some = findFirst (x != nil) nil;
     comp' = fns: val: foldl' (x: f: f x) val (reverseList fns);
     first = xs: if xs == null || length xs == 0 then null else head xs;
-    rest = xs: if xs == null || length xs == 1 then [] else tail xs;
+    rest = xs: if xs == null || length xs == 1 then [ ] else tail xs;
     next = xs: if xs == null || length xs == 1 then null else tail xs;
-    second = comp [first rest seq];
+    second = comp [ first rest seq ];
     when = cond: impl: if cond then impl else null; # as in, a one-legged conditional
-    juxt = f: g: x: [(f x) (g x)];
+    juxt = f: g: x: [ (f x) (g x) ];
     juxt' = fns: x: map (f: f x) fns;
     every-pred = preds: x: findFirst (pred: ! pred x) false preds;
     seq = xs:
       if xs == nil then null
       else if isList xs then (if length x == 0 then null else xs)
-      else if isAttrs xs then (mapAttrsToList (k: v: [k v]) xs)
+      else if isAttrs xs then (mapAttrsToList (k: v: [ k v ]) xs)
       else if isString xs then stringToCharacters xs
       else throw "${typeOf xs} is not seqable";
     # conj = coll: x:
@@ -64,12 +64,19 @@ with lib;
     else pipe "HOSTNAME" [ getEnv (warn "Unable to detect system hostname") ];
 
   files = {
-    sourceSet = { dir, base ? dir, prefix ? "", }:
+    sourceSet =
+      { dir
+      , base ? dir
+      , prefix ? ""
+      , exclude ? (_: false)
+      }:
       listToAttrs
-        (forEach (filesystem.listFilesRecursive dir)
+        (forEach (remove exclude (filesystem.listFilesRecursive dir))
           (source: {
             name = "${prefix}${removePrefix ((toString base) + "/") (toString source)}";
-            value = { inherit source; };
+            value = {
+              inherit source;
+            };
           }));
   };
 

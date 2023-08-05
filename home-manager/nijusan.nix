@@ -71,6 +71,8 @@ in
   gtk.enable = true;
 
   my.programs.eww.enable = true;
+  programs.kitty.enable = true;
+  programs.wezterm.enable = false;
   programs.emacs.enable = true;
   programs.rofi.enable = true;
   programs.google-chrome.enable = true;
