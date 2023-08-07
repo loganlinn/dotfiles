@@ -7,28 +7,32 @@
 
 with lib;
 
+let
+  inherit (flake.inputs) nixos-hardware;
+  inherit (flake.self) nixosModules;
+in
 {
 
   # Things to try
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
   imports = [
-    flake.inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
-    flake.inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
-    flake.inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
-    flake.nixosModules.common
-    flake.nixosModules.bluetooth
-    flake.nixosModules.docker
-    flake.nixosModules.networking
-    flake.nixosModules.nix-registry
-    flake.nixosModules.nvidia
-    flake.nixosModules.pipewire
-    flake.nixosModules.printing
-    flake.nixosModules.security
-    flake.nixosModules.steam
-    flake.nixosModules.tailscale
-    flake.nixosModules.thunar
-    flake.nixosModules.thunderbolt
+    nixos-hardware.outputs.nixosModules.common-cpu-intel
+    nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
+    nixos-hardware.outputs.nixosModules.common-pc-ssd
+    nixosModules.common
+    nixosModules.bluetooth
+    nixosModules.docker
+    nixosModules.networking
+    nixosModules.nix-registry
+    nixosModules.nvidia
+    nixosModules.pipewire
+    nixosModules.printing
+    nixosModules.security
+    nixosModules.steam
+    nixosModules.tailscale
+    nixosModules.thunar
+    nixosModules.thunderbolt
     ./hardware-configuration.nix
     ./kernel-configuration.nix
     ./xserver.nix
