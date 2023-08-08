@@ -392,8 +392,20 @@ in
                 local count=$(jq -r .total_count <<<"$data")
 
                  case $count in
-                    0) echo -e "${iconStyle " ${nerdfonts.oct.git_pull_request} $count "}" ;;
-                    *) echo -e "${alertStyle " ${nerdfonts.oct.git_pull_request} $count "}" ;;
+                    0)
+                      echo -e "${
+                        tag.action
+                          "xdg-open https://github.com/pulls/assigned"
+                          (iconStyle " ${nerdfonts.oct.git_pull_request} $count ")
+                      }"
+                        ;;
+                    *)
+                    echo -e "${
+                      tag.action
+                        "xdg-open https://github.com/pulls/assigned"
+                        (alertStyle " ${nerdfonts.oct.git_pull_request} $count ")
+                    }"
+                    ;;
                  esac
 
                 # case $count in
