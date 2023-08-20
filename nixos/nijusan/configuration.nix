@@ -59,6 +59,8 @@ in
     enableSSHSupport = true;
   };
   programs.mosh.enable = true;
+  programs.hyprland.enable = true;
+  programs.hyprland.enableNvidiaPatches = true;
 
   security.polkit.enable = true;
 

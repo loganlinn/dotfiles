@@ -10,8 +10,9 @@
 (local hotkeys_popup (require :awful.hotkeys_popup))
 (local wibox     (require :wibox))
 (local menubar   (require :menubar))
+;; (require "gears.surface")
+;; (require "awful.autofocus")
 
-;; ...
 (fn initialize []
   ;; Error handling
   ;; Check if awesome encountered an error during startup and fell back to

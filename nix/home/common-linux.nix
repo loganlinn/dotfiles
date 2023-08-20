@@ -24,6 +24,6 @@ lib.mkIf pkgs.stdenv.isLinux {
 
   # xdg.configFile."handlr/handlr.toml".text = ''
   #   enable_selector = true
-  #   selector = "${config.programs.rofi.finalPackage} -dmenu -i -p 'Open With: '"
+  #   selector = "${config.programs.rofi.finalPackage}/bin/rofi -dmenu -i -p 'Open With: '"
   # '';
 }

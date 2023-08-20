@@ -85,11 +85,6 @@ in
 
       vlc
       nsxiv # simple image viewer
-
-      # desktop apps
-      obsidian
-      slack
-      inkscape
     ];
   };
 }

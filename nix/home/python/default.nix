@@ -33,6 +33,8 @@ let cfg = config.my.python; in
           isort # used by editors
           pipx
           setuptools
+          jupyter
+          jupyterlab
         ] ++ optionals config.programs.neovim.enable [
           pynvim
         ] ++ optionals stdenv.isLinux [

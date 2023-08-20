@@ -16,7 +16,7 @@ let
     "JetBrainsMono Nerd Font:size=10:style=Bold;3" # T2
     "Symbols Nerd Font:size=12;3" # T3
     "Symbols Nerd Font:size=16;3" # T4
-    "Symbols Nerd Font:size=28;7" # T5
+    "Symbols Nerd Font:size=28;7" # T5 # (separators)
   ];
 
   ### colors
@@ -45,6 +45,18 @@ let
     };
 
   ### helpers
+  mkActionStr = { button ? null, command, text }:
+    # 1: left click
+    # 2: middle click
+    # 3: right click
+    # 4: scroll up
+    # 5: scroll down
+    # 6: double left click
+    # 7: double middle click
+    # 8: double right click
+    assert isInt button;
+    ''%{A${toString button}:${escape [":"] command}:}${text}%{A}'';
+
   tag = {
     font = index: text: ''%{T${toString (index + 1)}}${text}%{T-}'';
     fg = color: text: ''%{F${color}}${text}%{F-}''; # foreground
@@ -53,7 +65,7 @@ let
     overline = color: text: ''%{o${color}}${text}%{o-}''; # overline
     offset = gap: text: ''%{O${toString gap}}${text}''; # offset
     reverse = text: ''%{R}${text}'';
-    action = command: text: ''%{A:${escape [":"] command}:}${text}%{A}'';
+    action = button: command: text: mkActionStr { inherit button command text; };
   };
 
   mkStyle = functions: text: pipe text functions;
@@ -115,19 +127,17 @@ in
         "top" = {
           height = 40;
           modules = {
-            left = withSeparator "space" [
-              "kubernetes"
+            left = withSeparator "nerdfonts_ple_pixelated_squares_small" [
+              (optionalString config.xsession.windowManager.i3.enable "i3")
               "xwindow"
             ];
-            center = withSeparator "space" [
-              (optionalString config.xsession.windowManager.i3.enable "i3")
-              [
-                "time"
-                "date"
-              ]
+            center = [
+              "time"
+              "date"
             ];
             right = withSeparator "nerdfonts_ple_backslash_separator" [
               "gh"
+              # "kubernetes"
               (optionalString config.services.dunst.enable "dunst")
               "pulseaudio"
               "memory"
@@ -135,6 +145,7 @@ in
               "cpu"
               "temperature"
               (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
+              "powermenu"
             ];
           };
         };
@@ -156,6 +167,11 @@ in
   };
 
   config = {
+
+    xdg.configFile."polybar/config.ini".onChange = mkIf config.services.polybar.enable ''
+      ${pkgs.procps}/bin/pkill -u "$USER" ''${VERBOSE+-e} polybar || true
+    '';
+
     services.polybar = {
       package = cfg.package;
       settings = foldl' recursiveUpdate { } [
@@ -210,6 +226,7 @@ in
           tray.offset-x = 0;
           tray.offset-y = 0;
           tray.detached = false;
+          tray.margin.left = 3;
           cursor.click = "pointer"; # hand
           cursor.scroll = "ns-resize"; # arrows
         })
@@ -225,9 +242,20 @@ in
           };
           label.margin = 1;
         })
+        (nvs "module/base-alt" {
+          background = "\${colors.background-alt}";
+          foreground = "\${colors.foreground-light}";
+          format = {
+            background = "\${colors.background-alt}";
+            foreground = "\${colors.foreground-light}";
+            prefix.foreground = "\${colors.foreground}";
+            suffix.foreground = "\${colors.foreground}";
+          };
+          label.margin = 1;
+        })
         ####################################################
         (nvs "module/date" {
-          "inherit" = "module/base";
+          "inherit" = "module/base-alt";
           type = "internal/date";
           interval = 60;
           date.text = "%x";
@@ -394,15 +422,14 @@ in
                  case $count in
                     0)
                       echo -e "${
-                        tag.action
-                          "xdg-open https://github.com/pulls/assigned"
+                        tag.action 1
+                          "xdg-open https://github.com/pulls/review-requested"
                           (iconStyle " ${nerdfonts.oct.git_pull_request} $count ")
                       }"
                         ;;
                     *)
                     echo -e "${
-                      tag.action
-                        "xdg-open https://github.com/pulls/assigned"
+                      tag.action 1 "xdg-open https://github.com/pulls/review-requested"
                         (alertStyle " ${nerdfonts.oct.git_pull_request} $count ")
                     }"
                     ;;
@@ -530,7 +557,7 @@ in
         (nvs "module/dunst" {
           type = "custom/script";
           exec-if = "dunstctl debug";
-          exec = "${./bin/polybar-dunst.sh}";
+          exec = "${./scripts/polybar-dunst.sh}";
           tail = true;
           env = {
             ACTIVE_FG = "\${colors.foreground-dim}";
@@ -579,28 +606,50 @@ in
           }
         )
         ####################################################
+        (nvs "module/powermenu" {
+          type = "custom/menu";
+          hidden = true;
+          menu-0-0 = "poweroff";
+          menu-0-0-exec = "poweroff";
+          menu-0-1 = "Suspend";
+          menu-0-1-exec = "systemctl suspend";
+          menu-0-2 = "Lock";
+          menu-0-2-exec = "xautolock -locknow";
+        })
+        ## Separators ######################################
         (nvs "module/space" {
           type = "custom/text";
           content = {
             text = " ";
             padding = 0;
             foreground = "\${colors.transparent}";
-            background = "\${colors.transparent}";
-            # background = "\${colors.alert}"; # debug
-            margin = 0;
+            background = "\${colors.transparent}"; # "\${colors.alert}"
             font = 5;
           };
         })
-        (nvs "module/nerdfonts_ple_base" {
+        (nvs "module/nerdfonts_ple" {
           content.foreground = "\${colors.background-alt}";
           content.background = "\${colors.background}";
-          content.font = 5;
+          content.font = 5; # T5
+          content.offset = (-5);
+        })
+        (nvs "module/nerdfonts_ple-alt" {
+          content.foreground = "\${colors.background}";
+          content.background = "\${colors.background-alt}";
+          content.font = 5; # T5
           content.offset = (-5);
         })
         (mapAttrs'
           (name: text: (nameValuePair "module/nerdfonts_ple_${name}" {
             type = "custom/text";
-            "inherit" = "module/nerdfonts_ple_base";
+            "inherit" = "module/nerdfonts_ple";
+            content.text = text;
+          }))
+          nerdfonts.ple)
+        (mapAttrs'
+          (name: text: (nameValuePair "module/nerdfonts_ple_${name}-alt" {
+            type = "custom/text";
+            "inherit" = "module/nerdfonts_ple-alt";
             content.text = text;
           }))
           nerdfonts.ple)

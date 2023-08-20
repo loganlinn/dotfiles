@@ -70,20 +70,14 @@ in
   };
 
   editor = {
-    "$mod+e" =
-      "focus parent, " +
-      (if config.services.emacs.enable
-       then ''exec emacsclient -c -a "" -n''
-       else if config.programs.emacs.enable
-       then ''exec emacs''
-       else "nop");
-
-    "$mod+$alt+e" =
-      if !config.my.emacs.doom.enable
-      then "nop"
-      else if config.services.emacs.enable
-      then ''emacsclient --eval "(emacs-everywhere)"''
-      else "exec doom +everywhere";
+    "$mod+e" = ''exec ${pkgs.yad}/bin/yad --text "No editor is configured!"'';
+  } // optionalAttrs config.programs.emacs.enable {
+    "$mod+e" = "focus parent, exec emacs";
+  } // optionalAttrs config.services.emacs.enable {
+    "$mod+e" = "focus parent, exec emacsclient -c -a "" -n";
+  } // optionalAttrs config.my.emacs.doom.enable {
+    "--release $mod+$alt+n" = ''exec org-capture''; # WM_NAME(STRING) = "doom-capture"
+    "--release $mod+$alt+e" = ''exec doom +everywhere'';
   };
 
   terminal = {

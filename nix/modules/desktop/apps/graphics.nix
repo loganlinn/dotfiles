@@ -6,6 +6,7 @@
     blender
     fstl
     inkscape
+    gimp
   ];
 
   xdg.desktopEntries.fstl = {

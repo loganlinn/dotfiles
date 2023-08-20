@@ -55,10 +55,10 @@ in
 
       # List of commands that should be executed on specific windows (i.e. for_window)
       commands = [
-        {
-          criteria.title = "^Emacs Everywhere";
-          command = "floating enable, resize set 35 ppt 25 ppt, move position mouse";
-        }
+        # {
+        #   criteria.title = "^Emacs Everywhere ::";
+        #   command = "floating enable, resize set 35 ppt 25 ppt, move position mouse";
+        # }
         {
           criteria.class = "(?i)conky";
           command = "floating enable, move position mouse, move down ${barHeight} px";
@@ -76,7 +76,8 @@ in
           command = "floating enable, move position mouse, move down ${barHeight} px";
         }
         {
-          criteria = { class = "^zoom$"; title = "^.*(?<!Zoom Meeting)$"; };
+          criteria.class = "^zoom$";
+          criteria.title = "^.*(?<!Zoom Meeting)$"; #criteria.instance?
           command = "floating enable, sticky enable, move position center";
         }
         {
@@ -84,17 +85,21 @@ in
           command = "floating enable, move position mouse";
         }
         {
-          criteria.class = "^emacs$";
-          command = "resize set 70 ppt";
+          criteria.class = "(?i)^emacs$";
+          command = "move up, move left, resize set width 70 ppt";
         }
         {
-          criteria.title = "journalctl";
+          criteria.instance = "journalctl";
           criteria.class = "scratchpad";
           command = "move scratchpad, scratchpad show, move position center, resize set 80 ppt 50 ppt, move down 40 ppt";
         }
         {
           criteria.class = "kitty";
           command = "border normal"; # show window title
+        }
+        {
+          criteria.instance = "^doom-capture$";
+          command = "sticky enable, move position center, resize set 40 ppt 40 ppt";
         }
       ]
       ++ (forEach [
@@ -156,9 +161,8 @@ in
         { title = "Screen Layout Editor"; } # i.e. arandr
         { title = "Calculator"; }
         { title = "Event Tester"; } # i.e. xev
-        { title = "(?i)steam"; }
-        { title = "doom-capture"; }
         { title = "(?i)yubico authenticator"; }
+        { title = "^Emacs Everywhere ::"; }
         { class = "^i3-floating$"; } # generic
       ];
     };
@@ -508,10 +512,27 @@ in
       bindsym $mod+$alt+m mode "$mode_mark"
 
       ################################################################################
+      # Window rules
+      ################################################################################
+
+      # https://github.com/ValveSoftware/steam-for-linux/issues/1040
+      for_window [class="^Steam$" title="^Friends$"] floating enable
+      for_window [class="^Steam$" title="Steam - News"] floating enable
+      for_window [class="^Steam$" title=".* - Chat"] floating enable
+      for_window [class="^Steam$" title="^Settings$"] floating enable
+      for_window [class="^Steam$" title=".* - event started"] floating enable
+      for_window [class="^Steam$" title=".* CD key"] floating enable
+      for_window [class="^Steam$" title="^Steam - Self Updater$"] floating enable
+      for_window [class="^Steam$" title="^Screenshot Uploader$"] floating enable
+      for_window [class="^Steam$" title="^Steam Guard - Computer Authorization Required$"] floating enable
+      for_window [title="^Steam Keyboard$"] floating enable
+
+      ################################################################################
       # Includes
       ################################################################################
 
-      include ${config.xdg.configHome}/i3/config.d/*.conf
+      include config.d/*.conf
+      include `hostname`.conf
     '';
 
   home.packages = with pkgs; [

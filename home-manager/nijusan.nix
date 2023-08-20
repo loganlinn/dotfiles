@@ -14,7 +14,7 @@ in
     ../nix/home/common.nix
     ../nix/home/awesomewm.nix
     ../nix/home/dev # TODO module
-    #../nix/home/dev/vala.nix
+    ../nix/home/davfs2.nix
     ../nix/home/dunst
     ../nix/home/emacs
     ../nix/home/eww
@@ -141,15 +141,16 @@ in
   manual.json.enable = true;
 
   home.packages = with pkgs; [
-    hexchat
-    self'.packages.graphite-cli
     (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
     btrfs-progs
+    conky
     dbeaver
-    google-cloud-sdk
-    plantuml
     etcd
+    google-cloud-sdk
+    hexchat
     lnav
+    plantuml
+    self'.packages.graphite-cli
   ];
 
   home.username = "logan";

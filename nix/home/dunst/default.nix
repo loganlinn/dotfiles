@@ -12,6 +12,9 @@ let
     or config.my.fonts.dunst
     or config.my.fonts.notifications
     or config.my.fonts.mono;
+
+  cfg = config.services.dunst;
+
 in
 {
   services.dunst = {
@@ -19,7 +22,8 @@ in
     settings = {
       global = {
         browser = "${pkgs.xdg-utils}/bin/xdg-open";
-        dmenu = "${config.programs.rofi.finalPackage}/bin/rofi -dmenu -p dunst:";
+        # browser = getExe config.programs.qutebrowser.package;
+        dmenu = mkIf config.programs.rofi.enable "${config.programs.rofi.finalPackage}/bin/rofi -dmenu -p dunst:";
         monitor = 0;
         follow = "none";
         font = "${if font.name != null then font.name else "monospace"}${optionalString (font.size != null) " ${toString font.size}"}";
@@ -35,12 +39,24 @@ in
         format = "<b>%s</b>\\n%b";
         icon_theme = "${config.gtk.iconTheme.name}, Adwaita";
         frame_width = 2;
-        gap_size = 4;
+        gap_size = 5;
         width = 480;
-        height = "(28, 320)"; # (min, max)
-        origin = "center-right";
-        offset = "100, 0";
-        # origin = "bottom-right";
+        height = 320;
+        # The origin of the notification window on the screen. It can then be moved with offset.
+        # Origin can be one of:
+        #         top-left
+        #         top-center
+        #         top-right
+        #         bottom-left
+        #         bottom-center
+        #         bottom-right
+        #         left-center
+        #         center
+        #         right-center
+        origin = "top-right";
+        offset = "24x48";
+        # origin = "top-center";
+        # offset = "0x40";
         corner_radius = 0;
         padding = 12;
         horizontal_padding = 16;
@@ -60,10 +76,11 @@ in
         transparency = 0;
         vertical_alignment = "center";
         show_age_threshold = 60;
+        idle_threshold = "1m"; # Don't timeout notifications if user is idle longer than this time.
         alignment = "left";
         ellipsize = "middle";
         ignore_newline = false;
-        line_height = 0;
+        line_height = 1; # The amount of extra spacing between text lines in pixels. Set to 0 to disable.
         word_wrap = true;
         sort = true;
         shrink = false;
@@ -83,9 +100,9 @@ in
         # | context       | Open context menu for the notification.
         # | context_all   | Open context menu for all notifications.
         #
-        mouse_left_click = "do_action, close_current";
+        mouse_left_click = "open_url, close_current";
         mouse_middle_click = "close_current";
-        mouse_right_click = "context";
+        mouse_right_click = "do_action, close_current";
 
         separator_color = "auto";
 
@@ -93,6 +110,10 @@ in
         foreground = "#${colors.base05}";
         highlight = "#${colors.base0B}"; # i.e. progress bar
         frame_color = "#${colors.base01}";
+
+        script = getExe (pkgs.writeShellScriptBin "dunst-global" ''
+          export > ''${XDG_RUNTIME_DIR-/tmp}/dunst-script.env
+        '');
       };
 
       urgency_low = {
@@ -129,4 +150,6 @@ in
     };
 
   };
+
+  systemd.user.services.dunst.Service.ExecStart = mkForce "${cfg.package}/bin/dunst -config ${cfg.configFile} -verbosity info --startup_notification";
 }

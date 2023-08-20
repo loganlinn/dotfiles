@@ -3,6 +3,11 @@
 with lib;
 
 let
+  aspell = pkgs.aspellWithDicts (ds: with ds; [ en en-computers en-science ]);
+
+  doomer = pkgs.writeShellScriptBin "doomer" ''
+    ${pkgs.coreutils}/bin/nohup doom run "$@" >/dev/null 2>&1&
+  '';
 
   cfg = config.my.emacs.doom;
 
@@ -35,22 +40,26 @@ in
   config = mkIf cfg.enable {
     programs.emacs.enable = true;
 
+    programs.git.enable = true;
+    programs.ripgrep.enable = true;
+    programs.pandoc.enable = true; # :lang (org +pandoc)
+
     home.packages = with pkgs; [
+      aspell
       binutils # for native-comp
-      gnutls # for TLS connectivity
-      git
-      ripgrep
-      fd # for faster projectile indexing
-      imagemagick # for image-dired
-      zstd # for undo-fu-session/undo-tree compression
-      emacs-all-the-icons-fonts
-      (aspellWithDicts (ds: with ds; [ en en-computers en-science ])) # :checkers spell
-      wordnet # English thesaurus backend (used by synosaurus.el)
+      doomer
       editorconfig-core-c # per-project style config
+      emacs-all-the-icons-fonts
+      fd # for faster projectile indexing
+      gnuplot # :lang (org +gnuplot)
+      gnutls # for TLS connectivity
+      hugo # :lang (org +hugo)
+      imagemagick # for image-dired
+      nodePackages.prettier # css, html, js, jsx
       sqlite # :tools lookup & :lang org +roam
       texlive.combined.scheme-medium # :lang latex & :lang org (latex previews)
-      (writeShellScriptBin "doomer" ''${pkgs.coreutils}/bin/nohup doom run "$@" >/dev/null 2>&1&'') # doom run detached
-      nodePackages.prettier # css, html, js, jsx
+      wordnet # English thesaurus backend (used by synosaurus.el)
+      zstd # for undo-fu-session/undo-tree compression
     ];
 
     home.sessionPath = [

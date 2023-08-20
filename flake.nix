@@ -13,8 +13,10 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:lnl7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    # hyprland.url = "github:vaxerski/Hyprland/v0.21.0beta";
-    # hyprland.inputs.nixpkgs.follows = "nixpkgs";
+    hyprland.url = "github:hyprwm/Hyprland";
+    hyprland.inputs.nixpkgs.follows = "nixpkgs";
+    hyprland-plugins.url = "github:hyprwm/hyprland-plugins";
+    hyprland-plugins.inputs.hyprland.follows = "hyprland";
     # nixos-shell.url = "github:Mic92/nixos-shell";
     # nixinate.url = "github:matthewcroughan/nixinate";
 

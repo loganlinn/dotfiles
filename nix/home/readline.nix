@@ -11,11 +11,12 @@
       "\\C-w" = "backward-kill-word";
     };
     variables = {
-      "completion-ignore-case" = "on";
-      "show-all-if-ambiguous" = "on";
+      "blink-matching-paren" = "on";
       "colored-stats" = "on";
       "completion-display-width" = 4;
+      "completion-ignore-case" = "on";
       "enable-bracketed-paste" = "on";
+      "show-all-if-ambiguous" = "on";
     };
   };
 }

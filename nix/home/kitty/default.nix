@@ -56,6 +56,8 @@ in
     "kitty_mod+y>w" = "kitten hints --type word --program @";
     "shift+super+w" = "close_os_window";
     "kitty_mod+/" = ''launch --type=overlay bash -i -c 'rg "^\s*(map|mouse_map)\s+.*" ~/.config/kitty/kitty.conf | fzf' '';
+    # git stash show
+    "kitty_mod+o>s" = ''kitten hints --type regex --regex '(?m)(stash@\{[^}]+\})' --program 'launch --type=overlay git stash show -p' '';
   };
   programs.kitty.settings = {
     # Appearance

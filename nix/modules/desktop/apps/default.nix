@@ -6,7 +6,7 @@
   ];
 
   home.packages = with pkgs; [
-    discord
+    # discord
     obsidian
     slack
     vlc
