@@ -60,13 +60,8 @@
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
       perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
-        packages = {
+        packages = (import ./nix/pkgs pkgs) // {
           jdk = lib.mkDefault pkgs.jdk; # needed?
-          kubefwd = pkgs.callPackage ./nix/pkgs/kubefwd.nix { };
-        }
-        // lib.optionalAttrs pkgs.stdenv.isLinux {
-          i3-auto-layout = pkgs.callPackage ./nix/pkgs/os-specific/linux/i3-auto-layout.nix { };
-          graphite-cli = pkgs.callPackage ./nix/pkgs/os-specific/linux/graphite-cli.nix { };
         };
 
         overlayAttrs = {
