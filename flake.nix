@@ -69,6 +69,7 @@
           inherit (inputs'.home-manager.packages) home-manager;
           inherit (inputs'.devenv.packages) devenv;
           inherit (inputs'.emacs.packages) emacs-unstable;
+          inherit (inputs'.agenix.packages) agenix;
         };
 
         formatter = pkgs.nixpkgs-fmt;
@@ -146,6 +147,7 @@
             "logan@nijusan" = self.lib.dotfiles.mkHomeConfiguration ctx {
               imports = [
                 self.homeModules.common
+                self.homeModules.secrets
                 ./home-manager/nijusan.nix
               ];
             };

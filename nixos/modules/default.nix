@@ -1,5 +1,6 @@
 {
   bluetooth = ./bluetooth.nix;
+  davfs2 = ./davfs2.nix;
   docker = ./docker.nix;
   minecraft-server = ./minecraft-server.nix;
   networking = ./networking;
@@ -12,5 +13,6 @@
   tailscale = ./tailscale.nix;
   thunar = ./thunar.nix;
   thunderbolt = ./thunderbolt.nix;
-  wayland =  ./wayland.nix;
+  wayland = ./wayland.nix;
+  xserver = ./xserver.nix;
 }

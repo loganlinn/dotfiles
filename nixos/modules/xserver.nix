@@ -3,11 +3,12 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+
+{
   options = {};
 
-  config = {
-    services.xserver.enable = true;
+  config = lib.mkIf config.services.xserver.enable {
     services.xserver.autorun = true;
     services.xserver.layout = "us";
     services.xserver.xkbOptions = "ctrl:nocaps"; # Make Caps Lock a Control key
@@ -75,9 +76,5 @@
           Depth       24
       EndSubSection
     '';
-
-    xdg.portal.extraPortals = [
-      pkgs.xdg-desktop-portal-gtk
-    ];
   };
 }

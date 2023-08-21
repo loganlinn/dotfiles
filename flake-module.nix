@@ -78,6 +78,11 @@ in
             })
           ];
         };
+
+        secrets = {
+          imports = [ inputs.agenix.nixosModules.default ];
+        };
+
       } (import ./nixos/modules);
 
 
@@ -112,6 +117,12 @@ in
             ./nix/home/common.nix
             ./nix/home/dev
             ./nix/home/pretty.nix
+          ];
+        };
+
+        secrets = {
+          imports = [
+            inputs.agenix.homeManagerModules.default
           ];
         };
       };

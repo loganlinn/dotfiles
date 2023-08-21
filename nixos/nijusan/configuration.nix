@@ -1,41 +1,28 @@
-{ flake
-, config
-, pkgs
-, lib
-, ...
-}:
+{ flake, config, pkgs, lib, ... }:
 
 with lib;
 
-let
-  inherit (flake.inputs) nixos-hardware;
-  inherit (flake.self) nixosModules;
-in
-{
-
-  # Things to try
-  # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
-  # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
+let inherit (flake) self;
+in {
   imports = [
-    nixos-hardware.outputs.nixosModules.common-cpu-intel
-    nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
-    nixos-hardware.outputs.nixosModules.common-pc-ssd
-    nixosModules.common
-    nixosModules.bluetooth
-    nixosModules.docker
-    nixosModules.networking
-    nixosModules.nix-registry
-    nixosModules.nvidia
-    nixosModules.pipewire
-    nixosModules.printing
-    nixosModules.security
-    nixosModules.steam
-    nixosModules.tailscale
-    nixosModules.thunar
-    nixosModules.thunderbolt
+    self.nixosModules.secrets
+    self.nixosModules.common
+    self.nixosModules.bluetooth
+    self.nixosModules.davfs2
+    self.nixosModules.docker
+    self.nixosModules.networking
+    self.nixosModules.nix-registry
+    self.nixosModules.nvidia
+    self.nixosModules.pipewire
+    self.nixosModules.printing
+    self.nixosModules.security
+    self.nixosModules.steam
+    self.nixosModules.tailscale
+    self.nixosModules.thunar
+    self.nixosModules.thunderbolt
+    self.nixosModules.xserver
     ./hardware-configuration.nix
     ./kernel-configuration.nix
-    ./xserver.nix
   ];
 
   my.user.name = "logan";
@@ -49,30 +36,27 @@ in
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs._1password-gui.polkitPolicyOwners = [ "logan" ]; # for polkit agent process (required to use polkit)
+  programs._1password-gui.polkitPolicyOwners =
+    [ "logan" ]; # for polkit agent process (required to use polkit)
   programs.git.enable = true;
   programs.htop.enable = true;
   programs.dconf.enable = true;
   programs.zsh.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
+  programs.gnupg.agent.enable = true;
+  programs.gnupg.agent.enableSSHSupport = true;
   programs.mosh.enable = true;
-  programs.hyprland.enable = true;
-  programs.hyprland.enableNvidiaPatches = true;
+  # programs.hyprland.enable = true;
+  # programs.hyprland.enableNvidiaPatches = true;
 
   security.polkit.enable = true;
 
-
   services.tailscale.enable = true;
-
   services.davfs2.enable = true;
-  services.davfs2.davGroup = "davfs2";
-
   # services.tumbler.enable = mkDefault true; # thunar thumbnail support for images
-  services.gvfs.enable = lib.mkDefault true; # thunar mount, trash, and other functionalities
+  services.gvfs.enable =
+    lib.mkDefault true; # thunar mount, trash, and other functionalities
   # services.flatpak.enable = true;
+  services.xserver.enable = true;
 
   environment.homeBinInPath = true; # Add ~/bin to PATH
   environment.localBinInPath = true; # Add ~/.local/bin to PATH
@@ -130,7 +114,8 @@ in
     home = "/home/${config.my.user.name}";
     createHome = true;
     packages = with pkgs; [ kubefwd ];
-    extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" "davfs2" ];
+    extraGroups =
+      [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" "${config.services.davfs2.davGroup}"];
     openssh.authorizedKeys.keys = config.my.authorizedKeys;
   };
 
@@ -139,12 +124,15 @@ in
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+    ];
   };
 
   documentation.enable = true;
   documentation.dev.enable = true;
   # documentation.man-db.enable = true;
-  documentation.nixos.extraModules  = [
+  documentation.nixos.extraModules = [
 
   ];
 
@@ -168,9 +156,10 @@ in
       allowUnfree = true; # NVIDIA drivers, Brother, etc
       allowUnfreePredicate = pkg: true;
       packageOverrides = pkgs: {
-        nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
-          inherit pkgs;
-        };
+        nur = import (builtins.fetchTarball
+          "https://github.com/nix-community/NUR/archive/master.tar.gz") {
+            inherit pkgs;
+          };
       };
     };
 
