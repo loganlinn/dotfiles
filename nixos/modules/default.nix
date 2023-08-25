@@ -1,4 +1,5 @@
 {
+  _1password = ./1password.nix;
   bluetooth = ./bluetooth.nix;
   davfs2 = ./davfs2.nix;
   docker = ./docker.nix;

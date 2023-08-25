@@ -44,10 +44,13 @@ in {
               type = settingsType;
               default = { };
             };
-            mountPoint = mkOption { type = str; };
+            mountPoint = mkOption {
+              type = str;
+              default = "";
+            };
             mountOptions = mkOption {
               type = listOf str;
-              default = [ "noauto" ];
+              default = [ "_netdev" "noauto" ];
             };
           };
         });
@@ -57,7 +60,8 @@ in {
 
   config = lib.mkIf config.services.davfs2.enable {
     fileSystems = mapAttrs' (name: value: {
-      name = "/mnt/dav/${name}";
+      name =
+        if value.mountPoint != "" then value.mountPoint else "/mnt/dav/${name}";
       value = {
         fsType = "davfs";
         device = value.url;

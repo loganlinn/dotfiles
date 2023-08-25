@@ -5,7 +5,7 @@
     ../nix/home/emacs
     ../nix/home/git
     ../nix/home/pretty.nix
-    ../nix/home/sync.nix
+    ../nix/home/syncthing.nix
     ../nix/home/xdg.nix
   ];
 

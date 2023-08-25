@@ -23,7 +23,6 @@ in
     ../themes
     ./apps
     ./browsers
-    ./syncthing.nix
     ./tray.nix
   ];
 

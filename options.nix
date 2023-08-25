@@ -6,52 +6,29 @@ let
 
   cfg = config.my;
 
-in
-{
-  options.my = mkOption {
-    type = with types; submodule {
-      options = {
-        name = mkOption {
-          type = str;
-          default = "Logan";
-        };
-        user.name = mkOption {
-          type = str;
-          default = "logan";
-        };
-        shell = mkOption {
-          type = either str package;
-          default = pkgs.zsh;
-        };
-        email = mkOption {
-          type = nullOr str;
-          default = "logan@loganlinn.com";
-        };
-        github.user = mkOption {
-          type = str;
-          default = "loganlinn";
-        };
-        homepage = mkOption {
-          type = str;
-          default = "https://loganlinn.com";
-        };
+  mkOpt = type: default: mkOption { inherit type default; };
 
-        authorizedKeys = mkOption {
-          type = listOf str;
-          default = [
+  defaultFontSize = if pkgs.stdenv.isLinux then 10 else 12;
+in {
+  options.my = mkOption {
+    type = with types;
+      submodule {
+        options = {
+          name = mkOpt str "Logan";
+          user.name = mkOpt str "logan";
+          user.signingkey = mkOpt str
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
+          shell = mkOpt (either str package) pkgs.zsh;
+          email = mkOpt (nullOr str) "logan@loganlinn.com";
+          github.user = mkOpt str "loganlinn";
+          homepage = mkOpt str "https://loganlinn.com";
+          authorizedKeys = mkOpt (listOf str) [
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa nijusan@loganlinn.com"
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwurIVpZjNpRjFva/8loWMCZobZQ3FSATVLC8LX2TDB sumaho@loganlinn.com"
             "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/IGTiUT57yPpsCHcSo0FUUBY7uTZL87vdr7EqE+fS+6FQFZbhXuzy63Y13+ssN1Cbwy7hE3I4u0HgaXnhe8Ogr+buvBYqcSCajbN8j2vVVy/WUuGRPKyczk0bZpL1V7LUt98jBMnctirVeY0YoBgEk9POWHZ4NTTK0Bsr2WAwpWUkdYPcHpEIW+ABNX4YqxZdq7ETMy18ELfE/IJz04/+9rGHvpsDLL2SXDJCj+hxofW28SaqncOv/GvTN9gpkQGpUfHbxMyHz8Xj3faiguCN70dFEUb1FVL5ilxePSp/hOYx039idGT+K5oojutT6gH8p1K2uQ12rO+auvmKVSrh logan@loganlinn.com"
           ];
-        };
-        publicKeys = mkOption {
-          type = attrsOf str;
-          default = {};
-        };
-
-        fonts = mkOption {
-          type = attrsOf lib.hm.types.fontType;
-          default = let defaultFontSize = if pkgs.stdenv.isLinux then 10 else 12; in {
+          publicKeys = mkOpt (attrsOf str) { };
+          fonts = mkOpt (attrsOf lib.hm.types.fontType) {
             serif = {
               package = pkgs.dejavu_fonts;
               name = "DejaVu Serif";
@@ -73,11 +50,8 @@ in
               size = 11;
             };
           };
-        };
 
-        fontPackages = mkOption {
-          type = listOf package;
-          default = with pkgs; [
+          fontPackages = mkOpt (listOf package) (with pkgs; [
             # TODO Apple Fonts (SF Pro, SF Mono, SF Compact, SF Arabic, NY)
             dejavu_fonts
             fira # sans
@@ -92,13 +66,8 @@ in
             recursive
             ubuntu_font_family
             victor-mono
-
-          ];
-        };
-
-        nerdfonts.fonts = mkOption {
-          type = listOf str;
-          default = [
+          ]);
+          nerdfonts.fonts = mkOpt (listOf str) [
             "AnonymousPro"
             "DejaVuSansMono"
             "FiraCode"
@@ -126,20 +95,14 @@ in
             "UbuntuMono"
             "VictorMono"
           ];
+          nerdfonts.package = mkOption {
+            type = package;
+            readOnly = true;
+            default =
+              pkgs.nerdfonts.override { inherit (cfg.nerdfonts) fonts; };
+          };
         };
-        nerdfonts.package = mkOption {
-          type = package;
-          readOnly = true;
-          default = pkgs.nerdfonts.override { inherit (cfg.nerdfonts) fonts; };
-
-        };
+        config = { fontPackages = [ cfg.nerdfonts.package ]; };
       };
-
-      config = {
-        fontPackages = [
-          cfg.nerdfonts.package
-        ];
-      };
-    };
   };
 }

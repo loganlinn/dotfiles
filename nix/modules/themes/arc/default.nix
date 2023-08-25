@@ -4,9 +4,7 @@ let
 
   cfg = config.modules.theme;
 
-in
-{
-
+in {
   config = lib.mkIf (cfg.active == "arc") {
 
     gtk = {
@@ -28,6 +26,5 @@ in
       x11.enable = true;
       gtk.enable = true;
     };
-
   };
 }

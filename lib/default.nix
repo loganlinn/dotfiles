@@ -92,7 +92,6 @@ with lib;
       else "${content}${suffix}";
   };
 
-
   nerdfonts = import ./nerdfonts;
 
   font-awesome = import ./font-awesome.nix;

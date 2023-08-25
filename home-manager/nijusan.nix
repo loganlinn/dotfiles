@@ -1,20 +1,14 @@
-{ self'
-, config
-, pkgs
-, lib
-, nix-colors
-, ...
-}:
-let
-  inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
-in
-{
+{ self', config, pkgs, lib, nix-colors, ... }:
+
+let inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
+
+in {
   imports = [
     nix-colors.homeManagerModule
-    ../nix/home/common.nix
     ../nix/home/awesomewm.nix
-    ../nix/home/dev # TODO module
+    ../nix/home/common.nix
     ../nix/home/davfs2.nix
+    ../nix/home/dev # TODO module
     ../nix/home/dunst
     ../nix/home/emacs
     ../nix/home/eww
@@ -28,7 +22,8 @@ in
     ../nix/home/polkit.nix
     ../nix/home/pretty.nix
     ../nix/home/qalculate
-    ../nix/home/sync.nix
+    ../nix/home/ssh.nix
+    ../nix/home/syncthing.nix
     ../nix/home/urxvt.nix
     ../nix/home/vpn.nix
     ../nix/home/vscode.nix
@@ -47,10 +42,16 @@ in
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 
   my.awesomewm.enable = true;
-
+  my.programs.eww.enable = true;
   modules.polybar.networks = [
-    { interface = "eno3"; interface-type = "wired"; }
-    { interface = "wlo1"; interface-type = "wireless"; }
+    {
+      interface = "eno3";
+      interface-type = "wired";
+    }
+    {
+      interface = "wlo1";
+      interface-type = "wireless";
+    }
   ];
   modules.spellcheck.enable = true;
   modules.theme.active = "arc";
@@ -61,16 +62,14 @@ in
     logoScale = 4.0;
   };
   modules.desktop.browsers = {
-    default = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Profile 1'"; # work
-    alternate = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Default'"; # personal
+    default = "${
+        lib.getExe config.programs.google-chrome.package
+      } '--profile-directory=Profile 1'"; # work
+    alternate = "${
+        lib.getExe config.programs.google-chrome.package
+      } '--profile-directory=Default'"; # personal
   };
 
-  xsession.windowManager.i3.enable = true;
-  xsession.windowManager.i3.config.terminal = "kitty";
-
-  gtk.enable = true;
-
-  my.programs.eww.enable = true;
   programs.kitty.enable = true;
   programs.wezterm.enable = false;
   programs.emacs.enable = true;
@@ -79,52 +78,37 @@ in
   programs.firefox.enable = true;
   programs.librewolf.enable = true;
   programs.qutebrowser.enable = true;
-  programs.ssh = {
-    enable = true;
-    hashKnownHosts = true;
-    forwardAgent = true;
-    controlMaster = "auto";
-    controlPath = "~/.ssh/%C";
-    controlPersist = "60m";
-    serverAliveInterval = 120;
-    includes = [ "${config.home.homeDirectory}/.ssh/config.local" ];
-    matchBlocks = {
-      "fire.walla" = {
-        user = "pi";
-      };
-    };
-    extraConfig = ''
-      TCPKeepAlive yes
-
-      Host *
-        IdentityAgent ~/.1password/agent.sock
-    '';
-  };
+  programs.ssh.enable = true;
   programs.nix-index.enable = false;
   programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
 
-  services.picom.enable = true;
+  services.flameshot.enable = true;
   services.dunst.enable = true;
-  services.polybar = {
-    enable = true;
-    settings = {
-      "module/temperature" = {
-        # $ for i in /sys/class/thermal/thermal_zone*; do echo "$i: $(<$i/type)"; done
-        thermal-zone = 1; # x86_pkg_temp
-        # $ for i in /sys/class/hwmon/hwmon*/temp*_input; do echo "$(<$(dirname $i)/name): $(cat ${i%_*}_label 2>/dev/null || echo $(basename ${i%_*})) $(readlink -f $i)"; done
-        hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon2/temp1_input"; # Package id 0
-        base.temperature = 50;
-        warn.temperature = 75;
-      };
-      "module/gpu" = {
-        exec = pkgs.writeShellScript "polybar-nvidia-gpu-util" ''
-          printf '%s%%' "$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits)"
-        '';
-      };
+  services.picom.enable = true;
+  services.polybar.enable = true;
+  services.polybar.settings = {
+    "module/temperature" = {
+      # $ for i in /sys/class/thermal/thermal_zone*; do echo "$i: $(<$i/type)"; done
+      thermal-zone = 1; # x86_pkg_temp
+      # $ for i in /sys/class/hwmon/hwmon*/temp*_input; do echo "$(<$(dirname $i)/name): $(cat ${i%_*}_label 2>/dev/null || echo $(basename ${i%_*})) $(readlink -f $i)"; done
+      hwmon-path =
+        "/sys/devices/platform/coretemp.0/hwmon/hwmon2/temp1_input"; # Package id 0
+      base.temperature = 50;
+      warn.temperature = 75;
+    };
+    "module/gpu" = {
+      exec = pkgs.writeShellScript "polybar-nvidia-gpu-util" ''
+        printf '%s%%' "$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits)"
+      '';
     };
   };
-  services.flameshot.enable = true;
+  services.syncthing.enable = true;
+  services.syncthing.tray.enable = true;
 
+  gtk.enable = true;
+
+  xsession.windowManager.i3.enable = true;
+  xsession.windowManager.i3.config.terminal = "kitty";
   #    $ xrandr --query | grep " connected"
   #    DP-0 connected primary 3840x1600+2560+985 (normal left inverted right x axis y axis) 880mm x 367mm
   #
@@ -141,7 +125,8 @@ in
   manual.json.enable = true;
 
   home.packages = with pkgs; [
-    (rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override { }))
+    (rust-bin.selectLatestNightlyWith
+      (toolchain: toolchain.default.override { }))
     btrfs-progs
     conky
     dbeaver
@@ -152,11 +137,8 @@ in
     plantuml
     self'.packages.graphite-cli
   ];
-
   home.username = "logan";
-
   home.homeDirectory = "/home/logan";
-
   home.stateVersion = "22.11";
 
   nix.enable = true;
@@ -173,8 +155,6 @@ in
     allowUnfree = true;
     # https://github.com/nix-community/home-manager/issues/2942
     allowUnfreePredicate = _pkg: true;
-    permittedInsecurePackages = [
-      "openssl-1.1.1u"
-    ];
+    permittedInsecurePackages = [ "openssl-1.1.1u" ];
   };
 }

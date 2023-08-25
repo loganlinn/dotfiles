@@ -13,7 +13,6 @@
   ../../nix/home/polkit.nix
   ../../nix/home/pretty.nix
   ../../nix/home/qalculate
-  ../../nix/home/sync.nix
   ../../nix/home/urxvt.nix
   ../../nix/home/vpn.nix
   ../../nix/home/vscode.nix

@@ -62,6 +62,9 @@ in
     # cue
     # cuelsp
 
+    # builld
+    bazelisk
+
     # version control
     pre-commit
     delta
@@ -114,13 +117,6 @@ in
     # golang
     gopls
 
-    # lua
-    # luarocks-nix
-    # luaformatter
-    # lua-language-server
-    # fennel
-    # fnlfmt
-
     # ruby
     ruby
 
@@ -148,8 +144,7 @@ in
 
     # vim
     nodePackages.vim-language-server
-  ] ++ lib.optional config.programs.vscode.enable
-    nodePackages.vscode-langservers-extracted;
+  ];
 
   programs.go.enable = true;
 
