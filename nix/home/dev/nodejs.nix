@@ -3,20 +3,6 @@
 with lib;
 with lib.my;
 
-let
-
-  shellInit = ''
-    if [ -z "$NPM_CONFIG_TMP" ] || ! [ -d "$NPM_CONFIG_TMP" ]; then
-      if [ -n "$XDG_RUNTIME_DIR" ]; then
-        export NPM_CONFIG_TMP="$XDG_RUNTIME_DIR"
-      elif [ -d "/run/user/$UID" ]; then
-        export NPM_CONFIG_TMP="/run/user/$UID"
-      fi
-    fi
-  '';
-
-in
-
 {
   options = {
     my.npm = {
@@ -50,8 +36,6 @@ in
     };
 
     home.sessionPath = [ "${config.home.sessionVariables.NPM_CONFIG_PREFIX}/bin" ];
-
-    my.shellInitExtra = shellInit;
 
     # https://docs.npmjs.com/cli/v8/using-npm/config
     # $ npm config ls -l
