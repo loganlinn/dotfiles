@@ -6,7 +6,7 @@ with lib.my;
 {
   programs.gh = {
     enable = true;
-    enableGitCredentialHelper = true;
+    gitCredentialHelper.enable = true;
     settings = {
       aliases = {
         o = "browse";

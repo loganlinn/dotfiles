@@ -16,22 +16,22 @@ in
     "$mod+Shift+q" = "kill";
     # "$mod+Ctrl+Shift+q" = ''mode "$mode_kill"'';
     "$mod+Ctrl+q" = "exec --no-startup-id xkill";
-    "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${getExe pkgs.xdotool} getwindowfocus getwindowpid)";
+    "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
     "$mod+w" = "exec --no-startup-id ${getExe (pkgs.callPackage ../../../pkgs/x-window-focus-close.nix {})}";
     "$mod+Ctrl+c" = "restart";
     "$mod+Shift+c" = "reload";
     "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-    "Ctrl+$alt+Delete" = ''exec --no-startup-id ${toExe config.programs.urxvt} -e ${toExe config.programs.btop}'';
+    "Ctrl+$alt+Delete" = ''exec --no-startup-id ${config.programs.urxvt.package}/bin/urxvt -e ${config.programs.btop.package}/bin/btop'';
     # inspect current window properties
     "--release $mod+i" = "exec ${
       pkgs.writeShellScript "xprop-hud" ''
           # toggling behavior
           pkill --full "$0" && exit 0
 
-          eval "$(${getExe pkgs.xdotool} getwindowfocus getwindowgeometry --shell)" || exit $?
+          eval "$(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowgeometry --shell)" || exit $?
 
-          ${getExe pkgs.xst} -a -w "$WINDOW" -e sh -c "
-              ${getExe pkgs.xorg.xprop} -id '$WINDOW' -spy;
+          ${pkgs.xst}/bin/xst -a -w "$WINDOW" -e sh -c "
+              ${pkgs.xorg.xprop}/bin/xprop -id '$WINDOW' -spy;
               "
         ''
     }";
@@ -66,7 +66,7 @@ in
     "$mod+Shift+Return" = "exec ${config.modules.desktop.browsers.default}";
     "$mod+$alt+Return" = "exec ${config.modules.desktop.browsers.alternate}";
   } // optionalAttrs config.programs.qutebrowser.enable {
-    "$mod+Ctrl+Return" = "exec RESOURCE_NAME=scratchpad ${toExe config.programs.qutebrowser}";
+    "$mod+Ctrl+Return" = "exec RESOURCE_NAME=scratchpad ${config.programs.qutebrowser.package}/bin/qutebrowser";
   };
 
   editor = {
@@ -96,9 +96,9 @@ in
         "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
         "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
         "$mod+Escape" = "rofi-power";
-        "$mod+s" = getExe pkgs.rofi-systemd;
-        "$mod+a" = "${getExe pkgs.rofi-pulse-select} sink";
-        "$mod+Shift+a" = "${getExe pkgs.rofi-pulse-select} source";
+        "$mod+s" = "${pkgs.rofi-systemd}/bin/rofi-systemd";
+        "$mod+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select sink";
+        "$mod+Shift+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select source";
         "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
       };
 

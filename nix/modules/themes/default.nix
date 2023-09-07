@@ -30,7 +30,7 @@ in
     };
 
     wallpaper = mkOption {
-      type = with types; nullOr (either string path);
+      type = with types; nullOr (either str path);
       default = null;
       apply = v:
         let

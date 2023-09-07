@@ -21,7 +21,7 @@ let
     " --search ${getLuaPath path "share"}"
     + " --search ${getLuaPath path "lib"}");
 
-  awesome-init = ''${getExe awesome} ${makeSearchPath cfg.luaModules}'';
+  awesome-init = ''${awesome}/bin/awesome ${makeSearchPath cfg.luaModules}'';
 in
 {
   options.my.awesomewm = {

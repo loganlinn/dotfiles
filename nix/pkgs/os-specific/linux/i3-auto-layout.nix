@@ -22,5 +22,6 @@ rustPlatform.buildRustPackage {
     license = licenses.mit;
     maintainers = with maintainers; [ mephistophiles ];
     platforms = platforms.linux;
+    mainProgram = "i3-auto-layout";
   };
 }
