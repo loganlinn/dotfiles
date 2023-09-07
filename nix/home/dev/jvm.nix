@@ -31,7 +31,6 @@ in
     (clojure.override { inherit jdk; })
     (maven.override { inherit jdk; })
     (leiningen.override { inherit jdk; })
-    (polylith.override { inherit jdk; })
     babashka
     bbin
     clj-kondo
