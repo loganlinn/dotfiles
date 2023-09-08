@@ -22,8 +22,8 @@ lib.mkIf pkgs.stdenv.isLinux {
     (writeShellScriptBin ''CAPSLOCK'' ''${xdotool}/bin/xdotool key Caps_Lock'') # just in case ;)
   ];
 
-  xdg.configFile."handlr/handlr.toml".text = ''
-    enable_selector = true
-    selector = "${config.programs.rofi.finalPackage} -dmenu -i -p 'Open With: '"
-  '';
+  # xdg.configFile."handlr/handlr.toml".text = ''
+  #   enable_selector = true
+  #   selector = "${config.programs.rofi.finalPackage} -dmenu -i -p 'Open With: '"
+  # '';
 }

@@ -59,7 +59,7 @@ in
 
     flake = {
       # NixOS home-manager module
-      nixosModules = {
+      nixosModules = recursiveUpdate {
         common = {
           imports = [ mkCommonModule ];
         };
@@ -67,16 +67,18 @@ in
         home-manager = {
           imports = [
             inputs.home-manager.nixosModules.home-manager
-            ({
+            (args: {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = mkSpecialArgs {
-                # rosettaPkgs = import inputs.nixpkgs {system = "x86_64-darwin";};
+                lib = mkHmLib args.lib;
+                # inputs' = inputs';
+                # self' = self';
               };
             })
           ];
         };
-      } // (import ./nixos/modules);
+      } (import ./nixos/modules);
 
 
       darwinModules = {

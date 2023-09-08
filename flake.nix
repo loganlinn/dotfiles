@@ -163,6 +163,13 @@
               ./nixos/nijusan/configuration.nix
             ];
           };
+          framework= self.lib.dotfiles.mkNixosSystem "x86_64-linux" {
+            imports = [
+              self.nixosModules.common
+              self.nixosModules.home-manager
+              ./nixos/framework/configuration.nix
+            ];
+          };
         };
 
         darwinConfigurations.patchbook = self.lib.dotfiles.lib.mkMacosSystem "aarch64-darwin" {

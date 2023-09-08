@@ -22,7 +22,7 @@ in
           };
         };
       }));
-      default = { };
+      default = [];
     };
   };
   config = {
