@@ -31,6 +31,8 @@ in
     my.shellInitExtra = ''
       ${readFile ./which.sh}
 
+      ${readFile ./kubernetes.sh}
+
       ${readFile ./op.sh}
 
       source ${./../../../bin/src-get}

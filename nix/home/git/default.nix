@@ -18,6 +18,18 @@ in
   programs.git = {
     enable = true;
     aliases = {
+      wt = "worktree";
+      wtm = "worktree-main";
+      wtl = "worktree-linked";
+      wtr = ''!f() {
+        for p in $(git worktree list --porcelain | ${pkgs.gawk}/bin/awk '(NR>1) && /^worktree / { print $2 }' | ${pkgs.fzf}/bin/fzf -0 -m); do
+          ${pkgs.gum}/bin/gum confirm "git worktree remove $p" &&
+          git worktree remove --force "$p"
+        done
+      }; f'';
+      wtx = "!${./worktree-run.sh}";
+      worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
+      worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
       amend = "commit --amend --reuse-message HEAD";
       touch = ''!${git} commit --amend --date="$(date -r)"'';
       undo = "reset --soft HEAD~1";
