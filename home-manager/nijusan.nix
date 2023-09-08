@@ -81,6 +81,20 @@ in {
   programs.ssh.enable = true;
   programs.nix-index.enable = false;
   programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
+  # trial
+  programs.yazi.enable = true;
+
+  my.shellInitExtra = ''
+    function ya() {
+      # change the current working directory when yazi exiting
+      tmp="$(mktemp -t "yazi-cwd.XXXXX")"
+      yazi --cwd-file="$tmp"
+      if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        cd -- "$cwd"
+      fi
+      rm -f -- "$tmp"
+    }
+  '';
 
   services.flameshot.enable = true;
   services.dunst.enable = true;

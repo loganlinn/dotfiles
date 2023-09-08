@@ -72,8 +72,6 @@ in
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = mkSpecialArgs {
                 lib = mkHmLib args.lib;
-                # inputs' = inputs';
-                # self' = self';
               };
             })
           ];

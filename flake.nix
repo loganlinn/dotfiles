@@ -49,6 +49,7 @@
         inputs.flake-parts.flakeModules.easyOverlay
         inputs.flake-root.flakeModule
         inputs.mission-control.flakeModule
+        ./mission-control.nix
         ./flake-module.nix
       ];
 
@@ -84,61 +85,6 @@
             inputs'.agenix.packages.agenix
           ];
           env.NIX_USER_CONF_FILES = toString ./nix.conf;
-        };
-
-        mission-control = {
-          wrapperName = ",,"; # play nice with nix-community/comma
-          scripts =
-            let
-              inherit (lib) getExe;
-              withPrintNixEnv = cmd: ''printenv | grep '^NIX'; ${cmd}'';
-              withCows = cmd: ''${pkgs.neo-cowsay}/bin/cowsay --random -- ${lib.escapeShellArg cmd}; ${cmd}'';
-              replExec = f: withPrintNixEnv (withCows ''
-                nix repl --verbose --trace-verbose --file "${f}" "$@"
-              '');
-            in
-            {
-              z = {
-                description = "Start flake REPL";
-                exec = replExec "repl.nix";
-              };
-              b = {
-                description = "Build configuration";
-                exec = ''home-manager build --flake "$@"'';
-              };
-              s = {
-                description = "Build + activate configuration";
-                exec = withCows "home-manager switch --flake ~/.";
-              };
-              f = {
-                description = "Run nix fmt";
-                exec = "nix fmt";
-              };
-              hm = {
-                description = "Run home-manager";
-                exec = getExe inputs'.home-manager.packages.home-manager;
-              };
-              zh = {
-                description = "Start home-manger REPL";
-                exec = replExec "home-manager/repl.nix";
-              };
-              zo = {
-                description = "Start nixos REPL";
-                exec = replExec "nixos/repl.nix";
-              };
-              up = {
-                description = "Update flake.lock";
-                exec = ''nix flake update --commit-lock-file "$@"'';
-              };
-              show = {
-                description = "Show flake outputs";
-                exec = ''nix flake show "$@"'';
-              };
-              meta = {
-                description = "Show flake";
-                exec = ''nix flake metadata "$@"'';
-              };
-            };
         };
 
         # FIXME: there's probably a flake.parts facility for this

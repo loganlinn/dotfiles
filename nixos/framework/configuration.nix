@@ -107,6 +107,7 @@ in
   environment.homeBinInPath = true; # Add ~/bin to PATH
   environment.localBinInPath = true; # Add ~/.local/bin to PATH
   environment.systemPackages = with pkgs; [
+    appimage-run
     cachix
     curl
     fd
