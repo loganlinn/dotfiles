@@ -29,8 +29,6 @@ in
       nix-colors.homeManagerModule
     # ../../nix/home/awesomewm.nix
     ../../nix/home/dev # TODO module
-    # ../../nix/home/dev/vala.nix
-    # ../../nix/home/dunst
     ../../nix/home/emacs
     # ../../nix/home/eww
     ../../nix/home/home-manager.nix
@@ -41,7 +39,7 @@ in
     # ../../nix/home/mpv.nix
     # ../../nix/home/nnn.nix
     # ../../nix/home/polkit.nix
-    # ../../nix/home/pretty.nix
+    ../../nix/home/pretty.nix
     # ../../nix/home/qalculate
     # ../../nix/home/sync.nix
     # ../../nix/home/urxvt.nix
@@ -61,7 +59,6 @@ in
     colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
     home.stateVersion = "22.11";
   };
-
 
   my.user.name = "logan";
 
