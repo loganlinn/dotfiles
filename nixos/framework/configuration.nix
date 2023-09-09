@@ -8,6 +8,7 @@ let
 in
 {
   imports = [
+    ./hardware-configuration.nix
     nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
     # nixosModules.bluetooth
     # nixosModules.docker
@@ -20,11 +21,47 @@ in
     # nixosModules.tailscale
     # nixosModules.thunar
     # nixosModules.thunderbolt
-    ./hardware-configuration.nix
-    ./home.nix
+    nixosModules.xserver
   ];
 
-  home-manager.users.${config.my.user.name} = { imports = [./home.nix]; };
+  home-manager.users.${config.my.user.name} = {
+    imports = [
+      homeModules.common
+      nix-colors.homeManagerModule
+      # ../../nix/home/awesomewm.nix
+      ../../nix/home/dev # TODO module
+      ../../nix/home/emacs
+      # ../../nix/home/eww
+      ../../nix/home/home-manager.nix
+      # ../../nix/home/intellij.nix
+      # ../../nix/home/kakoune.nix
+      ../../nix/home/kitty
+      # ../../nix/home/mpd.nix
+      # ../../nix/home/mpv.nix
+      # ../../nix/home/nnn.nix
+      # ../../nix/home/polkit.nix
+      ../../nix/home/pretty.nix
+      # ../../nix/home/qalculate
+      ../../nix/home/ssh.nix
+      # ../../nix/home/sync.nix
+      # ../../nix/home/urxvt.nix
+      # ../../nix/home/vpn.nix
+      # ../../nix/home/vscode.nix
+      # ../../nix/home/x11.nix
+      # ../../nix/home/yt-dlp.nix
+      # ../../nix/home/yubikey.nix
+      # ../../nix/modules/programs/the-way
+      # ../../nix/modules/services
+      # ../../nix/modules/spellcheck.nix
+      # ../../nix/modules/desktop
+      # ../../nix/modules/desktop/browsers
+      # ../../nix/modules/desktop/i3
+    ];
+
+    colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
+
+    home.stateVersion = "22.11";
+  };
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
