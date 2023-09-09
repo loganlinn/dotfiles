@@ -59,6 +59,18 @@ in
     ];
 
     colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
+    gtk.enable = true;
+
+    programs.kitty.enable = true;
+    programs.emacs.enable = true;
+    programs.rofi.enable = true;
+    programs.google-chrome.enable = true;
+    programs.firefox.enable = true;
+    programs.librewolf.enable = true;
+    programs.qutebrowser.enable = true;
+    programs.ssh.enable = true;
+    programs.nix-index.enable = false;
+    programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
 
     home.stateVersion = "22.11";
   };
