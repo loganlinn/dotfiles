@@ -1,13 +1,9 @@
 { lib, ... }:
 
-with builtins;
+with lib;
 
 # Adapted from https://github.com/bertof/nix-rice/blob/ac810023c1bb3d999ab4295ea4eb261412f4b7c0/color.nix
 let
-  inherit (lib.lists) all drop head last tail;
-  inherit (lib.strings) splitString concatMapStrings fixedWidthString match toLower;
-  inherit (lib.trivial) max min;
-
   hex = import ./hex.nix { inherit lib; };
 
   float = import ./float.nix { inherit lib; };
@@ -60,17 +56,18 @@ let
   # Parse input for hex triplet
   #
   # Es: _match3hex "#001122" => ["00" "11" "22"]
-  _match3hex = match "#([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})";
+  _match3hex = strings.match "#([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})";
+  # _match3hexShort = match "#([[:xdigit:]])([[:xdigit:]])([[:xdigit:]]})";
 
   # Parse input for hex quadruplet
   #
   # Es: _match3hex "#00112233" => ["00" "11" "22" "33"]
-  _match4hex = match "#([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})";
+  _match4hex = strings.match "#([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})";
 
   # Apply an operator using a possibly relative operand
   _relative_operator = operator: prev: value:
     let
-      percentMatches = match "[[:space:]]*(-?[[:digit:]]+\.?[[:digit:]]*)%[[:space:]]*" value;
+      percentMatches = strings.match "[[:space:]]*(-?[[:digit:]]+\.?[[:digit:]]*)%[[:space:]]*" value;
       percentValue = if percentMatches != null then fromJSON (head percentMatches) else null;
     in
     if isNumber value then operator prev value           # If the input is a number, apply it directly
@@ -110,7 +107,7 @@ rec {
       hasAttributes = all (k: hasAttr k c) [ "r" "g" "b" "a" ];
       validRanges = all (k: _is8Bit (getAttr k c)) [ "r" "g" "b" "a" ];
     in
-    hasAttributes && validRanges;
+    (isAttrs c) && hasAttributes && validRanges;
 
   # Check if input is a valid HSLA color
   isHsla = c:
@@ -246,6 +243,7 @@ rec {
   # Es: hexToRgba "#0000FF" => { a = 255; b = 255; g = 0; r = 0; }
   # Es: hexToRgba "#00FF0055" => { a = 85; b = 0; g = 255; r = 0; }
   hexToRgba = s:
+    assert (isHex s);
     let
       rgbaVal = _match4hex s;
       rgbVal = _match3hex s;
@@ -259,6 +257,7 @@ rec {
       a = last values;
     };
 
+  isHex = x: (isString x) && (hasPrefix "#" x);
 
   ## SERIALIZATION
   # Print RGB color as uppercase hex string
@@ -309,6 +308,10 @@ rec {
   # Print RGBA color as lowercase short hex string in the form argb (Polybar uses this format)
   toArgbShortHex = color: toLower (toArgbShortHex color);
 
+  withAlpha = alpha: color:
+    assert (isRgba color);
+    color // { a = alpha; };
+
   ## CONSTANTS
   black = hexToRgba "#000000"; #         RGB (0,0,0)       HSL (0°,0%,0%)
   white = hexToRgba "#FFFFFF"; #         RGB (255,255,255) HSL (0°,0%,100%)
@@ -319,4 +322,9 @@ rec {
   cyan = hexToRgba "#00FFFF"; #          RGB (0,255,255)   HSL (180°,100%,50%)
   magenta = hexToRgba "#FF00FF"; #       RGB (255,0,255)   HSL (300°,100%,50%)
   transparent = hexToRgba "#00000000"; # RGBA (0,0,0,0)    HSLA (0°,0%,0%,0%)
+
+  rgbaToCSS = color:
+    assert (isRgba color);
+    "rgba(${toString color.r}, ${toString color.g}, ${toString color.b}, ${toString color.a})";
+
 }

@@ -93,6 +93,7 @@
             "logan@nijusan" = self.lib.dotfiles.mkHomeConfiguration ctx {
               imports = [
                 self.homeModules.common
+                self.homeModules.nix-colors
                 self.homeModules.secrets
                 ./home-manager/nijusan.nix
               ];
@@ -105,6 +106,7 @@
         nixosConfigurations = {
           nijusan = self.lib.dotfiles.mkNixosSystem "x86_64-linux" {
             imports = [
+              # self.nixosModules.home-manager
               ./nixos/nijusan/configuration.nix
             ];
           };

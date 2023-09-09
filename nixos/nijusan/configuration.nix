@@ -25,7 +25,6 @@ in {
     ./kernel-configuration.nix
   ];
 
-  my.user.name = "logan";
   my.tailscale.ssh.enable = true;
   my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
 

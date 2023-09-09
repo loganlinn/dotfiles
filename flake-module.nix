@@ -15,17 +15,10 @@ let
 
   mkHmLib = stdlib: import "${inputs.home-manager}/modules/lib/stdlib-extended.nix" (mkLib stdlib);
 
-  mkSpecialArgs =
-    # mapAttrs
-    #   (name: value:
-    #     if (hasPrefix "self" name) || (hasPrefix "name" "inputs")
-    #     then (warn "Inconsistent reference to flake attribute: ${name}" value)
-    #     else value)
-      (mergeAttrs {
-        inherit inputs;
-        flake = { inherit self inputs config; };
-        nix-colors = import ./nix-colors/extended.nix inputs;
-      });
+  mkSpecialArgs = mergeAttrs {
+    inherit inputs nix-colors;
+    flake = { inherit self inputs config; };
+  };
 
   mkCommonOptions = import ./options.nix;
 
@@ -42,9 +35,10 @@ let
     ];
   };
 
+  nix-colors = import ./nix-colors/extended.nix inputs;
+
 in
 {
-  #
   options = {
     # REVIEW could moduleWithSystem be used instead?
     # https://flake.parts/module-arguments#modulewithsystem
@@ -108,6 +102,8 @@ in
             ./nix/home/common.nix
           ];
         };
+
+        nix-colors = nix-colors.homeManagerModule;
 
         basic = {
           imports = [

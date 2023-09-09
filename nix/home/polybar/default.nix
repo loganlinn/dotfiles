@@ -20,10 +20,8 @@ let
   ];
 
   ### colors
-  baseColors =
-    mapAttrs (k: v: "#${v}")
-      (filterAttrs (k: _: hasPrefix "base" k)
-        config.colorScheme.colors);
+  baseColors = mapAttrs (k: v: "#${v}")
+    (filterAttrs (k: _: hasPrefix "base" k) config.colorScheme.colors);
 
   colors = with config.colorScheme.colors;
     baseColors // {
@@ -55,29 +53,28 @@ let
     # 7: double middle click
     # 8: double right click
     assert isInt button;
-    ''%{A${toString button}:${escape [":"] command}:}${text}%{A}'';
+    "%{A${toString button}:${escape [ ":" ] command}:}${text}%{A}";
 
   tag = {
-    font = index: text: ''%{T${toString (index + 1)}}${text}%{T-}'';
-    fg = color: text: ''%{F${color}}${text}%{F-}''; # foreground
-    bg = color: text: ''%{B${color}}${text}%{B-}''; # background
-    underline = color: text: ''%{u${color}}${text}%{u-}''; # underline
-    overline = color: text: ''%{o${color}}${text}%{o-}''; # overline
-    offset = gap: text: ''%{O${toString gap}}${text}''; # offset
-    reverse = text: ''%{R}${text}'';
-    action = button: command: text: mkActionStr { inherit button command text; };
+    font = index: text: "%{T${toString (index + 1)}}${text}%{T-}";
+    fg = color: text: "%{F${color}}${text}%{F-}"; # foreground
+    bg = color: text: "%{B${color}}${text}%{B-}"; # background
+    underline = color: text: "%{u${color}}${text}%{u-}"; # underline
+    overline = color: text: "%{o${color}}${text}%{o-}"; # overline
+    offset = gap: text: "%{O${toString gap}}${text}"; # offset
+    reverse = text: "%{R}${text}";
+    action = button: command: text:
+      mkActionStr { inherit button command text; };
   };
 
   mkStyle = functions: text: pipe text functions;
 
-  iconStyle = mkStyle [
-    (tag.offset (-1))
-    (tag.font 2)
-    (tag.fg colors.foreground-dim)
-  ];
+  iconStyle =
+    mkStyle [ (tag.offset (-1)) (tag.font 2) (tag.fg colors.foreground-dim) ];
 
   ### deprecated ###
-  fontText = fontIndex: value: "%{T${toString (fontIndex + 1)}}${toString value}%{T-}";
+  fontText = fontIndex: value:
+    "%{T${toString (fontIndex + 1)}}${toString value}%{T-}";
   iconFont = 2; # see settings."bar/base".font
   iconText = fontText iconFont;
   iconLargeText = fontText 3; # see settings."bar/base".font
@@ -91,31 +88,35 @@ let
     ];
 
   ### options
-  modulesType = with lib.types; submodule {
-    options = {
-      left = mkOption {
-        type = listOf str;
-        default = [ ];
-      };
-      center = mkOption {
-        type = listOf str;
-        default = [ ];
-      };
-      right = mkOption {
-        type = listOf str;
-        default = [ ];
+  modulesType = with lib.types;
+    submodule {
+      options = {
+        left = mkOption {
+          type = listOf str;
+          default = [ ];
+        };
+        center = mkOption {
+          type = listOf str;
+          default = [ ];
+        };
+        right = mkOption {
+          type = listOf str;
+          default = [ ];
+        };
       };
     };
-  };
-  barType = with lib.types; submodule {
-    options = {
-      height = mkOption { type = int; };
-      modules = mkOption { type = modulesType; };
-      settings = mkOption { type = attrs; default = { }; };
+  barType = with lib.types;
+    submodule {
+      options = {
+        height = mkOption { type = int; };
+        modules = mkOption { type = modulesType; };
+        settings = mkOption {
+          type = attrs;
+          default = { };
+        };
+      };
     };
-  };
-in
-{
+in {
   options.modules.polybar = {
     package = mkOption {
       type = types.package;
@@ -131,20 +132,19 @@ in
               (optionalString config.xsession.windowManager.i3.enable "i3")
               "xwindow"
             ];
-            center = [
-              "time"
-              "date"
-            ];
+            center = [ "time" "date" ];
             right = withSeparator "nerdfonts_ple_backslash_separator" [
               "gh"
               # "kubernetes"
               (optionalString config.services.dunst.enable "dunst")
+              (optionalString config.my.deadd.enable "deadd")
               "pulseaudio"
               "memory"
               "gpu"
               "cpu"
               "temperature"
-              (forEach cfg.networks ({ interface, ... }: "network-${interface}"))
+              (forEach cfg.networks
+                ({ interface, ... }: "network-${interface}"))
               "powermenu"
             ];
           };
@@ -163,14 +163,18 @@ in
       type = types.attrs;
       default = { };
     };
-    settings = mkOption { type = types.attrs; default = { }; };
+    settings = mkOption {
+      type = types.attrs;
+      default = { };
+    };
   };
 
   config = {
 
-    xdg.configFile."polybar/config.ini".onChange = mkIf config.services.polybar.enable ''
-      ${pkgs.procps}/bin/pkill -u "$USER" ''${VERBOSE+-e} polybar || true
-    '';
+    xdg.configFile."polybar/config.ini".onChange =
+      mkIf config.services.polybar.enable ''
+        ${pkgs.procps}/bin/pkill -u "$USER" ''${VERBOSE+-e} polybar || true
+      '';
 
     services.polybar = {
       package = cfg.package;
@@ -329,7 +333,8 @@ in
               foreground = "\${colors.foreground-dim}";
             };
           };
-          click.left = "${config.programs.rofi.finalPackage}/bin/rofi -show window -monitor -3"; # -3 means launch at position of mouse
+          click.left =
+            "${config.programs.rofi.finalPackage}/bin/rofi -show window -monitor -3"; # -3 means launch at position of mouse
         })
         ####################################################
         (nvs "module/i3" {
@@ -379,9 +384,11 @@ in
           };
           index-sort = true; # Sort the workspaces by index instead by output
           pin-workspaces = false; # only show workspaces on the current monitor
-          show-urgent = true; # Show urgent workspaces regardless of whether the workspace is hidden by pin-workspaces.
+          show-urgent =
+            true; # Show urgent workspaces regardless of whether the workspace is hidden by pin-workspaces.
           strip-wsnumbers = true; # Split the workspace name on ':'
-          fuzzy-match = true; # Use fuzzy (partial) matching on labels when assigning icons to workspaces
+          fuzzy-match =
+            true; # Use fuzzy (partial) matching on labels when assigning icons to workspaces
         })
         ####################################################
         (nvs "module/gh" {
@@ -390,64 +397,67 @@ in
           interval = 60;
           # exec-if = "gh auth status";
           label.text = "%output%";
-          label-fail = "${iconText nerdfonts.seti.error} ${iconText nerdfonts.oct.mark_github} %output%";
+          label-fail = "${iconText nerdfonts.seti.error} ${
+              iconText nerdfonts.oct.mark_github
+            } %output%";
           format.text = "<label>";
-          exec =
-            let
-              alertStyle = mkStyle [
-                (tag.bg colors.base0E)
-                (tag.fg colors.base00)
-                (tag.font 2)
-              ];
-            in
-            pkgs.writeShellScript "github" ''
-              export PATH=${makeBinPath [
+          exec = let
+            alertStyle = mkStyle [
+              (tag.bg colors.base0E)
+              (tag.fg colors.base00)
+              (tag.font 2)
+            ];
+          in pkgs.writeShellScript "github" ''
+            export PATH=${
+              makeBinPath [
                 config.programs.gh.package
                 config.programs.jq.package
                 config.programs.rofi.finalPackage
                 pkgs.xdg-utils
                 pkgs.moreutils
-              ]}:$PATH
+              ]
+            }:$PATH
 
-              get_pr_awaiting_review() {
-                gh api \
-                  -X GET search/issues \
-                  -f q='type:pr state:open draft:false user-review-requested:@me -reviewed-by:@me -org:optimizely'
-              }
+            get_pr_awaiting_review() {
+              gh api \
+                -X GET search/issues \
+                -f q='type:pr state:open draft:false user-review-requested:@me -reviewed-by:@me -org:optimizely'
+            }
 
-              display_prs() {
-                local data=$(get_pr_awaiting_review)
-                local count=$(jq -r .total_count <<<"$data")
+            display_prs() {
+              local data=$(get_pr_awaiting_review)
+              local count=$(jq -r .total_count <<<"$data")
 
-                 case $count in
-                    0)
-                      echo -e "${
-                        tag.action 1
-                          "xdg-open https://github.com/pulls/review-requested"
-                          (iconStyle " ${nerdfonts.oct.git_pull_request} $count ")
-                      }"
-                        ;;
-                    *)
+               case $count in
+                  0)
                     echo -e "${
-                      tag.action 1 "xdg-open https://github.com/pulls/review-requested"
-                        (alertStyle " ${nerdfonts.oct.git_pull_request} $count ")
+                      tag.action 1
+                      "xdg-open https://github.com/pulls/review-requested"
+                      (iconStyle " ${nerdfonts.oct.git_pull_request} $count ")
                     }"
-                    ;;
-                 esac
+                      ;;
+                  *)
+                  echo -e "${
+                    tag.action 1
+                    "xdg-open https://github.com/pulls/review-requested"
+                    (alertStyle " ${nerdfonts.oct.git_pull_request} $count ")
+                  }"
+                  ;;
+               esac
 
-                # case $count in
-                   # 0) ;;
-                   # *) echo -en "%{A:xdg-open "$(jq -r '.items[0].html_url | @uri' <<<"$data")":} $(pr_icon) 1 %{A}" ;;
-                   # *) echo -en "%{A:jq -r '.items[].html_url | @uri' <<<"$data" | rofi -dmenu | ifne xargs xdg-open } $(pr_icon) $count %{A}" ;;
-                # esac
-              }
+              # case $count in
+                 # 0) ;;
+                 # *) echo -en "%{A:xdg-open "$(jq -r '.items[0].html_url | @uri' <<<"$data")":} $(pr_icon) 1 %{A}" ;;
+                 # *) echo -en "%{A:jq -r '.items[].html_url | @uri' <<<"$data" | rofi -dmenu | ifne xargs xdg-open } $(pr_icon) $count %{A}" ;;
+              # esac
+            }
 
-              display_full() {
-                display_prs
-              }
+            display_full() {
+              display_prs
+            }
 
-              display_full
-            '';
+            display_full
+          '';
         })
         ####################################################
         (nvs "module/memory" {
@@ -513,14 +523,46 @@ in
             empty.foreground = "\${colors.base04}";
           };
           ramp.coreload = [
-            { text = "▁"; foreground = "\${colors.ok}"; spacing = 0; }
-            { text = "▂"; foreground = "\${colors.ok}"; spacing = 0; }
-            { text = "▃"; foreground = "\${colors.ok}"; spacing = 0; }
-            { text = "▄"; foreground = "\${colors.warn}"; spacing = 0; }
-            { text = "▅"; foreground = "\${colors.warn}"; spacing = 0; }
-            { text = "▆"; foreground = "\${colors.warn}"; spacing = 0; }
-            { text = "▇"; foreground = "\${colors.warn}"; spacing = 0; }
-            { text = "█"; foreground = "\${colors.alert}"; spacing = 0; }
+            {
+              text = "▁";
+              foreground = "\${colors.ok}";
+              spacing = 0;
+            }
+            {
+              text = "▂";
+              foreground = "\${colors.ok}";
+              spacing = 0;
+            }
+            {
+              text = "▃";
+              foreground = "\${colors.ok}";
+              spacing = 0;
+            }
+            {
+              text = "▄";
+              foreground = "\${colors.warn}";
+              spacing = 0;
+            }
+            {
+              text = "▅";
+              foreground = "\${colors.warn}";
+              spacing = 0;
+            }
+            {
+              text = "▆";
+              foreground = "\${colors.warn}";
+              spacing = 0;
+            }
+            {
+              text = "▇";
+              foreground = "\${colors.warn}";
+              spacing = 0;
+            }
+            {
+              text = "█";
+              foreground = "\${colors.alert}";
+              spacing = 0;
+            }
           ];
         })
         ####################################################
@@ -543,14 +585,46 @@ in
           label.margin = 1;
           units = true;
           ramp = [
-            { margin = 1; text = iconText ""; foreground = "\${colors.ok}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.ok}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.ok}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-            { margin = 1; text = iconText ""; foreground = "\${colors.alert}"; }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.ok}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.ok}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.ok}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.warn}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.warn}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.warn}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.warn}";
+            }
+            {
+              margin = 1;
+              text = iconText "";
+              foreground = "\${colors.alert}";
+            }
           ];
         })
         ####################################################
@@ -569,42 +643,51 @@ in
           };
         })
         ####################################################
-        (
-          let
-            kubebar = pkgs.writeShellApplication
-              {
-                name = "kubebar";
-                runtimeInputs = with pkgs; [ kubectl entr jq envsubst ];
-                text = builtins.readFile ./kubebar.bash;
-              };
-          in
-          nvs "module/kubernetes" {
-            type = "custom/script";
-            exec-if = "kubectl version --client=true";
-            # tail = true;
-            # exec = "${kubebar}/bin/kubebar --watch";
-            exec = "${kubebar}/bin/kubebar --no-watch";
-            env = {
-              KUBEBAR_ESCAPE = "@";
-              KUBEBAR_FORMAT = concatStrings [
-                "%{A1:kitty-floating k9s &:}"
-                "%{F#${config.colorScheme.colors.base04}}${iconText nerdfonts.md.kubernetes}%{F-} "
-                "@{KUBE_CURRENT_CONTEXT}/@{KUBE_CURRENT_NAMESPACE}"
-                "%{A}"
-              ];
-            };
-            tail = false;
-            interval = 10;
-            background = "\${colors.background}";
-            foreground = "\${colors.foreground}";
-            format.background = "\${colors.background}";
-            format.foreground = "\${colors.foreground}";
-            format.prefix-foreground = "\${colors.foreground-dim}";
-            format.suffix-foreground = "\${colors.foreground-dim}";
-            format.prefix-padding = 1;
-            format.padding = 2;
-          }
-        )
+        (let
+          kubebar = pkgs.writeShellApplication {
+            name = "kubebar";
+            runtimeInputs = with pkgs; [ kubectl entr jq envsubst ];
+            text = builtins.readFile ./kubebar.bash;
+          };
+        in nvs "module/kubernetes" {
+          type = "custom/script";
+          exec-if = "kubectl version --client=true";
+          # tail = true;
+          # exec = "${kubebar}/bin/kubebar --watch";
+          exec = "${kubebar}/bin/kubebar --no-watch";
+          env = {
+            KUBEBAR_ESCAPE = "@";
+            KUBEBAR_FORMAT = concatStrings [
+              "%{A1:kitty-floating k9s &:}"
+              "%{F#${config.colorScheme.colors.base04}}${
+                iconText nerdfonts.md.kubernetes
+              }%{F-} "
+              "@{KUBE_CURRENT_CONTEXT}/@{KUBE_CURRENT_NAMESPACE}"
+              "%{A}"
+            ];
+          };
+          tail = false;
+          interval = 10;
+          background = "\${colors.background}";
+          foreground = "\${colors.foreground}";
+          format.background = "\${colors.background}";
+          format.foreground = "\${colors.foreground}";
+          format.prefix-foreground = "\${colors.foreground-dim}";
+          format.suffix-foreground = "\${colors.foreground-dim}";
+          format.prefix-padding = 1;
+          format.padding = 2;
+        })
+        ####################################################
+        (let
+          toggleScript = pkgs.writeShellScript "deadd-toggle" ''
+            kill -s USR1 $(pidof deadd-notification-center)
+          '';
+        in nvs "module/deadd" {
+          type = "custom/text";
+          content.text = tag.action 1 "${toggleScript}" (iconStyle " ${nerdfonts.oct.bell} ");
+          content.foreground = "\${colors.foreground}";
+          content.background = "\${colors.background}";
+        })
         ####################################################
         (nvs "module/powermenu" {
           type = "custom/menu";
@@ -639,63 +722,61 @@ in
           content.font = 5; # T5
           content.offset = (-5);
         })
-        (mapAttrs'
-          (name: text: (nameValuePair "module/nerdfonts_ple_${name}" {
+        (mapAttrs' (name: text:
+          (nameValuePair "module/nerdfonts_ple_${name}" {
             type = "custom/text";
             "inherit" = "module/nerdfonts_ple";
             content.text = text;
-          }))
-          nerdfonts.ple)
-        (mapAttrs'
-          (name: text: (nameValuePair "module/nerdfonts_ple_${name}-alt" {
+          })) nerdfonts.ple)
+        (mapAttrs' (name: text:
+          (nameValuePair "module/nerdfonts_ple_${name}-alt" {
             type = "custom/text";
             "inherit" = "module/nerdfonts_ple-alt";
             content.text = text;
-          }))
-          nerdfonts.ple)
+          })) nerdfonts.ple)
         cfg.settings
       ];
 
       #####################################################
       # TODO finish converting to services.polybar.settings
-      config =
-        let
-          mkModule = name: type: settings: {
-            "module/${name}" = {
-              inherit type;
-              background = "\${colors.background}";
-              foreground = "\${colors.foreground}";
-              format-background = "\${colors.background}";
-              format-foreground = "\${colors.foreground}";
-              format-prefix-foreground = "\${colors.foreground-dim}";
-              format-suffix-foreground = "\${colors.foreground-dim}";
-              format-prefix-padding = 1;
-              format-padding = 2;
-            } // settings;
-          };
-        in
-        fold recursiveUpdate { } (forEach cfg.networks ({ interface, interface-type, ... }@settings:
+      config = let
+        mkModule = name: type: settings: {
+          "module/${name}" = {
+            inherit type;
+            background = "\${colors.background}";
+            foreground = "\${colors.foreground}";
+            format-background = "\${colors.background}";
+            format-foreground = "\${colors.foreground}";
+            format-prefix-foreground = "\${colors.foreground-dim}";
+            format-suffix-foreground = "\${colors.foreground-dim}";
+            format-prefix-padding = 1;
+            format-padding = 2;
+          } // settings;
+        };
+      in fold recursiveUpdate { } (forEach cfg.networks
+        ({ interface, interface-type, ... }@settings:
           (mkModule "network-${interface}" "internal/network" ({
             inherit interface;
 
-            format-connected =
-              if interface-type == "wireless"
-              then "<ramp-signal>"
-              else "<label-connected>";
+            format-connected = if interface-type == "wireless" then
+              "<ramp-signal>"
+            else
+              "<label-connected>";
             format-connected-padding = 2;
             format-connected-background = "\${colors.background}";
             format-connected-foreground = "\${colors.foreground-dim}";
-            label-connected =
-              "%{A1:nm-connection-editor &:}${iconText nerdfonts.md.network_outline}%{A}";
+            label-connected = "%{A1:nm-connection-editor &:}${
+                iconText nerdfonts.md.network_outline
+              }%{A}";
 
             format-disconnected = "<label-disconnected>";
             format-disconnected-padding = 2;
             format-disconnected-background = "\${colors.background}";
             format-disconnected-foreground = "\${colors.foreground-dim}";
-            label-disconnected =
-              if interface-type == "wireless"
-              then (iconText nerdfonts.md.wifi_off)
-              else (iconText nerdfonts.md.network_off);
+            label-disconnected = if interface-type == "wireless" then
+              (iconText nerdfonts.md.wifi_off)
+            else
+              (iconText nerdfonts.md.network_off);
 
             format-packetloss = "<animation-packetloss> <label-packetloss>";
             format-packetloss-padding = 2;
@@ -712,27 +793,28 @@ in
         include-directory = ${config.xdg.configHome}/polybar/polybar.d
       '';
 
-      script =
-        let
-          bars = [ "top" ]; # TODO use from cfg
-          cmds = forEach bars (bar: "polybar ${bar} &");
-        in
-        ''
-          for m in $(polybar --list-monitors | cut -d: -f1); do
-            MONITOR=$m ${concatStringsSep "\n" cmds}
-          done
-        '';
+      script = let
+        bars = [ "top" ]; # TODO use from cfg
+        cmds = forEach bars (bar: "polybar ${bar} &");
+      in ''
+        for m in $(polybar --list-monitors | cut -d: -f1); do
+          MONITOR=$m ${concatStringsSep "\n" cmds}
+        done
+      '';
     };
 
     # HACK: setup PATH for scripts
-    systemd.user.services.polybar.Service.Environment = mkForce ''PATH=${makeBinPath [
-      cfg.package
-      "/run/current-system/sw"
-      "${config.home.homeDirectory}/.nix-profile"
-      "${config.home.homeDirectory}/.dotfiles"
-      "${config.home.homeDirectory}/.dotfiles/local"
-    ]}'';
-    systemd.user.services.polybar.Install.WantedBy = [ "graphical-session.target" ];
+    systemd.user.services.polybar.Service.Environment = mkForce "PATH=${
+        makeBinPath [
+          cfg.package
+          "/run/current-system/sw"
+          "${config.home.homeDirectory}/.nix-profile"
+          "${config.home.homeDirectory}/.dotfiles"
+          "${config.home.homeDirectory}/.dotfiles/local"
+        ]
+      }";
+    systemd.user.services.polybar.Install.WantedBy =
+      [ "graphical-session.target" ];
     systemd.user.services.polybar.Unit.After = [ "graphical-session.target" ];
   };
 }

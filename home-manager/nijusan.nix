@@ -4,10 +4,10 @@ let inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
 
 in {
   imports = [
-    nix-colors.homeManagerModule
     ../nix/home/awesomewm.nix
     ../nix/home/common.nix
     ../nix/home/davfs2.nix
+    ../nix/home/deadd
     ../nix/home/dev # TODO module
     ../nix/home/dunst
     ../nix/home/emacs
@@ -41,6 +41,7 @@ in {
 
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 
+  my.deadd.enable = true;
   my.awesomewm.enable = true;
   my.programs.eww.enable = true;
   modules.polybar.networks = [
@@ -97,7 +98,7 @@ in {
   '';
 
   services.flameshot.enable = true;
-  services.dunst.enable = true;
+  services.dunst.enable = false;
   services.picom.enable = true;
   services.polybar.enable = true;
   services.polybar.settings = {
@@ -141,6 +142,7 @@ in {
   home.packages = with pkgs; [
     (rust-bin.selectLatestNightlyWith
       (toolchain: toolchain.default.override { }))
+    # deadd-notification-center
     btrfs-progs
     conky
     dbeaver
