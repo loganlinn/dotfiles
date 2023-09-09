@@ -37,6 +37,7 @@ in
     "ctrl+alt+8" = "goto_tab 8";
     "ctrl+alt+9" = "goto_tab 9";
     "ctrl+alt+enter" = "launch --cwd=current";
+    "f1" = "show_scrollback";
     "kitty_mod+;" = "next_layout";
     "kitty_mod+down" = "neighboring_window down";
     "kitty_mod+enter" = "new_window_with_cwd";
@@ -93,6 +94,11 @@ in
     active_tab_font_style = "bold";
     inactive_tab_font_style = "normal";
     tab_activity_symbol = "";
+
+    # [Scrollback](https://sw.kovidgoyal.net/kitty/conf/#scrollback)
+    scrollback_lines = 2000;
+    scrollback_pager_history_size = 1024; # MB
+    scrollback_pager = "${./scrollback_pager.sh} 'INPUT_LINE_NUMBER' 'CURSOR_LINE' 'CURSOR_COLUMN'";
 
     # MacOS
     macos_titlebar_color = "background";
