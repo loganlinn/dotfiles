@@ -171,7 +171,6 @@ in
     isNormalUser = true;
     home = "/home/${config.my.user.name}";
     createHome = true;
-    packages = with pkgs; [ kubefwd ];
     extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" ];
     openssh.authorizedKeys.keys = config.my.authorizedKeys;
   };

@@ -13,13 +13,14 @@ in {
     ../nix/home/emacs
     ../nix/home/eww
     ../nix/home/home-manager.nix
+    ../nix/home/hexchat.nix
     ../nix/home/intellij.nix
     ../nix/home/kakoune.nix
     ../nix/home/kitty
+    ../nix/home/lnav
     ../nix/home/mpd.nix
     ../nix/home/mpv.nix
     ../nix/home/nnn.nix
-    ../nix/home/polkit.nix
     ../nix/home/pretty.nix
     ../nix/home/qalculate
     ../nix/home/ssh.nix
@@ -148,10 +149,9 @@ in {
     dbeaver
     etcd
     google-cloud-sdk
-    hexchat
-    lnav
     plantuml
     self'.packages.graphite-cli
+    gradle
   ];
   home.username = "logan";
   home.homeDirectory = "/home/logan";

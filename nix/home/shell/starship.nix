@@ -92,16 +92,10 @@
         "$shell"
         "$character"
       ];
-      gcloud = {
-        disabled = true;
-      };
-      git_commit = {
-        disabled = false;
-        only_detached = false;
-      };
-      kubernetes = {
-        disabled = true;
-      };
+      gcloud.disabled = true;
+      git_commit.disabled = false;
+      git_commit.only_detached = false;
+      kubernetes.disabled = true;
     };
   };
 }

@@ -57,6 +57,8 @@ in {
     lib.mkDefault true; # thunar mount, trash, and other functionalities
   # services.flatpak.enable = true;
 
+  virtualisation.docker.enable = true;
+
   environment.homeBinInPath = true; # Add ~/bin to PATH
   environment.localBinInPath = true; # Add ~/.local/bin to PATH
   environment.systemPackages = with pkgs; [
@@ -112,9 +114,8 @@ in {
     isNormalUser = true;
     home = "/home/${config.my.user.name}";
     createHome = true;
-    packages = with pkgs; [ kubefwd ];
     extraGroups =
-      [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" "${config.services.davfs2.davGroup}" ];
+      [ "wheel" "networkmanager" "audio" "video" "dialout" "docker" "onepassword" "${config.services.davfs2.davGroup}" ];
     openssh.authorizedKeys.keys = config.my.authorizedKeys;
   };
 

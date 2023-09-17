@@ -232,23 +232,6 @@ in {
     #     ${extraConfig}
     #   }
     # '';
-    dunstMode = optionalString config.services.dunst.enable ''
-      ### Notifications (dunst)
-
-      set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
-      bindsym $mod+n mode "$mode_notifications"
-      mode "$mode_notifications" {
-          bindsym Return       exec "dunstctl action 0"        , mode "default"
-          bindsym Shift+Return exec dunstctl context           , mode "default"
-          bindsym k            exec dunstctl close             , mode "default"
-          bindsym Shift+k      exec dunstctl close-all         , mode "default"
-          bindsym z            exec dunstctl set-paused toggle , mode "default"
-          bindsym n            exec dunstctl close
-          bindsym p            exec dunstctl history-pop
-
-          ${modeCommonEscape}
-      }
-    '';
   in ''
     ################################################################################
     # Variables
@@ -344,10 +327,35 @@ in {
     set $gaps_outer_default ${toString i3Cfg.gaps.outer}
 
     ################################################################################
-    # Modes
+    # Notifications
     ################################################################################
 
-    ${dunstMode}
+    ${optionalString config.services.dunst.enable ''
+      # dunst
+      set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
+      bindsym $mod+n mode "$mode_notifications"
+      mode "$mode_notifications" {
+          bindsym Return       exec "dunstctl action 0"        , mode "default"
+          bindsym Shift+Return exec dunstctl context           , mode "default"
+          bindsym k            exec dunstctl close             , mode "default"
+          bindsym Shift+k      exec dunstctl close-all         , mode "default"
+          bindsym z            exec dunstctl set-paused toggle , mode "default"
+          bindsym n            exec dunstctl close
+          bindsym p            exec dunstctl history-pop
+
+          ${modeCommonEscape}
+      }
+    ''}
+
+    ${optionalString config.my.deadd.enable ''
+      # deadd
+      set $mode_notifications notification: [RET] action [+RET] context [n] close [K] close-all [p] history-pop [z] pause toggle [ESC] exit
+      bindsym $mod+n exec --no-startup-id deadd-toggle
+    ''}
+
+    ################################################################################
+    # Modes
+    ################################################################################
 
     ### Gaps
 

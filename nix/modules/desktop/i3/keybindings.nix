@@ -9,6 +9,9 @@ let
 
   i3-input = prompt: limit: format:
     ''exec --no-startup-id "i3-input -P '${prompt}' -l ${limit} -F '${format}' -f 'pango:${config.my.fonts.mono.name} 14' '';
+
+  # TODO access via flake via special args
+  x-window-focus-close = pkgs.callPackage ../../../pkgs/x-window-focus-close {};
 in
 
 {
@@ -17,7 +20,7 @@ in
     # "$mod+Ctrl+Shift+q" = ''mode "$mode_kill"'';
     "$mod+Ctrl+q" = "exec --no-startup-id xkill";
     "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
-    "$mod+w" = "exec --no-startup-id ${getExe (pkgs.callPackage ../../../pkgs/x-window-focus-close.nix {})}";
+    "$mod+w" = "exec --no-startup-id ${getExe x-window-focus-close}";
     "$mod+Ctrl+c" = "restart";
     "$mod+Shift+c" = "reload";
     "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";

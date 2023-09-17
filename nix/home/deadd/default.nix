@@ -86,6 +86,10 @@ in {
       type = types.str;
       default = "";
     };
+    scripts = mkOption {
+      type = with types; attrsOf (either str package);
+      default = helpers;
+    };
     settings = mkOption {
       type = yamlFormat.type;
       default = {

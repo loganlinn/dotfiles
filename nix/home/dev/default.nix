@@ -35,7 +35,8 @@ in
     entr      # better than watchexec?
 
     # containers
-    dive
+    # dive
+    # docker-slim
 
     # processes
     process-compose

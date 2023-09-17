@@ -11,7 +11,7 @@
     wmctrl
     xscreensaver
     xautolock # ac
-    (pkgs.callPackage ../pkgs/x-window-focus-close.nix {})
+    (pkgs.callPackage ../pkgs/x-window-focus-close {})
   ] ++ (with pkgs.xorg; [
     # https://www.x.org/releases/current/doc/man/man1/index.xhtml
     # -----------------------------------------------------------

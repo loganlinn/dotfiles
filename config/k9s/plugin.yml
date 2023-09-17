@@ -1,5 +1,4 @@
 plugin:
-
   stern:
     shortCut: Ctrl-L
     confirm: false
@@ -19,7 +18,28 @@ plugin:
       - $NAMESPACE
       - --context
       - $CONTEXT
+      - --exclude
+      - "io.opentelemetry.exporter.logging.LoggingMetricExporter"
 
+  lnav:
+    shortCut: Ctrl-V
+    confirm: false
+    description: "Logs <lnav>"
+    scopes:
+      - pods
+      - jobs
+      - daemonsets
+      - statefulsets
+    command: kubectl-lnav
+    background: false
+    args:
+      - --tail
+      - 50
+      - $FILTER
+      - -n
+      - $NAMESPACE
+      - --context
+      - $CONTEXT
   watch-events:
     shortCut: Shift-E
     confirm: false

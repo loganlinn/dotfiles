@@ -66,7 +66,7 @@
         };
 
         overlayAttrs = {
-          inherit (config.packages) jdk kubefwd i3-auto-layout;
+          inherit (config.packages) jdk i3-auto-layout;
           inherit (inputs'.home-manager.packages) home-manager;
           inherit (inputs'.devenv.packages) devenv;
           inherit (inputs'.emacs.packages) emacs-unstable;

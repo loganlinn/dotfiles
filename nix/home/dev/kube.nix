@@ -1,7 +1,6 @@
 { config, lib, pkgs, ... }: {
   home.packages = with pkgs; [
     kind
-    # kpt # ‘kpt-0.39.3’ marked as broken
     krew # required after install: krew install krew
     kubeconform
     kubectl
