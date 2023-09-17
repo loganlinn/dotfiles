@@ -1,4 +1,4 @@
-{ flake, modulesPath, ... }:
+{ inputs, modulesPath, ... }:
 
 {
   # Things to try
@@ -6,9 +6,9 @@
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    flake.inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
-    flake.inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
-    flake.inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
+    inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
+    inputs.nixos-hardware.outputs.nixosModules.common-gpu-nvidia-nonprime
+    inputs.nixos-hardware.outputs.nixosModules.common-pc-ssd
   ];
 
   boot.initrd.availableKernelModules = [

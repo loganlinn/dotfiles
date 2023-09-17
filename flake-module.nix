@@ -19,7 +19,6 @@ let
 
   mkSpecialArgs = mergeAttrs {
     inherit inputs nix-colors;
-    flake = { inherit self inputs config; };
     nixosModulesPath = toString ./nixos/modules;
     homeModulesPath = toString ./nix/home; # FIXME
   };
@@ -57,7 +56,10 @@ in
       # NixOS home-manager module
       nixosModules = recursiveUpdate {
         common = {
-          imports = [ mkCommonModule ];
+          imports = [
+            mkCommonModule
+            ./nixos/modules/common.nix
+          ];
         };
 
         home-manager = {

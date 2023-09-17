@@ -1,10 +1,10 @@
-{ flake, config, pkgs, lib, ... }:
+{ self, config, pkgs, lib, ... }:
 
 with lib;
 
-let inherit (flake) self;
-in {
+{
   imports = [
+    self.nixosModules._1password
     self.nixosModules.secrets
     self.nixosModules.common
     self.nixosModules.bluetooth
@@ -31,13 +31,9 @@ in {
   networking.hostName = "nijusan";
   networking.networkmanager.enable = true;
 
-  time.timeZone = "America/Los_Angeles";
-  i18n.defaultLocale = "en_US.UTF-8";
-
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs._1password-gui.polkitPolicyOwners =
-    [ "logan" ]; # for polkit agent process (required to use polkit)
+  programs.corectrl.enable = true;
   programs.git.enable = true;
   programs.htop.enable = true;
   programs.dconf.enable = true;
@@ -45,11 +41,12 @@ in {
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
   programs.mosh.enable = true;
-  # programs.hyprland.enable = true;
-  # programs.hyprland.enableNvidiaPatches = true;
 
   security.polkit.enable = true;
-
+  services.printing.enable = true;
+  services.printing.browsing = true; # advertise shared printers
+  services.printing.cups-pdf.enable = true;
+  services.printing.startWhenNeeded = true;
   services.tailscale.enable = true;
   services.davfs2.enable = true;
   # services.tumbler.enable = mkDefault true; # thunar thumbnail support for images
@@ -59,8 +56,6 @@ in {
 
   virtualisation.docker.enable = true;
 
-  environment.homeBinInPath = true; # Add ~/bin to PATH
-  environment.localBinInPath = true; # Add ~/.local/bin to PATH
   environment.systemPackages = with pkgs; [
     btrbk
     cachix
@@ -69,8 +64,6 @@ in {
     killall
     nixos-option
     pciutils
-    polkit # used by 1password-gui, etc
-    polkit_gnome # polkit agent is required. this seems only option for now
     powertop
     ripgrep
     sysz
@@ -109,18 +102,6 @@ in {
     })
   ];
 
-  users.users.${config.my.user.name} = {
-    shell = config.my.shell;
-    isNormalUser = true;
-    home = "/home/${config.my.user.name}";
-    createHome = true;
-    extraGroups =
-      [ "wheel" "networkmanager" "audio" "video" "dialout" "docker" "onepassword" "${config.services.davfs2.davGroup}" ];
-    openssh.authorizedKeys.keys = config.my.authorizedKeys;
-  };
-
-  security.sudo.enable = true;
-
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
@@ -128,6 +109,11 @@ in {
       pkgs.xdg-desktop-portal-gtk
     ];
   };
+
+  programs.hyprland.enable = false;
+  # programs.hyprland.package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+  programs.hyprland.enableNvidiaPatches = true;
+  programs.hyprland.xwayland.enable = false;
 
   services.xserver.enable = true;
   services.xserver.autorun = true;
@@ -191,40 +177,9 @@ in {
     EndSubSection
   '';
 
-  documentation.enable = true;
-  documentation.dev.enable = true;
-  # documentation.man-db.enable = true;
-  documentation.nixos.extraModules = [
-
-  ];
-
-  nix = {
-    package = pkgs.nixFlakes;
-    settings = {
-      experimental-features = [ "nix-command" "flakes" "repl-flake" ];
-      warn-dirty = false;
-      trusted-users = [ "logan" ];
-    };
-    gc.automatic = true; # see also: nix-store --optimise
-
-    nixPath = [
-      "nixpkgs=${flake.inputs.nixpkgs}"
-      "home-manager=${flake.inputs.home-manager}"
-    ];
-  };
-
-  nixpkgs = {
-    config = {
-      allowUnfree = true; # NVIDIA drivers, Brother, etc
-      allowUnfreePredicate = pkg: true;
-      packageOverrides = pkgs: {
-        nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
-          inherit pkgs;
-        };
-      };
-    };
-
-  };
+  hardware.flipperzero.enable = mkDefault true;
+  # hardware.gpgSmartcards.enable = mkDefault true;
+  # hardware.keyboard.qmk.enable = mkDefault true;
 
   system.stateVersion = "23.05";
 }

@@ -1,32 +1,29 @@
-{ flake , config , pkgs , lib , nix-colors, ...  }:
+{ self, config , pkgs , lib , nix-colors, ...  }:
 
 with lib;
 
-let
-  inherit (flake.inputs) nixos-hardware;
-  inherit (flake.self) nixosModules homeModules;
-in
 {
   imports = [
     ./hardware-configuration.nix
-    nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
-    # nixosModules.bluetooth
-    # nixosModules.docker
-    nixosModules.networking
-    nixosModules.nix-registry
-    nixosModules.pipewire
-    nixosModules.printing
-    nixosModules.security
-    # nixosModules.steam
-    # nixosModules.tailscale
-    # nixosModules.thunar
-    # nixosModules.thunderbolt
-    nixosModules.xserver
+    inputs.nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
+    self.nixosModules._1password
+    # self.nixosModules.bluetooth
+    # self.nixosModules.docker
+    self.nixosModules.networking
+    self.nixosModules.nix-registry
+    self.nixosModules.pipewire
+    self.nixosModules.printing
+    self.nixosModules.security
+    # self.nixosModules.steam
+    # self.nixosModules.tailscale
+    # self.nixosModules.thunar
+    # self.nixosModules.thunderbolt
+    self.nixosModules.xserver
   ];
 
   home-manager.users.${config.my.user.name} = {
     imports = [
-      homeModules.common
+      self.homeModules.common
       nix-colors.homeManagerModule
       # ../../nix/home/awesomewm.nix
       ../../nix/home/dev # TODO module
@@ -81,44 +78,17 @@ in
   networking.hostName = "framework";
   networking.networkmanager.enable = true;
 
-  time.timeZone = "America/Los_Angeles";
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };
-
   services.xserver.enable = true;
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
   services.printing.enable = true;
+  services.printing.cups-pdf.enable = true;
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs._1password-gui.polkitPolicyOwners = [ "logan" ]; # for polkit agent process (required to use polkit)
-  programs.git.enable = true;
   programs.htop.enable = true;
   programs.dconf.enable = true;
-  programs.zsh.enable = true;
-  programs.firefox.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-  programs.mosh.enable = true;
 
-  security.polkit.enable = true;
-  security.sudo.enable = true;
-
-  environment.homeBinInPath = true; # Add ~/bin to PATH
-  environment.localBinInPath = true; # Add ~/.local/bin to PATH
   environment.systemPackages = with pkgs; [
     appimage-run
     cachix
@@ -127,8 +97,6 @@ in
     killall
     nixos-option
     pciutils
-    polkit # used by 1password-gui, etc
-    polkit_gnome # polkit agent is required. this seems only option for now
     powertop
     ripgrep
     sysz
@@ -166,46 +134,15 @@ in
     })
   ];
 
-  users.users.${config.my.user.name} = {
-    shell = config.my.shell;
-    isNormalUser = true;
-    home = "/home/${config.my.user.name}";
-    createHome = true;
+  users.users.${config.my.user.name}.extraGroups = [
+
+  ]
     extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" ];
     openssh.authorizedKeys.keys = config.my.authorizedKeys;
   };
 
   xdg.portal.enable = true;
   xdg.portal.xdgOpenUsePortal = true;
-
-  documentation.enable = true;
-  documentation.dev.enable = true;
-
-  nix = {
-    package = pkgs.nixFlakes;
-    settings = {
-      experimental-features = [ "nix-command" "flakes" "repl-flake" ];
-      warn-dirty = false;
-      trusted-users = [ "logan" ];
-    };
-    gc.automatic = true; # see also: nix-store --optimise
-    nixPath = [
-      "nixpkgs=${flake.inputs.nixpkgs}"
-      "home-manager=${flake.inputs.home-manager}"
-    ];
-  };
-
-  nixpkgs = {
-    config = {
-      allowUnfree = true;
-      packageOverrides = pkgs: {
-        nur = import (builtins.fetchTarball "https://github.com/nix-community/NUR/archive/master.tar.gz") {
-          inherit pkgs;
-        };
-      };
-    };
-
-  };
 
   system.stateVersion = "23.05";
 }

@@ -1,9 +1,8 @@
-{ flake, config, lib, ... }:
+{ inputs, config, lib, ... }:
 
 with lib;
 
 let
-  inherit (flake) inputs;
 
   cfg = config.my.nix-registry;
 
