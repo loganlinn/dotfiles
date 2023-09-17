@@ -33,7 +33,6 @@ with lib;
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs.corectrl.enable = true;
   programs.git.enable = true;
   programs.htop.enable = true;
   programs.dconf.enable = true;
