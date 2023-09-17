@@ -11,6 +11,8 @@ with lib;
 let
   inherit (flake-parts-lib) mkPerSystemOption;
 
+  nix-colors = import ./nix-colors/extended.nix inputs;
+
   mkLib = import ./lib/extended.nix;
 
   mkHmLib = stdlib: import "${inputs.home-manager}/modules/lib/stdlib-extended.nix" (mkLib stdlib);
@@ -18,6 +20,8 @@ let
   mkSpecialArgs = mergeAttrs {
     inherit inputs nix-colors;
     flake = { inherit self inputs config; };
+    nixosModulesPath = toString ./nixos/modules;
+    homeModulesPath = toString ./nix/home; # FIXME
   };
 
   mkCommonOptions = import ./options.nix;
@@ -34,8 +38,6 @@ let
       }
     ];
   };
-
-  nix-colors = import ./nix-colors/extended.nix inputs;
 
 in
 {
