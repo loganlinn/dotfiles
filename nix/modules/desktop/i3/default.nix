@@ -1,8 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ self', config, lib, pkgs, ... }:
 
 with lib;
 
 let
+  inherit (self'.packages) i3-auto-layout;
+
   cfg = config.xsession.windowManager.i3;
 in
 {
@@ -40,7 +42,7 @@ in
 
     xsession.windowManager.i3.config.startup = [
       {
-        command = getExe pkgs.i3-auto-layout;
+        command = getExe i3-auto-layout;
         always = true;
         notification = false;
       }

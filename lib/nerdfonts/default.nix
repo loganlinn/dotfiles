@@ -1,4 +1,4 @@
-{
+_: {
   cod = import ./cod.nix;
   dev = import ./dev.nix;
   fa = import ./fa.nix;

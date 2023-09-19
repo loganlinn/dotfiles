@@ -14,7 +14,7 @@ let
     (mkLib stdlib);
 
   mkSpecialArgs = mergeAttrs {
-    inherit inputs nix-colors;
+    inherit self inputs nix-colors;
     nixosModulesPath = toString ./nixos/modules;
     homeModulesPath = toString ./nix/home; # FIXME
   };
@@ -44,7 +44,6 @@ in {
   config = {
     perSystem = { pkgs, config, ... }:
       {
-        # imports = [./nix/apps.nix];
         # TODO checks.repl.default = mkNixReplCheck ./repl.nix
       };
 
@@ -126,14 +125,11 @@ in {
           module:
           inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
-            extraSpecialArgs = mkSpecialArgs {
-              lib = mkHmLib args.lib;
-              inputs' = # lib.warn "Stop using inputs' outside of flake-module"
-                inputs';
-              self' = # lib.warn "Stop using self' outside of flake-module"
-                self';
-            };
             modules = [ module ];
+            extraSpecialArgs = mkSpecialArgs {
+              inherit inputs' self';
+              lib = mkHmLib args.lib;
+            };
           };
 
         mkReplAttrs = attrs:

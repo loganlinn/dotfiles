@@ -1,5 +1,5 @@
 # https://fontawesome.com/v6/icons
-{
+_: {
   alarm-clock = "";
   alient-8bit = "";
   arrow-down-to-line = "";
