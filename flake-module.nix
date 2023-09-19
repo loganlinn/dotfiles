@@ -1,10 +1,4 @@
-top@{ self
-, inputs
-, config
-, flake-parts-lib
-, lib
-, ...
-}:
+top@{ self, inputs, config, flake-parts-lib, lib, ... }:
 
 with lib;
 
@@ -15,7 +9,9 @@ let
 
   mkLib = import ./lib/extended.nix;
 
-  mkHmLib = stdlib: import "${inputs.home-manager}/modules/lib/stdlib-extended.nix" (mkLib stdlib);
+  mkHmLib = stdlib:
+    import "${inputs.home-manager}/modules/lib/stdlib-extended.nix"
+    (mkLib stdlib);
 
   mkSpecialArgs = mergeAttrs {
     inherit inputs nix-colors;
@@ -38,8 +34,7 @@ let
     ];
   };
 
-in
-{
+in {
   options = {
     # REVIEW could moduleWithSystem be used instead?
     # https://flake.parts/module-arguments#modulewithsystem
@@ -47,45 +42,36 @@ in
   };
 
   config = {
-    perSystem = { pkgs, config, ... }: {
-      # imports = [./nix/apps.nix];
-      # TODO checks.repl.default = mkNixReplCheck ./repl.nix
-    };
+    perSystem = { pkgs, config, ... }:
+      {
+        # imports = [./nix/apps.nix];
+        # TODO checks.repl.default = mkNixReplCheck ./repl.nix
+      };
 
     flake = {
       # NixOS home-manager module
       nixosModules = recursiveUpdate {
-        common = {
-          imports = [
-            mkCommonModule
-            ./nixos/modules/common.nix
-          ];
-        };
+        common = { imports = [ mkCommonModule ./nixos/modules/common.nix ]; };
 
         home-manager = {
           imports = [
             inputs.home-manager.nixosModules.home-manager
+            # self.nixosModules.home-manager
             (args: {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = mkSpecialArgs {
-                lib = mkHmLib args.lib;
-              };
+              home-manager.extraSpecialArgs =
+                mkSpecialArgs { lib = mkHmLib args.lib; };
             })
           ];
         };
 
-        secrets = {
-          imports = [ inputs.agenix.nixosModules.default ];
-        };
+        secrets = { imports = [ inputs.agenix.nixosModules.default ]; };
 
       } (import ./nixos/modules);
 
-
       darwinModules = {
-        common = {
-          imports = [ mkCommonModule ];
-        };
+        common = { imports = [ mkCommonModule ]; };
 
         home-manager = {
           imports = [
@@ -100,12 +86,7 @@ in
       };
 
       homeModules = {
-        common = {
-          imports = [
-            mkCommonModule
-            ./nix/home/common.nix
-          ];
-        };
+        common = { imports = [ mkCommonModule ./nix/home/common.nix ]; };
 
         nix-colors = nix-colors.homeManagerModule;
 
@@ -118,24 +99,17 @@ in
           ];
         };
 
-        secrets = {
-          imports = [
-            inputs.agenix.homeManagerModules.default
-          ];
-        };
+        secrets = { imports = [ inputs.agenix.homeManagerModules.default ]; };
       };
 
-
       lib.dotfiles = {
-        inherit
-          mkLib
-          mkHmLib
-          ;
+        inherit mkLib mkHmLib;
 
         mkNixosSystem = system: module:
           inputs.nixpkgs.lib.nixosSystem {
             inherit system;
-            specialArgs = mkSpecialArgs { inherit self; }; # TODO consolidate flake vs self
+            specialArgs =
+              mkSpecialArgs { inherit self; }; # TODO consolidate flake vs self
             modules = [ module ];
           };
 
@@ -148,7 +122,8 @@ in
             modules = [ module ];
           };
 
-        mkHomeConfiguration = args@{ inputs', self', pkgs, ... }: module:
+        mkHomeConfiguration = args@{ inputs', self', pkgs, ... }:
+          module:
           inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             extraSpecialArgs = mkSpecialArgs {
@@ -161,39 +136,28 @@ in
             modules = [ module ];
           };
 
-        mkReplAttrs = attrs: (
-          builtins
-          // self
-          // {
-            inherit
-              self;
-            inherit (self.currentSystem)
-              legacyPackages;
+        mkReplAttrs = attrs:
+          (builtins // self // {
+            inherit self;
+            inherit (self.currentSystem) legacyPackages;
             inherit (self.currentSystem.allModuleArgs) # i.e. perSystem module context
-              inputs'
-              self'
-              config
-              options
-              system
-              pkgs;
-          }
-          // rec {
+              inputs' self' config options system pkgs;
+          } // rec {
             lib = mkHmLib top.lib;
-            getNixos = { hostname ? lib.my.currentHostname }: self.nixosConfigurations.${hostname} or null;
-            getDarwin = { hostname ? lib.my.currentHostname }: self.darwinConfigurations.${hostname} or null;
-            getHome = { user ? (builtins.getEnv "USER"), hostname ? lib.my.currentHostname, system ? builtins.currentSystem }:
-              let inherit (self.legacyPackages.${system}) homeConfigurations; in
-                homeConfigurations."${user}@${hostname}"
-                  or homeConfigurations.${user}
-                  or homeConfigurations.${hostname}
-                  or null;
+            getNixos = { hostname ? lib.my.currentHostname }:
+              self.nixosConfigurations.${hostname} or null;
+            getDarwin = { hostname ? lib.my.currentHostname }:
+              self.darwinConfigurations.${hostname} or null;
+            getHome = { user ? (builtins.getEnv "USER")
+              , hostname ? lib.my.currentHostname
+              , system ? builtins.currentSystem }:
+              let inherit (self.legacyPackages.${system}) homeConfigurations;
+              in homeConfigurations."${user}@${hostname}" or homeConfigurations.${user} or homeConfigurations.${hostname} or null;
 
             nixos = getNixos { };
             darwin = getDarwin { };
             hm = getHome { };
-          }
-          // attrs
-        );
+          } // attrs);
       };
     };
   };

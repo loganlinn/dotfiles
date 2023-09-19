@@ -47,10 +47,6 @@ in {
 
       # List of commands that should be executed on specific windows (i.e. for_window)
       commands = [
-        # {
-        #   criteria.title = "^Emacs Everywhere ::";
-        #   command = "floating enable, resize set 35 ppt 25 ppt, move position mouse";
-        # }
         {
           criteria.class = "(?i)conky";
           command =
@@ -126,7 +122,7 @@ in {
       smartBorders = "off";
     };
 
-    floating = {
+    floating = { # uses for_window
       titlebar = false;
       border = 3;
       criteria = [
@@ -529,6 +525,28 @@ in {
     for_window [class="^Steam$" title="^Screenshot Uploader$"] floating enable
     for_window [class="^Steam$" title="^Steam Guard - Computer Authorization Required$"] floating enable
     for_window [title="^Steam Keyboard$"] floating enable
+
+    ################################################################################
+    # Misc
+    ################################################################################
+
+
+    no_focus [title="^i3-spy"]
+    for_window [title="^i3-spy"] floating enable, sticky enable, move to mark i3-spy-target
+    bindsym $mod+F3 --release mark i3-spy-taret; exec --no-startup-id ${
+      pkgs.writeShellScript "i3-spy" ''
+        if [[ $# == 0 ]]; then
+          exec ${pkgs.xst}/bin/xst -T i3-spy -g "64x64" "$0" -
+        fi
+
+        i3-msg -t get_tree --raw | jq '.. | objects | select(.focused == true)'
+
+        while read -r event; do
+          echo -e '\0033\0143'
+          jq 'select(.change == "focus").container' <<<"$event"
+        done < <(i3-msg -t subscribe -m '["window"]')
+      ''
+    };
 
     ################################################################################
     # Includes

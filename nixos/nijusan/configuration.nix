@@ -21,10 +21,12 @@ with lib;
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
     self.nixosModules.xserver
+    self.nixosModules.hyprland
     ./hardware-configuration.nix
     ./kernel-configuration.nix
   ];
 
+  my.hyprland.enable = false;
   my.tailscale.ssh.enable = true;
   my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
 
@@ -104,21 +106,15 @@ with lib;
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
-    extraPortals = [
+    extraPortals = optionals config.services.xserver.enable [
       pkgs.xdg-desktop-portal-gtk
     ];
   };
 
-  programs.hyprland.enable = false;
-  # programs.hyprland.package = inputs.hyprland.packages.${pkgs.system}.hyprland;
-  programs.hyprland.enableNvidiaPatches = true;
-  programs.hyprland.xwayland.enable = false;
-
-  services.xserver.enable = true;
-  services.xserver.autorun = true;
-  services.xserver.displayManager = {
-    lightdm.enable = true;
-    lightdm.greeters.slick.enable = true;
+  services.xserver.enable = mkDefault true;
+  services.xserver.displayManager = mkIf config.services.xserver.enable {
+    lightdm.enable = config.services.xserver.enable;
+    lightdm.greeters.slick.enable = config.services.xserver.enable;
     lightdm.greeters.slick.cursorTheme = {
       package = pkgs.numix-cursor-theme;
       name = "Numix-Cursor-Light";
@@ -126,7 +122,7 @@ with lib;
     };
     defaultSession = "none+xsession";
   };
-  services.xserver.windowManager = {
+  services.xserver.windowManager = mkIf config.services.xserver.enable {
     session = lib.singleton {
       name = "xsession";
       start = ''

@@ -8,68 +8,79 @@ let
   inherit (config.xsession.windowManager.i3.config) terminal;
 
   i3-input = prompt: limit: format:
-    ''exec --no-startup-id "i3-input -P '${prompt}' -l ${limit} -F '${format}' -f 'pango:${config.my.fonts.mono.name} 14' '';
+    ''
+      exec --no-startup-id "i3-input -P '${prompt}' -l ${limit} -F '${format}' -f 'pango:${config.my.fonts.mono.name} 14' '';
 
   # TODO access via flake via special args
-  x-window-focus-close = pkgs.callPackage ../../../pkgs/x-window-focus-close {};
-in
+  x-window-focus-close =
+    pkgs.callPackage ../../../pkgs/x-window-focus-close { };
 
-{
+in {
   session = {
     "$mod+Shift+q" = "kill";
     # "$mod+Ctrl+Shift+q" = ''mode "$mode_kill"'';
     "$mod+Ctrl+q" = "exec --no-startup-id xkill";
-    "--release $mod+$alt+q" = "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
+    "--release $mod+$alt+q" =
+      "exec --no-startup-id kill -9 $(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowpid)";
     "$mod+w" = "exec --no-startup-id ${getExe x-window-focus-close}";
     "$mod+Ctrl+c" = "restart";
     "$mod+Shift+c" = "reload";
     "$mod+Shift+semicolon" = "exec --no-startup-id i3-input -P 'i3-msg: '";
-    "Ctrl+$alt+Delete" = ''exec --no-startup-id ${config.programs.urxvt.package}/bin/urxvt -e ${config.programs.btop.package}/bin/btop'';
+    "Ctrl+$alt+Delete" =
+      "exec --no-startup-id ${config.programs.urxvt.package}/bin/urxvt -e ${config.programs.btop.package}/bin/btop";
     # inspect current window properties
-    "--release $mod+i" = "exec ${
-      pkgs.writeShellScript "xprop-hud" ''
-          # toggling behavior
-          pkill --full "$0" && exit 0
+    # "--release $mod+i" = "exec ${
+    #     pkgs.writeShellScript "xprop-hud" ''
+    #       # toggling behavior
+    #       pkill --full "$0" && exit 0
 
-          eval "$(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowgeometry --shell)" || exit $?
+    #       eval "$(${pkgs.xdotool}/bin/xdotool getwindowfocus getwindowgeometry --shell)" || exit $?
 
-          ${pkgs.xst}/bin/xst -a -w "$WINDOW" -e sh -c "
-              ${pkgs.xorg.xprop}/bin/xprop -id '$WINDOW' -spy;
-              "
-        ''
-    }";
+    #       ${pkgs.xst}/bin/xst -a -w "$WINDOW" -e sh -c "
+    #           ${pkgs.xorg.xprop}/bin/xprop -id '$WINDOW' -spy;
+    #           "
+    #     ''
+    #   }";
   };
 
   fkeys = {
-    "$mod+F1" = ''exec --no-startup-id thunar'';
-    "$mod+F2" = ''exec --no-startup-id kitty --class kitty-floating vim -u NORC --noplugin -M -R "${config.xdg.configHome}/i3/config"'';
-    "$mod+F6" = ''exec --no-startup-id i3-input -F 'rename workspace to "%s "' -P 'New name: ''''';
-    "$mod+F9" = ''exec --no-startup-id rofi-power'';
+    "$mod+F1" = "exec --no-startup-id thunar";
+    "$mod+F2" = ''
+      exec --no-startup-id kitty --class kitty-floating vim -u NORC --noplugin -M -R "${config.xdg.configHome}/i3/config"'';
+    "$mod+F6" =
+      "exec --no-startup-id i3-input -F 'rename workspace to \"%s \"' -P 'New name: ''";
+    "$mod+F9" = "exec --no-startup-id rofi-power";
   };
 
   clipboard = optionalAttrs config.services.clipmenu.enable {
-    "$mod+Shift+backslash" = ''exec --no-startup-id env CM_LAUNCHER=rofi clipmenu'';
+    "$mod+Shift+backslash" =
+      "exec --no-startup-id env CM_LAUNCHER=rofi clipmenu";
   };
 
   marks = {
     # read 1 character and mark the current window with this character
     "$mod+m" = ''exec i3-input -F 'mark --replace %s' -l 1 -P "Mark as: "'';
     "$mod+g" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Swap: "'';
-    "$mod+Shift+g" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap: "'';
+    "$mod+Shift+g" =
+      ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap: "'';
     # apostrophe a la vim. read 1 character and go to the window with the character
-    "$mod+Shift+apostrophe" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap with: "'';
-    "$mod+Ctrl+apostrophe" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Move to: "'';
+    "$mod+Shift+apostrophe" =
+      ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap with: "'';
+    "$mod+Ctrl+apostrophe" =
+      ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Move to: "'';
   };
 
   logs = {
-    "$mod+Shift+s" = ''exec kitty --title journalctl --class scratchpad -- bash -c 'journalctl --dmesg --follow --since=today --output=json | ${pkgs.lnav}/bin/lnav';'';
+    "$mod+Shift+s" =
+      "exec kitty --title journalctl --class scratchpad -- bash -c 'journalctl --dmesg --follow --since=today --output=json | ${pkgs.lnav}/bin/lnav';";
   };
 
   browser = {
     "$mod+Shift+Return" = "exec ${config.modules.desktop.browsers.default}";
     "$mod+$alt+Return" = "exec ${config.modules.desktop.browsers.alternate}";
   } // optionalAttrs config.programs.qutebrowser.enable {
-    "$mod+Ctrl+Return" = "exec RESOURCE_NAME=scratchpad ${config.programs.qutebrowser.package}/bin/qutebrowser";
+    "$mod+Ctrl+Return" =
+      "exec RESOURCE_NAME=scratchpad ${config.programs.qutebrowser.package}/bin/qutebrowser";
   };
 
   editor = {
@@ -77,33 +88,34 @@ in
   } // optionalAttrs config.programs.emacs.enable {
     "$mod+e" = "focus parent, exec emacs";
   } // optionalAttrs config.services.emacs.enable {
-    "$mod+e" = "focus parent, exec emacsclient -c -a "" -n";
+    "$mod+e" = "focus parent, exec emacsclient -c -a " " -n";
   } // optionalAttrs config.my.emacs.doom.enable {
-    "--release $mod+$alt+n" = ''exec org-capture''; # WM_NAME(STRING) = "doom-capture"
-    "--release $mod+$alt+e" = ''exec doom +everywhere'';
+    "--release $mod+$alt+n" =
+      "exec org-capture"; # WM_NAME(STRING) = "doom-capture"
+    "--release $mod+$alt+e" = "exec doom +everywhere";
   };
 
   terminal = {
-    "$mod+Return" = ''exec ${terminal}'';
-    "$mod+Shift+n" = ''exec ${terminal} ${getExe pkgs.ranger}'';
+    "$mod+Return" = "exec ${terminal}";
+    "$mod+Shift+n" = "exec ${terminal} ${getExe pkgs.ranger}";
   };
 
-  menus =
-    let
-      rofi = toExe config.programs.rofi;
-    in
-      mapAttrs' (keybind: exec: nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}") {
-        "$mod+space" = "${rofi} -show combi -sidebar-mode true";
-        "$mod+Shift+space" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
-        "$mod+$alt+space" = "${rofi} -show emoji -modi emoji#file-browser-extended -sidebar-mode true";
-        "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
-        "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
-        "$mod+Escape" = "rofi-power";
-        "$mod+s" = "${pkgs.rofi-systemd}/bin/rofi-systemd";
-        "$mod+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select sink";
-        "$mod+Shift+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select source";
-        "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
-      };
+  menus = let rofi = toExe config.programs.rofi;
+  in mapAttrs' (keybind: exec:
+    nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}") {
+      "$mod+space" = "${rofi} -show combi -sidebar-mode true";
+      "$mod+Shift+space" =
+        "${rofi} -show window -modi window#windowcd -sidebar-mode true";
+      "$mod+$alt+space" =
+        "${rofi} -show emoji -modi emoji#file-browser-extended -sidebar-mode true";
+      "$mod+semicolon" = "${rofi} -show run -modi run#drun -sidebar-mode true";
+      "$mod+Shift+equal" = "${rofi} -show calc -modi calc";
+      "$mod+Escape" = "rofi-power";
+      "$mod+s" = "${pkgs.rofi-systemd}/bin/rofi-systemd";
+      "$mod+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select sink";
+      "$mod+Shift+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select source";
+      "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
+    };
 
   focusNeighbor = {
     "$mod+h" = "focus left";
@@ -184,19 +196,32 @@ in
     "$mod+Ctrl+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} move";
     "$mod+Ctrl+Tab" = "move container to workspace back_and_forth";
     # Carry
-    "$mod+Shift+bracketleft" = "move container to workspace prev, workspace prev";
-    "$mod+Shift+bracketright" = "move container to workspace next, workspace next";
-    "$mod+Shift+1" = "move container to workspace number $ws1, workspace number $ws1";
-    "$mod+Shift+2" = "move container to workspace number $ws2, workspace number $ws2";
-    "$mod+Shift+3" = "move container to workspace number $ws3, workspace number $ws3";
-    "$mod+Shift+4" = "move container to workspace number $ws4, workspace number $ws4";
-    "$mod+Shift+5" = "move container to workspace number $ws5, workspace number $ws5";
-    "$mod+Shift+6" = "move container to workspace number $ws6, workspace number $ws6";
-    "$mod+Shift+7" = "move container to workspace number $ws7, workspace number $ws7";
-    "$mod+Shift+8" = "move container to workspace number $ws8, workspace number $ws8";
-    "$mod+Shift+9" = "move container to workspace number $ws9, workspace number $ws9";
-    "$mod+Shift+0" = "move container to workspace number $ws10; workspace number $ws10;";
-    "$mod+Shift+Tab" = "move container to workspace back_and_forth, workspace back_and_forth;";
+    "$mod+Shift+bracketleft" =
+      "move container to workspace prev, workspace prev";
+    "$mod+Shift+bracketright" =
+      "move container to workspace next, workspace next";
+    "$mod+Shift+1" =
+      "move container to workspace number $ws1, workspace number $ws1";
+    "$mod+Shift+2" =
+      "move container to workspace number $ws2, workspace number $ws2";
+    "$mod+Shift+3" =
+      "move container to workspace number $ws3, workspace number $ws3";
+    "$mod+Shift+4" =
+      "move container to workspace number $ws4, workspace number $ws4";
+    "$mod+Shift+5" =
+      "move container to workspace number $ws5, workspace number $ws5";
+    "$mod+Shift+6" =
+      "move container to workspace number $ws6, workspace number $ws6";
+    "$mod+Shift+7" =
+      "move container to workspace number $ws7, workspace number $ws7";
+    "$mod+Shift+8" =
+      "move container to workspace number $ws8, workspace number $ws8";
+    "$mod+Shift+9" =
+      "move container to workspace number $ws9, workspace number $ws9";
+    "$mod+Shift+0" =
+      "move container to workspace number $ws10; workspace number $ws10;";
+    "$mod+Shift+Tab" =
+      "move container to workspace back_and_forth, workspace back_and_forth;";
     "$mod+Shift+minus" = "exec --no-startup-id ${./i3-next-workspace.sh} carry";
     # "$mod+Ctrl+minus" = "nop"; # reserved sequence
   };
@@ -216,44 +241,46 @@ in
   };
 
   layout = {
-    "$mod+Shift+r" = "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
+    "$mod+Shift+r" =
+      "exec --no-startup-id ${pkgs.i3-layout-manager}/bin/layout_manager";
     "$mod+Shift+f" = "floating toggle";
     "$mod+Ctrl+f" = "fullscreen toggle";
     "$mod+Shift+y" = "floating toggle; sticky toggle";
     "$mod+t" = "layout toggle split";
     "$mod+BackSpace" = "split toggle";
-    "$mod+Shift+t" = "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
-    "$mod+equal" = "exec --no-startup-id ${getExe (pkgs.callPackage ./i3-balance-workspace.nix {})}";
+    "$mod+Shift+t" =
+      "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
+    "$mod+equal" = "exec --no-startup-id ${
+        getExe (pkgs.callPackage ./i3-balance-workspace.nix { })
+      }";
   };
 
   scratchpad = {
     "$mod+Shift+grave" = "move scratchpad";
-    "$mod+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
+    "$mod+grave" =
+      "[class=.*] scratchpad show "; # toggles all scratchpad windows
   };
 
-  audio =
-    let
-      ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} --notify ${args}";
-    in
-      {
-        "XF86AudioRaiseVolume " = ponymix "--output increase 5";
-        "XF86AudioLowerVolume" = ponymix "--output decrease 5";
-        "XF86AudioMute" = ponymix "--output toggle";
-        "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
-        "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
-        "Shift+XF86AudioMute" = ponymix "--input toggle";
-      };
+  audio = let
+    ponymix = args:
+      "exec --no-startup-id ${getExe pkgs.ponymix} --notify ${args}";
+  in {
+    "XF86AudioRaiseVolume " = ponymix "--output increase 5";
+    "XF86AudioLowerVolume" = ponymix "--output decrease 5";
+    "XF86AudioMute" = ponymix "--output toggle";
+    "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
+    "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
+    "Shift+XF86AudioMute" = ponymix "--input toggle";
+  };
 
-  media =
-    let
-      playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
-    in
-      {
-        "XF86AudioPlay" = playerctl "play";
-        "XF86AudioPause" = playerctl "pause";
-        "XF86AudioNext" = playerctl "next";
-        "XF86AudioPrev" = playerctl "previous";
-      };
+  media = let
+    playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
+  in {
+    "XF86AudioPlay" = playerctl "play";
+    "XF86AudioPause" = playerctl "pause";
+    "XF86AudioNext" = playerctl "next";
+    "XF86AudioPrev" = playerctl "previous";
+  };
 
   backlight = {
     "XF86MonBrightnessDown" = "exec xbacklight -dec 20";
@@ -261,14 +288,12 @@ in
   };
 
   screenshot = optionalAttrs config.services.flameshot.enable {
-    "--release Print" = ''exec --no-startup-id flameshot gui'';
+    "--release Print" = "exec --no-startup-id flameshot gui";
   };
 
-  bar =
-    if config.services.polybar.enable then
-      {
-        "$mod+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
-      } else {
-        "$mod+b" = "bar mode toggle";
-      };
+  bar = if config.services.polybar.enable then {
+    "$mod+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
+  } else {
+    "$mod+b" = "bar mode toggle";
+  };
 }

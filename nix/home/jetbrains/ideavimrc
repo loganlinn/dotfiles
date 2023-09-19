@@ -51,3 +51,7 @@ map <leader>b <Action>(ToggleLineBreakpoint)
 map <leader>o <Action>(FileStructurePopup)
 
 map <leader>= <Action>(ReformatCode)
+
+""" Plugin: Attaman (https://github.com/Mishkun/ataman-intellij)
+nnoremap <Space> :action LeaderAction<cr>
+vnoremap <Space> :action LeaderAction<cr>
