@@ -19,6 +19,10 @@
       hash = "sha256-dPe5CLCAuuuLGRdRCt/nNruxMrP9f/oddRxERkgm1FE=";
     };
   }
+  {
+    name = "colored-man-pages";
+    src = ./plugins/colored-man-pages;
+  }
 ]
 ++ lib.optional config.programs.starship.enable or false {
   name = "spaceship-vi-mode";

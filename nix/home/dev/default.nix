@@ -5,13 +5,14 @@ let
 in
 {
   imports = [
-    ./azure.nix
-    ./jvm.nix
-    ./kube.nix
-    ./gh.nix
-    ../python
-    ./nodejs.nix
+    ../java
     ../just
+    ../python
+    # TODO move up
+    ./azure.nix
+    ./gh.nix
+    ./kube.nix
+    ./nodejs.nix
   ];
 
   home.packages = with pkgs; [
