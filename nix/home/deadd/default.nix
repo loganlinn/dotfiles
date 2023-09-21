@@ -95,7 +95,7 @@ in {
       default = {
         notification-center = {
           monitor = 0;
-          follow-mouse = false;
+          follow-mouse = true;
           hide-on-mouse-leave = true;
           new-first = true;
           ignore-transient = false;
@@ -174,7 +174,7 @@ in {
           ];
 
           popup = {
-            default-timeout = 10000;
+            default-timeout = 15000;
             width = 480;
             margin-top = 48;
             margin-right = 24;
@@ -195,7 +195,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ] ++ (attrValues helpers);
+    home.packages = [ cfg.package notify-send-py ] ++ (attrValues helpers);
 
     xdg.configFile."deadd/deadd.yml".source =
       yamlFormat.generate "deadd.yml" cfg.settings;

@@ -59,15 +59,11 @@ in {
 
   marks = {
     # read 1 character and mark the current window with this character
-    "$mod+m" = ''exec i3-input -F 'mark --replace %s' -l 1 -P "Mark as: "'';
-    "$mod+g" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Swap: "'';
-    "$mod+Shift+g" =
-      ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap: "'';
-    # apostrophe a la vim. read 1 character and go to the window with the character
-    "$mod+Shift+apostrophe" =
-      ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap with: "'';
-    "$mod+Ctrl+apostrophe" =
-      ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Move to: "'';
+    "$mod+m" = ''exec i3-input -F 'mark --replace %s' -l 1 -P "Set mark: "'';
+    "$mod+Shift+m" = ''exec i3-input -F 'mark --add %s' -l 1 -P "Add mark: "'';
+    "$mod+Control+m" = ''exec i3-input -F 'unmark %s' -l 1 -P "Unmark: "'';
+    "$mod+g" = ''exec i3-input -F '[con_mark="%s"] focus' -l 1 -P "Focus mark: "'';
+    "$mod+Shift+g" = ''exec i3-input -F 'swap container with mark %s' -l 1 -P "Swap with mark: "'';
   };
 
   logs = {
@@ -248,8 +244,7 @@ in {
     "$mod+Shift+y" = "floating toggle; sticky toggle";
     "$mod+t" = "layout toggle split";
     "$mod+BackSpace" = "split toggle";
-    "$mod+Shift+t" =
-      "layout toggle tabbed stacking split"; # TODO a mode would be more efficient
+    "$mod+apostrophe" = "layout toggle stacking tabbed split";
     "$mod+equal" = "exec --no-startup-id ${
         getExe (pkgs.callPackage ./i3-balance-workspace.nix { })
       }";

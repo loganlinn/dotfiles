@@ -228,6 +228,30 @@ in {
     #     ${extraConfig}
     #   }
     # '';
+
+    mkBinding = { keysym ? null, keycode ? null, command ? null, exec ? null
+      , noStartupId ? false, release ? false, wholeWindow ? false
+      , excludeTitlebar ? false }:
+      assert (keysym != null) == (keycode == null);
+      assert noStartupId -> exec != null; ''
+        bindsym
+      '';
+
+    mkBindings = bindings:
+      pipe [
+
+      ];
+    mkMode = name: description: keysym: bindings:
+      let variable = "$mode_${name}";
+      in ''
+        set ${variable} ${name}> ${description}
+        mode "${variable}" {
+            ${strings.concatLines modeBindings}
+            # common mode bindings
+            ${modeCommonEscape}
+        }
+        bindsym ${keysym} mode "${modeReference}"
+      '';
   in ''
     ################################################################################
     # Variables

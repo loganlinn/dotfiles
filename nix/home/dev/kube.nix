@@ -4,6 +4,7 @@
     krew # required after install: krew install krew
     kubeconform
     kubectl
+    kubectl-tree
     kubectx
     kubernetes-helm
     kustomize
