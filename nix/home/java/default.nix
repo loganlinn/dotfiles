@@ -13,16 +13,9 @@ in {
 
     package = mkPackageOption pkgs "jdk" { };
 
-    extraJvms = mkOption {
-      type = types.listOf types.package;
-      default = [ ];
-    };
-
-    finalJvms = mkOption {
-      type = types.listOf types.package;
-      readOnly = true;
-      default = [ cfg.package ] ++ cfg.extraJvms
-        ++ (optional cfg.graalvm.enable cfg.graalvm.package);
+    jvms = mkOption {
+      type = types.attrsOf types.package;
+      default = { default = cfg.package; };
     };
 
     toolOptions = mkOption {
@@ -31,6 +24,7 @@ in {
         Initial options supply to all VMs in user environment.
         See: https://docs.oracle.com/javase/8/docs/platform/jvmti/jvmti.html#tooloptions
       '';
+
       default = with cfg;
         (optional enableCommercialFeatures "-XX:+UnlockCommercialFeatures")
         ++ (optional enableFlightRecorder "-XX:+FlightRecorder")
@@ -82,30 +76,42 @@ in {
       assertion = cfg.enableFlightRecorder -> cfg.enableCommercialFeatures;
       message =
         "Java Flight Recorder requires a commercial license for use in production.";
-    }];
+    }] ++ (mapAttrsToList (name: p: {
+      assertion = p ? home && p.home != "";
+      message =
+        "config.my.jvm.${name} (${p.name}) does not appear to be a JVM!";
+    }) cfg.jvms);
 
     programs.java.enable = true;
     programs.java.package = cfg.package;
 
-    home.sessionVariables.JAVA_TOOL_OPTIONS = escapeShellArgs cfg.toolOptions;
+    home.sessionVariables = optionalAttrs (cfg.toolOptions != [ ]) {
+      JAVA_TOOL_OPTIONS = escapeShellArgs cfg.toolOptions;
+    };
 
-    home.packages = with pkgs; [
-      # packages which depend on
-      (clojure.override { jdk = cfg.package; })
-      (maven.override { jdk = cfg.package; })
-      (leiningen.override { jdk = cfg.package; })
-      babashka
-      bbin
-      clj-kondo
-      clojure-lsp
-      jet
-      neil
-      zprint
-      rep
-    ];
+    home.packages = with pkgs;
+      [
+        cfg.package
+        (clojure.override { jdk = cfg.package; })
+        (maven.override { jdk = cfg.package; })
+        (leiningen.override { jdk = cfg.package; })
+        babashka
+        bbin
+        clj-kondo
+        clojure-lsp
+        jet
+        neil
+        zprint
+        rep
+      ] ++ (optional cfg.graalvm.enable cfg.graalvm.package);
 
     # Create a symlink that applications can depend on rather than nix-store
-    xdg.dataFile = foldl' mergeAttrs { }
-      (forEach cfg.finalJvms (p: { "jvms/${p.meta.name}".source = p; }));
+    xdg.dataFile = mapAttrs' (name: p: {
+      name = "jvms/${name}";
+      value = {
+        # source = p.home;
+        source = p;
+      };
+    }) (attrsets.unionOfDisjoint { default = cfg.package; } cfg.jvms);
   };
 }

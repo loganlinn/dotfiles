@@ -76,21 +76,11 @@ in {
           command = "floating enable, move position mouse";
         }
         {
-          criteria.class = "(?i)^emacs$";
-          command = "move up, move left, resize set width 70 ppt";
-        }
-        {
-          criteria.instance = "journalctl";
-          criteria.class = "scratchpad";
-          command =
-            "move scratchpad, scratchpad show, move position center, resize set 80 ppt 50 ppt, move down 40 ppt";
-        }
-        {
           criteria.class = "kitty";
           command = "border normal"; # show window title
         }
         {
-          criteria.instance = "^doom-capture$";
+          criteria.instance = "^(doom|org)-capture$";
           command =
             "sticky enable, move position center, resize set 40 ppt 40 ppt";
         }
@@ -229,12 +219,18 @@ in {
     #   }
     # '';
 
-    mkBinding = { keysym ? null, keycode ? null, command ? null, exec ? null
-      , noStartupId ? false, release ? false, wholeWindow ? false
-      , excludeTitlebar ? false }:
+    mkBinding = { modifiers, keysym ? null, keycode ? null, command ? null
+      , exec ? { }, flags ? [ ] }:
       assert (keysym != null) == (keycode == null);
-      assert noStartupId -> exec != null; ''
-        bindsym
+      assert noStartupId -> exec != null;
+      let
+        bindOp = if keysym then "bindsym" else "bindcode";
+        hasFlags = flags != [ ];
+        bind = "${bindOp}${
+            if hasFlags then " ${forEach flags (flag: "--${flag}")}" else ""
+          }";
+      in ''
+        ${bind} ${command}
       '';
 
     mkBindings = bindings:
@@ -461,11 +457,11 @@ in {
         bindsym Shift+1 resize set 10 ppt, mode default
 
         bindsym f floating enable
-        bindsym s floating enable, resize set 66 ppt 66 ppt, move position center, mode "default"
-        bindsym a floating enable, resize set 33 ppt 66 ppt, move position center, move left 33 ppt, mode "default"
-        bindsym d floating enable, resize set 33 ppt 66 ppt, move position center, move right 33 ppt, mode "default"
-        bindsym q floating enable, resize set 33 ppt 66 ppt, move position center, move left 17 ppt, mode "default"
-        bindsym e floating enable, resize set 33 ppt 66 ppt, move position center, move right 17 ppt, mode "default"
+        bindsym s floating enable, resize set 42ppt 66 ppt, move position center, mode "default"
+        bindsym g floating enable, resize set 42 ppt 80 ppt, move position center, move left 21 ppt, mode "default"
+        bindsym h floating enable, resize set 42 ppt 80 ppt, move position center, move left 21 ppt, mode "default"
+        bindsym d floating enable, resize set 42 ppt 80 ppt, move position center, move right 21 ppt, mode "default"
+        bindsym e floating enable, resize set 42 ppt 80 ppt, move position center, move right 21 ppt, mode "default"
 
         bindsym equal exec --no-startup-id ${
           getExe (pkgs.callPackage ./i3-balance-workspace.nix { })

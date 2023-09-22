@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+
+declare -x NIX_EVAL_INPUT
+
+NIX_EVAL_INPUT=$(yq -o json "${1--}")
+
+# want --argstr, but https://github.com/NixOS/nix/issues/2678
+nix eval --impure --expr 'builtins.fromJSON (builtins.getEnv "NIX_EVAL_INPUT")' |
+  alejandra --quiet -

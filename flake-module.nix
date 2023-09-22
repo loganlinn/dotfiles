@@ -17,6 +17,7 @@ let
     inherit self inputs nix-colors;
     nixosModulesPath = toString ./nixos/modules;
     homeModulesPath = toString ./nix/home; # FIXME
+    dotfilesPath = toString ./.;
   };
 
   mkCommonOptions = import ./options.nix;

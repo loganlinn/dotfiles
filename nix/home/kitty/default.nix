@@ -38,6 +38,8 @@ in
     "ctrl+alt+9" = "goto_tab 9";
     "ctrl+alt+enter" = "launch --cwd=current";
     "f1" = "show_scrollback";
+    "kitty_mod+[" = "previous_tab";
+    "kitty_mod+]" = "next_tab";
     "kitty_mod+;" = "next_layout";
     "kitty_mod+down" = "neighboring_window down";
     "kitty_mod+enter" = "new_window_with_cwd";

@@ -45,6 +45,7 @@ in
     # terminal
     ## lazycli
     gum
+    vhs
     asciinema
     asciinema-scenario # https://github.com/garbas/asciinema-scenario/
 

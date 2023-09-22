@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -e
+[[ -z $DEBUG ]] || set -x
+
+passed=()
+failed=()
+skipped=()
+
+_run() {
+  if [[ -n $INTERACTIVE ]]; then
+    case $(gum choose --header "$*" confirm skip quit) in
+      continue) return ;;
+      skip)
+        skipped=("$*")
+        return
+        ;;
+      quit)
+        return 130
+        ;;
+    esac
+  fi
+
+  printf '=> %s\n%s\n' "$*" "${*//?/-}"
+
+  if (eval "$*"); then
+    passed+=("$*")
+  else
+    failed+=("$*")
+  fi
+}
+
+while read -r cmd; do
+  _run "$cmd"
+done < <(
+  gh repo list --fork \
+    --json name,owner,defaultBranchRef \
+    --jq '.[]
+      | ["gh", "api", "-X", "POST", "/repos/\(.owner.login)/\(.name)/merge-upstream", "--field", "branch=\(.defaultBranchRef.name)"]
+      | map(@sh)
+      | join(" ")'
+)
+
+if [[ -z $VERBOSE ]]; then
+  printf "SUMMARY: skipped=%s passed=%s failed=%s\n" "${#skipped}" "${#passed}" "${#failed}"
+else
+  echo "SKIPPED"
+  echo "======="
+  printf "  %s\n" "${passed[@]-none}"
+  echo "PASSED"
+  echo "======"
+  printf "  %s\n" "${passed[@]-none}"
+  echo "FAILED"
+  echo "======"
+  printf "  %s\n" "${failed[@]-none}"
+fi
+
+if [[ ${#failed} -gt 0 ]]; then
+  exit 1
+fi

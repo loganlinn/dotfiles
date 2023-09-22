@@ -12,12 +12,13 @@ in {
     ../nix/home/dunst
     ../nix/home/emacs
     ../nix/home/eww
+    ../nix/home/git/graphite.nix
     ../nix/home/home-manager.nix
     ../nix/home/hexchat.nix
     ../nix/home/intellij.nix
     ../nix/home/kakoune.nix
     ../nix/home/kitty
-    ../nix/home/lnav
+    # ../nix/home/lnav
     ../nix/home/mpd.nix
     ../nix/home/mpv.nix
     ../nix/home/nnn.nix
@@ -31,7 +32,6 @@ in {
     ../nix/home/x11.nix
     ../nix/home/yt-dlp.nix
     ../nix/home/yubikey.nix
-    ../nix/modules/programs/the-way
     ../nix/modules/services
     ../nix/modules/spellcheck.nix
     ../nix/modules/desktop
@@ -45,6 +45,7 @@ in {
   my.deadd.enable = true;
   my.awesomewm.enable = true;
   my.programs.eww.enable = true;
+  my.java.jvms = { inherit (pkgs) jdk11; };
   modules.polybar.networks = [
     {
       interface = "eno3";
@@ -150,7 +151,6 @@ in {
     etcd
     google-cloud-sdk
     plantuml
-    self'.packages.graphite-cli
     gradle
   ];
   home.username = "logan";

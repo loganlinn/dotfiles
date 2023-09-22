@@ -17,6 +17,7 @@ in
 {
   programs.git = {
     enable = true;
+    package = pkgs.gitFull; # gitk, ...
     aliases = {
       wt = "worktree";
       wtm = "worktree-main";
