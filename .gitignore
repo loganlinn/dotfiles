@@ -46,3 +46,4 @@ repl-result-out
 result
 sqlite.db
 target/
+.clj-kondo/
