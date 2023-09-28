@@ -68,7 +68,7 @@
       perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
-          config.allowUnfree = true;
+          config = import ./config/nixpkgs/config.nix;
         };
 
         packages = import ./nix/pkgs pkgs;
