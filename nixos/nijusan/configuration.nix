@@ -36,6 +36,7 @@ with lib;
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
   programs.git.enable = true;
+  programs.git.package = pkgs.gitFull;
   programs.htop.enable = true;
   programs.dconf.enable = true;
   programs.zsh.enable = true;

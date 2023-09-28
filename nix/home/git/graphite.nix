@@ -2,7 +2,7 @@
 
 {
   home.packages = [
-    self'.packages.graphite-cli
+    pkgs.graphite-cli
   ];
 
   home.shellAliases."gtx" = "npx --package='@withgraphite/graphite-cli' -- gt";

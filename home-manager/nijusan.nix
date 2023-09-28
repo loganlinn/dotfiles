@@ -167,10 +167,5 @@ in {
     show-trace = true;
   };
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    # https://github.com/nix-community/home-manager/issues/2942
-    allowUnfreePredicate = _pkg: true;
-    permittedInsecurePackages = [ "openssl-1.1.1u" ];
-  };
+  # nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1u" ];
 }

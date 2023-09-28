@@ -66,6 +66,11 @@
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
       perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+
         packages = import ./nix/pkgs pkgs;
 
         apps.default = {
