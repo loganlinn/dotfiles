@@ -1,4 +1,4 @@
-{ lib, python3, fetchFromGitHub }:
+{ lib, fetchFromGitHub, dbus, python3 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "notify-send-py";
@@ -25,5 +25,6 @@ python3.pkgs.buildPythonApplication rec {
     license = with licenses; [ bsd2 mit ];
     maintainers = with maintainers; [ ];
     mainProgram = "notify-send.py";
+    platforms = dbus.meta.platforms;
   };
 }

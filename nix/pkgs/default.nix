@@ -4,21 +4,25 @@ let
 
   inherit (pkgs) lib;
 
-  packages = [
+  paths = [
     ./closh
     ./kubefwd
     ./fztea
-    ./os-specific/linux/i3-auto-layout.nix
-    ./os-specific/linux/graphite-cli.nix
-    ./os-specific/linux/notify-send-py.nix
+    ./i3-auto-layout.nix
+    ./notify-send-py.nix
   ];
 
-in lib.mapAttrs (_: f: pkgs.callPackage f { }) ({
-  closh = ./closh;
-  kubefwd = ./kubefwd;
-  fztea = ./fztea;
-} // (lib.optionalAttrs pkgs.stdenv.isLinux {
-  i3-auto-layout = ./os-specific/linux/i3-auto-layout.nix;
-  graphite-cli = ./os-specific/linux/graphite-cli.nix;
-  notify-send-py = ./os-specific/linux/notify-send-py.nix;
-}))
+  packages = lib.pipe paths [
+    (map (f: pkgs.callPackage f { }))
+    (lib.filter (p:
+      lib.any (system:
+        let platform = lib.systems.elaborate { inherit system; };
+        in pkgs.stdenv.buildPlatform.canExecute platform) p.meta.platforms))
+    (map (p: {
+      name = p.pname or p.name;
+      value = p;
+    }))
+    builtins.listToAttrs
+  ];
+
+in packages
