@@ -66,6 +66,8 @@
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
       perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
+        imports = [ ./options.nix ];
+
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
           config = import ./config/nixpkgs/config.nix;
@@ -192,34 +194,32 @@
 
       flake = {
         nixosConfigurations.nijusan =
-          self.lib.dotfiles.mkNixosSystem "x86_64-linux" {
-            imports = [
-              self.nixosModules.home-manager
-              ./nixos/nijusan/configuration.nix
-            ];
-          };
+          self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+            ./nixos/nijusan/configuration.nix
+            inputs.home-manager.nixosModules.home-manager
+            self.nixosModules.home-manager
+          ];
 
         nixosConfigurations.framework =
-          self.lib.dotfiles.mkNixosSystem "x86_64-linux" {
-            imports = [
-              self.nixosModules.home-manager
-              ./nixos/framework/configuration.nix
-            ];
-          };
+          self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+            ./nixos/framework/configuration.nix
+            inputs.home-manager.nixosModules.home-manager
+            inputs.agenix.nixosModules.default
+            self.nixosModules.home-manager
+            # { home-manager.users.logan = import ./nixos/framework/home.nix; }
+          ];
 
         darwinConfigurations.patchbook =
-          self.lib.dotfiles.lib.mkMacosSystem "aarch64-darwin" {
-            imports = [
-              self.darwinModules.home-manager
-              ./nix-darwin/patchbook.nix
-              {
-                home-manager.users.logan = { options, config, ... }: {
-                  imports = [ self.homeModules.default ];
-                  home.stateVersion = "22.11";
-                };
-              }
-            ];
-          };
+          self.lib.dotfiles.lib.mkMacosSystem "aarch64-darwin" [
+            self.darwinModules.home-manager
+            ./nix-darwin/patchbook.nix
+            {
+              home-manager.users.logan = { options, config, ... }: {
+                imports = [ self.homeModules.default ];
+                home.stateVersion = "22.11";
+              };
+            }
+          ];
       };
 
       # my repl depends on attrs exposed by flake-parts's debug option.

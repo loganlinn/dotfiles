@@ -51,22 +51,11 @@ in {
     flake = {
       # NixOS home-manager module
       nixosModules = recursiveUpdate {
-        common = { imports = [ mkCommonModule ./nixos/modules/common.nix ]; };
-
-        home-manager = {
-          imports = [
-            inputs.home-manager.nixosModules.home-manager
-            # self.nixosModules.home-manager
-            (args: {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs =
-                mkSpecialArgs { lib = mkHmLib args.lib; };
-            })
-          ];
+        home-manager = { lib, ... }: {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.extraSpecialArgs = mkSpecialArgs { lib = mkHmLib lib; };
         };
-
-        secrets = { imports = [ inputs.agenix.nixosModules.default ]; };
 
       } (import ./nixos/modules);
 
@@ -103,23 +92,19 @@ in {
       };
 
       lib.dotfiles = {
-        inherit mkLib mkHmLib;
+        inherit mkLib mkHmLib mkSpecialArgs;
 
-        mkNixosSystem = system: module:
+        mkNixosSystem = system: modules:
           inputs.nixpkgs.lib.nixosSystem {
             inherit system;
-            specialArgs =
-              mkSpecialArgs { inherit self; }; # TODO consolidate flake vs self
-            modules = [ module ];
+            modules = [./options.nix ] ++ modules;
+            specialArgs = mkSpecialArgs { };
           };
 
-        mkDarwinSystem = system: module:
+        mkDarwinSystem = system: modules:
           inputs.nix-darwin.lib.darwinSystem {
-            inherit system;
-            specialArgs = mkSpecialArgs {
-              # rosettaPkgs = import inputs.nixpkgs { system = "x86_64-darwin"; };
-            };
-            modules = [ module ];
+            inherit system modules;
+            specialArgs = mkSpecialArgs { };
           };
 
         mkHomeConfiguration = args@{ inputs', self', pkgs, ... }:

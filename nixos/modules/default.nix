@@ -1,7 +1,7 @@
 {
   _1password = ./1password.nix;
-  home-manager = ./home-manager.nix;
   bluetooth = ./bluetooth.nix;
+  common = ./common.nix;
   davfs2 = ./davfs2.nix;
   docker = ./docker.nix;
   gaming = ./gaming.nix;

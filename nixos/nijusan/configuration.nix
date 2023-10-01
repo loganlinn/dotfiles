@@ -4,9 +4,8 @@ with lib;
 
 {
   imports = [
-    self.nixosModules._1password
-    self.nixosModules.secrets
     self.nixosModules.common
+    self.nixosModules._1password
     self.nixosModules.bluetooth
     self.nixosModules.davfs2
     self.nixosModules.docker
@@ -49,13 +48,10 @@ with lib;
   services.printing.enable = true;
   services.printing.browsing = true; # advertise shared printers
   services.printing.cups-pdf.enable = true;
-  services.printing.startWhenNeeded = true;
   services.psd.enable = true; # https://wiki.archlinux.org/title/Profile-sync-daemon
   services.tailscale.enable = true;
   services.davfs2.enable = true;
-  # services.tumbler.enable = mkDefault true; # thunar thumbnail support for images
-  services.gvfs.enable =
-    lib.mkDefault true; # thunar mount, trash, and other functionalities
+  services.gvfs.enable = true; # thunar mount, trash, and other functionalities
   # services.flatpak.enable = true;
 
   virtualisation.docker.enable = true;
@@ -63,17 +59,8 @@ with lib;
   environment.systemPackages = with pkgs; [
     btrbk
     cachix
-    curl
-    fd
-    killall
-    nixos-option
     pciutils
     powertop
-    qmk-udev-rules
-    ripgrep
-    sysz
-    tree
-    xdg-utils
   ];
 
   xdg.portal = {
@@ -84,7 +71,7 @@ with lib;
     ];
   };
 
-  services.xserver.enable = mkDefault true;
+  services.xserver.enable = true;
   services.xserver.displayManager = mkIf config.services.xserver.enable {
     lightdm.enable = config.services.xserver.enable;
     lightdm.greeters.slick.enable = config.services.xserver.enable;
@@ -145,9 +132,7 @@ with lib;
     EndSubSection
   '';
 
-  hardware.flipperzero.enable = mkDefault true;
-  # hardware.gpgSmartcards.enable = mkDefault true;
-  # hardware.keyboard.qmk.enable = mkDefault true;
+  hardware.flipperzero.enable = true;
 
   system.stateVersion = "23.05";
 }

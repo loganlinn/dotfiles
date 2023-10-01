@@ -3,7 +3,6 @@
 with lib;
 
 let
-
   cfg = config.my;
 
   mkOpt = type: default: mkOption { inherit type default; };
