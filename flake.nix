@@ -202,7 +202,6 @@
         nixosConfigurations.framework =
           self.lib.dotfiles.mkNixosSystem "x86_64-linux" {
             imports = [
-              self.nixosModules.common
               self.nixosModules.home-manager
               ./nixos/framework/configuration.nix
             ];

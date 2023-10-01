@@ -1,4 +1,4 @@
-{ self, config , pkgs , lib , nix-colors, ...  }:
+{ inputs, self, config , pkgs , lib , nix-colors, ...  }:
 
 with lib;
 
@@ -6,6 +6,7 @@ with lib;
   imports = [
     ./hardware-configuration.nix
     inputs.nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
+    self.nixosModules.common
     self.nixosModules._1password
     # self.nixosModules.bluetooth
     # self.nixosModules.docker
@@ -133,13 +134,6 @@ with lib;
       '';
     })
   ];
-
-  users.users.${config.my.user.name}.extraGroups = [
-
-  ]
-    extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "onepassword" ];
-    openssh.authorizedKeys.keys = config.my.authorizedKeys;
-  };
 
   xdg.portal.enable = true;
   xdg.portal.xdgOpenUsePortal = true;
