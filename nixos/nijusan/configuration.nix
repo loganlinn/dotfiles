@@ -10,13 +10,13 @@ with lib;
     self.nixosModules.bluetooth
     self.nixosModules.davfs2
     self.nixosModules.docker
+    self.nixosModules.gaming
     self.nixosModules.networking
     self.nixosModules.nix-registry
     self.nixosModules.nvidia
     self.nixosModules.pipewire
     self.nixosModules.printing
     self.nixosModules.security
-    self.nixosModules.steam
     self.nixosModules.tailscale
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
@@ -45,10 +45,12 @@ with lib;
   programs.mosh.enable = true;
 
   security.polkit.enable = true;
+
   services.printing.enable = true;
   services.printing.browsing = true; # advertise shared printers
   services.printing.cups-pdf.enable = true;
   services.printing.startWhenNeeded = true;
+  services.psd.enable = true; # https://wiki.archlinux.org/title/Profile-sync-daemon
   services.tailscale.enable = true;
   services.davfs2.enable = true;
   # services.tumbler.enable = mkDefault true; # thunar thumbnail support for images
@@ -67,41 +69,11 @@ with lib;
     nixos-option
     pciutils
     powertop
+    qmk-udev-rules
     ripgrep
     sysz
     tree
     xdg-utils
-    # linuxPackages_latest.perf
-    ((vim_configurable.override { }).customize {
-      name = "vim";
-      vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
-        start = [
-          vim-commentary
-          vim-eunuch
-          vim-lastplace
-          vim-nix
-          vim-repeat
-          vim-sensible
-          vim-sleuth
-          vim-surround
-          vim-unimpaired
-        ];
-        opt = [ ];
-      };
-      vimrcConfig.customRC = ''
-        let mapleader = "\<Space>"
-        " system clip
-        set clipboard=unnamed
-        " yank to system clipboard without motion
-        nnoremap <Leader>y "+y
-        " yank line to system clipboard
-        nnoremap <Leader>yl "+yy
-        " yank file to system clipboard
-        nnoremap <Leader>yf gg"+yG
-        " paste from system clipboard
-        nnoremap <Leader>p "+p
-      '';
-    })
   ];
 
   xdg.portal = {

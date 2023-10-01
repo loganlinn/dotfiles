@@ -71,7 +71,7 @@
           config = import ./config/nixpkgs/config.nix;
         };
 
-        packages = import ./nix/pkgs pkgs;
+        packages = import ./nix/pkgs { inherit pkgs; };
 
         apps.default = {
           type = "app";
@@ -80,27 +80,74 @@
 
         apps.rebuild = {
           type = "app";
-          program = pkgs.writeShellScriptBin "rebuild" ''
-            _run() { printf 'Running:\n\n\t$ %s\n\n' "$*"; "$@"; echo; echo 'done.'; }
-            _sudo() { if [[ $EUID == 0 ]]; then _run env "$@"; else _run sudo "$@"; fi; }
+          program = pkgs.writeShellApplication {
+            name = "rebuild";
+            runtimeInputs = with pkgs; [ ansi gum nvd ];
+            text = ''
+              _run() {
+                ansi -e yellow
+                printf '$ %s\n\n' "$*"
+                ansi -e reset
 
-            if [[ $(uname -s) == "Darwin" ]]; then
-              exec darwin-rebuild "$@"
-            elif (( $# )); then
-              exec nixos-rebuild "$@"
-            fi;
+                if ! command "$@"; then
+                  local status=$?
+                  ansi -e red
+                  echo "command failed (exit=$status)"
+                  ansi -e reset
+                  return "$status"
+                fi
+              }
 
-            _run nixos-rebuild build "$@"
-            _run nvd diff /run/current-system result
-            if action=$(gum choose --header "nixos-rebuild $*:" cancel switch boot test dry-activate build-vm build-vm-with-bootloader edit); then
-              case "$action" in
-                cancel) exit;;
-                *) _sudo nixos-rebuild "$action" "$@";;
-              esac
-            else
-              echo 'aborted.'
-            fi
-          '';
+              _sudo() {
+                if [[ $EUID == 0 ]]; then
+                  _run env "$@"
+                else
+                  _run sudo "$@"
+                fi
+              }
+
+              # Pass-through
+              if [[ $(uname -s) == "Darwin" ]]; then
+                exec darwin-rebuild "$@"
+              elif (( $# )); then
+                _run nixos-rebuild "$@"
+                exit "$?"
+              fi;
+
+
+              build() {
+                local choices=( "build" )
+
+                if _run nixos-rebuild build "$@" &&
+                  _run nvd diff /run/current-system result; then
+                  choices+=(
+                    switch
+                    boot
+                    test
+                    dry-activate
+                    build-vm
+                    build-vm-with-bootloader
+                    edit
+                    exit
+                  )
+                fi
+
+                if action=$(gum choose --header "nixos-rebuild operation:" "''${choices[@]}"); then
+                  case "$action" in
+                    build) build "$@";;
+                    exit) exit;;
+                    *) _sudo nixos-rebuild "$action" "$@";;
+                  esac
+                else
+                  ansi -e yellow
+                  echo 'aborted.'
+                  ansi -e reset
+                fi
+              }
+
+              build "$@"
+            '';
+          };
         };
 
         apps.nixpkgs-match = {

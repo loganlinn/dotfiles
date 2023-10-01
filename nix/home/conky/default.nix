@@ -1,14 +1,16 @@
 { config, lib, pkgs, ... }:
 
-let
-in
-{
-  home.packages = with pkgs; [
-    conky
-  ];
+with lib;
 
-  xdg.configFile."conky/frappe.conf".source = ./frappe.conf;
-  xdg.configFile."conky/latte.conf".source = ./latte.conf;
-  xdg.configFile."conky/macchiato.conf".source = ./macchiato.conf;
-  xdg.configFile."conky/mocha.conf".source = ./mocha.conf;
+let
+
+in {
+  home.packages = with pkgs; [ conky ];
+
+  xdg.dataFile."conky/lcc".source = pkgs.fetchFromGitHub {
+    owner = "jxai";
+    repo = "lean-conky-config";
+    rev = "v0.8.0";
+    hash = "sha256-GBaCCtpqas3fakNJurG17A9QHM3TsgaWCnTodd+tX78=";
+  };
 }

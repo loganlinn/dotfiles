@@ -39,9 +39,9 @@
   boot.kernelModules = [
     "kvm-intel"
   ];
-  boot.extraModprobeConfig = lib.mkMerge [
+  boot.extraModprobeConfig = ''
     "options snd_hda_intel power_save=1" # idle audio card after one second
-  ];
+  '';
 
   powerManagement = {
     enable = true;

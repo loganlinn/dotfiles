@@ -80,9 +80,9 @@ in {
           command = "border normal"; # show window title
         }
         {
-          criteria.instance = "^(doom|org)-capture$";
+          criteria.title = "^(doom|org)-capture$";
           command =
-            "sticky enable, move position center, resize set 40 ppt 40 ppt";
+            "floating enable, resize set 70 ppt 70 ppt, move position center, move scratchpad; scratchpad show";
         }
       ] ++ (forEach [
         { window_role = "^pop-up$"; }

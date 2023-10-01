@@ -14,7 +14,7 @@ with lib;
     self.nixosModules.pipewire
     self.nixosModules.printing
     self.nixosModules.security
-    # self.nixosModules.steam
+    # self.nixosModules.gaming
     # self.nixosModules.tailscale
     # self.nixosModules.thunar
     # self.nixosModules.thunderbolt
