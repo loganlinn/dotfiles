@@ -6,6 +6,7 @@ in {
   imports = [
     ../nix/home/awesomewm.nix
     ../nix/home/common.nix
+    ../nix/home/conky
     ../nix/home/davfs2.nix
     ../nix/home/deadd
     ../nix/home/dev # TODO module
@@ -146,7 +147,6 @@ in {
       (toolchain: toolchain.default.override { }))
     # deadd-notification-center
     btrfs-progs
-    conky
     dbeaver
     etcd
     google-cloud-sdk

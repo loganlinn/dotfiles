@@ -7,6 +7,8 @@ let
 in {
   home.packages = with pkgs; [ conky ];
 
+  # xdg.configFile."conky/conky.conf".source = ./conky.conf;
+
   xdg.dataFile."conky/lcc".source = pkgs.fetchFromGitHub {
     owner = "jxai";
     repo = "lean-conky-config";

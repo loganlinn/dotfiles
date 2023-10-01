@@ -89,7 +89,9 @@
                 printf '$ %s\n\n' "$*"
                 ansi -e reset
 
-                if ! command "$@"; then
+                if "$@"; then
+                  true
+                else
                   local status=$?
                   ansi -e red
                   echo "command failed (exit=$status)"
