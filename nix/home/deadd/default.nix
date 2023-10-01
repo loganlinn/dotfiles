@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ self', config, lib, pkgs, ... }:
 
 with lib;
 
@@ -8,7 +8,7 @@ let
 
   cfg = config.my.deadd;
 
-  notify-send-py = (import ../../pkgs pkgs).notify-send-py;
+  notify-send-py = self'.packages.notify-send-py;
 
   helpers = mapAttrs (name: text:
     pkgs.writeShellApplication {
