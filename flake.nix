@@ -161,7 +161,7 @@
             inputs.home-manager.nixosModules.home-manager
             inputs.agenix.nixosModules.default
             self.nixosModules.home-manager
-            # { home-manager.users.logan = import ./nixos/framework/home.nix; }
+            { home-manager.users.logan = import ./nixos/framework/home.nix; }
           ];
 
         darwinConfigurations.patchbook =
