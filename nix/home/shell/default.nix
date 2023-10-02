@@ -22,7 +22,7 @@ in
   };
 
   config = {
-    home.shellAliases = import ./aliases.nix { inherit config lib pkgs; };
+    home.shellAliases = import ./aliases.nix;
 
     programs.bash.initExtra = cfg.shellInitExtra;
 

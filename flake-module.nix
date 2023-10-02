@@ -31,6 +31,22 @@ let
           inputs.rust-overlay.overlays.default
           inputs.emacs-overlay.overlays.default
         ];
+        nix.settings = {
+          substituters = [
+            "https://cache.nixos.org"
+            "https://nix-community.cachix.org"
+            "https://hyprland.cachix.org"
+            "https://loganlinn.cachix.org"
+          ];
+          trusted-substituters = [
+            "https://cache.nixos.org"
+            "https://nix-community.cachix.org"
+          ];
+          trusted-public-keys = [
+            "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+            "loganlinn.cachix.org-1:CsnLzdY/Z5Btks1lb9wpySLJ60+H9kwFVbcQeb2Pjf8="
+          ];
+        };
       }
     ];
   };
@@ -97,7 +113,7 @@ in {
         mkNixosSystem = system: modules:
           inputs.nixpkgs.lib.nixosSystem {
             inherit system;
-            modules = [./options.nix ] ++ modules;
+            modules = [ ./options.nix ] ++ modules;
             specialArgs = mkSpecialArgs { };
           };
 

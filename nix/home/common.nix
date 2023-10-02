@@ -124,6 +124,9 @@ in
   programs.lsd = {
     enable = true;
     enableAliases = true;
+    settings = {
+      date = "relative";
+    };
   };
 
   programs.tealdeer.enable = true; # tldr command

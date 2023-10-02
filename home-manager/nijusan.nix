@@ -143,8 +143,9 @@ in {
   manual.json.enable = true;
 
   home.packages = with pkgs; [
-    (rust-bin.selectLatestNightlyWith
-      (toolchain: toolchain.default.override { }))
+    rust-bin.stable.latest.default
+    rust-analyzer
+    tokio-console
     # deadd-notification-center
     btrfs-progs
     dbeaver
