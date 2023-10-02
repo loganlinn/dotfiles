@@ -177,6 +177,24 @@
           env.NIX_USER_CONF_FILES = toString ./nix.conf;
         };
 
+        devShells.rust-stable = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            rust-bin.stable.latest.default
+          ];
+        };
+
+        devShells.rust-beta = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            rust-bin.beta.latest.default
+          ];
+        };
+
+        devShells.rust-nightly = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            rust-bin.nightly.latest.default
+          ];
+        };
+
         # FIXME: there's probably a flake.parts facility for this
         legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
           homeConfigurations = {

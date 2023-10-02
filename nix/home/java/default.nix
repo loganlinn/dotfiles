@@ -13,9 +13,16 @@ in {
 
     package = mkPackageOption pkgs "jdk" { };
 
-    jvms = mkOption {
-      type = types.attrsOf types.package;
-      default = { default = cfg.package; };
+    toolchains = mkOption {
+      description = "Additional JDK/JREs to be registered as toolchains.";
+      type = types.listOf types.package;
+      default = [ ];
+
+      example = literalExpression ''
+        [
+          pkgs.oraclejdk
+        ]
+      '';
     };
 
     toolOptions = mkOption {
@@ -76,42 +83,47 @@ in {
       assertion = cfg.enableFlightRecorder -> cfg.enableCommercialFeatures;
       message =
         "Java Flight Recorder requires a commercial license for use in production.";
-    }] ++ (mapAttrsToList (name: p: {
-      assertion = p ? home && p.home != "";
+    }] ++ (forEach cfg.toolchains (p: {
+      assertion = p.meta.mainProgram == "java";
       message =
-        "config.my.jvm.${name} (${p.name}) does not appear to be a JVM!";
-    }) cfg.jvms);
+        "Invalid Java toolchain package: ${p}: mainProgram expected to be `java`";
+    }));
 
     programs.java.enable = true;
     programs.java.package = cfg.package;
 
+    # this works, but is there a better way? (makeWrapper?)
     home.sessionVariables = optionalAttrs (cfg.toolOptions != [ ]) {
       JAVA_TOOL_OPTIONS = escapeShellArgs cfg.toolOptions;
     };
 
-    home.packages = with pkgs;
-      [
-        cfg.package
-        (clojure.override { jdk = cfg.package; })
-        (maven.override { jdk = cfg.package; })
-        (leiningen.override { jdk = cfg.package; })
-        babashka
-        bbin
-        clj-kondo
-        clojure-lsp
-        jet
-        neil
-        zprint
-        rep
-      ] ++ (optional cfg.graalvm.enable cfg.graalvm.package);
+    home.packages = (attrValues rec {
+      jdk = cfg.package;
+      maven = pkgs.maven.override { inherit jdk; };
+      gradle = pkgs.gradle.override {
+        java = jdk;
+        javaToolchains =
+          remove (p: p.meta.name == jdk.meta.name) cfg.toolchains;
+      };
+      clojure = pkgs.clojure.override { inherit jdk; };
+      clojure-lsp = pkgs.clojure-lsp.override { inherit clojure; };
+      leiningen = pkgs.leiningen.override { inherit jdk; };
+      inherit (pkgs)
+        babashka bbin clj-kondo jet neil zprint rep gradle-completion;
+    }) ++ (optional cfg.graalvm.enable cfg.graalvm.package);
 
     # Create a symlink that applications can depend on rather than nix-store
-    xdg.dataFile = mapAttrs' (name: p: {
-      name = "jvms/${name}";
-      value = {
-        # source = p.home;
-        source = p;
-      };
-    }) (attrsets.unionOfDisjoint { default = cfg.package; } cfg.jvms);
+    xdg.dataFile = pipe cfg.toolchains [
+      (map (p: {
+        name = "jvms/${p.pname}";
+        value = { source = p; };
+      }))
+      (xs:
+        xs ++ [{
+          name = "jvms/default";
+          value = { source = cfg.package; };
+        }])
+      listToAttrs
+    ];
   };
 }

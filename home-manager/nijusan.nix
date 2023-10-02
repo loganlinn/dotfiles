@@ -46,7 +46,8 @@ in {
   my.deadd.enable = true;
   my.awesomewm.enable = true;
   my.programs.eww.enable = true;
-  my.java.jvms = { inherit (pkgs) jdk11; };
+  my.java.package = pkgs.jdk17;
+  my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
   modules.polybar.networks = [
     {
       interface = "eno3";
@@ -143,16 +144,17 @@ in {
   manual.json.enable = true;
 
   home.packages = with pkgs; [
-    rust-bin.stable.latest.default
-    rust-analyzer
-    tokio-console
-    # deadd-notification-center
+    # cargo-cross
+    # (rust-bin.stable.latest.default.override { extensions = [ "rust-src" ]; })
+    # rust-analyzer
+    # rustfmt
+    # tokio-console
+
     btrfs-progs
     dbeaver
     etcd
     google-cloud-sdk
     plantuml
-    gradle
   ];
   home.username = "logan";
   home.homeDirectory = "/home/logan";

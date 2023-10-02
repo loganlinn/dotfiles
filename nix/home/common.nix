@@ -32,6 +32,7 @@ in
     duf # df alternative
     envsubst
     fd
+    file
     gawk
     gnugrep
     gnumake
@@ -49,7 +50,7 @@ in
     sops
     tree
     unzip
-    xh # curl alternative
+    xh # httpie alternative
     zip
   ];
 
