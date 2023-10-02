@@ -26,11 +26,6 @@ let
     imports = [
       mkCommonOptions
       {
-        nixpkgs.overlays = [
-          self.overlays.default
-          inputs.rust-overlay.overlays.default
-          inputs.emacs-overlay.overlays.default
-        ];
         # TODO move?
         nix.settings = {
           substituters = [

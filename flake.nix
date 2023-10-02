@@ -66,92 +66,23 @@
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
       perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
-        imports = [ ./options.nix ];
-
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
           config = import ./config/nixpkgs/config.nix;
+          overlays = [
+            self.overlays.default
+            inputs.rust-overlay.overlays.default
+            inputs.emacs-overlay.overlays.default
+          ];
         };
+
+        imports = [ ./options.nix ];
 
         packages = import ./nix/pkgs { inherit pkgs; };
 
         apps.default = {
           type = "app";
           program = "${pkgs.cowsay}/bin/cowsay";
-        };
-
-        apps.rebuild = {
-          type = "app";
-          program = pkgs.writeShellApplication {
-            name = "rebuild";
-            runtimeInputs = with pkgs; [ ansi gum nvd ];
-            text = ''
-              _run() {
-                ansi -e yellow
-                printf '$ %s\n\n' "$*"
-                ansi -e reset
-
-                if "$@"; then
-                  true
-                else
-                  local status=$?
-                  ansi -e red
-                  echo "command failed (exit=$status)"
-                  ansi -e reset
-                  return "$status"
-                fi
-              }
-
-              _sudo() {
-                if [[ $EUID == 0 ]]; then
-                  _run env "$@"
-                else
-                  _run sudo "$@"
-                fi
-              }
-
-              # Pass-through
-              if [[ $(uname -s) == "Darwin" ]]; then
-                exec darwin-rebuild "$@"
-              elif (( $# )); then
-                _run nixos-rebuild "$@"
-                exit "$?"
-              fi;
-
-
-              build() {
-                local choices=( "build" )
-
-                if _run nixos-rebuild build "$@" &&
-                  _run nvd diff /run/current-system result; then
-                  choices+=(
-                    switch
-                    boot
-                    test
-                    dry-activate
-                    build-vm
-                    build-vm-with-bootloader
-                    edit
-                    exit
-                  )
-                fi
-
-                if action=$(gum choose --header "nixos-rebuild operation:" "''${choices[@]}"); then
-                  case "$action" in
-                    build) build "$@";;
-                    exit) exit;;
-                    *) _sudo nixos-rebuild "$action" "$@";;
-                  esac
-                else
-                  ansi -e yellow
-                  echo 'aborted.'
-                  ansi -e reset
-                fi
-              }
-
-              build "$@"
-            '';
-          };
         };
 
         apps.nixpkgs-match = {
@@ -178,21 +109,15 @@
         };
 
         devShells.rust-stable = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            rust-bin.stable.latest.default
-          ];
+          buildInputs = with pkgs; [ rust-bin.stable.latest.default ];
         };
 
         devShells.rust-beta = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            rust-bin.beta.latest.default
-          ];
+          buildInputs = with pkgs; [ rust-bin.beta.latest.default ];
         };
 
         devShells.rust-nightly = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            rust-bin.nightly.latest.default
-          ];
+          buildInputs = with pkgs; [ rust-bin.nightly.latest.default ];
         };
 
         # FIXME: there's probably a flake.parts facility for this
