@@ -109,15 +109,27 @@
         };
 
         devShells.rust-stable = pkgs.mkShell {
-          buildInputs = with pkgs; [ rust-bin.stable.latest.default ];
+          buildInputs = with pkgs; [
+            clang
+            llvmPackages.bintools
+            rust-bin.stable.latest.default
+          ];
         };
 
         devShells.rust-beta = pkgs.mkShell {
-          buildInputs = with pkgs; [ rust-bin.beta.latest.default ];
+          buildInputs = with pkgs; [
+            clang
+            llvmPackages.bintools
+            rust-bin.beta.latest.default
+          ];
         };
 
         devShells.rust-nightly = pkgs.mkShell {
-          buildInputs = with pkgs; [ rust-bin.nightly.latest.default ];
+          buildInputs = with pkgs; [
+            clang
+            llvmPackages.bintools
+            rust-bin.nightly.latest.default
+          ];
         };
 
         # FIXME: there's probably a flake.parts facility for this
