@@ -26,7 +26,7 @@ in {
     ../nix/home/pretty.nix
     ../nix/home/qalculate
     ../nix/home/ssh.nix
-    ../nix/home/syncthing.nix
+    ../nix/home/syncthing
     ../nix/home/urxvt.nix
     ../nix/home/vpn.nix
     ../nix/home/vscode.nix

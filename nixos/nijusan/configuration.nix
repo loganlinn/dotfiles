@@ -53,6 +53,9 @@ with lib;
   services.davfs2.enable = true;
   services.gvfs.enable = true; # thunar mount, trash, and other functionalities
   # services.flatpak.enable = true;
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="thunderbolt", ATTR{authorized}=="0", ATTR{authorized}="1"
+  '';
 
   virtualisation.docker.enable = true;
 

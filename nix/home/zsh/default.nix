@@ -1,8 +1,4 @@
-{ lib
-, config
-, pkgs
-, ...
-}:
+{ lib, config, pkgs, ... }:
 
 with lib;
 
@@ -25,7 +21,8 @@ with lib;
     };
     shellAliases = {
       sudo = "sudo ";
-      commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
+      commands =
+        ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
     };
     shellGlobalAliases = {
       "..." = "../..";
@@ -52,7 +49,8 @@ with lib;
       pics = config.xdg.userDirs.pictures;
       music = config.xdg.userDirs.music;
       vids = config.xdg.userDirs.videos;
-      trash = "${config.xdg.dataHome}/Trash/files"; # https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
+      trash =
+        "${config.xdg.dataHome}/Trash/files"; # https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
     };
 
     plugins = import ./plugins.nix { inherit config pkgs lib; };
@@ -73,8 +71,7 @@ with lib;
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
       stty -ixon
 
-      ${optionalString config.programs.fzf.enable
-        ''
+      ${optionalString config.programs.fzf.enable ''
         source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
 
         gco() {
@@ -87,10 +84,12 @@ with lib;
             [[ -n $selected ]] && git checkout "$selected"
           fi
         }
-        ''}
+      ''}
     '';
 
-    initExtra = ''
+    initExtra = let
+      functionsDir = toString ./functions;
+    in ''
       unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
       setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
       setopt EQUALS               # Expansion of =command expands into full pathname of command
@@ -105,7 +104,9 @@ with lib;
 
       DIRSTACKSIZE=9
 
-      fpath+=("${./.}/functions" "$HOME/.local/share/zsh/functions")
+      fpath+=("${functionsDir}" "$HOME/.local/share/zsh/functions")
+      ${concatLines
+      (map (name: "autoload -Uz ${name}") (attrNames (builtins.readDir functionsDir)))}
 
       ${readFile ./clipboard.zsh}
 

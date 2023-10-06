@@ -13,6 +13,7 @@ in
     ./gh.nix
     ./kube.nix
     ./nodejs.nix
+    ./rust.nix
   ];
 
   home.packages = with pkgs; [
