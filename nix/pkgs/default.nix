@@ -6,9 +6,10 @@ let
 
   paths = [
     ./closh
-    ./kubefwd
     ./fztea
     ./i3-auto-layout.nix
+    ./jib.nix
+    ./kubefwd
     ./notify-send-py.nix
   ];
 

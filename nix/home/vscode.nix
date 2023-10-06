@@ -26,7 +26,7 @@
       kamadorueda.alejandra
       # mskelton.one-dark-theme
       ms-kubernetes-tools.vscode-kubernetes-tools
-      ms-python.python
+      # ms-python.python
       ms-vscode-remote.remote-ssh
       redhat.java
       redhat.vscode-yaml

@@ -242,6 +242,7 @@ in {
     "$mod+Shift+f" = "floating toggle";
     "$mod+Ctrl+f" = "fullscreen toggle";
     "$mod+Shift+y" = "floating toggle; sticky toggle";
+    "$mod+$alt+f" = "floating toggle; sticky toggle";
     "$mod+t" = "layout toggle split";
     "$mod+BackSpace" = "split toggle";
     "$mod+apostrophe" = "layout toggle stacking tabbed split";

@@ -86,8 +86,7 @@ in {
   programs.ssh.enable = true;
   programs.nix-index.enable = false;
   programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
-  # trial
-  programs.yazi.enable = true;
+  programs.vscode.enable = true;
 
   my.shellInitExtra = ''
     function ya() {
@@ -155,6 +154,7 @@ in {
     etcd
     google-cloud-sdk
     plantuml
+    self'.packages.jib
   ];
   home.username = "logan";
   home.homeDirectory = "/home/logan";

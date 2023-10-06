@@ -36,6 +36,9 @@
   kk = "kustomize";
   kkb = "kustomize build";
 
+  # Rust
+  c = "cargo";
+
   epoch = "date +%s";
   today = "date -Idate";
 
