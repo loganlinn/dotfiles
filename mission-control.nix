@@ -30,7 +30,7 @@
             };
             hm = {
               description = "Run home-manager";
-              exec = getExe inputs'.home-manager.packages.home-manager;
+              exec = "${inputs'.home-manager.packages.home-manager}/bin/home-manager";
             };
             zh = {
               description = "Start home-manger REPL";
