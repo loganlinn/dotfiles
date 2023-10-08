@@ -70,15 +70,16 @@ in {
       } (import ./nixos/modules);
 
       darwinModules = {
-        common = { imports = [ mkCommonModule ]; };
+        common = { imports = [ mkCommonModule ./nix-darwin/common.nix ]; };
 
-        home-manager = {
+        home-manager = { lib, ... }: {
           imports = [
             inputs.home-manager.darwinModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = mkSpecialArgs { };
+              home-manager.extraSpecialArgs =
+                mkSpecialArgs { lib = mkHmLib lib; };
             }
           ];
         };
@@ -87,15 +88,10 @@ in {
       homeModules = {
         common = { imports = [ mkCommonModule ./nix/home/common.nix ]; };
 
-        nix-colors = nix-colors.homeManagerModule;
+        nix-colors = { lib, ... }: {
+          imports = [ nix-colors.homeManagerModule ];
 
-        basic = {
-          imports = [
-            mkCommonModule
-            ./nix/home/common.nix
-            ./nix/home/dev
-            ./nix/home/pretty.nix
-          ];
+          colorScheme = lib.mkDefault nix-colors.colorSchemes.doom-one;
         };
 
         secrets = { imports = [ inputs.agenix.homeManagerModules.default ]; };

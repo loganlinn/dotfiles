@@ -165,12 +165,18 @@
           ];
 
         darwinConfigurations.patchbook =
-          self.lib.dotfiles.lib.mkMacosSystem "aarch64-darwin" [
+          self.lib.dotfiles.mkDarwinSystem "aarch64-darwin" [
+            self.darwinModules.common
             self.darwinModules.home-manager
             ./nix-darwin/patchbook.nix
             {
               home-manager.users.logan = { options, config, ... }: {
-                imports = [ self.homeModules.default ];
+                imports = [
+                  self.homeModules.common
+                  self.homeModules.nix-colors
+                  ./nix/home/dev
+                  ./nix/home/pretty.nix
+                ];
                 home.stateVersion = "22.11";
               };
             }

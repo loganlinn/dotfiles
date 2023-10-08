@@ -1,9 +1,9 @@
 { inputs, pkgs, lib, ... }: {
 
   imports = [
-    # ./common.nix
+    ./common.nix
+    ./modules/homebrew.nix
     # ./modules/security.nix
-    # ./modules/homebrew.nix
     # ./modules/skhd.nix
     # ./modules/yabai.nix
     # ./modules/tailscale.nix
