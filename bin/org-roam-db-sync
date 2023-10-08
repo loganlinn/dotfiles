@@ -1,0 +1,16 @@
+#!/usr/bin/env doomscript
+
+(defcli! org-roam-db-sync
+  ((force?   ("-!" "--force")   "Force a rebuild of the cache from scratch"))
+  "Synchronize the cache state with the current Org files on-disk."
+  (require 'doom-start)
+  (print! "Updating org-roam db...")
+  (let ((start-time (current-time)))
+    (org-roam-db-sync force?)
+    (print! "Complete (took %ss)"
+      (float-time (time-subtract (current-time) before-init-time)))))
+
+;;
+;;; Let 'er rip
+
+(run! "org-roam-db-sync" (cdr (member "--" argv)))
