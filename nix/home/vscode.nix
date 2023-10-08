@@ -19,7 +19,7 @@
       editorconfig.editorconfig
       golang.go
       github.copilot
-      github.codepsaces
+      github.codespaces
       github.github-vscode-theme
       github.vscode-pull-request-github
       # hashicorp.terraform
