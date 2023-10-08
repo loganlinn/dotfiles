@@ -15,7 +15,7 @@ lib.mkIf pkgs.stdenv.isLinux {
     cached-nix-shell
     usbutils # usb-devices
     sysz
-    trash-cli
+    trashy
     xdg-utils
     handlr # better xdg-utils (xdg-open, etc) [https://github.com/chmln/handlr]
     (writeShellScriptBin "open" ''exec ${handlr}/bin/handlr open "$@"'')
