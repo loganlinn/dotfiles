@@ -7,6 +7,7 @@ in {
     ../nix/home/awesomewm.nix
     ../nix/home/common.nix
     ../nix/home/conky
+    ../nix/home/contour.nix
     ../nix/home/davfs2.nix
     ../nix/home/deadd
     ../nix/home/dev # TODO module
@@ -43,9 +44,11 @@ in {
 
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 
-  my.deadd.enable = true;
   my.awesomewm.enable = true;
-  my.programs.eww.enable = true;
+  my.contour.enable = true;
+  my.deadd.enable = true;
+  my.eww.enable = true;
+  my.eww.service.enable = false;
   my.java.package = pkgs.jdk17;
   my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
   modules.polybar.networks = [
