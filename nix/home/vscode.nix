@@ -9,33 +9,34 @@
 
     # https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/editors/vscode/extensions
     extensions = with pkgs.vscode-extensions; [
-      arcticicestudio.nord-visual-studio-code
-      bbenoist.nix
-      betterthantomorrow.calva
-      bungcip.better-toml
+      # arcticicestudio.nord-visual-studio-code
+      # bbenoist.nix
+      # betterthantomorrow.calva
       # coolbear.systemd-unit-file
       # davidanson.vscode-markdownlint
-      dracula-theme.theme-dracula
+      # dracula-theme.theme-dracula
       eamodio.gitlens
       editorconfig.editorconfig
       golang.go
+      github.copilot
+      github.codepsaces
       github.github-vscode-theme
-      # github.vscode-pull-request-github
-      hashicorp.terraform
-      kahole.magit
-      kamadorueda.alejandra
+      github.vscode-pull-request-github
+      # hashicorp.terraform
+      # kahole.magit
+      # kamadorueda.alejandra
       # mskelton.one-dark-theme
-      ms-kubernetes-tools.vscode-kubernetes-tools
+      # ms-kubernetes-tools.vscode-kubernetes-tools
       # ms-python.python
-      ms-vscode-remote.remote-ssh
-      redhat.java
-      redhat.vscode-yaml
+      # ms-vscode-remote.remote-ssh
+      # redhat.java
+      # redhat.vscode-yaml
       # skellock.just
       # sumneko.lua
       timonwong.shellcheck
-      vscodevim.vim
+      # vscodevim.vim
       # zhuangtongfa.material-theme # One Dark Pro
-      zxh404.vscode-proto3
+      # zxh404.vscode-proto3
     ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
       {
         name = "isort";
@@ -70,7 +71,7 @@
       "window.newWindowDimensions" = "inherit";
       "window.openFilesInNewWindow" = "default";
       "workbench.activityBar.visible" = true;
-      "workbench.colorTheme" = "Nord";
+      # "workbench.colorTheme" = "Nord";
       # "workbench.colorTheme" = "Dracula";
       # "workbench.colorTheme" = "GitHub Dark Dimmed";
       "workbench.sideBar.location" = "right";

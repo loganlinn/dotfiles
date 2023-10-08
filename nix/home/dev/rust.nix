@@ -1,7 +1,11 @@
 { config, lib, pkgs, ... }:
 
 {
-  home.packages = [ pkgs.rustup ];
+  home.packages = with pkgs; [
+    rustup
+    jetbrains.rust-rover
+    # cargo-cross
+  ];
 
   home.sessionVariables = lib.optionalAttrs config.xdg.enable {
     RUSTUP_HOME = "$XDG_DATA_HOME/rustup";

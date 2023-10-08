@@ -143,12 +143,6 @@ in {
   manual.json.enable = true;
 
   home.packages = with pkgs; [
-    # cargo-cross
-    # (rust-bin.stable.latest.default.override { extensions = [ "rust-src" ]; })
-    # rust-analyzer
-    # rustfmt
-    # tokio-console
-
     btrfs-progs
     dbeaver
     etcd
