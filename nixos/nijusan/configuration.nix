@@ -19,15 +19,17 @@ with lib;
     self.nixosModules.tailscale
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
+    self.nixosModules.vivaldi
     self.nixosModules.xserver
     self.nixosModules.hyprland
     ./hardware-configuration.nix
     ./kernel-configuration.nix
   ];
 
+  my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
   my.hyprland.enable = false;
   my.tailscale.ssh.enable = true;
-  my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
+  my.vivaldi.enable = true;
 
   networking.hostName = "nijusan";
   networking.networkmanager.enable = true;

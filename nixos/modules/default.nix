@@ -16,6 +16,7 @@
   tailscale = ./tailscale.nix;
   thunar = ./thunar.nix;
   thunderbolt = ./thunderbolt.nix;
+  vivaldi = ./vivaldi.nix;
   wayland = ./wayland.nix;
   xserver = ./xserver.nix;
 }
