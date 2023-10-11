@@ -14,27 +14,27 @@ in {
     '';
 
 } // lib.mkIf pkgs.stdenv.isLinux {
-  # desktop notifications for home-manager activation DAG
-  home.extraActivationPath = [ pkgs.libnotify ];
+  # # desktop notifications for home-manager activation DAG
+  # home.extraActivationPath = [ pkgs.libnotify ];
 
-  # TODO maybe can just use all entries from config.home.activation for entryBefore/entryAfter
-  home.activation.notifyActivationPre = hm.dag.entryBefore ["checkLinkTargets"] ''
-    declare -gr _notifyActivationId=$(
-      notify-send \
-        -u low \
-        -a home-manager \
-        -p \
-        "home-manager activation starting" \
-        "Generation: #$oldGenNum -> #$newGenNum"
-    )
-  '';
+  # # TODO maybe can just use all entries from config.home.activation for entryBefore/entryAfter
+  # home.activation.notifyActivationPre = hm.dag.entryBefore ["checkLinkTargets"] ''
+  #   declare -gr _notifyActivationId=$(
+  #     notify-send \
+  #       -u low \
+  #       -a home-manager \
+  #       -p \
+  #       "home-manager activation starting" \
+  #       "Generation: #$oldGenNum -> #$newGenNum"
+  #   )
+  # '';
 
-  home.activation.notifyActivationPost = hm.dag.entryAfter [ "reloadSystemd" "onFilesChange" ] ''
-    notify-send \
-      -u low \
-      -r "$_notifyActivationId" \
-      -a home-manager \
-      "home-manager activation finished" \
-      "Generation: #$oldGenNum -> #$newGenNum"
-  '';
+  # home.activation.notifyActivationPost = hm.dag.entryAfter [ "reloadSystemd" "onFilesChange" ] ''
+  #   notify-send \
+  #     -u low \
+  #     -r "$_notifyActivationId" \
+  #     -a home-manager \
+  #     "home-manager activation finished" \
+  #     "Generation: #$oldGenNum -> #$newGenNum"
+  # '';
 }

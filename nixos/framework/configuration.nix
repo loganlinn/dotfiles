@@ -47,6 +47,7 @@ with lib;
   services.xserver.desktopManager.gnome.enable = true;
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.enable = true;
+  dconf.settings."/org/gnome/desktop/input-sources/xkb-options" = ["ctrl:nocaps"];
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
