@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ inputs, config, lib, pkgs, ... }:
 
 with lib;
 
@@ -14,7 +14,7 @@ in
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs-unstable.override {
+    package = inputs.emacs-overlay.packages.${pkgs.system}.emacs-unstable.override {
       withGTK3 = true;
       withXwidgets = true;
       withSQLite3 = true;
