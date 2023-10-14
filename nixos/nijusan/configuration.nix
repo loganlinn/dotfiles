@@ -47,6 +47,14 @@ with lib;
 
   security.polkit.enable = true;
 
+  services.postgresql.enable = true;
+  services.postgresql.package = pkgs.postgresql_16;
+  services.postgresql.settings = {
+    log_connections = true;
+    log_disconnections = true;
+    log_destination = lib.mkForce "syslog";
+  };
+
   services.printing.enable = true;
   services.printing.browsing = true; # advertise shared printers
   services.printing.cups-pdf.enable = true;
