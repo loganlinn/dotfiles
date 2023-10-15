@@ -110,9 +110,13 @@
 
         devShells.rust-stable = pkgs.mkShell {
           buildInputs = with pkgs; [
-            clang
+            cmake
             llvmPackages.bintools
-            rust-bin.stable.latest.default
+            openssl
+            pkg-config
+            (rust-bin.stable.latest.default.override {
+              targets = ["wasm32-unknown-unknown"];
+            })
           ];
         };
 

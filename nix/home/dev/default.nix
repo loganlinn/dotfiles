@@ -129,25 +129,16 @@ in
     icr
     shards
 
-    # javascript
-    # pnpm # Fast, disk space efficient package manager
-    nodejs
-    yarn
-    yarn-bash-completion
-    nodePackages.typescript-language-server
-    # deno
-    # nodePackages.typescript
-
     # graphql
-    nodePackages.graphql-language-service-cli
+    # nodePackages.graphql-language-service-cli
 
     # markdown
-    mdsh
-    glow
-    nodePackages.mermaid-cli
+    # mdsh
+    # glow
+    # nodePackages.mermaid-cli
 
     # vim
-    nodePackages.vim-language-server
+    # nodePackages.vim-language-server
   ];
 
   programs.go.enable = true;

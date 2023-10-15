@@ -47,13 +47,24 @@ with lib;
 
   security.polkit.enable = true;
 
-  services.postgresql.enable = true;
+  services.postgresql.enable = false;
   services.postgresql.package = pkgs.postgresql_16;
   services.postgresql.settings = {
     log_connections = true;
     log_disconnections = true;
     log_destination = lib.mkForce "syslog";
+    wal_level = "logical";
   };
+  services.postgresql.ensureUsers = [{
+    name = "logan"; # config.my.user.name;
+    ensurePermissions = {
+      "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
+    };
+    ensureClauses.replication = true;
+    ensureClauses.login = true;
+    ensureClauses.createrole = true;
+    ensureClauses.createdb = true;
+  }];
 
   services.printing.enable = true;
   services.printing.browsing = true; # advertise shared printers

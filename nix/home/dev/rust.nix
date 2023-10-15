@@ -5,10 +5,12 @@
     rustup
   ] ++ (lib.optional pkgs.stdenv.isLinux jetbrains.rust-rover);
 
-  home.sessionVariables = lib.optionalAttrs config.xdg.enable {
-    RUSTUP_HOME = "$XDG_DATA_HOME/rustup";
-    CARGO_HOME = "$XDG_DATA_HOME/cargo";
+  home.sessionVariables = {
+    RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
+    CARGO_HOME = "${config.xdg.dataHome}/cargo";
   };
 
-  home.sessionPath = lib.optional config.xdg.enable "$CARGO_HOME/bin";
+  home.sessionPath = [
+    "${config.xdg.dataHome}/cargo/bin"
+  ];
 }

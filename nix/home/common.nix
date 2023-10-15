@@ -67,6 +67,7 @@ in
     "$HOME/.dotfiles/local/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
+    "$HOME/.local/share/cargo/bin"
     "$HOME/.krew/bin"
     "$HOME/go/bin"
   ];

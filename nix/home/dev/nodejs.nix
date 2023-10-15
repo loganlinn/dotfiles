@@ -22,6 +22,16 @@ with lib.my;
   };
 
   config = {
+
+    home.packages = with pkgs; [
+      nodejs
+      yarn
+      yarn-bash-completion
+      nodePackages.pnpm
+      nodePackages.typescript-language-server
+      # nodePackages.typescript
+    ];
+
     home.sessionVariables = {
       GRAPHITE_DISABLE_TELEMETRY = "1";
       APOLLO_TELEMETRY_DISABLED = "1";
