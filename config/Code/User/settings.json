@@ -1,0 +1,141 @@
+{
+  "Lua.telemetry.enable": false,
+  "aws.telemetry": false,
+  "calva.paredit.defaultKeyMap": "strict",
+  "calva.prettyPrintingOptions": {
+    "enabled": true,
+    "maxLength": 50,
+    "printEngine": "pprint",
+    "width": 120
+  },
+  "editor.fontFamily": "JetBrainsMono Nerd Font, JetBrains Mono",
+  "editor.fontWeight": "normal",
+  "editor.formatOnSaveMode": "modifications",
+  "editor.highlightActiveIndentGuide": true,
+  "editor.hover.delay": 100,
+  "editor.largeFileOptimizations": true,
+  "editor.ligatures": true,
+  "editor.lineNumbers": "relative",
+  "editor.minimap.enabled": false,
+  "editor.renderControlCharacters": true,
+  "editor.rulers": [
+    99
+  ],
+  "editor.zenMode.hideTabs": true,
+  "editor.zenMode.singleFile": true,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.incrementalNaming": "smart",
+  "files.associations": {
+    "*.config": "shellscript",
+    "*.hcl": "terraform",
+    "*.variant": "terraform"
+  },
+  "files.exclude": {
+    "**/node_modules": true
+  },
+  "gitlens.codeLens.enabled": true,
+  "go.survey.prompt": false,
+  "markdownlint.ignore": [
+    "MD033"
+  ],
+  "redhat.telemetry.enabled": false,
+  "shellcheck.customArgs": [
+    "-x"
+  ],
+  "shellcheck.ignorePatterns": {
+    "**/*.config": true,
+    "**/*.env": true,
+    "**/*.envrc": true,
+    "**/*.zlogin": true,
+    "**/*.zlogout": true,
+    "**/*.zprofile": true,
+    "**/*.zsh": true,
+    "**/*.zsh-theme": true,
+    "**/*.zshenv": true,
+    "**/*.zshrc": true,
+    "**/zlogin": true,
+    "**/zlogout": true,
+    "**/zprofile": true,
+    "**/zshenv": true,
+    "**/zshrc": true
+  },
+  "shellcheck.useWorkspaceRootAsCwd": true,
+  "telemetry.telemetryLevel": "off",
+  "terminal.integrated.tabs.location": "left",
+  "tms.autoRefresh": false,
+  "typescript.surveys.enabled": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "vim.easymotion": true,
+  "vim.hlsearch": true,
+  "vim.incsearch": true,
+  "vim.normalModeKeyBindings": [
+    {
+      "before": [
+        "g",
+        "h"
+      ],
+      "commands": [
+        "cursorHome"
+      ]
+    },
+    {
+      "before": [
+        "g",
+        "j"
+      ],
+      "commands": [
+        "cursorBottom"
+      ]
+    },
+    {
+      "before": [
+        "g",
+        "k"
+      ],
+      "commands": [
+        "cursorTop"
+      ]
+    },
+    {
+      "before": [
+        "g",
+        "l"
+      ],
+      "commands": [
+        "cursorEnd"
+      ]
+    }
+  ],
+  "vim.smartRelativeLine": true,
+  "vim.useCtrlKeys": true,
+  "vim.useSystemClipboard": true,
+  "vim.visualModeKeyBindings": [
+    {
+      "before": [
+        ">"
+      ],
+      "commands": [
+        "editor.action.indentLines"
+      ]
+    },
+    {
+      "before": [
+        "<"
+      ],
+      "commands": [
+        "editor.action.outdentLines"
+      ]
+    }
+  ],
+  "vs-kubernetes": {
+    "vs-kubernetes.crd-code-completion": "disabled"
+  },
+  "window.newWindowDimensions": "inherit",
+  "window.openFilesInNewWindow": "default",
+  "workbench.activityBar.visible": true,
+  "workbench.editor.revealIfOpen": true,
+  "workbench.enableExperiments": false,
+  "workbench.sideBar.location": "right",
+  "workbench.startupEditor": "newUntitledFile"
+}

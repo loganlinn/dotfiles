@@ -1,6 +1,15 @@
-{ pkgs, lib, ... }: {
+{ config, pkgs, lib, ... }:
+{
 
   home.sessionVariables.VSCODE_TELEMETRY_DISABLED = "1";
+
+  xdg.configFile."Code/User/settings.json".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/.dotfiles/config/Code/User/settings.json";
+
+  xdg.configFile."Code/User/keybindings.json".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/.dotfiles/config/Code/User/keybindings.json";
 
   programs.vscode = {
     # enableUpdateCheck = true;
@@ -18,8 +27,8 @@
       eamodio.gitlens
       editorconfig.editorconfig
       golang.go
-      github.copilot
-      github.codespaces
+      # github.copilot
+      # github.codespaces
       github.github-vscode-theme
       github.vscode-pull-request-github
       # hashicorp.terraform
