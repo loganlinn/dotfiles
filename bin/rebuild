@@ -1,0 +1,63 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p bash nvd ansi gum
+#
+_run() {
+  ansi -e yellow
+  printf '$ %s\n\n' "$*"
+  ansi -e reset
+
+  if "$@"; then
+    true
+  else
+    local status=$?
+    ansi -e red
+    echo "command failed (exit=$status)"
+    ansi -e reset
+    return "$status"
+  fi
+}
+
+_sudo() {
+  if [[ $EUID == 0 ]]; then
+    _run env "$@"
+  else
+    _run sudo "$@"
+  fi
+}
+
+build() {
+  local choices=("build")
+
+  if _run nixos-rebuild build "$@" &&
+    _run nvd diff /run/current-system result; then
+    choices+=(
+      switch
+      boot
+      test
+      dry-activate
+      build-vm
+      build-vm-with-bootloader
+      edit
+      exit
+    )
+  fi
+
+  if action=$(gum choose --header "nixos-rebuild operation:" "${choices[@]}"); then
+    case "$action" in
+      build) build "$@" ;;
+      exit) exit ;;
+      *) _sudo nixos-rebuild "$action" "$@" ;;
+    esac
+  else
+    ansi -e yellow
+    echo 'aborted.'
+    ansi -e reset
+  fi
+}
+
+if [[ $(uname -s) == "Darwin" ]]; then
+  _run darwin-rebuild "$@"
+else
+  build "$@"
+fi
+exit "$?"
