@@ -29,9 +29,14 @@
 
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
   gtk.enable = true;
-  dconf.settings."/org/gnome/desktop/input-sources" = {
-    xkb-options = [ "ctrl:nocaps" "terminate:ctrl_alt_bksp" ];
-  };
+
+  # dconf.settings = with lib.hm.gvariant; {
+  #   "/org/gnome/desktop/input-sources" = {
+  #     # current = "uint32 0";
+  #     sources = [ (mkTuple [ "xkb" "us" ]) ];
+  #     xkb-options = [ "ctrl:nocaps" "terminate:ctrl_alt_bksp" ];
+  #   };
+  # };
 
   programs.kitty.enable = true;
   programs.emacs.enable = true;
