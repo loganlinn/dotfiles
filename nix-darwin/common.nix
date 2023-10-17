@@ -24,6 +24,8 @@
       };
     };
     settings.experimental-features = ["nix-command" "flakes"];
+    settings.keep-derivations = false;
+    settings.auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
   };
 
 }
