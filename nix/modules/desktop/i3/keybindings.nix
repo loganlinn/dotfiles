@@ -121,11 +121,6 @@ in {
   };
 
   focusTree = {
-    "$mod+z" = "focus prev sibling";
-    "$mod+x" = "focus next sibling";
-    "$mod+c" = "focus child";
-    "$mod+v" = "focus parent";
-
     "$mod+Up" = "focus parent";
     "$mod+Down" = "focus child";
     "$mod+Left" = "focus prev sibling";
@@ -246,6 +241,10 @@ in {
     "$mod+t" = "layout toggle split";
     "$mod+BackSpace" = "split toggle";
     "$mod+apostrophe" = "layout toggle stacking tabbed split";
+    "$mod+c" = "layout stacking";
+    "$mod+v" = "layout split";
+    "$mod+b" = "layout tabbed";
+
     "$mod+equal" = "exec --no-startup-id ${
         getExe (pkgs.callPackage ./i3-balance-workspace.nix { })
       }";
@@ -288,8 +287,8 @@ in {
   };
 
   bar = if config.services.polybar.enable then {
-    "$mod+b" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
+    "$mod+z" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
   } else {
-    "$mod+b" = "bar mode toggle";
+    "$mod+z" = "bar mode toggle";
   };
 }
