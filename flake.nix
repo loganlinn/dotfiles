@@ -72,6 +72,8 @@
       systems = [ "x86_64-linux" "aarch64-darwin" ];
 
       perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
+        imports = [ ./options.nix ];
+
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
           config = import ./config/nixpkgs/config.nix;

@@ -1,10 +1,7 @@
 { config, lib, pkgs, ... }:
 
-let
-in
 {
   imports = [
-    ../modules/nix-registry.nix
     ./accounts.nix
     ./clipboard.nix
     ./common-linux.nix
