@@ -1,9 +1,11 @@
 { config, lib, pkgs, ... }:
 
+with lib;
+
 {
   home.packages = with pkgs; [
     rustup
-  ] ++ (lib.optional pkgs.stdenv.isLinux jetbrains.rust-rover);
+  ];
 
   home.sessionVariables = {
     RUSTUP_HOME = "${config.xdg.dataHome}/rustup";

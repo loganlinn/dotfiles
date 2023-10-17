@@ -3,6 +3,10 @@
 with lib;
 
 let
+  lib' = import ./lib/extended.nix lib;
+
+  inherit (lib'.my.types) fontType;
+
   cfg = config.my;
 
   mkOpt = type: default: mkOption { inherit type default; };
@@ -23,8 +27,10 @@ in {
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwurIVpZjNpRjFva/8loWMCZobZQ3FSATVLC8LX2TDB sumaho@loganlinn.com"
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/IGTiUT57yPpsCHcSo0FUUBY7uTZL87vdr7EqE+fS+6FQFZbhXuzy63Y13+ssN1Cbwy7hE3I4u0HgaXnhe8Ogr+buvBYqcSCajbN8j2vVVy/WUuGRPKyczk0bZpL1V7LUt98jBMnctirVeY0YoBgEk9POWHZ4NTTK0Bsr2WAwpWUkdYPcHpEIW+ABNX4YqxZdq7ETMy18ELfE/IJz04/+9rGHvpsDLL2SXDJCj+hxofW28SaqncOv/GvTN9gpkQGpUfHbxMyHz8Xj3faiguCN70dFEUb1FVL5ilxePSp/hOYx039idGT+K5oojutT6gH8p1K2uQ12rO+auvmKVSrh logan@loganlinn.com"
     ];
+
     publicKeys = mkOpt (attrsOf str) { };
-    fonts = mkOpt (attrsOf lib.hm.types.fontType) {
+
+    fonts = mkOpt (attrsOf fontType) {
       serif = {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Serif";

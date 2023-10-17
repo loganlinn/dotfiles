@@ -5,6 +5,27 @@ with lib;
 # merge with lib.types so `with lib.my` works as expected with stdlib types.
 types // {
 
+  fontType = types.submodule {
+    options = {
+      package = mkOption {
+        type = types.nullOr types.package;
+        default = null;
+        example = literalExpression "pkgs.dejavu_fonts";
+      };
+
+      name = mkOption {
+        type = types.str;
+        example = "DejaVu Sans";
+      };
+
+      size = mkOption {
+        type = types.nullOr types.number;
+        default = null;
+        example = "8";
+      };
+    };
+  };
+
   pathStr = with types; coercedTo path toString str;
 
   # home-manager/modules/programs/gpg.nix

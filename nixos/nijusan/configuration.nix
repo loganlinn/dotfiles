@@ -85,6 +85,20 @@ with lib;
     cachix
     pciutils
     powertop
+
+    pkg-config
+    (fenix.complete.withComponents [
+      # https://rust-lang.github.io/rustup/concepts/components.html
+      "cargo"
+      "clippy"
+      "rust-docs"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ])
+    rust-analyzer-nightly
+    jetbrains.rust-rover
+
   ];
 
   xdg.portal = {

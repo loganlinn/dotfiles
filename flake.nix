@@ -20,11 +20,17 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     ## overlays
-    emacs-overlay.url = "github:nix-community/emacs-overlay";
-    emacs-overlay.inputs.nixpkgs.follows = "nixpkgs";
-    emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs-stable";
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs-stable";
+    };
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     ## etc
     flake-compat = {
@@ -71,12 +77,10 @@
           config = import ./config/nixpkgs/config.nix;
           overlays = [
             self.overlays.default
-            inputs.rust-overlay.overlays.default
             inputs.emacs-overlay.overlays.default
+            inputs.fenix.overlays.default
           ];
         };
-
-        imports = [ ./options.nix ];
 
         packages = import ./nix/pkgs { inherit pkgs; };
 
@@ -115,7 +119,7 @@
             openssl
             pkg-config
             (rust-bin.stable.latest.default.override {
-              targets = ["wasm32-unknown-unknown"];
+              targets = [ "wasm32-unknown-unknown" ];
             })
           ];
         };
@@ -136,17 +140,14 @@
           ];
         };
 
-        # FIXME: there's probably a flake.parts facility for this
         legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
           homeConfigurations = {
-            "logan@nijusan" = self.lib.dotfiles.mkHomeConfiguration ctx {
-              imports = [
-                self.homeModules.common
-                self.homeModules.nix-colors
-                self.homeModules.secrets
-                ./home-manager/nijusan.nix
-              ];
-            };
+            "logan@nijusan" = self.lib.dotfiles.mkHomeConfiguration ctx [
+              self.homeModules.common
+              self.homeModules.nix-colors
+              self.homeModules.secrets
+              ./home-manager/nijusan.nix
+            ];
           };
         };
       };
@@ -155,17 +156,17 @@
         nixosConfigurations.nijusan =
           self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
             ./nixos/nijusan/configuration.nix
-            inputs.home-manager.nixosModules.home-manager
-            self.nixosModules.home-manager
+            # self.nixosModules.home-manager
           ];
 
         nixosConfigurations.framework =
           self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
             ./nixos/framework/configuration.nix
-            inputs.home-manager.nixosModules.home-manager
             inputs.agenix.nixosModules.default
             self.nixosModules.home-manager
-            { home-manager.users.logan = import ./nixos/framework/home.nix; }
+            {
+              home-manager.users.logan = import ./nixos/framework/home.nix; # TODO unify with nijusan
+            }
           ];
 
         darwinConfigurations.patchbook =
