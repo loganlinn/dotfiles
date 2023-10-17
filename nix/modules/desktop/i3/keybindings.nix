@@ -242,7 +242,7 @@ in {
     "$mod+BackSpace" = "split toggle";
     "$mod+apostrophe" = "layout toggle stacking tabbed split";
     "$mod+c" = "layout stacking";
-    "$mod+v" = "layout split";
+    "$mod+v" = "layout toggle splitv splith";
     "$mod+b" = "layout tabbed";
 
     "$mod+equal" = "exec --no-startup-id ${
