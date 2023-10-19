@@ -5,12 +5,7 @@ with lib;
 let
   aspell = pkgs.aspellWithDicts (ds: with ds; [ en en-computers en-science ]);
 
-  doomer = pkgs.writeShellScriptBin "doomer" ''
-    ${pkgs.coreutils}/bin/nohup doom run "$@" >/dev/null 2>&1&
-  '';
-
   cfg = config.my.emacs.doom;
-
 in
 {
   options.my.emacs.doom = {
@@ -39,7 +34,6 @@ in
 
   config = mkIf cfg.enable {
     programs.emacs.enable = true;
-
     programs.git.enable = true;
     programs.ripgrep.enable = true;
     programs.pandoc.enable = true; # :lang (org +pandoc)
@@ -47,7 +41,7 @@ in
     home.packages = with pkgs; [
       aspell
       binutils # for native-comp
-      doomer
+      (pkgs.writeShellScriptBin "doomer" ''${pkgs.coreutils}/bin/nohup doom run "$@" >/dev/null 2>&1&'')
       editorconfig-core-c # per-project style config
       emacs-all-the-icons-fonts
       fd # for faster projectile indexing

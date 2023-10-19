@@ -14,11 +14,7 @@ in
 
   programs.emacs = {
     enable = true;
-    package = inputs.emacs-overlay.packages.${pkgs.system}.emacs-unstable.override {
-      withGTK3 = true;
-      withXwidgets = true;
-      withSQLite3 = true;
-    };
+    package = lib.mkDefault pkgs.emacs-unstable; # most recent git tag 
     extraPackages = epkgs: [ epkgs.vterm ];
   };
 }

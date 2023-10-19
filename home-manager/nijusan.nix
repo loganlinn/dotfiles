@@ -81,6 +81,7 @@ in {
   programs.kitty.enable = true;
   programs.wezterm.enable = false;
   programs.emacs.enable = true;
+  programs.emacs.package = pkgs.emacs-git;
   programs.rofi.enable = true;
   programs.google-chrome.enable = true;
   programs.firefox.enable = true;
