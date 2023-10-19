@@ -33,19 +33,33 @@ with lib.my;
     ];
 
     home.sessionVariables = {
-      GRAPHITE_DISABLE_TELEMETRY = "1";
-      APOLLO_TELEMETRY_DISABLED = "1";
-      NEXT_TELEMETRY_DISABLED = "1";
-      GATSBY_TELEMETRY_DISABLED = "1";
-
-      # XDG... ya heard of it?
+      # XDG, please
+      PNPM_HOME = "${config.xdg.dataHome}/pnpm";
       NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/config";
       NPM_CONFIG_PREFIX = "${config.xdg.dataHome}/npm"; # written to by `npm install --global ...`
       NPM_CONFIG_CACHE = "${config.xdg.cacheHome}/npm";
       NODE_REPL_HISTORY = "${config.xdg.stateHome}/nodejs/repl_history";
+
+      # Privacy, please
+      GRAPHITE_DISABLE_TELEMETRY = "1";
+      APOLLO_TELEMETRY_DISABLED = "1";
+      NEXT_TELEMETRY_DISABLED = "1";
+      GATSBY_TELEMETRY_DISABLED = "1";
     };
 
-    home.sessionPath = [ "${config.home.sessionVariables.NPM_CONFIG_PREFIX}/bin" ];
+    home.sessionPath = [
+      "${config.home.sessionVariables.NPM_CONFIG_PREFIX}/bin"
+    ];
+
+    my.shellInitExtra = ''
+      # Ensure PNPM_HOME is on path
+      if [ -n "$PNPM_HOME" ]; then
+        case :$PATH: in
+          *:$PNPM_HOME:*) ;;
+          *) export PATH=$PNPM_HOME:$PATH
+        esac
+      fi
+    '';
 
     # https://docs.npmjs.com/cli/v8/using-npm/config
     # $ npm config ls -l
@@ -59,9 +73,6 @@ with lib.my;
       init-author-email = "${config.my.npm.email}"
       init-author-name = "${config.my.npm.name}"
       init-author-url = "${config.my.npm.url}"
-      init-module = "${config.xdg.configHome}/npm/init.js"
-      prefix = "${config.xdg.dataHome}/npm"
-      shell = "${toExe config.programs.zsh}"
       sign-git-commit = true
       sign-git-tag = true
       strict-ssl = true
@@ -69,7 +80,6 @@ with lib.my;
       update-notifier = false
       usage = false
       user-agent = "npm/{npm-version} node/{node-version}"
-      userconfig = "${config.xdg.configHome}/npm/config"
     '';
   };
 }
