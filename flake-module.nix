@@ -15,7 +15,7 @@ let
     lib = mkHmLib lib;
   };
 
-  sharedModule = {
+  nixConfig = {
     # TODO move me
     nix.settings = {
       substituters = [
@@ -35,20 +35,17 @@ let
 
 in
 {
-  # perSystem = import ./options.nix;
-
   flake = {
-
     nixosModules = (import ./nixos/modules) // {
       home-manager = moduleWithSystem (
-        perSystem@{ inputs', self', options, config, pkgs }:
+        systemArgs@{ inputs', self', options, config, pkgs }:
         nixos@{ lib, ... }:
         {
           imports = [ inputs.home-manager.nixosModules.home-manager ];
           config = {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = mkSpecialArgs perSystem;
+            home-manager.extraSpecialArgs = mkSpecialArgs systemArgs;
             home-manager.users.${nixos.config.my.user.name} = { options, config, ... }: {
               options.my = nixos.options.my;
               config.my = nixos.config.my;
@@ -61,14 +58,14 @@ in
     darwinModules = {
       common = import ./nix-darwin/common.nix;
       home-manager = moduleWithSystem (
-        perSystem@{ inputs', self', options, config, pkgs }:
+        systemArgs@{ inputs', self', options, config, pkgs }:
         darwin@{ lib, ... }:
         {
           imports = [ inputs.home-manager.darwinModules.home-manager ];
           config = {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = mkSpecialArgs perSystem;
+            home-manager.extraSpecialArgs = mkSpecialArgs systemArgs;
             home-manager.users.${darwin.config.my.user.name} = { options, config, ... }: {
               options.my = darwin.options.my;
               config.my = darwin.config.my;
@@ -89,32 +86,40 @@ in
 
     lib.dotfiles = {
       mkNixosSystem = system: modules:
-        withSystem system (perSystem@{ self', inputs', config, pkgs, ... }:
+        withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
           inputs.nixpkgs.lib.nixosSystem {
-            inherit pkgs;
-            modules = [ ./options.nix sharedModule ] ++ modules;
-            specialArgs = mkSpecialArgs perSystem;
+            inherit system;
+            specialArgs = mkSpecialArgs systemArgs;
+            modules = [
+              ./options.nix
+              nixConfig
+              {
+                nixpkgs.config = pkgs.config;
+                nixpkgs.overlays = pkgs.overlays;
+              }
+            ] ++ modules;
           });
 
       mkDarwinSystem = system: modules:
-        withSystem system (perSystem@{ self', inputs', config, pkgs, ... }:
+        withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
           inputs.nix-darwin.lib.darwinSystem {
             inherit pkgs;
-            modules = [ ./options.nix sharedModule ] ++ modules;
-            specialArgs = mkSpecialArgs perSystem;
+            modules = [ ./options.nix nixConfig ] ++ modules;
+            specialArgs = mkSpecialArgs systemArgs;
           });
 
-      mkHomeConfiguration = perSystem@{ self', inputs', options, config, pkgs, ... }:
+      mkHomeConfiguration =
+        systemArgs@{ self', inputs', options, config, pkgs, lib ? pkgs.lib, ... }:
         modules:
         inputs.home-manager.lib.homeManagerConfiguration {
-          inherit (perSystem) pkgs;
+          inherit (systemArgs) pkgs lib;
           modules = [
             {
-              options.my = perSystem.options.my;
-              config.my = perSystem.config.my;
+              options.my = systemArgs.options.my;
+              config.my = systemArgs.config.my;
             }
           ] ++ modules;
-          extraSpecialArgs = mkSpecialArgs perSystem;
+          extraSpecialArgs = mkSpecialArgs systemArgs;
         };
 
       mkReplAttrs = attrs:
