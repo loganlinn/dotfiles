@@ -28,7 +28,7 @@ in
 
     userRepo.url = mkOption {
       type = types.str;
-      default = "https://github.com/${config.my.github.user}/.doom.d";
+      default = "https://github.com/${config.my.github.username}/.doom.d";
     };
   };
 

@@ -102,6 +102,21 @@ in {
     }
   '';
 
+  services.git-sync =
+    let
+      srcDirectory = "${config.home.homeDirectory}/src";
+      ghRepoPath = owner: repo: "${srcDirectory}/github.com/${owner}/${repo}";
+    in
+    {
+    enable = false;
+    repositories = {
+      "patch-tech/patch" = {
+        interval = 3600;
+        path = ghRepoPath "patch-tech" "patch";
+      };
+    };
+  };
+
   services.flameshot.enable = true;
   services.dunst.enable = false;
   services.picom.enable = true;

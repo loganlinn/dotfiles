@@ -14,14 +14,12 @@ let
   defaultFontSize = if pkgs.stdenv.isLinux then 10 else 12;
 in {
   options.my = with types; {
-    name = mkOpt str "Logan";
-    user.name = mkOpt str "logan";
-    user.signingkey = mkOpt str
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
-    shell = mkOpt (either str package) pkgs.zsh;
     email = mkOpt (nullOr str) "logan@loganlinn.com";
-    github.user = mkOpt str "loganlinn";
     homepage = mkOpt str "https://loganlinn.com";
+    user.name = mkOpt str "logan";
+    user.signingkey = mkOpt str "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
+    user.shell = mkOpt (either str package) pkgs.zsh;
+    github.username = mkOpt str "loganlinn";
     authorizedKeys = mkOpt (listOf str) [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa nijusan@loganlinn.com"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwurIVpZjNpRjFva/8loWMCZobZQ3FSATVLC8LX2TDB sumaho@loganlinn.com"

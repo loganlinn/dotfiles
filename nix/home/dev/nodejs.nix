@@ -8,7 +8,7 @@ with lib.my;
     my.npm = {
       name = mkOption {
         type = types.str;
-        default = config.my.github.user;
+        default = config.my.github.username;
       };
       email = mkOption {
         type = types.str;

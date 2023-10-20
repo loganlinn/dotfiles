@@ -8,8 +8,9 @@ in
 {
   imports = [ ../../options.nix ];
 
+  users.defaultUserShell = pkgs.zsh;
   users.users.${config.my.user.name} = {
-    shell = config.my.shell;
+    inherit (config.my.user) shell;
     isNormalUser = true;
     home = "/home/${config.my.user.name}";
     createHome = true;

@@ -1,23 +1,25 @@
-{ config
-, lib
-, pkgs
-, ...
-}:
-with lib; let
-  inherit (pkgs.stdenv) isLinux isDarwin;
+{ config, lib, pkgs, ... }:
 
-  workEmail = "logan@patch.tech";
-  workConfig = pkgs.writeText "work.gitconfig" ''
-    [user]
-    email = ${workEmail}
-  '';
-  workDirs = [ "~/src/github.com/patch-tech/" ];
-  git = getExe pkgs.git;
-in
+with lib;
+
 {
   programs.git = {
     enable = true;
     package = pkgs.gitFull; # gitk, ...
+
+    includes =
+      [
+        { path = "~/.config/git/config.local"; }
+        { path = ./include/gitalias.txt; }
+        {
+          path = pkgs.writeText "patch-tech.gitconfig" ''
+            [user]
+            email = logan@patch.tech
+          '';
+          condition = "gitdir:~/src/github.com/patch-tech/**";
+        }
+      ];
+
     aliases = {
       wt = "worktree";
       wtm = "worktree-main";
@@ -32,7 +34,7 @@ in
       worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
       worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
       amend = "commit --amend --reuse-message HEAD";
-      touch = ''!${git} commit --amend --date="$(date -r)"'';
+      touch = ''!git commit --amend --date="$(date -r)"'';
       undo = "reset --soft HEAD~1";
       stack = "!gt stack";
       upstack = "!gt upstack";
@@ -43,11 +45,11 @@ in
       l = "!gt log";
       default-branch = ''
         !f() {
-          ${git} rev-parse --git-dir &>/dev/null || return $?;
+          git rev-parse --git-dir &>/dev/null || return $?;
           for a in heads remotes; do
             for b in origin upstream; do
               for c in main trunk master; do
-                if ${git} show-ref --quiet --verify "refs/$a/$b/$c"; then
+                if git show-ref --quiet --verify "refs/$a/$b/$c"; then
                   printf %q "$c";
                   return;
                 fi;
@@ -57,15 +59,7 @@ in
           gh api /repos/{owner}/{repo} --jq '.default_branch'
         }; f'';
     };
-    includes =
-      [
-        { path = "~/.config/git/config.local"; }
-        { path = ./include/gitalias.txt; }
-      ]
-      ++ forEach workDirs (workDir: {
-        path = "${workConfig}";
-        condition = "gitdir:${workDir}";
-      });
+
     lfs.enable = true;
     delta = {
       enable = true;
@@ -88,10 +82,9 @@ in
       commit.gpgsign = true;
       gpg.format = "ssh";
       gpg.ssh.program =
-        if isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+        if pkgs.stdenv.isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
         else "op-ssh-sign";
-      user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
-      github.user = "loganlinn";
+      user.signingkey = config.my.user.signingkey;
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
@@ -109,9 +102,8 @@ in
         "${helper}";
     };
     # hooks
-    ignores = [ ".localinn" ];
     signing.key = null; # let GnuPG decide
-    userEmail = "logan@loganlinn.com";
+    userEmail = config.my.email;
     userName = "Logan Linn";
   };
 }
