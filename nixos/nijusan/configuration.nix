@@ -85,7 +85,6 @@ with lib;
     cachix
     pciutils
     powertop
-
     pkg-config
     (fenix.complete.withComponents [
       # https://rust-lang.github.io/rustup/concepts/components.html
@@ -97,6 +96,7 @@ with lib;
       "rustfmt"
     ])
     rust-analyzer-nightly
+    restream
     jetbrains.rust-rover
 
   ];
