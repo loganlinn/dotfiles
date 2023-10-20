@@ -38,6 +38,7 @@
   ];
   boot.kernelModules = [
     "kvm-intel"
+    "v4l2loopback"
   ];
   boot.extraModprobeConfig = ''
     "options snd_hda_intel power_save=1" # idle audio card after one second

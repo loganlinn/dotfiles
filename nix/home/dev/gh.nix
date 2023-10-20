@@ -28,6 +28,8 @@ with lib.my;
         pvw = "pr view --web";
         ps = "pr status";
 
+        repo-fork-sync = ''!gh api /repos/{owner}/{repo}/merge-upstream --method POST --field "branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"'';
+
         markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
 
         my-org = "api /orgs/{owner}/members --jq '.[].login'";

@@ -2,6 +2,9 @@
 
 with lib;
 
+let
+  systemdSupport = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
+in
 {
   imports = [ ../../options.nix ];
 
@@ -95,12 +98,12 @@ with lib;
     fd
     killall
     nixos-option
-    ripgrep
-    tree
-    sysz
-    xdg-utils
     qmk-udev-rules
-  ];
+    ripgrep
+    ssh-copy-id
+    tree
+    xdg-utils
+  ] ++ optional systemdSupport sysz;
 
   time.timeZone = mkDefault "America/Los_Angeles";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -138,10 +141,4 @@ with lib;
   nix.sshServe.keys = config.my.authorizedKeys;
 
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.packageOverrides = pkgs: {
-    nur = import (builtins.fetchTarball
-      "https://github.com/nix-community/NUR/archive/master.tar.gz") {
-        inherit pkgs;
-      };
-  };
 }
