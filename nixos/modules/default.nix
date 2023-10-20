@@ -13,6 +13,7 @@
   pipewire = ./pipewire.nix;
   printing = ./printing;
   security = ./security;
+  syncthing = ./syncthing.nix;
   tailscale = ./tailscale.nix;
   thunar = ./thunar.nix;
   thunderbolt = ./thunderbolt.nix;

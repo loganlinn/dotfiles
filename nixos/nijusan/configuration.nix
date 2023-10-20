@@ -4,24 +4,25 @@ with lib;
 
 {
   imports = [
-    self.nixosModules.common
     self.nixosModules._1password
     self.nixosModules.bluetooth
+    self.nixosModules.common
     self.nixosModules.davfs2
     self.nixosModules.docker
     self.nixosModules.gaming
+    self.nixosModules.hyprland
     self.nixosModules.networking
     self.nixosModules.nix-registry
     self.nixosModules.nvidia
     self.nixosModules.pipewire
     self.nixosModules.printing
     self.nixosModules.security
+    self.nixosModules.syncthing
     self.nixosModules.tailscale
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
     self.nixosModules.vivaldi
     self.nixosModules.xserver
-    self.nixosModules.hyprland
     ./hardware-configuration.nix
     ./kernel-configuration.nix
   ];
@@ -99,6 +100,12 @@ with lib;
     jetbrains.rust-rover
     restream
 
+    restream
+    (pkgs.makeDesktopItem {
+      name = "reStream";
+      desktopName = "reStream";
+      exec = "${pkgs.restream}/bin/restream";
+    })
   ];
 
   xdg.portal = {
@@ -170,6 +177,7 @@ with lib;
     EndSubSection
   '';
 
+  hardware.uinput.enable = true;
   hardware.flipperzero.enable = true;
 
   system.stateVersion = "23.05";

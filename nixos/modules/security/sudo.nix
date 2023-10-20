@@ -18,14 +18,20 @@ in
           };
           options = mkOption {
             type = with types; listOf (enum [ "NOPASSWD" "PASSWD" "NOEXEC" "EXEC" "SETENV" "NOSETENV" "LOG_INPUT" "NOLOG_INPUT" "LOG_OUTPUT" "NOLOG_OUTPUT" ]);
-            default = ["NOPASSWD" "SETENV"];
+            default = [ "NOPASSWD" "SETENV" ];
           };
         };
       }));
-      default = [];
+      default = [ ];
     };
   };
   config = {
+    my.sudo.commands = [
+      {
+        command = "${pkgs.systemd}/bin/reboot";
+        options = [ "NOPASSWD" ];
+      }
+    ];
     security.sudo = {
       package = pkgs.sudo.override { withInsults = true; }; # do your worst.
       extraRules = [{

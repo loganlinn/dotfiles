@@ -7,7 +7,6 @@ in {
     ../nix/home/awesomewm.nix
     ../nix/home/common.nix
     ../nix/home/conky
-    ../nix/home/contour.nix
     ../nix/home/davfs2.nix
     ../nix/home/deadd
     ../nix/home/dev # TODO module
@@ -27,7 +26,6 @@ in {
     ../nix/home/pretty.nix
     ../nix/home/qalculate
     ../nix/home/ssh.nix
-    ../nix/home/syncthing
     ../nix/home/urxvt.nix
     ../nix/home/vpn.nix
     ../nix/home/vscode.nix
@@ -45,7 +43,6 @@ in {
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 
   my.awesomewm.enable = true;
-  my.contour.enable = false;
   my.deadd.enable = true;
   my.eww.enable = true;
   my.eww.service.enable = false;
@@ -126,8 +123,9 @@ in {
       '';
     };
   };
-  services.syncthing.enable = true;
+
   services.syncthing.tray.enable = true;
+  services.syncthing.tray.command = "syncthingtray --wait";
 
   gtk.enable = true;
 
