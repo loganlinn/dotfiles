@@ -73,10 +73,10 @@ in {
   modules.desktop.browsers = {
     default = "${
         lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Default'";
-    # alternate = "${
-    #     lib.getExe config.programs.google-chrome.package
-    #   } '--profile-directory=Profile 1'";
+      } '--profile-directory=Profile 1'"; # work
+    alternate = "${
+        lib.getExe config.programs.google-chrome.package
+      } '--profile-directory=Default'"; # personal
   };
 
   programs.kitty.enable = true;
@@ -109,6 +109,7 @@ in {
   services.dunst.enable = false;
   services.picom.enable = true;
   services.polybar.enable = true;
+  modules.polybar.monitor = "DP-0";
   services.polybar.settings = {
     "module/temperature" = {
       # $ for i in /sys/class/thermal/thermal_zone*; do echo "$i: $(<$i/type)"; done

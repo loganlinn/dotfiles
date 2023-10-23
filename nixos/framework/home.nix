@@ -44,12 +44,8 @@
   ];
   modules.spellcheck.enable = true;
   modules.desktop.browsers = {
-    default = "${
-        lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Profile 1'"; # work
-    alternate = "${
-        lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Default'"; # personal
+    default = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Default'";
+    alternate = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Profile 2'";
   };
   services.picom.enable = true;
   services.polybar.enable = true;
