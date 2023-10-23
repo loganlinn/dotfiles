@@ -35,6 +35,7 @@
   ];
 
   my.deadd.enable = true;
+  modules.polybar.monitor = "eDP-1";
   modules.polybar.networks = [
     {
       interface = "wlp170s0";

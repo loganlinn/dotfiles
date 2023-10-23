@@ -21,12 +21,8 @@ with lib;
     # self.nixosModules.thunar
     # self.nixosModules.thunderbolt
     self.nixosModules.xserver
-    self.nixosModules.wireguard
     self.nixosModules.hyprland
   ];
-
-  my.wireguard.client.enable = true;
-  my.wireguard.client.privateKeyFile = "/home/logan/.config/wireguard/firewalla";
 
   # my.hyprland.enable = false;
   # my.tailscale.ssh.enable = true;

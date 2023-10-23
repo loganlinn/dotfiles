@@ -34,6 +34,8 @@ in
     KbdInteractiveAuthentication = false;
   };
 
+  programs.tmux.enable = true;
+
   programs.git.enable = mkDefault true;
   programs.git.package = mkDefault pkgs.gitFull;
 

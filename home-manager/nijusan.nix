@@ -51,6 +51,7 @@ in {
   my.eww.service.enable = false;
   my.java.package = pkgs.jdk17;
   my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
+  modules.polybar.monitor = "DP-0";
   modules.polybar.networks = [
     {
       interface = "eno3";
@@ -72,10 +73,10 @@ in {
   modules.desktop.browsers = {
     default = "${
         lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Profile 1'"; # work
-    alternate = "${
-        lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Default'"; # personal
+      } '--profile-directory=Default'";
+    # alternate = "${
+    #     lib.getExe config.programs.google-chrome.package
+    #   } '--profile-directory=Profile 1'";
   };
 
   programs.kitty.enable = true;

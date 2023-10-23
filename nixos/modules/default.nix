@@ -18,6 +18,5 @@
   thunderbolt = ./thunderbolt.nix;
   vivaldi = ./vivaldi.nix;
   wayland = ./wayland.nix;
-  wireguard = ./wireguard/client.nix;
   xserver = ./xserver.nix;
 }

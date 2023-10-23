@@ -118,6 +118,13 @@ let
     };
 in {
   options.modules.polybar = {
+    monitor = mkOption {
+      type = types.str;
+      example = literalExpression ''
+        "DP-0"
+        "eDP-1"
+      '';
+    };
     package = mkOption {
       type = types.package;
       default = pkgs.polybarFull;
@@ -210,8 +217,7 @@ in {
         })
         (nvs "bar/top" {
           "inherit" = "bar/base";
-          monitor.text = "\${env:MONITOR:DP-0}"; # set by script
-          monitor.fallback = "";
+          monitor.text = "\${env:MONITOR:${cfg.monitor}}"; # set by script
           monitor.strict = false;
           modules.left = concatStringsSep " " cfg.bars.top.modules.left;
           modules.center = concatStringsSep " " cfg.bars.top.modules.center;
@@ -816,5 +822,10 @@ in {
     systemd.user.services.polybar.Install.WantedBy =
       [ "graphical-session.target" ];
     systemd.user.services.polybar.Unit.After = [ "graphical-session.target" ];
+
+    # ensure polybar.d exists....
+    home.activation.polybarConfigDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${config.xdg.configHome}/polybar/polybar.d"
+    '';
   };
 }
