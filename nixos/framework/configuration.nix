@@ -20,7 +20,7 @@ with lib;
     self.nixosModules.tailscale
     # self.nixosModules.thunar
     # self.nixosModules.thunderbolt
-    # self.nixosModules.xserver
+    self.nixosModules.xserver
     self.nixosModules.wireguard
     self.nixosModules.hyprland
   ];
@@ -48,12 +48,28 @@ with lib;
   services.printing.enable = true;
   services.psd.enable = true; # https://wiki.archlinux.org/title/Profile-sync-daemon
   services.tailscale.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  services.xserver.displayManager.gdm.enable = true;
   services.xserver.enable = true;
-  # programs.dconf.profiles.user.databases = [{
-  #   settings."/org/gnome/desktop/input-sources/xkb-options" = ["ctrl:nocaps"];
-  # }];
+  # services.xserver.desktopManager.gnome.enable = true;
+  # services.xserver.displayManager.gdm.enable = true;
+  services.xserver.displayManager = {
+    lightdm.enable = true;
+    lightdm.greeters.slick.enable = true;
+    lightdm.greeters.slick.cursorTheme = {
+      package = pkgs.numix-cursor-theme;
+      name = "Numix-Cursor-Light";
+      size = 24;
+    };
+    defaultSession = "none+xsession";
+  };
+  services.xserver.windowManager = {
+    session = lib.singleton {
+      name = "xsession";
+      start = ''
+        ${pkgs.runtimeShell} "$HOME/.xsession" &
+        waitPID=$!
+      '';
+    };
+  };
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
@@ -64,15 +80,34 @@ with lib;
   programs.zsh.enable = true;
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
+  # programs.dconf.profiles.user.databases = [{
+  #   settings."/org/gnome/desktop/input-sources/xkb-options" = ["ctrl:nocaps"];
+  # }];
 
   environment.systemPackages = with pkgs; [
     cachix
     powertop
+    pkg-config
+    (fenix.complete.withComponents [
+      # https://rust-lang.github.io/rustup/concepts/components.html
+      "cargo"
+      "clippy"
+      "rust-docs"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ])
+    rust-analyzer-nightly
+    # jetbrains.rust-rover
+    restream
   ];
 
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
+    extraPortals = optionals config.services.xserver.enable [
+      pkgs.xdg-desktop-portal-gtk
+    ];
   };
 
   hardware.flipperzero.enable = mkDefault true;

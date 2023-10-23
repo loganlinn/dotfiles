@@ -45,7 +45,7 @@ in {
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
 
   my.awesomewm.enable = true;
-  my.contour.enable = true;
+  my.contour.enable = false;
   my.deadd.enable = true;
   my.eww.enable = true;
   my.eww.service.enable = false;

@@ -96,8 +96,8 @@ with lib;
       "rustfmt"
     ])
     rust-analyzer-nightly
-    restream
     jetbrains.rust-rover
+    restream
 
   ];
 
