@@ -99,8 +99,6 @@ with lib;
     rust-analyzer-nightly
     jetbrains.rust-rover
     restream
-
-    restream
     (pkgs.makeDesktopItem {
       name = "reStream";
       desktopName = "reStream";

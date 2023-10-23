@@ -38,6 +38,8 @@ with lib;
 
   virtualisation.docker.enable = true;
 
+  services.upower.ignoreLid = true;
+  services.logind.lidSwitchExternalPower = "ignore";
   services.davfs2.enable = true;
   services.gvfs.enable = true;
   services.printing.cups-pdf.enable = true;
