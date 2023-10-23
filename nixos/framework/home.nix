@@ -5,6 +5,7 @@
     self.homeModules.common
     self.homeModules.nix-colors
     self.homeModules.secrets
+    ../../nix/modules/desktop/apps # TODO module
     ../../nix/home/dev # TODO module
     ../../nix/home/emacs
     ../../nix/home/home-manager.nix
