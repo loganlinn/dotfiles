@@ -98,6 +98,11 @@ with lib;
     rust-analyzer-nightly
     # jetbrains.rust-rover
     restream
+    (pkgs.makeDesktopItem {
+      name = "reStream";
+      desktopName = "reStream";
+      exec = "${pkgs.restream}/bin/restream";
+    })
   ];
 
   xdg.portal = {
