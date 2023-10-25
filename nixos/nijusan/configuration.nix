@@ -16,6 +16,7 @@ with lib;
     self.nixosModules.nvidia
     self.nixosModules.pipewire
     self.nixosModules.printing
+    self.nixosModules.remarkable
     self.nixosModules.security
     self.nixosModules.syncthing
     self.nixosModules.tailscale
@@ -33,77 +34,56 @@ with lib;
   my.vivaldi.enable = true;
 
   networking.hostName = "nijusan";
-  networking.networkmanager.enable = true;
 
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
-  programs.git.enable = true;
-  programs.git.package = pkgs.gitFull;
   programs.htop.enable = true;
   programs.dconf.enable = true;
   programs.zsh.enable = true;
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
-  programs.mosh.enable = true;
+  programs.mosh.enable = false;
 
   security.polkit.enable = true;
 
-  services.postgresql.enable = false;
-  services.postgresql.package = pkgs.postgresql_16;
-  services.postgresql.settings = {
-    log_connections = true;
-    log_disconnections = true;
-    log_destination = lib.mkForce "syslog";
-    wal_level = "logical";
-  };
-  services.postgresql.ensureUsers = [{
-    name = "logan"; # config.my.user.name;
-    ensurePermissions = {
-      "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
+  services.postgresql = {
+    enable = false;
+    package = pkgs.postgresql_16;
+    settings = {
+      log_connections = true;
+      log_disconnections = true;
+      log_destination = lib.mkForce "syslog";
+      wal_level = "logical";
     };
-    ensureClauses.replication = true;
-    ensureClauses.login = true;
-    ensureClauses.createrole = true;
-    ensureClauses.createdb = true;
-  }];
+    ensureUsers = [{
+      name = "logan"; # config.my.user.name;
+      ensurePermissions = {
+        "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
+      };
+      ensureClauses.replication = true;
+      ensureClauses.login = true;
+      ensureClauses.createrole = true;
+      ensureClauses.createdb = true;
+    }];
+  };
 
   services.printing.enable = true;
-  services.printing.browsing = true; # advertise shared printers
-  services.printing.cups-pdf.enable = true;
   services.psd.enable = true; # https://wiki.archlinux.org/title/Profile-sync-daemon
   services.tailscale.enable = true;
   services.davfs2.enable = true;
   services.gvfs.enable = true; # thunar mount, trash, and other functionalities
   # services.flatpak.enable = true;
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="thunderbolt", ATTR{authorized}=="0", ATTR{authorized}="1"
-  '';
 
   virtualisation.docker.enable = true;
 
   environment.systemPackages = with pkgs; [
     btrbk
-    cachix
     pciutils
     powertop
-    pkg-config
-    (fenix.complete.withComponents [
-      # https://rust-lang.github.io/rustup/concepts/components.html
-      "cargo"
-      "clippy"
-      "rust-docs"
-      "rust-src"
-      "rustc"
-      "rustfmt"
-    ])
-    rust-analyzer-nightly
     jetbrains.rust-rover
-    restream
-    (pkgs.makeDesktopItem {
-      name = "reStream";
-      desktopName = "reStream";
-      exec = "${pkgs.restream}/bin/restream";
-    })
+    openssl
+    pkg-config
+    rustup
   ];
 
   xdg.portal = {

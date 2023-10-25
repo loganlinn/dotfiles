@@ -1,13 +1,14 @@
-{ config, lib, ... }:
+{ lib, ... }:
 
 with lib;
 
 {
-  imports = [
-    ./brother.nix
-  ];
-  config = mkIf config.services.printing.enable {
+  imports = [ ./brother.nix ];
+
+  config = {
+    services.printing.enable = mkDefault true;
+    services.printing.cups-pdf.enable = mkDefault true;
     services.printing.startWhenNeeded = mkDefault true;
-    services.printing.webInterface = false; # i.e. http://localhost:631/printers
+    services.printing.webInterface = mkDefault false;
   };
 }

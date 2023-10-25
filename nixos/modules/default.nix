@@ -13,6 +13,7 @@
   nvidia = ./nvidia.nix;
   pipewire = ./pipewire.nix;
   printing = ./printing;
+  remarkable = ./remarkable.nix;
   security = ./security;
   syncthing = ./syncthing.nix;
   tailscale = ./tailscale.nix;

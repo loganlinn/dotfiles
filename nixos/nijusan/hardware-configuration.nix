@@ -1,4 +1,4 @@
-{ inputs, modulesPath, ... }:
+{ inputs, modulesPath, lib, ... }:
 
 {
   # Things to try

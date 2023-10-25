@@ -8,7 +8,10 @@ in
 {
   imports = [ ../../options.nix ];
 
+  networking.networkmanager.enable = mkDefault true;
+
   users.defaultUserShell = pkgs.zsh;
+
   users.users.${config.my.user.name} = {
     inherit (config.my.user) shell;
     isNormalUser = true;
@@ -97,6 +100,7 @@ in
   environment.homeBinInPath = mkDefault true; # Add ~/bin to PATH
   environment.localBinInPath = mkDefault true; # Add ~/.local/bin to PATH
   environment.systemPackages = with pkgs; [
+    cachix
     curl
     fd
     killall

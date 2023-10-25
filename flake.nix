@@ -29,6 +29,10 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     ## etc
     flake-compat = {
@@ -103,42 +107,50 @@
 
         formatter = pkgs.nixpkgs-fmt;
 
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            config.flake-root.devShell # sets FLAKE_ROOT
-            config.mission-control.devShell
-          ];
-          buildInputs = [ config.formatter inputs'.agenix.packages.agenix ];
-          env.NIX_USER_CONF_FILES = toString ./nix.conf;
-        };
-
-        devShells.rust-stable = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            cmake
-            llvmPackages.bintools
-            openssl
-            pkg-config
-            (rust-bin.stable.latest.default.override {
-              targets = [ "wasm32-unknown-unknown" ];
-            })
-          ];
-        };
-
-        devShells.rust-beta = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            clang
-            llvmPackages.bintools
-            rust-bin.beta.latest.default
-          ];
-        };
-
-        devShells.rust-nightly = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            clang
-            llvmPackages.bintools
-            rust-bin.nightly.latest.default
-          ];
-        };
+        devShells = {
+          default = pkgs.mkShell {
+            inputsFrom = [
+              config.flake-root.devShell # sets FLAKE_ROOT
+              config.mission-control.devShell
+            ];
+            buildInputs = [ config.formatter inputs'.agenix.packages.agenix ];
+            env.NIX_USER_CONF_FILES = toString ./nix.conf;
+          };
+        } // (
+          lib.listToAttrs (
+            lib.forEach [
+              "stable"
+              "beta"
+              "minimal"
+              "default"
+              "complete"
+              "latest"
+            ]
+              (toolchain: {
+                name = "rust-${toolchain}";
+                value = pkgs.mkShell {
+                  buildInputs = with pkgs; [
+                    cmake
+                    llvmPackages.bintools
+                    openssl
+                    pkg-config
+                    # (rust-bin.stable.latest.default.override {
+                    #   targets = [ "wasm32-unknown-unknown" ];
+                    # })
+                    (fenix."${toolchain}".withComponents [
+                      # https://rust-lang.github.io/rustup/concepts/components.html
+                      "cargo"
+                      "clippy"
+                      "rust-docs"
+                      "rust-src"
+                      "rustc"
+                      "rustfmt"
+                    ])
+                    rust-analyzer-nightly
+                  ];
+                };
+              })
+          ));
 
         legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
           homeConfigurations = {

@@ -35,6 +35,9 @@
   boot.kernelParams = [
     "i915.enable_psr=1"
     "i915.force_probe=a780"
+    # https://lore.kernel.org/linux-pci/20190821124519.71594-1-mika.westerberg@linux.intel.com/
+    # https://lore.kernel.org/linux-pci/20190927090202.1468-1-drake@endlessm.com/
+    "mem_sleep_default=deep"
   ];
   boot.kernelModules = [
     "kvm-intel"

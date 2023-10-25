@@ -89,6 +89,19 @@ in {
   programs.nix-index.enable = false;
   programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
   programs.vscode.enable = true;
+  programs.obs-studio = {
+    enable = true;
+    plugins = with pkgs.obs-studio-plugins; [
+      input-overlay
+      obs-backgroundremoval
+      obs-freeze-filter
+      obs-gstreamer
+      obs-pipewire-audio-capture
+      obs-source-switcher
+      obs-vintage-filter
+      obs-vkcapture
+    ];
+  };
 
   my.shellInitExtra = ''
     function ya() {
@@ -121,7 +134,6 @@ in {
   services.dunst.enable = false;
   services.picom.enable = true;
   services.polybar.enable = true;
-  modules.polybar.monitor = "DP-0";
   services.polybar.settings = {
     "module/temperature" = {
       # $ for i in /sys/class/thermal/thermal_zone*; do echo "$i: $(<$i/type)"; done
