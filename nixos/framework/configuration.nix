@@ -8,7 +8,7 @@ with lib;
     ./hardware-configuration.nix
     self.nixosModules.common
     self.nixosModules._1password
-    # self.nixosModules.bluetooth
+    self.nixosModules.bluetooth
     # self.nixosModules.docker
     self.nixosModules.networking
     self.nixosModules.nix-registry
