@@ -84,68 +84,78 @@ in
       secrets = inputs.agenix.homeManagerModules.default;
     };
 
-    lib.dotfiles = {
-      mkNixosSystem = system: modules:
-        withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
-          inputs.nixpkgs.lib.nixosSystem {
-            inherit system;
-            specialArgs = mkSpecialArgs systemArgs;
+    lib = rec {
+      my = (mkHmLib top.lib).my;
+      dotfiles = {
+        mkNixosSystem = system: modules:
+          withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
+            inputs.nixpkgs.lib.nixosSystem {
+              inherit system;
+              specialArgs = mkSpecialArgs systemArgs;
+              modules = [
+                ./options.nix
+                nixConfig
+                {
+                  nixpkgs.config = pkgs.config;
+                  nixpkgs.overlays = pkgs.overlays;
+                }
+              ] ++ modules;
+            });
+
+        mkDarwinSystem = system: modules:
+          withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
+            inputs.nix-darwin.lib.darwinSystem {
+              inherit pkgs;
+              modules = [ ./options.nix nixConfig ] ++ modules;
+              specialArgs = mkSpecialArgs systemArgs;
+            });
+
+        mkHomeConfiguration =
+          systemArgs@{ self', inputs', options, config, pkgs, lib ? pkgs.lib, ... }:
+          modules:
+          inputs.home-manager.lib.homeManagerConfiguration {
+            inherit (systemArgs) pkgs lib;
             modules = [
-              ./options.nix
-              nixConfig
               {
-                nixpkgs.config = pkgs.config;
-                nixpkgs.overlays = pkgs.overlays;
+                options.my = systemArgs.options.my;
+                config.my = systemArgs.config.my;
               }
             ] ++ modules;
-          });
+            extraSpecialArgs = mkSpecialArgs systemArgs;
+          };
 
-      mkDarwinSystem = system: modules:
-        withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
-          inputs.nix-darwin.lib.darwinSystem {
-            inherit pkgs;
-            modules = [ ./options.nix nixConfig ] ++ modules;
-            specialArgs = mkSpecialArgs systemArgs;
-          });
-
-      mkHomeConfiguration =
-        systemArgs@{ self', inputs', options, config, pkgs, lib ? pkgs.lib, ... }:
-        modules:
-        inputs.home-manager.lib.homeManagerConfiguration {
-          inherit (systemArgs) pkgs lib;
-          modules = [
-            {
-              options.my = systemArgs.options.my;
-              config.my = systemArgs.config.my;
-            }
-          ] ++ modules;
-          extraSpecialArgs = mkSpecialArgs systemArgs;
-        };
-
-      mkReplAttrs = attrs:
-        (builtins // self // {
-          inherit self;
-          inherit (self.currentSystem) legacyPackages;
-          inherit (self.currentSystem.allModuleArgs) # i.e. perSystem module args
-            inputs' self' config options system pkgs;
-        } // rec {
-          lib = mkHmLib top.lib;
-          getNixos = { hostname ? lib.my.currentHostname }:
-            self.nixosConfigurations.${hostname} or null;
-          getDarwin = { hostname ? lib.my.currentHostname }:
-            self.darwinConfigurations.${hostname} or null;
-          getHome =
-            { user ? (builtins.getEnv "USER")
-            , hostname ? lib.my.currentHostname
-            , system ? builtins.currentSystem
-            }:
-            let inherit (self.legacyPackages.${system}) homeConfigurations;
-            in homeConfigurations."${user}@${hostname}" or homeConfigurations.${user} or homeConfigurations.${hostname} or null;
-
-          nixos = getNixos { };
-          darwin = getDarwin { };
-          hm = getHome { };
-        } // attrs);
+        mkReplAttrs =
+          { user ? (builtins.getEnv "USER")
+          , hostname ? my.currentHostname
+          , system ? builtins.currentSystem
+          }:
+          builtins //
+          self //
+          rec {
+            inherit self;
+            inherit (self.currentSystem)
+              legacyPackages;
+            inherit (self.currentSystem.allModuleArgs) # i.e. perSystem module args
+              inputs'
+              self'
+              config
+              options
+              system
+              pkgs;
+            lib = mkHmLib pkgs.lib;
+            nixos = self.nixosConfigurations.${hostname} or null;
+            darwin = self.darwinConfigurations.${hostname} or null;
+            hm =
+              # home-manager "standalone" installation
+              legacyPackages.homeConfigurations."${user}@${hostname}"
+                or legacyPackages.homeConfigurations.${user}
+                or legacyPackages.homeConfigurations.${hostname}
+                # home-manager "nixos module" installation
+                or nixos.config.home-manager.users.${user}
+                # ¯\_(ツ)_/¯
+                or null;
+          };
+      };
     };
   };
 }
