@@ -8,8 +8,9 @@ with lib;
     ./hardware-configuration.nix
     self.nixosModules.common
     self.nixosModules._1password
+    self.nixosModules.apple-keyboard
     self.nixosModules.bluetooth
-    # self.nixosModules.docker
+    self.nixosModules.docker
     self.nixosModules.networking
     self.nixosModules.nix-registry
     self.nixosModules.pipewire
@@ -18,8 +19,8 @@ with lib;
     self.nixosModules.davfs2
     # self.nixosModules.gaming
     self.nixosModules.tailscale
-    # self.nixosModules.thunar
-    # self.nixosModules.thunderbolt
+    self.nixosModules.thunar
+    self.nixosModules.thunderbolt
     self.nixosModules.xserver
     self.nixosModules.hyprland
   ];

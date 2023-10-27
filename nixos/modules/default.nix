@@ -1,5 +1,6 @@
 {
   _1password = ./1password.nix;
+  apple-keyboard = ./apple-keyboard.nix;
   bluetooth = ./bluetooth.nix;
   common = ./common.nix;
   davfs2 = ./davfs2.nix;
