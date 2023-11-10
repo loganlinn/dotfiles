@@ -110,7 +110,6 @@ in {
       "$mod+s" = "${pkgs.rofi-systemd}/bin/rofi-systemd";
       "$mod+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select sink";
       "$mod+Shift+a" = "${pkgs.rofi-pulse-select}/bin/rofi-pulse-select source";
-      "$mod+p" = "env REPOSITORY=patch-tech/patch ${rofi} -show gh -modi gh";
     };
 
   focusNeighbor = {

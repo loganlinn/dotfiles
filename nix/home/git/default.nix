@@ -11,13 +11,6 @@ with lib;
       [
         { path = "~/.config/git/config.local"; }
         { path = ./include/gitalias.txt; }
-        {
-          path = pkgs.writeText "patch-tech.gitconfig" ''
-            [user]
-            email = logan@patch.tech
-          '';
-          condition = "gitdir:~/src/github.com/patch-tech/**";
-        }
       ];
 
     aliases = {

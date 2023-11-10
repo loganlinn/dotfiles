@@ -21,7 +21,6 @@
       p = "~/Pictures";
       v = "~/Videos";
       "." = "~/.dotfiles";
-      "1" = "~/src/github.com/patch-tech/patch";
     };
 
     plugins = {

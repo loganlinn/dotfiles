@@ -37,7 +37,6 @@ in
         "file://${config.xdg.userDirs.music}"
         "file://${config.xdg.userDirs.videos}"
         "file://${config.home.homeDirectory}/src"
-        "file://${config.home.homeDirectory}/src/github.com/patch-tech"
         "file:///run/current-system/sw current-system"
         "davs://myfiles.fastmail.com/ Fastmail Files"
       ];

@@ -71,10 +71,10 @@ in {
   modules.desktop.browsers = {
     default = "${
         lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Profile 1'"; # work
+      } '--profile-directory=Default'";
     alternate = "${
-        lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Default'"; # personal
+        lib.getExe config.programs.librewolf.package
+      } --private-window";
   };
 
   programs.kitty.enable = true;
@@ -114,21 +114,6 @@ in {
       rm -f -- "$tmp"
     }
   '';
-
-  services.git-sync =
-    let
-      srcDirectory = "${config.home.homeDirectory}/src";
-      ghRepoPath = owner: repo: "${srcDirectory}/github.com/${owner}/${repo}";
-    in
-    {
-    enable = false;
-    repositories = {
-      "patch-tech/patch" = {
-        interval = 3600;
-        path = ghRepoPath "patch-tech" "patch";
-      };
-    };
-  };
 
   services.flameshot.enable = true;
   services.dunst.enable = false;
