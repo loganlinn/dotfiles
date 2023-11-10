@@ -84,6 +84,7 @@ with lib;
     openssl
     pkg-config
     rustup
+    # qemu
   ];
 
   xdg.portal = {
