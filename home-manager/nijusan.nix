@@ -29,6 +29,7 @@ in {
     ../nix/home/urxvt.nix
     ../nix/home/vpn.nix
     ../nix/home/vscode.nix
+    ../nix/home/wezterm
     ../nix/home/x11.nix
     ../nix/home/yt-dlp.nix
     ../nix/home/yubikey.nix
@@ -77,7 +78,6 @@ in {
   };
 
   programs.kitty.enable = true;
-  programs.wezterm.enable = false;
   programs.emacs.enable = true;
   programs.emacs.package = pkgs.emacs-git;
   programs.rofi.enable = true;
