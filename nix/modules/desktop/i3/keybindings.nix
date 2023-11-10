@@ -244,10 +244,6 @@ in {
     "$mod+c" = "layout stacking";
     "$mod+v" = "layout toggle splitv splith";
     "$mod+b" = "layout tabbed";
-
-    "$mod+equal" = "exec --no-startup-id ${
-        getExe (pkgs.callPackage ./i3-balance-workspace.nix { })
-      }";
   };
 
   scratchpad = {

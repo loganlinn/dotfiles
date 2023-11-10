@@ -463,9 +463,6 @@ in {
         bindsym d floating enable, resize set 42 ppt 80 ppt, move position center, move right 21 ppt, mode "default"
         bindsym e floating enable, resize set 42 ppt 80 ppt, move position center, move right 21 ppt, mode "default"
 
-        bindsym equal exec --no-startup-id ${
-          getExe (pkgs.callPackage ./i3-balance-workspace.nix { })
-        };
         bindsym Shift+equal resize grow width 10 px or 5 ppt, resize grow height 10 px or 5 ppt
         bindsym minus resize shrink width 10 px or 5 ppt, resize shrink height 10 px or 5 ppt
 
