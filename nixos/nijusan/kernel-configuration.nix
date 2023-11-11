@@ -50,6 +50,7 @@
     # ];
   };
 
+  boot.supportedFilesystems = [ "ntfs" ];
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [
     "i915.enable_psr=1"
@@ -61,6 +62,9 @@
   boot.kernelModules = [
     "kvm-intel"
     "v4l2loopback"
+  ];
+  boot.extraModulePackages = [
+    # config.boot.kernelPackages.exfat-nofuse
   ];
   boot.extraModprobeConfig = ''
     "options snd_hda_intel power_save=1" # idle audio card after one second
