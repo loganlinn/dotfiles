@@ -6,7 +6,10 @@ let
   systemdSupport = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
 in
 {
-  imports = [ ../../options.nix ];
+  imports = [
+    ../../options.nix
+    ./vim.nix
+  ];
 
   networking.networkmanager.enable = mkDefault true;
 
@@ -53,49 +56,6 @@ in
   programs.zsh.enableCompletion = true;
   programs.zsh.enableLsColors = true;
   programs.zsh.syntaxHighlighting.enable = true;
-
-  programs.vim = {
-    defaultEditor = true;
-    package = pkgs.vim-full.customize {
-      name = "vim";
-      vimrcConfig.packages.myPlugins = with pkgs.vimPlugins; {
-        start = [
-          editorconfig-vim
-          fzf-vim
-          vim-commentary
-          vim-eunuch
-          vim-fugitive
-          vim-gitgutter
-          vim-lastplace
-          vim-nix
-          vim-repeat
-          vim-sensible
-          vim-sleuth
-          vim-surround
-          vim-unimpaired
-        ];
-        opt = [ ];
-      };
-      vimrcConfig.customRC = ''
-        let mapleader = "\<Space>"
-
-        " system clip
-        set clipboard=unnamed
-
-        " yank to system clipboard without motion
-        nnoremap <Leader>y "+y
-
-        " yank line to system clipboard
-        nnoremap <Leader>yl "+yy
-
-        " yank file to system clipboard
-        nnoremap <Leader>yf gg"+yG
-
-        " paste from system clipboard
-        nnoremap <Leader>p "+p
-      '';
-    };
-  };
 
   environment.homeBinInPath = mkDefault true; # Add ~/bin to PATH
   environment.localBinInPath = mkDefault true; # Add ~/.local/bin to PATH
