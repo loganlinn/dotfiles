@@ -106,8 +106,7 @@ in {
       # $ for i in /sys/class/thermal/thermal_zone*; do echo "$i: $(<$i/type)"; done
       thermal-zone = 1; # x86_pkg_temp
       # $ for i in /sys/class/hwmon/hwmon*/temp*_input; do echo "$(<$(dirname $i)/name): $(cat ${i%_*}_label 2>/dev/null || echo $(basename ${i%_*})) $(readlink -f $i)"; done
-      hwmon-path =
-        "/sys/devices/platform/coretemp.0/hwmon/hwmon2/temp1_input"; # Package id 0
+      hwmon-path = "/sys/devices/platform/coretemp.0/hwmon/hwmon6/temp1_input"; # Package id 0
       base.temperature = 50;
       warn.temperature = 75;
     };
