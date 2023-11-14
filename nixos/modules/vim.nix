@@ -4,7 +4,10 @@ with lib;
 
 {
   config = {
-    programs.fzf.enable = true;
+    environment.systemPackages = with pkgs; [
+      fzf
+      xclip
+    ];
     programs.vim = {
       defaultEditor = !config.programs.neovim.defaultEditor;
       package = pkgs.vim-full.customize {

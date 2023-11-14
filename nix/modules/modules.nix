@@ -23,7 +23,5 @@
   ../../nix/modules/services
   ../../nix/modules/spellcheck.nix
   ../../nix/modules/desktop
-  ../../nix/modules/desktop/browsers
-  ../../nix/modules/desktop/browsers/firefox.nix
   ../../nix/modules/desktop/i3
 ]

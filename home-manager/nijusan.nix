@@ -36,8 +36,6 @@ in {
     ../nix/modules/services
     ../nix/modules/spellcheck.nix
     ../nix/modules/desktop
-    ../nix/modules/desktop/browsers
-    ../nix/modules/desktop/browsers/firefox.nix
     ../nix/modules/desktop/i3
   ];
 
@@ -69,12 +67,8 @@ in {
     logoScale = 4.0;
   };
   modules.desktop.browsers = {
-    default = "${
-        lib.getExe config.programs.google-chrome.package
-      } '--profile-directory=Default'";
-    alternate = "${
-        lib.getExe config.programs.librewolf.package
-      } --private-window";
+    default = "${lib.getExe config.programs.google-chrome.package} '--profile-directory=Default'";
+    alternate = "${config.programs.librewolf.package}/bin/librewolf --private-window";
   };
 
   programs.kitty.enable = true;
@@ -138,8 +132,6 @@ in {
 
   services.syncthing.tray.enable = true;
   services.syncthing.tray.command = "syncthingtray --wait";
-
-  gtk.enable = true;
 
   xsession.windowManager.i3.enable = true;
   xsession.windowManager.i3.config.terminal = "kitty";

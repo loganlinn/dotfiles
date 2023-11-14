@@ -4,21 +4,18 @@ let
 
   cfg = config.modules.theme;
 
-in {
+in
+{
   config = lib.mkIf (cfg.active == "arc") {
-
-    gtk = {
-      theme = {
-        name = "Arc-Dark";
-        package = pkgs.arc-theme;
-      };
-
-      iconTheme = {
-        package = pkgs.arc-icon-theme;
-        name = "Arc";
-      };
+    gtk.enable = true;
+    gtk.theme = {
+      name = "Arc-Dark";
+      package = pkgs.arc-theme;
     };
-
+    gtk.iconTheme = {
+      package = pkgs.arc-icon-theme;
+      name = "Arc";
+    };
     home.pointerCursor = {
       package = pkgs.numix-cursor-theme;
       name = "Numix-Cursor-Light";

@@ -28,9 +28,6 @@
     ../../nix/modules/services
     ../../nix/modules/spellcheck.nix
     ../../nix/modules/desktop
-    ../../nix/modules/desktop/browsers
-    ../../nix/modules/desktop/browsers/firefox.nix
-    ../../nix/modules/desktop/apps # TODO module
     ../../nix/modules/desktop/i3
   ];
 
@@ -54,7 +51,6 @@
   xsession.windowManager.i3.config.terminal = "kitty";
 
   colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
-  gtk.enable = true;
 
   # dconf.settings = with lib.hm.gvariant; {
   #   "/org/gnome/desktop/input-sources" = {

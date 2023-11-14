@@ -98,7 +98,7 @@
 
         tree = {
           shortCut = "Shift+T";
-          command = lib.getExe pkgs.kubectl-tree;
+          command = "${pkgs.kubectl-tree}/bin/kubectl-tree";
           args = [
             "--kubeconfig"
             "$KUBECONFIG"
@@ -118,7 +118,7 @@
 
         images = {
           shortCut = "Ctrl+I";
-          command = lib.getExe pkgs.kubectl-tree;
+          command = "${pkgs.kubectl-tree}/bin/kubectl-tree";
           args = [
             "--kubeconfig"
             "$KUBECONFIG"
@@ -157,7 +157,7 @@
             "io.opentelemetry.exporter.logging.LoggingMetricExporter"
           ];
           background = false;
-          command = lib.getExe pkgs.stern;
+          command = "${pkgs.stern}/bin/stern";
           confirm = false;
           description = "Logs <Stern>";
           scopes = [ "pods" "jobs" "daemonsets" "statefulsets" ];
@@ -165,7 +165,7 @@
         };
 
         watch-events = {
-          command = lib.getExe pkgs.kubectl;
+          command = "kubectl";
           args = [
             "--context"
             "$CONTEXT"

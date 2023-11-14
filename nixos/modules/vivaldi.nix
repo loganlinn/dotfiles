@@ -17,7 +17,7 @@ let cfg = config.my.vivaldi; in
       default = "";
     };
 
-    package = mkPackageOptionMD pkgs "vivaldi" { };
+    package = mkPackageOption pkgs "vivaldi" { };
 
     finalPackage = mkOption {
       type = types.package;

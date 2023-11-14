@@ -14,18 +14,19 @@ in
   networking.networkmanager.enable = mkDefault true;
 
   users.defaultUserShell = pkgs.zsh;
-
   users.users.${config.my.user.name} = {
-    inherit (config.my.user) shell;
-    isNormalUser = true;
+    shell = config.my.user.shell or config.users.defaultUserShell;
     home = "/home/${config.my.user.name}";
+    isNormalUser = true;
     createHome = true;
     extraGroups = [ "wheel" "audio" "video" ]
+      ++ (config.my.user.groups or [ ])
       ++ optional config.networking.networkmanager.enable "networkmanager"
-      ++ optional config.programs._1password.enable "op"
       ++ optional config.programs._1password-gui.enable "onepassword"
-      ++ optional config.virtualisation.docker.enable "docker"
+      ++ optional config.programs._1password.enable "op"
       ++ optional config.programs.corectrl.enable "corectrl"
+      ++ optional config.virtualisation.docker.enable "docker"
+      ++ optional config.virtualisation.libvirtd.enable "libvirtd"
       ++ optional config.services.davfs2.enable
       "${config.services.davfs2.davGroup}";
     openssh.authorizedKeys.keys = config.my.authorizedKeys;
@@ -40,19 +41,18 @@ in
     PasswordAuthentication = false;
     KbdInteractiveAuthentication = false;
   };
-
-  programs.tmux.enable = true;
-
-  programs.git.enable = mkDefault true;
-  programs.git.package = mkDefault pkgs.gitFull;
+  services.udev.packages = [ pkgs.qmk-udev-rules ];
 
   programs.bash.enableCompletion = true;
   programs.bash.enableLsColors = true;
+  programs.git.enable = mkDefault true;
+  programs.git.package = mkDefault pkgs.gitFull;
   programs.gnupg.agent.enable = mkDefault true;
   programs.gnupg.agent.enableSSHSupport = mkDefault true;
+  programs.tmux.enable = true;
   programs.usbtop.enable = true;
-  programs.zsh.enable = true;
   programs.zsh.autosuggestions.enable = true;
+  programs.zsh.enable = true;
   programs.zsh.enableCompletion = true;
   programs.zsh.enableLsColors = true;
   programs.zsh.syntaxHighlighting.enable = true;
@@ -65,11 +65,12 @@ in
     fd
     killall
     nixos-option
-    qmk-udev-rules
     ripgrep
     ssh-copy-id
     tree
     xdg-utils
+    mupdf # Simple PDF/EPUB/etc viewer
+    ntfs3g # NTFS filesystems (e.g. USB drives, etc)
   ] ++ optional systemdSupport sysz;
 
   time.timeZone = mkDefault "America/Los_Angeles";

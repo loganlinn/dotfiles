@@ -185,7 +185,7 @@ in {
           shortCut = "Ctrl+L";
           description = "Pod logs";
           scopes = [ "po" ];
-          command = lib.getExe pkgs.kubectl;
+          command = "kubectl";
           args = ["logs" "-f" "$NAME" "-n" "$NAMESPACE" "--context" "$CONTEXT"];
         };
       '';

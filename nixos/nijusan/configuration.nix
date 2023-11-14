@@ -43,6 +43,7 @@ with lib;
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
   programs.mosh.enable = false;
+  programs.virt-manager.enable = true;
 
   security.polkit.enable = true;
 
@@ -75,6 +76,7 @@ with lib;
   # services.flatpak.enable = true;
 
   virtualisation.docker.enable = true;
+  virtualisation.libvirtd.enable = true;
 
   environment.systemPackages = with pkgs; [
     btrbk
@@ -84,7 +86,7 @@ with lib;
     openssl
     pkg-config
     rustup
-    # qemu
+    qemu
   ];
 
   xdg.portal = {
