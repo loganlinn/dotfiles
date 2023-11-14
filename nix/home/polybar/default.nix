@@ -809,16 +809,16 @@ in {
       '';
     };
 
-    # # HACK: setup PATH for scripts
-    # systemd.user.services.polybar.Service.Environment = mkForce "PATH=${
-    #     makeBinPath [
-    #       cfg.package
-    #       "/run/current-system/sw"
-    #       "${config.home.homeDirectory}/.nix-profile"
-    #       "${config.home.homeDirectory}/.dotfiles"
-    #       "${config.home.homeDirectory}/.dotfiles/local"
-    #     ]
-    #   }";
+    # HACK: setup PATH for scripts
+    systemd.user.services.polybar.Service.Environment = mkForce "PATH=${
+        makeBinPath [
+          cfg.package
+          "/run/current-system/sw"
+          "${config.home.homeDirectory}/.nix-profile"
+          "${config.home.homeDirectory}/.dotfiles"
+          "${config.home.homeDirectory}/.dotfiles/local"
+        ]
+      }";
     # systemd.user.services.polybar.Install.WantedBy =
     #   [ "graphical-session.target" ];
     # systemd.user.services.polybar.Unit.After = [ "graphical-session.target" ];

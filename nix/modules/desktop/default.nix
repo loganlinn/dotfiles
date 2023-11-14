@@ -11,7 +11,6 @@ in
     ../themes
     ./apps
     ./browsers
-    ./tray.nix
   ];
 
   config = {
