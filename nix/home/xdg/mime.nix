@@ -293,7 +293,7 @@ let
     "application/yaml"
   ];
 
-  browser = [
+  browsers = [
     "google-chrome.desktop"
     "chromium.desktop"
     "firefox.desktop"
@@ -301,52 +301,43 @@ let
     "vivaldi.desktop"
   ];
 
-  mail = [ "vivaldi.desktop" "thunderbird.desktop" "geary.desktop" ];
-
-  editor = [
-    "emacsclient.desktop"
-    "emacs.desktop"
-    "gvim.desktop"
-    "nvim.desktop"
-    "vim.desktop"
-    # "code.desktop"
-  ];
-
-  viewer = [ "viewnior.desktop" "imv.desktop" ] ++ browser;
-
-  player = [ "vlc.desktop" "mpv.desktop" ] ++ browser;
-
-  file-manager = [
-    "thunar.desktop"
-    "ranger.desktop"
-    "dolphin.desktop"
-    "nautilus.desktop"
-    "spacefm.desktop"
-    "pcmanfm.desktop"
-    "emacs.desktop"
-    "kitty-open.desktop"
-  ];
-
-  archive-manager = [ "xarchiver.desktop" ];
-
-in {
+in
+{
   options = { };
   config = {
     xdg.mimeApps.enable = true;
-    xdg.mimeApps.defaultApplications = (genAttrs urls (_: browser))
-      // (genAttrs documents (_: browser)) // (genAttrs code (_: editor))
-      // (genAttrs images (_: viewer)) // (genAttrs audioVideo (_: player))
-      // (genAttrs archives (_: archive-manager)) // {
-        "inode/directory" = file-manager;
-      } // {
+    xdg.mimeApps.defaultApplications = lib.attrsets.mergeAttrsList [
+      (genAttrs urls (_: browsers))
+      (genAttrs documents (_: browsers))
+      (genAttrs code (_: [
+        "emacsclient.desktop"
+        "emacs.desktop"
+        "gvim.desktop"
+        "nvim.desktop"
+        "vim.desktop"
+      ]))
+      (genAttrs audioVideo (_: [ "vlc.desktop" "mpv.desktop" ]))
+      # (genAttrs archives (_: [ "xarchiver.desktop" ]))
+      {
+        "inode/directory" = [
+          "thunar.desktop"
+          "ranger.desktop"
+          "dolphin.desktop"
+          "nautilus.desktop"
+          "spacefm.desktop"
+          "pcmanfm.desktop"
+          "emacs.desktop"
+          "kitty-open.desktop"
+        ];
         "x-scheme-handler/jetbrains" = [ "jetbrains-toolbox.desktop" ];
         "x-scheme-handler/slack" = [ "slack.desktop" ];
         "x-scheme-handler/obsidian" = [ "obsidian.desktop" ];
         "x-scheme-handler/terminal" = [ "kitty.desktop" ];
         "x-scheme-handler/zoommtg" = [ "Zoom.desktop" ];
-      };
-    associations.removed = {
-      "inode/directory" = [ "code.desktop" ]; # gtfo
+      }
+    ];
+    xdg.mimeApps.associations.removed = {
+      "inode/directory" = [ "code.desktop" ];
     };
   };
 }

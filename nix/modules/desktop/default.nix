@@ -15,7 +15,7 @@ in
 
   config = {
     programs.feh.enable = true;
-    programs.zathura.enable = true; # Document viewer
+    programs.zathura.enable = true; # Document viewer (e.g. pdf, epub, etc)
 
     services.playerctld.enable = true;
     services.flameshot.enable = true;
