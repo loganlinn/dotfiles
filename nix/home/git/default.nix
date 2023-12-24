@@ -72,12 +72,12 @@ with lib;
       branch.sort = "-committerdate";
       color.ui = true;
       commit.verbose = true; # include diff in commit message editor
-      commit.gpgsign = true;
+      commit.gpgsign = mkDefault true;
       gpg.format = "ssh";
       gpg.ssh.program =
-        if pkgs.stdenv.isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-        else "op-ssh-sign";
-      user.signingkey = config.my.user.signingkey;
+        mkDefault (if pkgs.stdenv.isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+        else "op-ssh-sign");
+      user.signingkey = mkDefault config.my.user.signingkey;
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
@@ -95,8 +95,8 @@ with lib;
         "${helper}";
     };
     # hooks
-    signing.key = null; # let GnuPG decide
-    userEmail = config.my.email;
-    userName = "Logan Linn";
+    signing.key = mkDefault null; # let GnuPG decide
+    userEmail = mkDefault config.my.email;
+    userName = mkDefault "Logan Linn";
   };
 }

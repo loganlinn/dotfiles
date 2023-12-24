@@ -160,6 +160,12 @@
               self.homeModules.secrets
               ./home-manager/nijusan.nix
             ];
+            "logan@wijusan" = self.lib.dotfiles.mkHomeConfiguration ctx [
+              self.homeModules.common
+              self.homeModules.nix-colors
+              self.homeModules.secrets
+              ./home-manager/wijusan.nix
+            ];
           };
         };
       };

@@ -3,7 +3,6 @@
 {
   imports = [
     ./accounts.nix
-    ./clipboard.nix
     ./common-linux.nix
     ./fzf.nix
     ./git

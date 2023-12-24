@@ -6,8 +6,9 @@ in {
   imports = [
     ../nix/home/awesomewm.nix
     ../nix/home/common.nix
+    ../nix/home/clipboard.nix
     ../nix/home/conky
-    ../nix/home/davfs2.nix
+    # ../nix/home/davfs2.nix
     ../nix/home/deadd
     ../nix/home/dev # TODO module
     ../nix/home/dunst
