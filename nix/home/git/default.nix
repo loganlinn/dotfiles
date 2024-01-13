@@ -3,16 +3,17 @@
 with lib;
 
 {
+  imports = [
+    ./gh.nix
+  ];
+
   programs.git = {
     enable = true;
-    package = pkgs.gitFull; # gitk, ...
-
-    includes =
-      [
-        { path = "~/.config/git/config.local"; }
-        { path = ./include/gitalias.txt; }
-      ];
-
+    package = mkDefault pkgs.gitFull; # gitk, ...
+    includes = [
+      { path = "~/.config/git/config.local"; }
+      { path = ./include/gitalias.txt; }
+    ];
     aliases = {
       wt = "worktree";
       wtm = "worktree-main";
@@ -99,4 +100,8 @@ with lib;
     userEmail = mkDefault config.my.email;
     userName = mkDefault "Logan Linn";
   };
+
+  home.packages = with pkgs; [
+    delta
+  ];
 }

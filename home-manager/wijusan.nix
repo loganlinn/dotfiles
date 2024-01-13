@@ -1,24 +1,20 @@
-{ self', config, pkgs, lib, nix-colors, ... }:
+{ config, pkgs, lib, nix-colors, ... }:
 
-let inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
-
-in {
+{
   imports = [
-    # ../nix/home/dev
+    ../nix/home/dev/nix.nix
     ../nix/home/dev/nodejs.nix
+    ../nix/home/dev/shell.nix
     ../nix/home/emacs
     ../nix/home/home-manager.nix
     ../nix/home/pretty.nix
-    # ../nix/home/x11.nix
-    # ../nix/home/yt-dlp.nix
+    ../nix/home/yt-dlp.nix
     ../nix/modules/spellcheck.nix
   ];
 
-  colorScheme = nix-colors.colorSchemes.doom-one; # nix-colors
-
+  colorScheme = nix-colors.colorSchemes.doom-one; # needed?
   # my.java.package = pkgs.jdk17;
   # my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
-
   modules.spellcheck.enable = true;
 
   # Configure Git to use ssh.exe (1Password agent forwarding)
@@ -29,15 +25,10 @@ in {
     gpg.ssh.program = "/mnt/c/Users/logan/AppData/Local/1Password/app/8/op-ssh-sign-wsl";
     commit.gpgsign = true;
   };
-
   programs.emacs.enable = true;
-  programs.emacs.package = pkgs.emacs-git;
-
+  programs.emacs.package = pkgs.emacs-pgtk; # native Wayland support
   # programs.nix-index.enable = false;
   # programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
-
-  home.packages = with pkgs; [
-  ];
 
   home.username = "logan";
   home.homeDirectory = "/home/logan";
@@ -46,6 +37,7 @@ in {
   nix.enable = true;
   nix.package = pkgs.nixUnstable;
   nix.settings = {
+    trusted-users = [ "root" config.home.username ];
     experimental-features = [ "nix-command" "flakes" "repl-flake" ];
     warn-dirty = false;
     accept-flake-config = true;

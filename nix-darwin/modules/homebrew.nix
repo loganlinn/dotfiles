@@ -39,4 +39,8 @@
       Tailscale = 1475387142;
     };
   };
+
+  environment.variables = {
+    HOMEBREW_NO_ANALYTICS = "1";
+  };
 }

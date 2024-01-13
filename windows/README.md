@@ -36,28 +36,27 @@ Notes from my journey using Windows (11) again after over a decade with macOS an
       winget install LGUG2Z.whkd
       winget install LGUG2Z.komorebi
       iwr https://raw.githubusercontent.com/LGUG2Z/komorebi/master/komorebi.example.json -OutFile "$Env:USERPROFILE\komorebi.json"
-
       ```
 
 ## Keyboard shortcuts
 
 
-| Operation | Key bind |
-| --- | --- |
-| Run dialog box | <kbd>Win</kbd> + <kbd>r</kbd> |
-| File Explorer | <kbd>Win</kbd> + <kbd>e</kbd> |
-| System settings | <kbd>Win</kbd> + <kbd>i</kbd> |
-| System information | <kbd>Win</kbd> + <kbd>Pause</kbd> |
-| Clipboard history | <kbd>Win</kbd> + <kbd>v</kbd> |
-| Emoji picker | <kbd>Win</kbd> + <kbd>;</kbd> |
-| Snipping Tool | <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>s</kbd> |
-| Window snapping menu | <kbd>Win</kbd> + <kbd>z</kbd> |
-| Notification panel | <kbd>Win</kbd> + <kbd>n</kbd> |
-| Focus notification | <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>v</kbd> |
-| Quick settings panel | <kbd>Win</kbd> + <kbd>a</kbd> |
-| Sound outputs panel | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>v</kbd> |
-| Quick Link menu | <kbd>Win</kbd> + <kbd>x</kbd> |
-| Next desktop | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>→</kbd> |
-| Prev desktop | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>←</kbd> |
-| New desktop | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>d</kbd> |
-| Close desktop | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>F4</kbd> |
+| Operation            | Key bind                                         |
+|----------------------|--------------------------------------------------|
+| Run dialog box       | <kbd>Win</kbd> + <kbd>r</kbd>                    |
+| File Explorer        | <kbd>Win</kbd> + <kbd>e</kbd>                    |
+| System settings      | <kbd>Win</kbd> + <kbd>i</kbd>                    |
+| System information   | <kbd>Win</kbd> + <kbd>Pause</kbd>                |
+| Clipboard history    | <kbd>Win</kbd> + <kbd>v</kbd>                    |
+| Emoji picker         | <kbd>Win</kbd> + <kbd>;</kbd>                    |
+| Snipping Tool        | <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>s</kbd> |
+| Window snapping menu | <kbd>Win</kbd> + <kbd>z</kbd>                    |
+| Notification panel   | <kbd>Win</kbd> + <kbd>n</kbd>                    |
+| Focus notification   | <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>v</kbd> |
+| Quick settings panel | <kbd>Win</kbd> + <kbd>a</kbd>                    |
+| Sound outputs panel  | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>v</kbd>  |
+| Quick Link menu      | <kbd>Win</kbd> + <kbd>x</kbd>                    |
+| Next desktop         | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>→</kbd>  |
+| Prev desktop         | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>←</kbd>  |
+| New desktop          | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>d</kbd>  |
+| Close desktop        | <kbd>Win</kbd> + <kbd>Ctrl</kbd> + <kbd>F4</kbd> |
