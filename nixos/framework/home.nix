@@ -71,6 +71,31 @@
   programs.nix-index.enable = false;
   programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
 
+  programs.obs-studio = {
+    enable = true;
+    plugins = with pkgs.obs-studio-plugins; [
+      # advanced-scene-switcher
+      # droidcam-obs
+      input-overlay
+      obs-backgroundremoval
+      obs-command-source
+      obs-freeze-filter
+      obs-gstreamer
+      # obs-replay-source
+      obs-pipewire-audio-capture
+      # obs-source-record
+      obs-source-switcher
+      # obs-vaapi
+      # obs-vintage-filter
+      # obs-vkcapture
+      # obs-websocket
+      # waveform
+    ];
+  };
+
+  home.packages = with pkgs; [
+    discord
+  ];
 
   home.stateVersion = "22.11";
 }
