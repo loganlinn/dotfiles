@@ -8,6 +8,7 @@
   gaming = ./gaming.nix;
   hyprland = ./desktops/hyprland;
   minecraft-server = ./minecraft-server.nix;
+  monitor-brightness = ./monitor-brightness.nix;
   networking = ./networking;
   nix-registry = ../../nix/modules/nix-registry.nix;
   nvidia = ./nvidia.nix;

@@ -9,6 +9,7 @@ with lib;
     self.nixosModules.common
     self.nixosModules._1password
     self.nixosModules.apple-keyboard
+    self.nixosModules.monitor-brightness
     self.nixosModules.bluetooth
     self.nixosModules.docker
     self.nixosModules.networking
