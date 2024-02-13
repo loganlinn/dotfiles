@@ -41,6 +41,7 @@
     neofetch
     pinentry
     procs # ps alternative
+    repgrep
     rlwrap
     sd # sed alternative
     sops
