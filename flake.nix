@@ -18,6 +18,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:lnl7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nixos-wsl.url = "github:nix-community/NixOS-WSL";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
     ## overlays
     emacs-overlay = {
