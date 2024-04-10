@@ -189,6 +189,12 @@
             }
           ];
 
+        nixosConfigurations.wijusan =
+          self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+            inputs.nixos-wsl.nixosModules.wsl
+            ./nixos/wjiusan/configuration.nix
+          ];
+
         darwinConfigurations.patchbook =
           self.lib.dotfiles.mkDarwinSystem "aarch64-darwin" [
             self.darwinModules.common

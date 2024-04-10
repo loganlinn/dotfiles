@@ -22,5 +22,6 @@
   thunderbolt = ./thunderbolt.nix;
   vivaldi = ./vivaldi.nix;
   wayland = ./wayland.nix;
+  wsl = ./wsl.nix;
   xserver = ./xserver.nix;
 }

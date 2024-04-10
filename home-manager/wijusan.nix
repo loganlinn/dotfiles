@@ -5,6 +5,7 @@
     ../nix/home/dev/nix.nix
     ../nix/home/dev/nodejs.nix
     ../nix/home/dev/shell.nix
+    ../nix/home/dev/lua.nix
     ../nix/home/emacs
     ../nix/home/home-manager.nix
     ../nix/home/pretty.nix

@@ -11,6 +11,7 @@ let
     ./jib.nix
     ./kubefwd
     ./notify-send-py.nix
+    ./win32yank
   ];
 
   packages = lib.pipe paths [
