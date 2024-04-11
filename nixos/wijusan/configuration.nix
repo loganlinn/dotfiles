@@ -10,7 +10,7 @@ with lib;
 
   networking.hostName = "wijusan";
 
-  home-manager.users.logan = import ../home-manager/wijusan.nix;
+  # home-manager.users.logan = import ../../home-manager/wijusan.nix;
 
   system.stateVersion = "23.11";
 }
