@@ -29,6 +29,8 @@ in {
 
     publicKeys = mkOpt (attrsOf str) { };
 
+    hints.isWSL = mkOpt bool (builtins.pathExists /usr/lib/wsl/lib);
+
     fonts = mkOpt (attrsOf fontType) {
       serif = {
         package = pkgs.dejavu_fonts;

@@ -1,32 +1,43 @@
 # how2windows
 
-Notes from my journey using Windows (11) again after over a decade with macOS and Linux.
+## Installing Windows
 
-- Installation process:
-    - Windows can be installed prior to acquiring a license.
-    - Download ISO disk image: https://www.microsoft.com/software-download/
-    - Use a tool to prepare/write to a USB drive: https://github.com/WoeUSB/WoeUSB-ng
-        - Simply copying the ISO to drive resulted in Windows installer that "could not locate drivers".
-        - Try above tool before attempting to customize the ISO.
-    - BIOS and booting
-        - See [Dual Booting NixOS and Windows](https://nixos.wiki/wiki/Dual_Booting_NixOS_and_Windows)
-        - Ideally GRUB is configured to boot Linux + Windows with Secure Boot enabled[1], but this turns out to be non-trivial/impossible.
-        - Use case for Secure Boot was Riot's Vanguard (anti-cheat) software, needed to play their games.
+- Windows can be installed prior to acquiring a license.
+- Download ISO disk image: https://www.microsoft.com/software-download/
+- Use a tool to prepare/write to a USB drive: https://github.com/WoeUSB/WoeUSB-ng
+    - Simply copying the ISO to drive resulted in Windows installer that "could not locate drivers".
+    - Try above tool before attempting to customize the ISO.
+- BIOS and booting
+    - See [Dual Booting NixOS and Windows](https://nixos.wiki/wiki/Dual_Booting_NixOS_and_Windows)
+    - Ideally GRUB is configured to boot Linux + Windows with Secure Boot enabled[1], but this turns out to be non-trivial/impossible.
+    - Use case for Secure Boot was Riot's Vanguard (anti-cheat) software, needed to play their games.
 
-- Post-install tips:
-    - Run https://github.com/Raphire/Win11Debloat or similar.
-    - [Use the winget tool to install and manage applications | Microsoft Learn](https://learn.microsoft.com/en-us/windows/package-manager/winget/)
-    - See contained config files
-    - Turn off all the creepy Microsoft analytics and instrumentation.
-        - Microsoft Edge, in particular, has numerous settings that should be reviewed.
-    - Enable long paths
-      ```
-      Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1
-      ```
+## Post-installation
+
+- Use [Win11Debloat](https://github.com/Raphire/Win11Debloat) or similar for a clean slate.
+
+- Review all default privacy settings
+  - Lots of analytics and instrumentation is on by default.
+  - Looking at you, Microsoft Edge
+
+- Install [winget](https://aka.ms/getwinget)
+- Install essentials
+
+```
+winget install --id Microsoft.WindowsTerminal
+winget install --id Microsoft.Powershell --source winget
+
+wsl --install
+```
+
+## Registry shenanigans
+
+- Enable long paths
+```
+Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1
+```
 
 - Essential software:
-    - `winget install --id Microsoft.Powershell --source winget`
-    - `wsl --install` 
     - `winget install Microsoft.Sysinternals.ProcessExplorer Microsoft.Sysinternals.ProcessMonitor Microsoft.Sysinternals.TCPView Microsoft.Sysinternals.Ctrl2Cap`
 
 - Additional software:
@@ -37,6 +48,15 @@ Notes from my journey using Windows (11) again after over a decade with macOS an
       winget install LGUG2Z.komorebi
       iwr https://raw.githubusercontent.com/LGUG2Z/komorebi/master/komorebi.example.json -OutFile "$Env:USERPROFILE\komorebi.json"
       ```
+## Windows Terminal
+
+## PowerShell: what do?
+
+Making symbolic links:
+```
+ cmd /c mklink TARGET FILE
+ cmd /c mklink /d TARGET DIRECTORY
+```
 
 ## Keyboard shortcuts
 
