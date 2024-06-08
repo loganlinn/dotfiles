@@ -38,13 +38,14 @@
   home.packages = with pkgs; [
     wslu
     trashy
+    micromamba
   ];
   home.username = "logan";
   home.homeDirectory = "/home/logan";
   home.stateVersion = "22.11";
 
   nix.enable = true;
-  nix.package = pkgs.nixUnstable;
+  nix.package = pkgs.nixVersions.stable;
   nix.settings = {
     trusted-users = [ "root" config.home.username ];
     experimental-features = [ "nix-command" "flakes" "repl-flake" ];

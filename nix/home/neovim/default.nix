@@ -233,10 +233,9 @@
     deadnix
     gopls
     godef
-    luarocks-nix
     nodePackages.bash-language-server
     lua-language-server
-    rnix-lsp
+    # rnix-lsp
     statix
   ];
 

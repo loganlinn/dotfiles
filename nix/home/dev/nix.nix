@@ -15,7 +15,7 @@
     nixpkgs-fmt
     nurl
     nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
-    rnix-lsp # lanaguage server
+    # rnix-lsp # lanaguage server
     nil # language server
     toml2nix
   ];
