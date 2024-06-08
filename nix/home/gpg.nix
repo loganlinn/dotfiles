@@ -10,7 +10,7 @@
     enableZshIntegration = true;
     defaultCacheTtl = lib.mkDefault 86400;
     maxCacheTtl = lib.mkDefault 86400;
-    pinentryFlavor = "tty";
+    pinentryPackage = pkgs.pinentry-tty;
     extraConfig = ''
       allow-emacs-pinentry
       allow-loopback-pinentry
