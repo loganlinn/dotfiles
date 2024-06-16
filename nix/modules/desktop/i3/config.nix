@@ -198,7 +198,7 @@ in {
   };
 
   xsession.windowManager.i3.extraConfig = let
-    colors = config.colorScheme.colors;
+    palette = config.colorScheme.palette;
 
     modeCommonFocus = ''
       bindsym $mod+h focus left
@@ -280,39 +280,39 @@ in {
     set $bar_height ${barHeight}
 
     # colors
-    set $base00 #${colors.base00}
-    set $base01 #${colors.base01}
-    set $base02 #${colors.base02}
-    set $base03 #${colors.base03}
-    set $base04 #${colors.base04}
-    set $base05 #${colors.base05}
-    set $base06 #${colors.base06}
-    set $base07 #${colors.base07}
-    set $base08 #${colors.base08}
-    set $base09 #${colors.base09}
-    set $base0A #${colors.base0A}
-    set $base0B #${colors.base0B}
-    set $base0C #${colors.base0C}
-    set $base0D #${colors.base0D}
-    set $base0E #${colors.base0E}
-    set $base0F #${colors.base0F}
+    set $base00 #${palette.base00}
+    set $base01 #${palette.base01}
+    set $base02 #${palette.base02}
+    set $base03 #${palette.base03}
+    set $base04 #${palette.base04}
+    set $base05 #${palette.base05}
+    set $base06 #${palette.base06}
+    set $base07 #${palette.base07}
+    set $base08 #${palette.base08}
+    set $base09 #${palette.base09}
+    set $base0A #${palette.base0A}
+    set $base0B #${palette.base0B}
+    set $base0C #${palette.base0C}
+    set $base0D #${palette.base0D}
+    set $base0E #${palette.base0E}
+    set $base0F #${palette.base0F}
 
-    set_from_resources $color0 i3wm.color0 #${colors.base00}
-    set_from_resources $color1 i3wm.color1 #${colors.base08}
-    set_from_resources $color2 i3wm.color2 #${colors.base0B}
-    set_from_resources $color3 i3wm.color3 #${colors.base0A}
-    set_from_resources $color4 i3wm.color4 #${colors.base0D}
-    set_from_resources $color5 i3wm.color5 #${colors.base0E}
-    set_from_resources $color6 i3wm.color6 #${colors.base0C}
-    set_from_resources $color7 i3wm.color7 #${colors.base05}
-    set_from_resources $color8 i3wm.color8 #${colors.base03}
-    set_from_resources $color9 i3wm.color9 #${colors.base09}
-    set_from_resources $color10 i3wm.color10 #${colors.base01}
-    set_from_resources $color11 i3wm.color11 #${colors.base02}
-    set_from_resources $color12 i3wm.color12 #${colors.base04}
-    set_from_resources $color13 i3wm.color13 #${colors.base06}
-    set_from_resources $color14 i3wm.color14 #${colors.base0F}
-    set_from_resources $color15 i3wm.color15 #${colors.base07}
+    set_from_resources $color0 i3wm.color0 #${palette.base00}
+    set_from_resources $color1 i3wm.color1 #${palette.base08}
+    set_from_resources $color2 i3wm.color2 #${palette.base0B}
+    set_from_resources $color3 i3wm.color3 #${palette.base0A}
+    set_from_resources $color4 i3wm.color4 #${palette.base0D}
+    set_from_resources $color5 i3wm.color5 #${palette.base0E}
+    set_from_resources $color6 i3wm.color6 #${palette.base0C}
+    set_from_resources $color7 i3wm.color7 #${palette.base05}
+    set_from_resources $color8 i3wm.color8 #${palette.base03}
+    set_from_resources $color9 i3wm.color9 #${palette.base09}
+    set_from_resources $color10 i3wm.color10 #${palette.base01}
+    set_from_resources $color11 i3wm.color11 #${palette.base02}
+    set_from_resources $color12 i3wm.color12 #${palette.base04}
+    set_from_resources $color13 i3wm.color13 #${palette.base06}
+    set_from_resources $color14 i3wm.color14 #${palette.base0F}
+    set_from_resources $color15 i3wm.color15 #${palette.base07}
 
     ################################################################################
     # General
@@ -642,7 +642,7 @@ in {
   # NOTE: for window decorations, the color around the child window is the "child_border", and "border" color is only the two thin lines around the titlebar.
   #
   xsession.windowManager.i3.config.colors =
-    with (mapAttrs (_: color: "#${color}") config.colorScheme.colors); {
+    with (mapAttrs (_: color: "#${color}") config.colorScheme.palette); {
       background = base08;
       focused = {
         background = base02;

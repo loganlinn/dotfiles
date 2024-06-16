@@ -23,9 +23,9 @@ let
   baseColors =
     mapAttrs (k: v: "#${v}")
       (filterAttrs (k: _: hasPrefix "base" k)
-        config.colorScheme.colors);
+        config.colorScheme.palette);
 
-  colors = with config.colorScheme.colors;
+  colors = with config.colorScheme.palette;
     baseColors // {
       transparent = "#00000000";
       # see https://github.com/tinted-theming/home/blob/main/styling.md
@@ -483,7 +483,7 @@ in
           KUBEBAR_ESCAPE = "@";
           KUBEBAR_FORMAT = concatStrings [
             "%{A1:kitty-floating k9s &:}"
-            "%{F#${config.colorScheme.colors.base04}}${iconText nerdfonts.md.kubernetes}%{F-} "
+            "%{F#${config.colorScheme.palette.base04}}${iconText nerdfonts.md.kubernetes}%{F-} "
             "@{KUBE_CURRENT_CONTEXT}/@{KUBE_CURRENT_NAMESPACE}"
             "%{A}"
           ];

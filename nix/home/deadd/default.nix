@@ -201,9 +201,8 @@ in {
       yamlFormat.generate "deadd.yml" cfg.settings;
 
     xdg.configFile."deadd/deadd.css" = let
-      inherit (config.colorScheme) colors;
       inherit (lib.my.color) hexToRgba rgbaToCSS withAlpha;
-      hexColors = mapAttrs (_: c: "#${c}") colors;
+      hexColors = mapAttrs (_: c: "#${c}") config.colorScheme.palette;
       rgbaColors = mapAttrs (_: c: hexToRgba c) hexColors;
     in {
       text = ''

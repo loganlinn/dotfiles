@@ -6,7 +6,7 @@
     enableZshIntegration = true;
     enableFishIntegration = true;
     tmux.enableShellIntegration = config.programs.tmux.enable;
-    defaultOptions = with config.colorScheme.colors; [
+    defaultOptions = with config.colorScheme.palette; [
       "--layout=reverse"
       "--border"
       "--inline-info"

@@ -91,7 +91,7 @@ in
 
       # similar to https://github.com/janoamaral/Xresources-themes
       xresources.extraConfig = ''
-        ${pipe config.colorScheme.colors [
+        ${pipe config.colorScheme.palette [
           (filterAttrs (name: _: hasPrefix "base0" name))
           (mapAttrsToList (name: value: "#define ${name} #${value}"))
           (concatStringsSep "\n")
@@ -179,8 +179,7 @@ in
       # programs.rofi.font = cfg.fonts.mono.name;
       # programs.rofi.theme = let
       #   inherit (config.lib.formats.rasi) mkLiteral;
-      #   inherit (config.colorScheme) colors;
-      #   c = lib.mapAttrs (_: v: mkLiteral "#${v}") colors;
+      #   c = lib.mapAttrs (_: v: mkLiteral "#${v}") config.colorScheme.palette;
       # in {
       #   "*" = {
       #     red = c.base08;

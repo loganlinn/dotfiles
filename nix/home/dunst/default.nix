@@ -6,7 +6,7 @@ with lib;
 let
   inherit (lib.my) coalesce;
 
-  inherit (config.colorScheme) colors;
+  inherit (config.colorScheme) palette;
 
   font = config.my.fonts.dunst
     or config.my.fonts.dunst
@@ -106,10 +106,10 @@ in
 
         separator_color = "auto";
 
-        background = "#${colors.base01}";
-        foreground = "#${colors.base05}";
-        highlight = "#${colors.base0B}"; # i.e. progress bar
-        frame_color = "#${colors.base01}";
+        background = "#${palette.base01}";
+        foreground = "#${palette.base05}";
+        highlight = "#${palette.base0B}"; # i.e. progress bar
+        frame_color = "#${palette.base01}";
 
         script = getExe (pkgs.writeShellScriptBin "dunst-global" ''
           export > ''${XDG_RUNTIME_DIR-/tmp}/dunst-script.env
@@ -117,23 +117,23 @@ in
       };
 
       urgency_low = {
-        background = "#${colors.base00}";
-        foreground = "#${colors.base04}";
-        frame_color = "#${colors.base03}";
+        background = "#${palette.base00}";
+        foreground = "#${palette.base04}";
+        frame_color = "#${palette.base03}";
         timeout = 10;
       };
 
       urgency_normal = {
-        background = "#${colors.base01}";
-        foreground = "#${colors.base05}";
-        frame_color = "#${colors.base0A}";
+        background = "#${palette.base01}";
+        foreground = "#${palette.base05}";
+        frame_color = "#${palette.base0A}";
         timeout = 60;
       };
 
       urgency_critical = {
-        background = "#${colors.base01}";
-        foreground = "#${colors.base05}";
-        frame_color = "#${colors.base0E}";
+        background = "#${palette.base01}";
+        foreground = "#${palette.base05}";
+        frame_color = "#${palette.base0E}";
         timeout = 0;
       };
 

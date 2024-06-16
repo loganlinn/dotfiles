@@ -2,7 +2,7 @@
 {
   name = "yoru";
   slug = "yoru";
-  colors = rec {
+  palette = rec {
     base00 = "0c0e0f";
     base01 = "121415";
     base02 = "161819";

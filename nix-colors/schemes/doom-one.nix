@@ -9,7 +9,7 @@
 {
   name = "doom-one";
   slug = "doom-one";
-  colors = rec {
+  palette = rec {
     # https://github.com/chriskempson/base16/blob/main/styling.md
     base00 = bg-alt; # Default background
     base01 = bg; # Lighter Background (Used for status bars, line number and folding marks)
