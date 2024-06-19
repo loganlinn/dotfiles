@@ -35,6 +35,9 @@
   # programs.nix-index.enable = false;
   # programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
 
+  programs.neovim.enable = true;
+  programs.neovim.defaultEditor = true;
+
   home.packages = with pkgs; [
     wslu
     trashy
