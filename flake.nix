@@ -7,9 +7,10 @@
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hyprland.url = "github:hyprwm/Hyprland";
-    hyprland.inputs.nixpkgs.follows = "nixpkgs";
-    hyprland-plugins.url = "github:hyprwm/hyprland-plugins";
-    hyprland-plugins.inputs.hyprland.follows = "hyprland";
+    hyprland-plugins = {
+      url = "github:hyprwm/hyprland-plugins";
+      inputs.hyprland.follows = "hyprland";
+    };
     eww.url = "github:elkowar/eww";
     eww.inputs.nixpkgs.follows = "nixpkgs";
 
