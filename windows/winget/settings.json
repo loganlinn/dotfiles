@@ -1,0 +1,10 @@
+{
+  "$schema": "https://aka.ms/winget-settings-export.schema.json",
+  "adminSettings": {
+    "BypassCertificatePinningForMicrosoftStore": false,
+    "InstallerHashOverride": false,
+    "LocalArchiveMalwareScanOverride": false,
+    "LocalManifestFiles": false
+  },
+  "userSettingsFile": "C:\\Users\\logan\\AppData\\Local\\Packages\\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\\LocalState\\settings.json"
+}

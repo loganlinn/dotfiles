@@ -4,6 +4,7 @@ TAGS
 .deps
 .data
 **/*.qcow*
+*.exe
 *.o
 *.so
 *.bak

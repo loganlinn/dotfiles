@@ -1,6 +1,6 @@
 {
 	"$schema" : "https://aka.ms/winget-packages.schema.2.0.json",
-	"CreationDate" : "2023-12-23T19:12:10.739-00:00",
+	"CreationDate" : "2024-04-07T16:30:51.698-00:00",
 	"Sources" : 
 	[
 		{
@@ -13,43 +13,139 @@
 					"PackageIdentifier" : "MullvadVPN.MullvadVPN"
 				},
 				{
+					"PackageIdentifier" : "Olivia.VIA"
+				},
+				{
+					"PackageIdentifier" : "WeakAuras.WeakAurasCompanion"
+				},
+				{
+					"PackageIdentifier" : "Notion.Notion"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VisualStudio.2022.Community"
+				},
+				{
+					"PackageIdentifier" : "AgileBits.1Password.CLI"
+				},
+				{
+					"PackageIdentifier" : "AutoHotkey.AutoHotkey"
+				},
+				{
+					"PackageIdentifier" : "BurntSushi.ripgrep.MSVC"
+				},
+				{
 					"PackageIdentifier" : "Canonical.Ubuntu.2204"
+				},
+				{
+					"PackageIdentifier" : "CueLang.Cue"
 				},
 				{
 					"PackageIdentifier" : "Discord.Discord"
 				},
 				{
-					"PackageIdentifier" : "Flow-Launcher.Flow-Launcher"
+					"PackageIdentifier" : "GitHub.GitHubDesktop"
 				},
 				{
 					"PackageIdentifier" : "Git.Git"
 				},
 				{
-					"PackageIdentifier" : "Google.Chrome"
+					"PackageIdentifier" : "Google.Chrome.EXE"
 				},
 				{
 					"PackageIdentifier" : "LibreWolf.LibreWolf"
 				},
 				{
+					"PackageIdentifier" : "Microsoft.Edge"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.EdgeWebView2Runtime"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.AppInstaller"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.Sysinternals.ProcessExplorer"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.Sysinternals.ProcessMonitor"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.Sysinternals.TCPView"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.UI.Xaml.2.7"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.UI.Xaml.2.8"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCLibs.Desktop.14"
+				},
+				{
 					"PackageIdentifier" : "Microsoft.WindowsTerminal"
+				},
+				{
+					"PackageIdentifier" : "Mozilla.Firefox"
+				},
+				{
+					"PackageIdentifier" : "OBSProject.OBSStudio"
+				},
+				{
+					"PackageIdentifier" : "Valve.Steam"
+				},
+				{
+					"PackageIdentifier" : "VideoLAN.VLC"
+				},
+				{
+					"PackageIdentifier" : "vim.vim"
 				},
 				{
 					"PackageIdentifier" : "Obsidian.Obsidian"
 				},
 				{
-					"PackageIdentifier" : "Keybase.Keybase"
+					"PackageIdentifier" : "Overwolf.CurseForge"
 				},
 				{
-					"PackageIdentifier" : "Microsoft.PowerShell"
+					"PackageIdentifier" : "sharkdp.fd"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x64"
+				},
+				{
+					"PackageIdentifier" : "WireGuard.WireGuard"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x86"
+				},
+				{
+					"PackageIdentifier" : "Alacritty.Alacritty"
+				},
+				{
+					"PackageIdentifier" : "Kitware.CMake"
+				},
+				{
+					"PackageIdentifier" : "Keybase.Keybase"
 				},
 				{
 					"PackageIdentifier" : "Starship.Starship"
 				},
 				{
-					"PackageIdentifier" : "Microsoft.VisualStudioCode"
+					"PackageIdentifier" : "Python.Launcher"
 				},
 				{
-					"PackageIdentifier" : "Microsoft.VCRedist.2015+.x64"
+					"PackageIdentifier" : "Microsoft.PowerToys"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.PowerShell"
+				},
+				{
+					"PackageIdentifier" : "GoLang.Go"
+				},
+				{
+					"PackageIdentifier" : "Microsoft.DotNet.Runtime.6"
+				},
+				{
+					"PackageIdentifier" : "Python.Python.3.11"
 				}
 			],
 			"SourceDetails" : 
@@ -59,7 +155,22 @@
 				"Name" : "winget",
 				"Type" : "Microsoft.PreIndexed.Package"
 			}
+		},
+		{
+			"Packages" : 
+			[
+				{
+					"PackageIdentifier" : "XP9KHM4BK9FZ7Q"
+				}
+			],
+			"SourceDetails" : 
+			{
+				"Argument" : "https://storeedgefd.dsx.mp.microsoft.com/v9.0",
+				"Identifier" : "StoreEdgeFD",
+				"Name" : "msstore",
+				"Type" : "Microsoft.Rest"
+			}
 		}
 	],
-	"WinGetVersion" : "1.6.3482"
+	"WinGetVersion" : "1.7.10861"
 }

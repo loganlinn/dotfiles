@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
+properties:
+  configurationVersion: 0.2.0
+  resources:
+    - resource: Microsoft.Windows.Developer/DeveloperMode
+      directives:
+        description: Enable Developer Mode
+        allowPrerelease: true
+      settings:
+        Ensure: Present
+        
+  # TODO Windows Defender - Allow file sharing on private networks 
+
+  - name: VS Code Context Menu Key
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath: HKEY_CLASSES_ROOT\Directory\Background\shell\vscode
+      valueName: ""
+      valueData:
+        String: "Open VS &Code here"
+
+  - name: VS Code Context Menu Icon
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath: HKEY_CLASSES_ROOT\Directory\Background\shell\vscode
+      valueName: "Icon"
+      valueData:
+        String: "C:\\Users\\logan\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
+
+  - name: VS Code Context Menu Command
+    type: Microsoft.Windows/Registry
+    properties:
+      keyPath: HKEY_CLASSES_ROOT\Directory\Background\shell\vscode\command
+      valueName: ""
+      valueData:
+        String: "\"C:\\Users\\logan\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe\" \"%v\""
