@@ -66,7 +66,20 @@
   programs.google-chrome.enable = true;
   programs.firefox.enable = true;
   programs.librewolf.enable = true;
-  programs.qutebrowser.enable = true;
+  # error: builder for '/nix/store/2f6m4847kdxkg36w408yfvc6yxqrf7w7-python3.11-stem-1.8.2.drv' failed with exit code 1;
+  #    last 10 log lines:
+  #    >   https://pypi.org/project/pycodestyle/
+  #    > 
+  #    > TESTING FAILED (1 seconds)
+  #    >   [UNIT TEST] test_descriptor_signing (test.unit.descriptor.server_descriptor.TestServerDescriptor) ... ERROR
+  #    >   [UNIT TEST] test_descriptor_signing (test.unit.descriptor.extrainfo_descriptor.TestExtraInfoDescriptor) ... ERROR
+  #    > 
+  #    > You can re-run just these tests with:
+  #    > 
+  #    >   run_tests.py --unit --test descriptor.server_descriptor
+  #    >   run_tests.py --unit --test descriptor.extrainfo_descriptor
+  #    For full logs, run 'nix log /nix/store/2f6m4847kdxkg36w408yfvc6yxqrf7w7-python3.11-stem-1.8.2.drv'``
+  programs.qutebrowser.enable = false; # disabled due to above error
   programs.ssh.enable = true;
   programs.nix-index.enable = false;
   programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
