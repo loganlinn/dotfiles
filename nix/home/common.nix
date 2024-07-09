@@ -38,7 +38,7 @@
     gzip
     lsof
     moreutils
-    neofetch
+    # neofetch
     pinentry
     procs # ps alternative
     repgrep
