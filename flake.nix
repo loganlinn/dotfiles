@@ -2,65 +2,34 @@
   description = "loganlinn's (highly indecisive) flake";
 
   inputs = {
-    ## packages
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
-    nixos-hardware.url = "github:nixos/nixos-hardware";
-    hyprland.url = "github:hyprwm/Hyprland";
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins";
-      inputs.hyprland.follows = "hyprland";
-    };
-    eww.url = "github:elkowar/eww";
-    eww.inputs.nixpkgs.follows = "nixpkgs";
 
     ## builders
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    nix-darwin.url = "github:lnl7/nix-darwin";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nixos-wsl.url = "github:nix-community/NixOS-WSL";
-    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager = {url = "github:nix-community/home-manager"; inputs.nixpkgs.follows = "nixpkgs";};
+    nix-darwin = {url = "github:lnl7/nix-darwin"; inputs.nixpkgs.follows = "nixpkgs";};
+    nixos-hardware.url = "github:nixos/nixos-hardware";
+    nixos-wsl = {url = "github:nix-community/NixOS-WSL"; inputs.nixpkgs.follows = "nixpkgs";};
+
+    ## packages
+    eww = {url = "github:elkowar/eww"; inputs.nixpkgs.follows = "nixpkgs";};
+    hyprland.url = "github:hyprwm/Hyprland";
+    # hyprland-plugins = {url = "github:hyprwm/hyprland-plugins"; inputs.hyprland.follows = "hyprland";};
 
     ## overlays
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs-stable";
-    };
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    emacs-overlay = {url = "github:nix-community/emacs-overlay"; inputs.nixpkgs.follows = "nixpkgs"; inputs.nixpkgs-stable.follows = "nixpkgs-stable";};
+    fenix = {url = "github:nix-community/fenix"; inputs.nixpkgs.follows = "nixpkgs";};
+    rust-overlay = {url = "github:oxalica/rust-overlay"; inputs.nixpkgs.follows = "nixpkgs";};
 
-    ## etc
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
-    flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
+    ## utils
+    agenix = {url = "github:ryantm/agenix"; inputs.nixpkgs.follows = "nixpkgs";};
+    devenv = {url = "github:cachix/devenv"; inputs.nixpkgs.follows = "nixpkgs";};
+    flake-compat = {url = "github:edolstra/flake-compat"; flake = false;};
+    flake-parts = {url = "github:hercules-ci/flake-parts"; inputs.nixpkgs-lib.follows = "nixpkgs";};
     flake-root = { url = "github:srid/flake-root"; };
     mission-control = { url = "github:Platonic-Systems/mission-control"; };
     nix-colors = { url = "github:misterio77/nix-colors"; };
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-index-database = {
-      url = "github:Mic92/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    devenv = {
-      url = "github:cachix/devenv";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nix-index-database = {url = "github:Mic92/nix-index-database"; inputs.nixpkgs.follows = "nixpkgs";};
     nixpkgs-match.url = "github:srid/nixpkgs-match";
   };
 
