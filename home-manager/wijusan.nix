@@ -37,6 +37,7 @@
 
   programs.neovim.enable = true;
   programs.neovim.defaultEditor = true;
+  my.astrovim.enable = false;
 
   home.packages = with pkgs; [
     wslu
