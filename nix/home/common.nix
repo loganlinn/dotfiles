@@ -27,7 +27,6 @@
     du-dust # du alternative
     duf # df alternative
     envsubst
-    fd
     file
     gawk
     gnugrep
@@ -75,6 +74,8 @@
   programs.less.keys = '''';
 
   programs.man.enable = true;
+
+  programs.fd.enable = true;
 
   programs.btop = {
     enable = true;
