@@ -242,8 +242,6 @@ in
     extraPython3Packages = ps: with ps; [ pynvim ];
   };
 
-  my.astronvim.enable = true;
-
   # LSP servers
   home.packages = with pkgs; [
     deadnix
