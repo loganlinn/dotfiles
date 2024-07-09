@@ -7,12 +7,13 @@
 
   home.packages = with pkgs; [
     # discord
-    obsidian
+    # obsidian ## causes error due to electron package EOL (insecure)
     slack
     vlc
     zoom-us
   ];
 
   programs.nheko.enable = false; # matrix chat app
+  
 
 }
