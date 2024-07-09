@@ -10,6 +10,13 @@ lib.mkIf pkgs.stdenv.isLinux {
     options = ["ctrl:nocaps" "compose:ralt"];
   };
 
+  services.xcape.enable = true;
+  services.xcape.timeout = 480;
+  services.xcape.mapExpression = {
+    Control_L = "Escape";
+  };
+
+
   home.packages = with pkgs; [
     gcc
     cached-nix-shell
