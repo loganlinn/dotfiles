@@ -3,7 +3,7 @@
 {
 
   home.packages = with pkgs; [
-    blender
+    # blender
     fstl
     inkscape
     gimp
