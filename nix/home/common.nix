@@ -103,13 +103,6 @@
     };
   };
 
-  programs.fzf = {
-    enable = true;
-    enableZshIntegration = true;
-    enableFishIntegration = true;
-    tmux.enableShellIntegration = config.programs.tmux.enable;
-  };
-
   programs.ripgrep = {
     enable = true;
     arguments = [
