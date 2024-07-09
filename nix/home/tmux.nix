@@ -15,4 +15,7 @@
   programs.zsh.initExtra = ''
     [[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX
   '';
+
+  xdg.configFile."tmux/tmux.conf".source = config.lib.file.mkOutOfStoreSymlink
+    "${config.home.homeDirectory}/.dotfiles/config/tmux/tmux.conf";
 }
