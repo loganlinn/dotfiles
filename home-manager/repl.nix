@@ -1,15 +1,11 @@
-# USAGE: nix repl ./repl.nix --argstr username <username> --argstr hostname <hostname>
-with builtins;
-{ hostname ? import ../lib/currentHostname.nix
-, username ? getEnv "USER"
-, system ? currentSystem
+# USAGE: nix repl repl.nix --argstr name USER@HOST
+{
+  flakeref ? (toString ./..),
+  name ? "${builtins.getEnv "USER"}@${import ../lib/currentHostname.nix}",
+  system ? builtins.currentSystem,
 }:
 let
-  self = getFlake (toString ./..);
-  inherit (self.inputs) nixpkgs;
-  homeConfiguration = self.legacyPackages.${system}.homeConfigurations."${username}@${hostname}";
+  flake = builtins.getFlake flakeref;
+  cfg = flake.legacyPackages.${system}.homeConfigurations.${name};
 in
-builtins // nixpkgs.lib // homeConfiguration // {
-  currentUsername = username;
-  currentHostname = hostname;
-}
+flake // cfg

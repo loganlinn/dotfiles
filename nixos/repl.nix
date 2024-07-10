@@ -1,15 +1,10 @@
-# USAGE: nix repl ./repl.nix --argstr hostname <hostname>
-with builtins;
-
+# USAGE: nix repl repl.nix --argstr name HOST
+{
+  flakeref ? (toString ./..),
+  name ? import ../lib/currentHostname.nix,
+}:
 let
-  currentHostname = import ../lib/currentHostname.nix;
-  self = getFlake (toString ./..);
-  inherit (self.inputs.nixpkgs) lib;
+  flake = builtins.getFlake flakeref;
+  cfg = flake.nixosConfigurations.${name};
 in
-
-{ hostname ? currentHostname }:
-
-self.nixosConfigurations.${hostname} // {
-  inherit self lib;
-  currentHostname = hostname;
-}
+flake // cfg

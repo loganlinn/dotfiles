@@ -1,20 +1,11 @@
-# USAGE: nix repl ./repl.nix --argstr username <username> --argstr hostname <hostname>
-with builtins;
-
-let
-  currentUsername = getEnv "USER";
-  currentHostname = import ../lib/currentHostname.nix;
-  self = getFlake (toString ./..);
-  inherit (self.inputs.nixpkgs) lib;
-in
-
-{ hostname ? currentHostname
-, username ? currentUsername
-, system ? currentSystem
+# USAGE: nix repl repl.nix --argstr HOST
+{
+  flakeref ? (toString ./..),
+  name ? "${builtins.getEnv "USER"}@${import ../lib/currentHostname.nix}",
+  system ? builtins.currentSystem,
 }:
-
-self.legacyPackages.${system}.darwinConfigurations."${username}@${hostname}" // {
-  inherit self lib;
-  currentUsername = username;
-  currentHostname = hostname;
-}
+let
+  flake = builtins.getFlake flakeref;
+  cfg = flake.legacyPackages.${system}.darwinConfigurations.${name};
+in
+flake // cfg
