@@ -8,7 +8,7 @@
     - Simply copying the ISO to drive resulted in Windows installer that "could not locate drivers".
     - Try above tool before attempting to customize the ISO.
 - BIOS and booting
-    - See [Dual Booting NixOS and Windows](https://nixos.wiki/wiki/Dual_Booting_NixOS_and_Windows)
+    - See [Dual Booting NixOS and Windows](https://wiki.nixos.org/wiki/Dual_Booting_NixOS_and_Windows)
     - Ideally GRUB is configured to boot Linux + Windows with Secure Boot enabled[1], but this turns out to be non-trivial/impossible.
     - Use case for Secure Boot was Riot's Vanguard (anti-cheat) software, needed to play their games.
 
