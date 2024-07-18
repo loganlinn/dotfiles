@@ -59,8 +59,9 @@ with lib;
       name = "Numix-Cursor-Light";
       size = 24;
     };
-    defaultSession = "none+xsession";
   };
+  services.displayManager.defaultSession = "none+xsession";
+
   services.xserver.windowManager = {
     session = lib.singleton {
       name = "xsession";
