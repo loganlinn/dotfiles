@@ -3,13 +3,13 @@
 {
   imports = [
     ../java
-    ../just
+    # ../just
     ../python
-    ./azure.nix
-    ./bazel.nix
+    # ./azure.nix
+    # ./bazel.nix
     ./clang.nix
-    ./crystal.nix
-    ./cue.nix
+    # ./crystal.nix
+    # ./cue.nix
     ./golang.nix
     ./images.nix
     ./kube.nix
