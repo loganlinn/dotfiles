@@ -114,6 +114,7 @@ with lib;
     extraPortals = optionals config.services.xserver.enable [
       pkgs.xdg-desktop-portal-gtk
     ];
+    config.common.default = "*"; # uses first portal implementation found in lexicographical order
   };
 
   hardware.flipperzero.enable = mkDefault true;
