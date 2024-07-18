@@ -13,16 +13,16 @@ with lib; {
         options =
           concatStringsSep "," [ "terminate:ctrl_alt_bksp" "ctrl:nocaps" ];
       };
-      libinput.touchpad = mkDefault {
-        accelProfile = "adaptive";
-        buttonMapping = "1 3 2";
-        disableWhileTyping = true;
-        horizontalScrolling = false;
-        naturalScrolling = true;
-        scrollMethod = "twofinger";
-        tapping = false;
-        tappingDragLock = true;
-      };
+    };
+    services.libinput.touchpad = mkDefault {
+      accelProfile = "adaptive";
+      buttonMapping = "1 3 2";
+      disableWhileTyping = true;
+      horizontalScrolling = false;
+      naturalScrolling = true;
+      scrollMethod = "twofinger";
+      tapping = false;
+      tappingDragLock = true;
     };
   };
 }
