@@ -5,6 +5,7 @@
   common = ./common.nix;
   davfs2 = ./davfs2.nix;
   docker = ./docker.nix;
+  frigate = ./frigate.nix;
   gaming = ./gaming.nix;
   hyprland = ./desktops/hyprland;
   minecraft-server = ./minecraft-server.nix;

@@ -11,6 +11,7 @@ with lib;
     self.nixosModules.apple-keyboard
     self.nixosModules.monitor-brightness
     self.nixosModules.bluetooth
+    self.nixosModules.frigate
     self.nixosModules.docker
     self.nixosModules.networking
     self.nixosModules.nix-registry
