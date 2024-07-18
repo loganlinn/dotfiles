@@ -43,7 +43,7 @@ in
   };
   services.udev.packages = [ pkgs.qmk-udev-rules ];
 
-  programs.bash.enableCompletion = true;
+  programs.bash.completion.enable = true;
   programs.bash.enableLsColors = true;
   programs.git.enable = mkDefault true;
   programs.git.package = mkDefault pkgs.gitFull;
