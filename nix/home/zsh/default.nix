@@ -24,13 +24,16 @@ with lib;
       commands =
         ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
     };
+
     shellGlobalAliases = {
       "..." = "../..";
       "...." = "../../..";
       "....." = "../../../..";
       "......" = "../../../../..";
     };
+
     sessionVariables = lib.mkOptionDefault config.home.sessionVariables;
+
     dirHashes = {
       sync = "$HOME/Sync";
       dots = "$HOME/.dotfiles";
@@ -54,6 +57,14 @@ with lib;
     };
 
     plugins = import ./plugins.nix { inherit config pkgs lib; };
+
+    envExtra = ''
+      [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
+    '';
+
+    profileExtra = ''
+      [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
+    '';
 
     initExtraFirst = ''
       # Stop TRAMP (in Emacs) from hanging or term/shell from echoing back commands
@@ -115,6 +126,14 @@ with lib;
       ${readFile ./nixpkgs.zsh}
 
       [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+    '';
+
+    loginExtra = ''
+      [[ ! -f ~/.zlogin.local ]] || source ~/.zlogin.local
+    '';
+
+    logoutExtra = ''
+      [[ ! -f ~/.zlogout.local ]] || source ~/.zlogout.local
     '';
   };
 }

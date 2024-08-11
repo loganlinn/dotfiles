@@ -1,13 +1,5 @@
 { config, pkgs, lib, nix-colors, ... }:
 
-let
-  # TODO use wslvar(1) instead of hard-coded paths?
-  win = rec {
-    rootDir = "/mnt/c"; # i.e. automount.root in /etc/wsl.conf. TODO obtain from file / use wslpath(1)
-    user = "logan";
-    userDir = "${rootDir}/Users/${user}"
-  };
-in
 {
   imports = [
     ../nix/home/dev/nix.nix
@@ -40,20 +32,35 @@ in
     commit.gpgsign = true;
   };
 
-  programs.emacs.enable = true;
-  programs.emacs.package = pkgs.emacs-pgtk; # native Wayland support
-  programs.neovim.enable = true;
-  programs.neovim.defaultEditor = true;
-  programs.zsh
+  programs.emacs = {
+    enable = true;
+    package = pkgs.emacs-pgtk; # native Wayland support
+  };
+
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+  };
+
+  programs.zsh = {
+    dirHashes = {
+       win = "/mnt/c/Users/logan"; # i.e. wslpath "$(wslvar HOMEPATH)"
+       AppData = "/mnt/c/Users/logan/AppData/Roaming"; # i.e. wslpath "$(wslvar AppData)" 
+    };
+  };
+
 
   home.packages = with pkgs; [
     wslu
     trashy
     micromamba
   ];
+
   home.sessionVariables = {
     XDG_MUSIC_DIR = "/mnt/c/Users/logan/Music";
+    ENTR_INOTIFY_WORKAROUND = "1"; # https://github.com/eradman/entr?tab=readme-ov-file#docker-and-wsl
   };
+
   home.username = "logan";
   home.homeDirectory = "/home/logan";
   home.stateVersion = "22.11";
