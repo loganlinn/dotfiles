@@ -53,6 +53,7 @@ let cfg = config.my.python; in
       cfg.finalPackage
       poetry
       pyright
+      ruff
     ];
 
     my.shellInitExtra = readFile ./venv.bash; # shell helpers
