@@ -64,6 +64,8 @@
     wslu
     trashy
     micromamba
+    socat # used with npirelay for access to named pipes in WSL
+    nettools # i.e. `ifconfig` (`ip`, you're cool too)
   ];
 
   home.sessionVariables = {
