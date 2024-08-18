@@ -47,6 +47,16 @@
        win = "/mnt/c/Users/logan"; # i.e. wslpath "$(wslvar HOMEPATH)"
        AppData = "/mnt/c/Users/logan/AppData/Roaming"; # i.e. wslpath "$(wslvar AppData)" 
     };
+
+  envExtra = ''
+    # Ensure environment is configured with ~/.nix-profile,
+    # otherwise $PATH et. al. aren't same for shell interactive modes.
+    # https://github.com/NixOS/nix/issues/2587
+    # https://github.com/NixOS/nix/issues/4376
+    if [ -e /etc/profile.d/nix.sh ]; then
+      . /etc/profile.d/nix.sh
+    fi
+  '';
   };
 
 
