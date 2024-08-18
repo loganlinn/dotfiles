@@ -9,6 +9,7 @@ with lib;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
     defaultKeymap = "emacs";
+
     history = {
       expireDuplicatesFirst = true;
       ignoreDups = true;
@@ -19,6 +20,7 @@ with lib;
       size = 100000;
       save = 100000;
     };
+
     shellAliases = {
       sudo = "sudo ";
       commands =
@@ -32,29 +34,51 @@ with lib;
       "......" = "../../../../..";
     };
 
-    sessionVariables = lib.mkOptionDefault config.home.sessionVariables;
+    sessionVariables = mkOptionDefault config.home.sessionVariables;
 
-    dirHashes = {
-      sync = "$HOME/Sync";
+    dirHashes = mkMerge [
+    {
+      dotfiles = "$HOME/.dotfiles";
       dots = "$HOME/.dotfiles";
       src = "$HOME/src";
       gh = "$HOME/src/github.com";
       clj = "$HOME/src/github.com/clojure";
       pkgs = "$HOME/src/github.com/NixOS/nixpkgs";
       nixos = "$HOME/src/github.com/NixOS";
+      nixpkgs = "$HOME/src/github.com/NixOS/nixpkgs";
       doom = "${config.xdg.configHome}/doom";
+      doomd = "${config.xdg.configHome}/doom";
       emacs = "${config.xdg.configHome}/emacs";
+      emacsd = "${config.xdg.configHome}/emacs";
+      home-manager = "$HOME/src/github.com/nix-community/home-manager";
       hm = "$HOME/src/github.com/nix-community/home-manager";
-    } // lib.optionalAttrs config.xdg.enable {
-      cfg = config.xdg.configHome;
+    }
+    (mkIf config.xdg.enable {
+      cache = config.xdg.cacheHome;
+      config = config.xdg.configHome;
+      data = config.xdg.dataHome;
+      state = config.xdg.stateHome;
+
+      downloads = config.xdg.userDirs.download;
       dl = config.xdg.userDirs.download;
+
+      documents = config.xdg.userDirs.documents;
       docs = config.xdg.userDirs.documents;
+      doc = config.xdg.userDirs.documents;
+
+      pic = config.xdg.userDirs.pictures;
       pics = config.xdg.userDirs.pictures;
+      pictures = config.xdg.userDirs.pictures;
+
       music = config.xdg.userDirs.music;
+
       vids = config.xdg.userDirs.videos;
-      trash =
-        "${config.xdg.dataHome}/Trash/files"; # https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
-    };
+
+      # TODO: incorrect for WSL
+      trash = "${config.xdg.dataHome}/Trash/files"; # https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
+    })
+    ];
+
 
     plugins = import ./plugins.nix { inherit config pkgs lib; };
 
@@ -77,7 +101,7 @@ with lib;
     '';
 
     initExtraBeforeCompInit = ''
-      ${readFile ./editor.zsh}
+      ${readFile ./line-editor.zsh}
 
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
       stty -ixon
