@@ -73,6 +73,8 @@ with lib;
     };
   };
 
+  services.frigate.enable = false;
+
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
   programs.git.enable = true;
