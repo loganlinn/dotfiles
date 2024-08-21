@@ -25,7 +25,7 @@
       url = "github:elkowar/eww";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/Hyprland";
+    hyprland = { url = "github:hyprwm/Hyprland"; };
     git-repo-manager = {
       url = "github:hakoerber/git-repo-manager";
     };
@@ -74,6 +74,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs-match.url = "github:srid/nixpkgs-match";
+  };
+
+  nixConfig = {
+    extra-substituters = [
+      "https://loganlinn.cachix.org"
+      "https://hyprland.cachix.org"
+      "https://nix-community.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+      "loganlinn.cachix.org-1:CsnLzdY/Z5Btks1lb9wpySLJ60+H9kwFVbcQeb2Pjf8="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
   };
 
   outputs =
