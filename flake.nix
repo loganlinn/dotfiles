@@ -136,7 +136,17 @@
             ];
           };
 
-          packages = import ./nix/pkgs { inherit pkgs; };
+          packages = (import ./nix/pkgs { inherit pkgs; }) // {
+            nvim = let
+              nixvimLib = inputs.nixvim.lib.${system};
+              nixvim' = inputs.nixvim.legacyPackages.${system};
+              nixvimModule = {
+                inherit pkgs;
+                module = import ./config/nixvim;
+                extraSpecialArgs = {};
+              };
+            in nixvim'.makeNixvimWithModule nixvimModule;
+          };
 
           apps.default = {
             type = "app";
