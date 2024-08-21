@@ -16,7 +16,6 @@
 
   colorScheme = nix-colors.colorSchemes.doom-one; # needed?
 
-  my.astronvim.enable = false;
   # my.java.package = pkgs.jdk17;
   # my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
   modules.spellcheck.enable = true;
@@ -37,7 +36,7 @@
     package = pkgs.emacs-pgtk; # native Wayland support
   };
 
-  programs.neovim = {
+  programs.nixvim = {
     enable = true;
     defaultEditor = true;
   };

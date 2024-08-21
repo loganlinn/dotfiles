@@ -22,7 +22,10 @@ in
         systemArgs@{ inputs', self', options, config, pkgs }:
         nixos@{ lib, ... }:
         {
-          imports = [ inputs.home-manager.nixosModules.home-manager ];
+          imports = [
+            inputs.home-manager.nixosModules.home-manager
+            inputs.nixvim.nixosModules.nixvim
+          ];
           config = {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
@@ -42,7 +45,10 @@ in
         systemArgs@{ inputs', self', options, config, pkgs }:
         darwin@{ lib, ... }:
         {
-          imports = [ inputs.home-manager.darwinModules.home-manager ];
+          imports = [
+            inputs.home-manager.darwinModules.home-manager
+            inputs.nixvim.nixDarwinModules.nixvim
+          ];
           config = {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
@@ -56,6 +62,8 @@ in
       );
     };
 
+    # 'homeManagerModule' is often used, but 'homeModule' is the preferred name according to `nix` command:
+    # https://github.com/NixOS/nix/blob/af26fe39344faff70e009d980820b8667c319cb2/src/nix/flake.cc#L810-L811
     homeModules = {
       common = import ./nix/home/common.nix;
       nix-colors = { lib, ... }: {
@@ -100,6 +108,7 @@ in
                 options.my = systemArgs.options.my;
                 config.my = systemArgs.config.my;
               }
+              inputs.nixvim.homeManagerModules.nixvim
             ] ++ modules;
             extraSpecialArgs = mkSpecialArgs systemArgs;
           };

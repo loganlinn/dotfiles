@@ -22,17 +22,12 @@ let
   };
 in
 {
-  imports = [ ../astronvim.nix ];
-
   programs.neovim = {
-    enable = true;
-
     defaultEditor = !config.services.emacs.defaultEditor;
     withNodeJs = true;
     withPython3 = true;
     vimAlias = true;
     viAlias = true;
-
     # plugins = with pkgs.vimPlugins; [
     #   (pkgs.vimPlugins.nvim-treesitter.withPlugins (p: with p; [
     #     # ada

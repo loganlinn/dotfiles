@@ -1,6 +1,4 @@
 {
-  description = "loganlinn's (highly indecisive) flake";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
@@ -14,7 +12,9 @@
       url = "github:lnl7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-hardware.url = "github:nixos/nixos-hardware";
+    nixos-hardware = {
+      url = "github:nixos/nixos-hardware";
+    };
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -25,7 +25,9 @@
       url = "github:elkowar/eww";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland = { url = "github:hyprwm/Hyprland"; };
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+    };
     git-repo-manager = {
       url = "github:hakoerber/git-repo-manager";
     };
@@ -40,6 +42,10 @@
     };
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixvim = {
+      url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

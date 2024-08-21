@@ -6,7 +6,7 @@
     deadnix
     comma
     nix-init
-    nix-melt # ranger-like flake.lock viewer
+    # nix-melt # ranger-like flake.lock viewer
     nix-output-monitor # get additional information while building packages
     nix-tree # interactively browse dependency graphs of Nix derivations
     nix-update # swiss-knife for updating nix packages
