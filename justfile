@@ -1,6 +1,8 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i "just --justfile" -p just
 
+mod nixos
+
 # default recipe to display help information
 default:
     @just --list
@@ -59,10 +61,11 @@ use-caches: (run "use-caches")
 
 home-switch: (run "home-switch")
 
-nixos-switch: (run "nixos-switch")
-
 netrc:
     op inject -i netrc.tpl -o ~/.netrc
 
 link-nixos-flake:
     test "$(readlink -qe /etc/nixos/flake.nix)" = "$(readlink -qe {{ source_dir() }}/flake.nix)" || ln -s {{ source_dir() }}/flake.nix /etc/nixos/flake.nix
+
+check-flake:
+    nix run github:DeterminateSystems/flake-checker
