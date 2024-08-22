@@ -1,9 +1,9 @@
 top@{ self, inputs, moduleWithSystem, withSystem, ... }:
 
 let
-  nix-colors = import ./nix-colors/extended.nix inputs;
+  nix-colors = import ../nix-colors/extended.nix inputs;
 
-  mkLib = import ./lib/extended.nix;
+  mkLib = import ../lib/extended.nix;
 
   mkHmLib = stdlib:
     import "${inputs.home-manager}/modules/lib/stdlib-extended.nix"
@@ -16,8 +16,12 @@ let
   };
 in
 {
+  imports = [
+    ./mission-control.nix
+  ];
+
   flake = {
-    nixosModules = (import ./nixos/modules) // {
+    nixosModules = (import ../nixos/modules) // {
       home-manager = moduleWithSystem (
         systemArgs@{ inputs', self', options, config, pkgs }:
         nixos@{ lib, ... }:
@@ -39,7 +43,7 @@ in
     };
 
     darwinModules = {
-      common = import ./nix-darwin/common.nix;
+      common = import ../nix-darwin/common.nix;
       home-manager = moduleWithSystem (
         systemArgs@{ inputs', self', options, config, pkgs }:
         darwin@{ lib, ... }:
@@ -80,7 +84,7 @@ in
               inherit system;
               specialArgs = mkSpecialArgs systemArgs;
               modules = [
-                ./options.nix
+                ../options.nix
                 {
                   nixpkgs.config = pkgs.config;
                   nixpkgs.overlays = pkgs.overlays;
@@ -92,7 +96,7 @@ in
           withSystem system (systemArgs@{ self', inputs', config, pkgs, ... }:
             inputs.nix-darwin.lib.darwinSystem {
               inherit pkgs;
-              modules = [ ./options.nix ] ++ modules;
+              modules = [ ../options.nix ] ++ modules;
               specialArgs = mkSpecialArgs systemArgs;
             });
 

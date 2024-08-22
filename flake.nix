@@ -1,4 +1,6 @@
 {
+  description = "loganlinn's systems";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
@@ -58,10 +60,7 @@
       url = "github:cachix/devenv";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -101,9 +100,7 @@
       imports = [
         inputs.flake-parts.flakeModules.easyOverlay
         inputs.flake-root.flakeModule
-        inputs.mission-control.flakeModule
-        ./mission-control.nix
-        ./flake-module.nix
+        ./flake-module
       ];
 
       systems = [

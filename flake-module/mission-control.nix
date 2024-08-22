@@ -1,4 +1,9 @@
+{ inputs, ... }:
 {
+  imports = [
+    inputs.mission-control.flakeModule
+  ];
+
   perSystem = { inputs', self', config, system, pkgs, lib, ... }: {
     mission-control = {
       wrapperName = ",,"; # play nice with nix-community/comma
