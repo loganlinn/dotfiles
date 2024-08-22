@@ -3,7 +3,7 @@
 {
   types = import ./types.nix { inherit lib; };
   files = import ./files.nix { inherit lib; };
-  strings = import ./strings { inherit lib; };
+  strings = import ./strings.nix { inherit lib; };
 
   float = import ./float.nix { inherit lib; };
   hex = import ./hex.nix { inherit lib; };
@@ -12,7 +12,7 @@
   nerdfonts = import ./nerdfonts { inherit lib; };
   font-awesome = import ./font-awesome.nix { inherit lib; };
 
-  rofi = import ./rofi.nix { inherit lib; };
+  # rofi = import ./rofi.nix { inherit lib; };
 
   # Returns
   toExe = input:
