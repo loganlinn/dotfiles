@@ -13,7 +13,7 @@
     ../nix/home/yt-dlp.nix
     ../nix/modules/spellcheck.nix
     ../nix/modules/nix-registry.nix
-    ../nix/modules/nixvim
+    ../nix/modules/programs/nixvim
   ];
 
   colorScheme = nix-colors.colorSchemes.doom-one; # needed?
