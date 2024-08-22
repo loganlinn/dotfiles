@@ -179,9 +179,13 @@
                   config.flake-root.devShell # sets FLAKE_ROOT
                   config.mission-control.devShell
                 ];
-                buildInputs = [
+                nativeBuildInputs = [
                   config.formatter
                   inputs'.agenix.packages.agenix
+                  pkgs.just
+                  pkgs.age
+                  pkgs.ssh-to-age
+                  pkgs.sops
                 ];
                 env.NIX_USER_CONF_FILES = toString ./nix.conf;
               };

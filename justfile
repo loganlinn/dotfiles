@@ -3,7 +3,7 @@
 
 # default recipe to display help information
 default:
-  @just --list
+    @just --list
 
 flake := invocation_directory()
 
@@ -50,13 +50,15 @@ metadata:
     nix flake metadata
 
 repl dir='.' file='repl.nix':
-    nix repl --file {{dir}}/{{ file }}
+    nix repl --file {{ dir }}/{{ file }}
 
 run app:
     nix run .#{{ app }}
 
 use-caches: (run "use-caches")
+
 home-switch: (run "home-switch")
+
 nixos-switch: (run "nixos-switch")
 
 netrc:

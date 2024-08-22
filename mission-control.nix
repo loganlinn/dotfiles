@@ -1,5 +1,5 @@
 {
-  perSystem = ctx@{ inputs', self', config, system, pkgs, lib, ... }: {
+  perSystem = { inputs', self', config, system, pkgs, lib, ... }: {
     mission-control = {
       wrapperName = ",,"; # play nice with nix-community/comma
       scripts = let
