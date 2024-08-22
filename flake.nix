@@ -171,7 +171,6 @@
                   pkgs.ssh-to-age
                   pkgs.sops
                 ];
-                env.NIX_USER_CONF_FILES = toString ./nix.conf;
               };
             }
             // (lib.listToAttrs (
