@@ -120,17 +120,7 @@
           pkgs,
           lib,
           ...
-        }:
-        let
-          nixvimLib = inputs.nixvim.lib.${system};
-
-              nixvim' = inputs.nixvim.legacyPackages.${system};
-              nixvimModule = {
-                inherit pkgs;
-                module = import ./config/nixvim;
-                extraSpecialArgs = {};
-              };
-        in {
+        }: {
           imports = [ ./options.nix ];
 
           _module.args.pkgs = import inputs.nixpkgs {
@@ -143,14 +133,6 @@
               inputs.git-repo-manager.overlays.git-repo-manager
               inputs.fenix.overlays.default
             ];
-          };
-
-          checks = {
-            neovim = nixvimLib.check.mkTestDerivationFromNixvimModule nixvimModule;
-          };
-
-          packages = (import ./nix/pkgs { inherit pkgs; }) // {
-            neovim = nixvim'.makeNixvimWithModule nixvimModule;
           };
 
           apps.default = {

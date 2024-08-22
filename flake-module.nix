@@ -24,7 +24,7 @@ in
         {
           imports = [
             inputs.home-manager.nixosModules.home-manager
-            # inputs.nixvim.nixosModules.nixvim
+            inputs.nixvim.nixosModules.nixvim
           ];
           config = {
             home-manager.useGlobalPkgs = true;
@@ -47,7 +47,7 @@ in
         {
           imports = [
             inputs.home-manager.darwinModules.home-manager
-            # inputs.nixvim.nixDarwinModules.nixvim
+            inputs.nixvim.nixDarwinModules.nixvim
           ];
           config = {
             home-manager.useGlobalPkgs = true;
@@ -108,7 +108,7 @@ in
                 options.my = systemArgs.options.my;
                 config.my = systemArgs.config.my;
               }
-              # inputs.nixvim.homeManagerModules.nixvim
+              inputs.nixvim.homeManagerModules.nixvim
             ] ++ modules;
             extraSpecialArgs = mkSpecialArgs systemArgs;
           };
