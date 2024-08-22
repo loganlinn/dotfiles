@@ -29,6 +29,7 @@ in {
 
     publicKeys = mkOpt (attrsOf str) { };
 
+    # TODO make resemble pkgs.stdenv.{isLinux, isDarwin, isx86_32, ...}
     hints.isWSL = mkOpt bool (builtins.pathExists /usr/lib/wsl/lib);
 
     fonts = mkOpt (attrsOf fontType) {
