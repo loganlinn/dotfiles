@@ -135,6 +135,8 @@
             ];
           };
 
+          packages = import ./nix/pkgs { inherit pkgs; };
+
           apps.default = {
             type = "app";
             program = "${pkgs.cowsay}/bin/cowsay";
@@ -233,11 +235,15 @@
         ];
 
         nixosConfigurations.framework = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
-          ./nixos/framework/configuration.nix
           inputs.agenix.nixosModules.default
+          inputs.nixvim.nixosModules.nixvim
+          ./nixos/framework/configuration.nix
+          ./nix/modules/programs/nixvim
           self.nixosModules.home-manager
           {
             home-manager.users.logan = import ./nixos/framework/home.nix; # TODO unify with nijusan
+            programs.nixvim.enable = true;
+            programs.nixvim.defaultEditor = true;
           }
         ];
 

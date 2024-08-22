@@ -99,14 +99,14 @@ in {
 
     home.packages = (attrValues rec {
       jdk = cfg.package;
-      maven = pkgs.maven.override { inherit jdk; };
+      maven = pkgs.maven; #.override { jdk_headless = jdk; };
       gradle = pkgs.gradle.override {
         java = jdk;
         javaToolchains =
           remove (p: p.meta.name == jdk.meta.name) cfg.toolchains;
       };
       clojure = pkgs.clojure.override { inherit jdk; };
-      clojure-lsp = pkgs.clojure-lsp.override { inherit clojure; };
+      clojure-lsp = pkgs.clojure-lsp;
       leiningen = pkgs.leiningen.override { inherit jdk; };
       inherit (pkgs)
         babashka bbin clj-kondo jet neil zprint rep gradle-completion;

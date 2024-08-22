@@ -29,7 +29,6 @@
     ../../nix/modules/spellcheck.nix
     ../../nix/modules/desktop
     ../../nix/modules/desktop/i3
-    ../../nix/modules/programs/nixvim
   ];
 
   my.python.package = pkgs.python311;
@@ -64,8 +63,6 @@
 
   programs.kitty.enable = true;
   programs.emacs.enable = true;
-  programs.nixvim.enable = true;
-  programs.nixvim.defaultEditor = true;
   programs.rofi.enable = true;
   programs.google-chrome.enable = true;
   programs.firefox.enable = true;
