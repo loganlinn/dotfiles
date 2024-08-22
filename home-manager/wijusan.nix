@@ -83,6 +83,7 @@
     socat # used with npirelay for access to named pipes in WSL
     nettools # i.e. `ifconfig` (`ip`, you're cool too)
     self.packages.${pkgs.system}.nvim
+    git-repo-manager
   ];
 
   home.sessionVariables = {
