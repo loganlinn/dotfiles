@@ -1,7 +1,15 @@
 {
   config = {
+    colorscheme = "dracula";
 
-    colorschemes.dracula.enable = true;
+    colorschemes = {
+      dracula.enable = true;
+      gruvbox.enable = true;
+      kanagawa.enable = true;
+      nightfox.enable = true;
+      one.enable = true;
+      tokyonight.enable = true;
+    };
 
     opts = {
       number = true;
@@ -28,5 +36,14 @@
       splitkeep = "screen";
       splitright = true;
     };
+
+    extraConfigVim = ''
+      cnoreabbrev Q q
+      cnoreabbrev Q! q!
+      cnoreabbrev W w
+      cnoreabbrev W! w!
+      cnoreabbrev Wq wq
+      cnoreabbrev Wq! wq!
+    '';
   };
 }

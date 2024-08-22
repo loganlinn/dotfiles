@@ -4,28 +4,33 @@ with lib;
 
 {
   imports = [
-    inputs.nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
     ./hardware-configuration.nix
-    self.nixosModules.common
+    ./nix/modules/programs/nixvim
+    inputs.agenix.nixosModules.age
+    inputs.nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
+    inputs.nixvim.nixosModules.nixvim
     self.nixosModules._1password
     self.nixosModules.apple-keyboard
-    self.nixosModules.monitor-brightness
     self.nixosModules.bluetooth
-    self.nixosModules.frigate
+    self.nixosModules.common
+    self.nixosModules.davfs2
     self.nixosModules.docker
+    self.nixosModules.frigate
+    self.nixosModules.home-manager
+    self.nixosModules.hyprland
+    self.nixosModules.monitor-brightness
     self.nixosModules.networking
     self.nixosModules.nix-registry
     self.nixosModules.pipewire
     self.nixosModules.printing
     self.nixosModules.security
-    self.nixosModules.davfs2
-    # self.nixosModules.gaming
     self.nixosModules.tailscale
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
     self.nixosModules.xserver
-    self.nixosModules.hyprland
   ];
+
+  home-manager.users.logan = import ./nixos/framework/home.nix; # TODO unify with nijusan
 
   # my.hyprland.enable = false;
   # my.tailscale.ssh.enable = true;
@@ -84,6 +89,10 @@ with lib;
   programs.zsh.enable = true;
   programs.gnupg.agent.enable = true;
   programs.gnupg.agent.enableSSHSupport = true;
+  programs.nixvim.enable = true;
+  programs.nixvim.defaultEditor = true;
+  programs.nixvim.vimAlias = true;
+
   # programs.dconf.profiles.user.databases = [{
   #   settings."/org/gnome/desktop/input-sources/xkb-options" = ["ctrl:nocaps"];
   # }];

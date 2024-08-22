@@ -230,20 +230,10 @@
       flake = {
         nixosConfigurations.nijusan = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
           ./nixos/nijusan/configuration.nix
-          # self.nixosModules.home-manager
         ];
 
         nixosConfigurations.framework = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
-          inputs.agenix.nixosModules.default
-          inputs.nixvim.nixosModules.nixvim
           ./nixos/framework/configuration.nix
-          ./nix/modules/programs/nixvim
-          self.nixosModules.home-manager
-          {
-            home-manager.users.logan = import ./nixos/framework/home.nix; # TODO unify with nijusan
-            programs.nixvim.enable = true;
-            programs.nixvim.defaultEditor = true;
-          }
         ];
 
         nixosConfigurations.wijusan = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [

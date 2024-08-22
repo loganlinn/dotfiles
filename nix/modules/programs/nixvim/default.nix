@@ -2,8 +2,15 @@
   imports = [ ./plugins ];
 
   programs.nixvim = {
+    colorscheme = "dracula";
+
     colorschemes = {
       dracula.enable = true;
+      gruvbox.enable = true;
+      kanagawa.enable = true;
+      nightfox.enable = true;
+      one.enable = true;
+      tokyonight.enable = true;
     };
 
     opts = {
@@ -441,5 +448,14 @@
         };
       }
     ];
+
+    extraConfigVim = ''
+      cnoreabbrev Q q
+      cnoreabbrev Q! q!
+      cnoreabbrev W w
+      cnoreabbrev W! w!
+      cnoreabbrev Wq wq
+      cnoreabbrev Wq! wq!
+    '';
   };
 }
