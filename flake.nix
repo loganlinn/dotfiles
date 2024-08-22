@@ -137,6 +137,7 @@
           };
 
           packages = (import ./nix/pkgs { inherit pkgs; }) // {
+            # TODO move to new flake module with checks using nixvim'.mkTestDerivationFromNixvimModule
             nvim = let
               nixvimLib = inputs.nixvim.lib.${system};
               nixvim' = inputs.nixvim.legacyPackages.${system};

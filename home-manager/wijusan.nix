@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nix-colors, ... }:
+{ self, inputs, config, pkgs, lib, nix-colors, ... }:
 
 {
   imports = [
@@ -12,6 +12,8 @@
     ../nix/home/pretty.nix
     ../nix/home/yt-dlp.nix
     ../nix/modules/spellcheck.nix
+    ../nix/modules/nix-registry.nix
+    inputs.nixvim.homeManagerModules.nixvim
   ];
 
   colorScheme = nix-colors.colorSchemes.doom-one; # needed?
@@ -36,10 +38,20 @@
     package = pkgs.emacs-pgtk; # native Wayland support
   };
 
-  programs.nixvim = {
-    enable = true;
-    defaultEditor = true;
-  };
+  # programs.nixvim = {
+  #   enable = true;
+  #  # package = self.packages.${pkgs.system}.nvim;
+  #   defaultEditor = true;
+  # };
+
+  # programs.nixvim = inputs'.nixvim.lib.helpers ../config/nixvim {}
+    # enable = true;
+    # defaultEditor = true;
+    # package = self'.packages.nvim;
+    # self'.packages.nvim.extend {
+    #   clipboard.providers.wl-copy.enable = true;
+    # };
+  # };
 
   programs.zsh = {
     dirHashes = {
@@ -70,6 +82,7 @@
     micromamba
     socat # used with npirelay for access to named pipes in WSL
     nettools # i.e. `ifconfig` (`ip`, you're cool too)
+    self.packages.${pkgs.system}.nvim
   ];
 
   home.sessionVariables = {
