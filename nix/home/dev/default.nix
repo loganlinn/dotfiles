@@ -2,25 +2,21 @@
 
 {
   imports = [
+    ../git
     ../java
-    # ../just
+    ../just
     ../python
-    # ./azure.nix
-    # ./bazel.nix
     ./clang.nix
-    # ./crystal.nix
-    # ./cue.nix
+    ./data.nix
     ./golang.nix
     ./images.nix
     ./kube.nix
     ./markdown.nix
+    ./nix.nix
     ./nodejs.nix
     ./protobuf.nix
     ./ruby.nix
     ./rust.nix
-    ../git
-    ./data.nix
-    ./nix.nix
     ./shell.nix
   ];
 

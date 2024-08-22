@@ -1,14 +1,15 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i "just --justfile" -p just
 
+# default recipe to display help information
+default:
+  @just --list
+
 flake := invocation_directory()
 
 alias s := switch
 alias b := build
 alias z := repl
-
-default:
-    @just --choose
 
 [linux]
 build:

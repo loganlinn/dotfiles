@@ -97,6 +97,7 @@ in
         gnuplot # :lang (org +gnuplot)
         gnutls # for TLS connectivity
         # hugo # :lang (org +hugo)
+        just
         imagemagick # for image-dired
         nodePackages.prettier # css, html, js, jsx
         sqlite # :tools lookup & :lang org +roam
