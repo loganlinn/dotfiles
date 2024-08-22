@@ -121,7 +121,16 @@
           lib,
           ...
         }:
-        {
+        let
+          nixvimLib = inputs.nixvim.lib.${system};
+
+              nixvim' = inputs.nixvim.legacyPackages.${system};
+              nixvimModule = {
+                inherit pkgs;
+                module = import ./config/nixvim;
+                extraSpecialArgs = {};
+              };
+        in {
           imports = [ ./options.nix ];
 
           _module.args.pkgs = import inputs.nixpkgs {
@@ -136,17 +145,12 @@
             ];
           };
 
+          checks = {
+            neovim = nixvimLib.check.mkTestDerivationFromNixvimModule nixvimModule;
+          };
+
           packages = (import ./nix/pkgs { inherit pkgs; }) // {
-            # TODO move to new flake module with checks using nixvim'.mkTestDerivationFromNixvimModule
-            nvim = let
-              nixvimLib = inputs.nixvim.lib.${system};
-              nixvim' = inputs.nixvim.legacyPackages.${system};
-              nixvimModule = {
-                inherit pkgs;
-                module = import ./config/nixvim;
-                extraSpecialArgs = {};
-              };
-            in nixvim'.makeNixvimWithModule nixvimModule;
+            neovim = nixvim'.makeNixvimWithModule nixvimModule;
           };
 
           apps.default = {
