@@ -5,7 +5,7 @@ with lib;
 {
   imports = [
     ./hardware-configuration.nix
-    ./nix/modules/programs/nixvim
+    ../../nix/modules/programs/nixvim
     inputs.agenix.nixosModules.age
     inputs.nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
     inputs.nixvim.nixosModules.nixvim
@@ -30,7 +30,7 @@ with lib;
     self.nixosModules.xserver
   ];
 
-  home-manager.users.logan = import ./nixos/framework/home.nix; # TODO unify with nijusan
+  home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
 
   # my.hyprland.enable = false;
   # my.tailscale.ssh.enable = true;
