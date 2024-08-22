@@ -3,7 +3,7 @@
 
   services.avahi = {
     enable = true;
-    nssmdns = true; # resolve .local domains of printers
+    nssmdns4 = true; # resolve .local domains of printers
     openFirewall = true; # for a WiFi printer
   };
 
