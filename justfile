@@ -5,7 +5,7 @@
 default:
     @just --list
 
-flake := invocation_directory()
+flake := source_dir()
 
 alias s := switch
 alias b := build
@@ -34,7 +34,7 @@ bootstrap:
 [macos]
 bootstrap:
     nix build "{{ flake }}#darwinConfigurations.$(hostname -s).system"
-    ./result/sw/bin/darwin-rebuild switch --flake {{ invocation_directory() }}
+    ./result/sw/bin/darwin-rebuild switch --flake {{ source_dir() }}
 
 fmt:
     nix fmt
@@ -63,3 +63,6 @@ nixos-switch: (run "nixos-switch")
 
 netrc:
     op inject -i netrc.tpl -o ~/.netrc
+
+link-nixos-flake:
+    test "$(readlink -qe /etc/nixos/flake.nix)" = "$(readlink -qe {{ source_dir() }}/flake.nix)" || ln -s {{ source_dir() }}/flake.nix /etc/nixos/flake.nix
