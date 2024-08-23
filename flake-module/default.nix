@@ -37,6 +37,7 @@ in
               options.my = nixos.options.my;
               config.my = nixos.config.my;
             };
+            home-manager.backupExtension = "backup";
           };
         }
       );
