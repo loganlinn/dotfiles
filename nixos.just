@@ -4,10 +4,10 @@ test:
   {{nixos_rebuild }} test
 
 switch:
-  {{ nixos_rebuild }} switch
+  sudo {{ nixos_rebuild }} switch
 
 build:
-  sudo {{ nixos_rebuild }} build
+  {{ nixos_rebuild }} build
 
 boot:
   sudo {{ nixos_rebuild }} boot
