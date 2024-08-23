@@ -1,17 +1,21 @@
-{ self, inputs, config, pkgs, lib, ... }:
+{
+  self,
+  inputs,
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 with lib;
 
-let
-  # https://github.com/loganlinn.keys
-  loganSshKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa";
-in
 {
   imports = [
     ./hardware-configuration.nix
     ../../nix/modules/programs/nixvim
     inputs.nixvim.nixosModules.nixvim
     inputs.agenix.nixosModules.age
+    self.nixosModules.home-manager
     self.nixosModules._1password
     self.nixosModules.common
     self.nixosModules.pipewire
@@ -30,7 +34,7 @@ in
   networking.hostName = "juuni";
   networking.networkmanager.enable = true;
   networking.interfaces.enp3s0.wakeOnLan.enable = true;
-  networking.interfaces.enp3s0.wakeOnLan.policy = ["magic"];
+  networking.interfaces.enp3s0.wakeOnLan.policy = [ "magic" ];
 
   time.timeZone = "America/Los_Angeles";
 
@@ -52,6 +56,26 @@ in
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
+
+  home-manager.users.${config.my.user.name} =
+    {
+      self,
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    {
+      imports = [
+        self.homeModules.common
+        self.homeModules.secrets
+        ../../nix/home/dev # TODO module
+        ../../nix/home/pretty.nix
+        ../../nix/home/ssh.nix
+      ];
+
+      home.stateVersion = "24.05";
+    };
 
   environment.systemPackages = with pkgs; [
     vim

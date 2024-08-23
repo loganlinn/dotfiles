@@ -9,7 +9,7 @@ in {
   home.activation.linkHomeManagerFlake =
     hm.dag.entryAfter [ "writeBoundary" ] ''
       if [[ ! -d ${hmConfigDir} ]] && [[ -d ${flakeDirectory} ]]; then
-        $DRY_RUN_CMD ln $VERBOSE_ARG -s "${flakeDirectory}" "${hmConfigDir}"
+        run ln $VERBOSE_ARG -s "${flakeDirectory}" "${hmConfigDir}"
       fi
     '';
 

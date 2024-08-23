@@ -46,14 +46,11 @@ in
         ++ optional config.virtualisation.libvirtd.enable "libvirtd"
         ++ optional config.services.davfs2.enable "${config.services.davfs2.davGroup}";
       openssh.authorizedKeys.keys = config.my.authorizedKeys;
-      packages =
-        with pkgs;
-        [
+      packages = with pkgs; [
           cachix
           gh
           ssh-copy-id
-        ]
-        ++ lib.optionals graphicsEnabled [ librewolf ];
+        ];
     };
 
     services.openssh.enable = mkDefault true;
@@ -114,7 +111,7 @@ in
         mupdf # Simple PDF/EPUB/etc viewer
       ]
       ++ optionals audioEnabled [ ]
-      ++ optionals systemdSupported [ sysz ];
+      ++ optionals systemdSupported [ .sysz ];
 
     time.timeZone = mkDefault "America/Los_Angeles";
 
