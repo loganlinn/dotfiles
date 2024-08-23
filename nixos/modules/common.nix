@@ -29,7 +29,7 @@ in
     networking.useDHCP = lib.mkDefault true;
 
     users.users.${config.my.user.name} = {
-      shell = mkDefault config.my.user.shell;
+      shell = config.my.user.shell;
       home = mkDefault "/home/${config.my.user.name}";
       isNormalUser = true;
       createHome = mkDefault true;
@@ -110,7 +110,7 @@ in
         wget
         xdg-utils
       ]
-      ++ optional graphicsEnabled [
+      ++ optionals graphicsEnabled [
         mupdf # Simple PDF/EPUB/etc viewer
       ]
       ++ optionals audioEnabled [ ]
