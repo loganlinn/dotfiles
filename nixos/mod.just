@@ -13,4 +13,4 @@ boot:
   sudo {{ nixos_rebuild }} boot
 
 repl:
-  {{ source_dir() }}/nixos/repl
+  ./repl
