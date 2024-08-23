@@ -17,8 +17,7 @@ in
 {
   imports = [
     ../../options.nix
-    self.nixosModules.nix-registry
-    self.nixosModules.security
+    ./security
   ];
 
   config = mkMerge [
