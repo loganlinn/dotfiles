@@ -67,7 +67,7 @@ in
     # 'homeManagerModule' is often used, but 'homeModule' is the preferred name according to `nix` command:
     # https://github.com/NixOS/nix/blob/af26fe39344faff70e009d980820b8667c319cb2/src/nix/flake.cc#L810-L811
     homeModules = {
-      common = import ./nix/home/common.nix;
+      common = import ../nix/home/common.nix;
       nix-colors = { lib, ... }: {
         imports = [ nix-colors.homeManagerModule ];
         colorScheme = lib.mkDefault nix-colors.colorSchemes.doom-one;
