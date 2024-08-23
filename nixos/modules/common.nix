@@ -8,7 +8,6 @@ in
 {
   imports = [
     ../../options.nix
-    ./vim.nix
   ];
 
   networking.networkmanager.enable = mkDefault true;

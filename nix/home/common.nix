@@ -7,7 +7,6 @@
     ./fzf.nix
     ./git
     ./gpg.nix
-    ./neovim
     ./nix-path.nix
     ./ranger.nix
     ./readline.nix

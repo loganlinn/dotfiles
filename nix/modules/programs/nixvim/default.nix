@@ -1,7 +1,13 @@
+{ config, lib, ... }:
+let
+  getConfig = pathStr: default: lib.attrByPath (lib.splitString "." pathStr) default config;
+in
 {
   imports = [ ./plugins ];
 
   programs.nixvim = {
+    vimAlias = !getConfig "programs.neovim.vimAlias" true;
+
     colorscheme = "dracula";
 
     colorschemes = {

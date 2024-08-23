@@ -91,7 +91,6 @@ with lib;
   programs.gnupg.agent.enableSSHSupport = true;
   programs.nixvim.enable = true;
   programs.nixvim.defaultEditor = true;
-  programs.nixvim.vimAlias = true;
 
   # programs.dconf.profiles.user.databases = [{
   #   settings."/org/gnome/desktop/input-sources/xkb-options" = ["ctrl:nocaps"];

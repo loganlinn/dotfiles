@@ -73,7 +73,6 @@
     micromamba
     socat # used with npiperelay.exe for access to named pipes in WSL
     nettools # i.e. `ifconfig` (`ip`, you're cool too)
-    # self.packages.${pkgs.system}.neovim
     git-repo-manager
   ];
 

@@ -35,8 +35,6 @@ let cfg = config.my.python; in
           setuptools
           jupyter
           jupyterlab
-        ] ++ optionals config.programs.neovim.enable [
-          pynvim
         ] ++ optionals stdenv.isLinux [
           # pybluez
           dbus-python
