@@ -160,7 +160,7 @@ in
       nixpkgs.config.allowUnfree = true;
     }
     (mkIf
-      (config.services.xserver.desktopManager.gnome.enable && services.displayManager.autoLogin.enable)
+      (config.services.xserver.desktopManager.gnome.enable && config.services.displayManager.autoLogin.enable)
       {
         # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
         systemd.services."getty@tty1".enable = false;
