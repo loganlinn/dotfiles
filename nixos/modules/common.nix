@@ -111,7 +111,7 @@ in
         mupdf # Simple PDF/EPUB/etc viewer
       ]
       ++ optionals audioEnabled [ ]
-      ++ optionals systemdSupported [ .sysz ];
+      ++ optionals systemdSupported [ sysz ];
 
     time.timeZone = mkDefault "America/Los_Angeles";
 
