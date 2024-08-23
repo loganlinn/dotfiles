@@ -25,7 +25,7 @@ in
   boot.loader.systemd-boot.consoleMode = "auto";
   boot.loader.systemd-boot.netbootxyz.enable = false; # TODO try it!
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.cleanTmpDir = true;
+  boot.tmp.cleanOnBoot = true;
 
   networking.hostName = "juuni";
   networking.networkmanager.enable = true;
