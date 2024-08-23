@@ -1,16 +1,16 @@
 nixos_rebuild := "nixos-rebuild --accept-flake-config --show-trace"
 
-test:
-  {{nixos_rebuild }} test
+test args='':
+  {{nixos_rebuild }} test {{ args }}
 
-switch:
-  sudo {{ nixos_rebuild }} switch
+switch args='':
+  sudo {{ nixos_rebuild }} switch {{ args }}
 
-build:
-  {{ nixos_rebuild }} build
+build args='':
+  {{ nixos_rebuild }} build {{ args }}
 
-boot:
-  sudo {{ nixos_rebuild }} boot
+boot args='':
+  sudo {{ nixos_rebuild }} boot {{ args }}
 
 repl:
   ./repl
