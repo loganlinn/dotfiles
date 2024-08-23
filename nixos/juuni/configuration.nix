@@ -1,5 +1,7 @@
 { self, inputs, config, pkgs, ... }:
 
+with lib;
+
 let
   # https://github.com/loganlinn.keys
   loganSshKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa";
@@ -36,6 +38,10 @@ in
   services.xserver.displayManager.gdm.autoSuspend = false;
   services.xserver.desktopManager.gnome.enable = true;
 
+  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
+
   # don't need audio
   hardware.pulseaudio.enable = false;
   services.pipewire.enable = false;
@@ -54,6 +60,11 @@ in
     arion
     docker-client # used by podman
   ];
+
+  virtualisation.docker.enable = false;
+  virtualisation.podman.dockerCompat = mkDefault true;
+  virtualisation.podman.dockerSocket.enable = mkDefault true;
+  virtualisation.podman.defaultNetwork.settings.dns_enabled = mkDefault true;
 
   services.openssh.enable = true;
 
