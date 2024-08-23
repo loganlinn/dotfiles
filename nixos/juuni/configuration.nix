@@ -1,4 +1,4 @@
-{ self, inputs, config, pkgs, ... }:
+{ self, inputs, config, pkgs, lib, ... }:
 
 with lib;
 
