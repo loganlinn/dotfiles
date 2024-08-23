@@ -14,6 +14,7 @@ in
     inputs.agenix.nixosModules.age
     self.nixosModules._1password
     self.nixosModules.common
+    self.nixosModules.pipewire
   ];
 
   boot.kernelParams = [ ];
@@ -41,10 +42,6 @@ in
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
-
-  # don't need audio
-  hardware.pulseaudio.enable = false;
-  services.pipewire.enable = false;
 
   # services.displayManager.autoLogin.enable = true;
 
