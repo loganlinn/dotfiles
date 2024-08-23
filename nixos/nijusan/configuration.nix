@@ -12,12 +12,10 @@ with lib;
     self.nixosModules.gaming
     self.nixosModules.hyprland
     self.nixosModules.networking
-    self.nixosModules.nix-registry
     self.nixosModules.nvidia
     self.nixosModules.pipewire
     self.nixosModules.printing
     self.nixosModules.remarkable
-    self.nixosModules.security
     self.nixosModules.syncthing
     self.nixosModules.tailscale
     self.nixosModules.thunar

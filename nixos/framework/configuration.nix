@@ -20,10 +20,8 @@ with lib;
     self.nixosModules.hyprland
     self.nixosModules.monitor-brightness
     self.nixosModules.networking
-    self.nixosModules.nix-registry
     self.nixosModules.pipewire
     self.nixosModules.printing
-    self.nixosModules.security
     self.nixosModules.tailscale
     self.nixosModules.thunar
     self.nixosModules.thunderbolt

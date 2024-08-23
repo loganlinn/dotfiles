@@ -237,6 +237,10 @@
           ./nixos/wijusan/configuration.nix
         ];
 
+        nixosConfigurations.juuni = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+          ./nixos/juuni/configuration.nix
+        ];
+
         darwinConfigurations.patchbook = self.lib.dotfiles.mkDarwinSystem "aarch64-darwin" [
           self.darwinModules.common
           self.darwinModules.home-manager

@@ -16,10 +16,11 @@ in {
   options.my = with types; {
     email = mkOpt (nullOr str) "logan@loganlinn.com";
     homepage = mkOpt str "https://loganlinn.com";
+
     user.name = mkOpt str "logan";
     user.signingkey = mkOpt str "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
     user.shell = mkOpt (either str package) pkgs.zsh;
-    user.groups = mkOpt (listOf str) [];
+
     github.username = mkOpt str "loganlinn";
     authorizedKeys = mkOpt (listOf str) [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa nijusan@loganlinn.com"
@@ -29,7 +30,7 @@ in {
 
     publicKeys = mkOpt (attrsOf str) { };
 
-    # TODO make resemble pkgs.stdenv.{isLinux, isDarwin, isx86_32, ...}
+    # TODO make resemble pkgs.stdenv's isLinux, isDarwin, isx86_32, etc
     hints.isWSL = mkOpt bool (builtins.pathExists /usr/lib/wsl/lib);
 
     fonts = mkOpt (attrsOf fontType) {
