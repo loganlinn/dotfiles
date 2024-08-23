@@ -94,7 +94,7 @@ with lib;
 
   nix.sshServe.enable = true;
   nix.sshServe.write = true;
-  nix.sshServe.keys = [ loganSshKey ];
+  nix.sshServe.keys = config.my.authorizedKeys;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
