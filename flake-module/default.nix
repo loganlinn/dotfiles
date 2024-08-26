@@ -18,10 +18,12 @@ in
 {
   imports = [
     ./mission-control.nix
+    ./sops.nix
+    { flake.nixosModules = import ../nixos/modules; }
   ];
 
   flake = {
-    nixosModules = (import ../nixos/modules) // {
+    nixosModules = {
       home-manager = moduleWithSystem (
         systemArgs@{ inputs', self', options, config, pkgs }:
         nixos@{ lib, ... }:

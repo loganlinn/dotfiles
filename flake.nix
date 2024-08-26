@@ -39,7 +39,11 @@
     nix-colors.url = "github:misterio77/nix-colors";
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+    nix-topology.url = "github:oddlama/nix-topology";
+    nix-topology.inputs.nixpkgs.follows = "nixpkgs";
     nixpkgs-match.url = "github:srid/nixpkgs-match";
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   nixConfig = {
@@ -78,7 +82,8 @@
           pkgs,
           lib,
           ...
-        }: {
+        }:
+        {
           imports = [ ./options.nix ];
 
           _module.args.pkgs = import inputs.nixpkgs {
@@ -95,14 +100,16 @@
 
           packages = import ./nix/pkgs { inherit pkgs; };
 
-          apps.default = {
-            type = "app";
-            program = "${pkgs.cowsay}/bin/cowsay";
-          };
+          apps = {
+            default = {
+              type = "app";
+              program = "${pkgs.cowsay}/bin/cowsay";
+            };
 
-          apps.nixpkgs-match = {
-            type = "app";
-            program = ''nix run github:srid/nixpkgs-match -- "$@"'';
+            nixpkgs-match = {
+              type = "app";
+              program = ''nix run github:srid/nixpkgs-match -- "$@"'';
+            };
           };
 
           overlayAttrs = {
