@@ -2,16 +2,13 @@
 #!nix-shell -i "just --justfile" -p just
 
 mod nixos
+mod windows
 
 # default recipe to display help information
 default:
     @just --list
 
 flake := source_dir()
-
-alias s := switch
-alias b := build
-alias z := repl
 
 [linux]
 build:

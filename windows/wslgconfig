@@ -1,0 +1,4 @@
+[system-distro-env]
+WESTON_RDP_APPLIST=true
+WESTON_RDPRAIL_SHELL_APP_LIST_PATH=/home/logan/.nix-profile/share/applications
+WESTON_RDP_HI_DPI_SCALING=false

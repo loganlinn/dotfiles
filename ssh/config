@@ -1,21 +1,15 @@
-Include ~/.ssh/config.local
+Include config.local
 
-Host fractal.lan desktop
-	HostName 192.168.86.32
+# https://help.firewalla.com/hc/en-us/articles/115004397274-How-to-access-Firewalla-using-SSH
+Host fire.walla
+  User pi
 
-Host framework.lan laptop
-	HostName 192.168.86.26
-
-Host pangaea.lan macbook
-	HostName 192.168.86.29
-
-Host rpi.lan
-	HostName 192.168.86.33
-
+# https://remarkable.guide/guide/access/ssh.html
 Host remarkable.usb
+  User root
   HostName 10.11.99.1
 
-Host *
+Host *.lan
   User logan
   ForwardAgent yes
 

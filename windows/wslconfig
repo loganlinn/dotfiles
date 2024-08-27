@@ -1,0 +1,14 @@
+[wsl2]
+guiApplications = true
+networkingMode = mirrored
+dnsTunneling = true
+nestedVirtualization = false
+debugConsole = false
+# pageReporting = true
+
+[experimental]
+autoMemoryReclaim = gradual
+useWindowsDnsCache = true
+bestEffortDnsParsing = true
+sparseVhd = true
+hostAddressLoopback = true
