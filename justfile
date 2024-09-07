@@ -1,6 +1,7 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i "just --justfile" -p just
 
+mod info
 mod nixos
 mod windows
 
