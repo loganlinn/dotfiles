@@ -144,13 +144,12 @@ in
   flake.nixosModules.home-manager = moduleWithSystem (
     systemArgs@{
       inputs',
-      self,
       self',
       options,
       config,
       pkgs,
     }:
-    module: {
+    ctx: {
       imports = [ inputs.home-manager.nixosModules.home-manager ];
       config = {
         home-manager.useGlobalPkgs = true;
@@ -159,8 +158,8 @@ in
         home-manager.users.${config.my.user.name} =
           { options, config, ... }:
           {
-            options.my = module.options.my;
-            config.my = module.config.my;
+            options.my = ctx.options.my;
+            config.my = ctx.config.my;
           };
         home-manager.backupFileExtension = "backup"; # i.e. `home-manager --backup ...`
       };
