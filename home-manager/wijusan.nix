@@ -61,6 +61,31 @@
   '';
   };
 
+  programs.xplr = {
+    enable = true;
+    plugins = {
+      wl-clipboard = pkgs.fetchFromGitHub {
+        owner = "sayanarijit";
+        repo = "wl-clipboard.xplr";
+        rev = "a3ffc87460c5c7f560bffea689487ae14b36d9c3";
+        hash = "sha256-I4rh5Zks9hiXozBiPDuRdHwW5I7ppzEpQNtirY0Lcks=";
+      };
+      ctx4 = pkgs.fetchFromGitHub {
+        owner = "doums";
+        repo = "ctx4.xplr";
+        rev = "0670c9c365d665f923a6fd4b508fbb61abd50a0e";
+        hash = "sha256-E3w00Mms5UPlvleB3yi7F2wwc7aBeTj3ACNkpDcgyAQ=";
+      };
+    };
+    extraConfig = ''
+      require("wl-clipboard").setup {
+        copy_command = "wl-copy -t text/uri-list",
+        paste_command = "wl-paste",
+        keep_selection = true,
+      }
+    '';
+  };
+
   xdg.enable = true;
   xdg.mimeApps.enable = true;
   xdg.portal.enable = true;
@@ -74,6 +99,7 @@
     socat # used with npiperelay.exe for access to named pipes in WSL
     nettools # i.e. `ifconfig` (`ip`, you're cool too)
     git-repo-manager
+    wl-clipboard
   ];
 
   home.sessionVariables = {
