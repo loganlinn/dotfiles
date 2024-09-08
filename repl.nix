@@ -1,1 +1,1 @@
-(builtins.getFlake (builtins.toString ./.)).lib.dotfiles.mkReplAttrs {}
+(builtins.getFlake (builtins.toString ./.)).lib.mkReplAttrs {}

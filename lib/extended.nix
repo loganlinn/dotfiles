@@ -1,6 +1,5 @@
-baseLib:
-
-let mkMyLib = import ./.;
-in baseLib.extend (self: _: {
-  my = mkMyLib { lib = self; };
-})
+lib0:
+let
+  lib = import ./.;
+in
+lib0.extend (final: _: { my = lib { lib = final; }; })

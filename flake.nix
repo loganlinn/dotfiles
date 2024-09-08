@@ -60,12 +60,12 @@
   };
 
   outputs =
-    inputs@{ self, ... }:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs@{ self, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
-        inputs.flake-parts.flakeModules.easyOverlay
-        inputs.flake-root.flakeModule
         ./flake-module
+        flake-parts.flakeModules.easyOverlay
+        inputs.flake-root.flakeModule
       ];
 
       systems = [
@@ -138,51 +138,52 @@
                 ];
               };
             }
-            // (lib.listToAttrs (
-              lib.forEach
-                [
-                  "stable"
-                  "beta"
-                  "minimal"
-                  "default"
-                  "complete"
-                  "latest"
-                ]
-                (toolchain: {
-                  name = "rust-${toolchain}";
-                  value = pkgs.mkShell {
-                    buildInputs = with pkgs; [
-                      cmake
-                      llvmPackages.bintools
-                      openssl
-                      pkg-config
-                      # (rust-bin.stable.latest.default.override {
-                      #   targets = [ "wasm32-unknown-unknown" ];
-                      # })
-                      (fenix."${toolchain}".withComponents [
-                        # https://rust-lang.github.io/rustup/concepts/components.html
-                        "cargo"
-                        "clippy"
-                        "rust-docs"
-                        "rust-src"
-                        "rustc"
-                        "rustfmt"
-                      ])
-                      rust-analyzer-nightly
-                    ];
-                  };
-                })
-            ));
+            # // (lib.listToAttrs (
+            #   lib.forEach
+            #     [
+            #       "stable"
+            #       "beta"
+            #       "minimal"
+            #       "default"
+            #       "complete"
+            #       "latest"
+            #     ]
+            #     (toolchain: {
+            #       name = "rust-${toolchain}";
+            #       value = pkgs.mkShell {
+            #         buildInputs = with pkgs; [
+            #           cmake
+            #           llvmPackages.bintools
+            #           openssl
+            #           pkg-config
+            #           # (rust-bin.stable.latest.default.override {
+            #           #   targets = [ "wasm32-unknown-unknown" ];
+            #           # })
+            #           (fenix."${toolchain}".withComponents [
+            #             # https://rust-lang.github.io/rustup/concepts/components.html
+            #             "cargo"
+            #             "clippy"
+            #             "rust-docs"
+            #             "rust-src"
+            #             "rustc"
+            #             "rustfmt"
+            #           ])
+            #           rust-analyzer-nightly
+            #         ];
+            #       };
+            #     })
+            # ))
+          ;
 
           legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
             homeConfigurations = {
-              "logan@nijusan" = self.lib.dotfiles.mkHomeConfiguration ctx [
+              "logan@nijusan" = self.lib.mkHomeConfiguration ctx [
                 self.homeModules.common
                 self.homeModules.nix-colors
                 self.homeModules.secrets
                 ./home-manager/nijusan.nix
               ];
-              "logan@wijusan" = self.lib.dotfiles.mkHomeConfiguration ctx [
+              "logan@wijusan" = self.lib.mkHomeConfiguration ctx [
                 self.homeModules.common
                 self.homeModules.nix-colors
                 self.homeModules.secrets
@@ -193,23 +194,23 @@
         };
 
       flake = {
-        nixosConfigurations.nijusan = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+        nixosConfigurations.nijusan = self.lib.mkNixosSystem "x86_64-linux" [
           ./nixos/nijusan/configuration.nix
         ];
 
-        nixosConfigurations.framework = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+        nixosConfigurations.framework = self.lib.mkNixosSystem "x86_64-linux" [
           ./nixos/framework/configuration.nix
         ];
 
-        nixosConfigurations.wijusan = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+        nixosConfigurations.wijusan = self.lib.mkNixosSystem "x86_64-linux" [
           ./nixos/wijusan/configuration.nix
         ];
 
-        nixosConfigurations.juuni = self.lib.dotfiles.mkNixosSystem "x86_64-linux" [
+        nixosConfigurations.juuni = self.lib.mkNixosSystem "x86_64-linux" [
           ./nixos/juuni/configuration.nix
         ];
 
-        darwinConfigurations.patchbook = self.lib.dotfiles.mkDarwinSystem "aarch64-darwin" [
+        darwinConfigurations.patchbook = self.lib.mkDarwinSystem "aarch64-darwin" [
           self.darwinModules.common
           self.darwinModules.home-manager
           ./nix-darwin/patchbook.nix
