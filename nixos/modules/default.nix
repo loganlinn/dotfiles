@@ -7,7 +7,6 @@
   docker = ./docker.nix;
   frigate = ./frigate.nix;
   gaming = ./gaming.nix;
-  home-manager = ./home-manager.nix;
   hyprland = ./desktops/hyprland;
   minecraft-server = ./minecraft-server.nix;
   monitor-brightness = ./monitor-brightness.nix;
