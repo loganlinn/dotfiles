@@ -23,8 +23,11 @@
   # my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
   modules.spellcheck.enable = true;
 
-  services.emacs.enable = true;
-  services.emacs.client.enable = true; # Generates .desktop file
+  services.emacs = {
+    enable = true;
+    client.enable = true; # Generates .desktop file
+  };
+
   # Configure Git to use ssh.exe (1Password agent forwarding)
   # https://developer.1password.com/docs/ssh/integrations/wsl/
   programs.git.extraConfig = {
