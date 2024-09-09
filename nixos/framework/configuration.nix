@@ -95,6 +95,10 @@ with lib;
   # }];
 
   environment.systemPackages = with pkgs; [
+    pciutils
+    usbutils
+    usbrip
+    usbtop
     cachix
     powertop
     pkg-config
