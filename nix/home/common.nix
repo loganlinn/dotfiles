@@ -18,6 +18,7 @@
   home.packages = with pkgs; [
     bc
     binutils
+    cachix
     cmake
     coreutils-full # installs gnu versions
     curl
