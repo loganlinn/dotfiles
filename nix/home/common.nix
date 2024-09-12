@@ -37,7 +37,7 @@
     lsof
     moreutils
     # neofetch
-    pinentry
+    # pinentry
     procs # ps alternative
     repgrep
     rlwrap
@@ -58,13 +58,12 @@
   };
 
   home.sessionPath = [
-    "$HOME/.dotfiles/bin"
-    "$HOME/.dotfiles/local/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.local/share/cargo/bin"
-    "$HOME/.krew/bin"
-    "$HOME/go/bin"
+    # "$HOME/.dotfiles/bin"
+    # "$HOME/.krew/bin"
+    # "$HOME/go/bin"
   ];
 
   programs.home-manager.enable = true;
@@ -94,9 +93,11 @@
         warn_timeout = "10s";
       };
       whitelist = {
+        exact = [
+          config.my.dotfilesDirectory
+        ];
         prefix = [
-          "${config.home.homeDirectory}/.dotfiles"
-          "${config.home.homeDirectory}/src/github.com/loganlinn"
+          "~/src/github.com/${config.my.github.username}"
         ];
       };
     };
