@@ -1,2 +1,2 @@
-flake.lock linguist-generated=true merge=binary
-*.age linguist-generated=true merge=binary
+*.lock binary linguist-generated=true
+*.age binary
