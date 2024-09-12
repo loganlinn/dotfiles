@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Disable diagnostic reporting, i.e. telemetry
+export NIX_INSTALLER_DIAGNOSTIC_ENDPOINT=""
+
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | exec sh -s -- "$@"
