@@ -202,10 +202,6 @@
           ./nixos/framework/configuration.nix
         ];
 
-        nixosConfigurations.wijusan = self.lib.mkNixosSystem "x86_64-linux" [
-          ./nixos/wijusan/configuration.nix
-        ];
-
         nixosConfigurations.juuni = self.lib.mkNixosSystem "x86_64-linux" [
           ./nixos/juuni/configuration.nix
         ];
