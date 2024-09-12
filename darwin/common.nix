@@ -1,7 +1,5 @@
-{ config, lib, pkgs, ... }:
-
+{ pkgs, ... }:
 {
-
   users.users.logan = {
     name = "logan";
     description = "Logan Linn";
@@ -23,9 +21,11 @@
         Minute = 15;
       };
     };
-    settings.experimental-features = ["nix-command" "flakes"];
+    settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     settings.keep-derivations = false;
     settings.auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
   };
-
 }

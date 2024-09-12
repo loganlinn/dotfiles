@@ -211,6 +211,7 @@
         ];
 
         darwinConfigurations.patchbook = self.lib.mkDarwinSystem "aarch64-darwin" [
+          ./darwin/patchbook.nix
           self.darwinModules.common
           self.darwinModules.home-manager
           ./nix-darwin/patchbook.nix
