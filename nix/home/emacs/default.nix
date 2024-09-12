@@ -136,12 +136,13 @@ in
         programs.emacs = {
           enable = true;
           # NOTE: emacs-overlay provides the following attributes:
-          #     - emacs-unstable
-          #     - emacs-unstable-nox
-          #     - emacs-unstable-pgtk
-          #     - emacs-git
-          #     - emacs-git-nox
-          #     - emacs-pgtk
+          #     - emacs-unstable         (latest tag)
+          #     - emacs-unstable-nox     (latest tag, without X dependencies)
+          #     - emacs-unstable-pgtk    (latest tag, with native wayland support)
+          #     - emacs-git              (master branch)
+          #     - emacs-git-nox          (master branch, without X dependencies)
+          #     - emacs-pgtk             (master branch, with native wayland support)
+          # See: https://github.com/nix-community/emacs-overlay?tab=readme-ov-file#emacs-overlay
           #
           # TODO detect if using wayland and use pkgs.emacs-pgtk instead.
           #      a new option is needed to indicate wayland b/c there isn't a reliable way to check afaict.
@@ -149,7 +150,7 @@ in
           # The `emacs-*` attributes are provided by emacs-overlay.
           # > `emacs-git` is built from the latest master branch and emacs-unstable is built from the latest tag.
           #
-          # https://github.com/nix-community/emacs-overlay?tab=readme-ov-file#emacs-overlay
+          #
           package = lib.mkDefault pkgs.emacs-unstable; # most recent git tag
           extraPackages = epkgs: [ epkgs.vterm ];
         };

@@ -9,9 +9,12 @@ top@{
 let
   nix-colors = import ../nix-colors/extended.nix inputs;
 
-  mkLib = baseLib: extendLibHm (extendLibMy baseLib);
-  extendLibMy = import ../lib/extended.nix;
-  extendLibHm = import "${inputs.home-manager}/modules/lib/stdlib-extended.nix";
+  mkLib =
+    let
+      withMy = import ../lib/extended.nix;
+      withHm = import "${inputs.home-manager}/modules/lib/stdlib-extended.nix";
+    in
+    lib: withHm (withMy lib);
 
   mkSpecialArgs =
     {
@@ -52,15 +55,6 @@ let
     );
 
   mkHomeConfiguration =
-    # systemArgs@{
-    #   self',
-    #   inputs',
-    #   options,
-    #   config,
-    #   pkgs,
-    #   lib,
-    #   ...
-    # }:
     systemArgs: modules:
     inputs.home-manager.lib.homeManagerConfiguration {
       inherit (systemArgs) pkgs lib;
@@ -114,15 +108,9 @@ let
       nixos = self.nixosConfigurations.${hostname} or null;
       darwin = self.darwinConfigurations.${hostname} or null;
       hm =
-        # home-manager "standalone" installation
         legacyPackages.homeConfigurations."${user}@${hostname}" or legacyPackages.homeConfigurations.${user}
-          or legacyPackages.homeConfigurations.${hostname}
-            # home-manager "nixos module" installation
-            or nixos.config.home-manager.users.${user}
-              # ¯\_(ツ)_/¯
-              or null;
+          or legacyPackages.homeConfigurations.${hostname} or nixos.config.home-manager.users.${user} or null;
     };
-
 in
 {
   imports = [
