@@ -17,6 +17,11 @@ in {
     email = mkOpt (nullOr str) "logan@loganlinn.com";
     homepage = mkOpt str "https://loganlinn.com";
 
+    # homeDirectory = mkOpt str "/home/${cfg.user.name}";
+    # gitDirectory = mkOpt str "${cfg.homeDirectory}/src";
+    # dotfilesDirectory = mkOpt str "${cfg.homeDirectory}/.dotfiles";
+    # dotfilesRepository = "https://github.com/loganlinn/dotfiles.git";
+
     user.name = mkOpt str "logan";
     user.signingkey = mkOpt str "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
     user.shell = mkOpt (either str package) pkgs.zsh;
@@ -29,9 +34,6 @@ in {
     ];
 
     publicKeys = mkOpt (attrsOf str) { };
-
-    # TODO make resemble pkgs.stdenv's isLinux, isDarwin, isx86_32, etc
-    hints.isWSL = mkOpt bool (builtins.pathExists /usr/lib/wsl/lib);
 
     fonts = mkOpt (attrsOf fontType) {
       serif = {
