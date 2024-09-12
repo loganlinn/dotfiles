@@ -93,11 +93,8 @@
         warn_timeout = "10s";
       };
       whitelist = {
-        exact = [
-          config.my.dotfilesDirectory
-        ];
         prefix = [
-          "~/src/github.com/${config.my.github.username}"
+          "~/src/github.com/loganlinn"
         ];
       };
     };
