@@ -1,7 +1,7 @@
 {...}: {
   accounts.email.accounts.fastmail = {
     address = "logan@loganlinn.com";
-    aliases = ["admin@loganlinn.com" "webmaster@loganlinn.com" "logan@llinn.dev"];
+    aliases = ["logan@llinn.dev"];
     userName = "logan@loganlinn.com"; # https://www.fastmail.help/hc/en-us/articles/1500000278342
     realName = "Logan Linn";
     primary = true;
