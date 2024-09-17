@@ -88,7 +88,7 @@ let
   mkReplAttrs =
     {
       user ? (builtins.getEnv "USER"),
-      hostname ? (mkLib top.lib).currentHostname,
+      hostname ? import ../lib/currentHostname.nix,
       system ? builtins.currentSystem,
     }:
     builtins
