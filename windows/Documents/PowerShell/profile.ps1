@@ -45,6 +45,42 @@ function TypeOf { $_?.GetType() }
 function CustomProperty([String]$label, [ScriptBlock]$expression) { @{label = $label; expression = $expression } }
 function l { Get-ChildItem -Force @args }
 
+#✦ ❯ alias | fzf -m | awk -F= '
+#{
+#  gsub(/'"'"'/, "", $2)
+#  print "function", $1, "{", $2, "@args", "}"
+#  names[NR] = "\"" $1 "\""
+#}
+#END {
+#  expr="@("
+#  for (i = 1; i < NR; i++)
+#    expr=expr names[i] ", "
+#  expr = expr names[NR] ") | Remove-Alias -Force 2>$null"
+#  print expr
+# }'
+function gc { git commit -v @args }
+function gca { git commit -v -a @args }
+function gcm { git switch "$(git default-branch || echo .)" @args }
+function gcob { git switch -c @args }
+function gcop { git checkout -p @args }
+function gd { git diff --color @args }
+function gdc { git diff --color --cached @args }
+function gfo { git fetch origin @args }
+function gl { git pull @args }
+function glr { git pull --rebase @args }
+function glrp { glr && gp @args }
+function gp { git push -u @args }
+function gpa { git push all --all @args }
+function grt { cd -- "$(gtl || pwd)" @args }
+function gs { git status -sb @args }
+function gsrt { git rev-parse --show-toplevel @args }
+function gsw { git stash show --patch @args }
+function gtl { git rev-parse --show-toplevel @args }
+function gtlr { git rev-parse --show-cdup @args }
+function gw { git show @args }
+function gwd { git rev-parse --show-prefix @args }
+@("gc", "gca", "gcm", "gcob", "gcop", "gd", "gdc", "gfo", "gl", "glr", "glrp", "gp", "gpa", "grt", "gs", "gsrt", "gsw", "gtl", "gtlr", "gw", "gwd") | Remove-Alias -Force 2>$null
+
 Import-Module WslInterop -ErrorAction 'Continue' &&
 Import-WslCommand `
   'emacs',
@@ -163,6 +199,20 @@ if ($host.Name -eq 'ConsoleHost' && Import-Module PSReadLine -ErrorAction 'Conti
       }
     }
   }
+}
+
+###################################################################################################
+# Completion
+
+# winget
+Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+        [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
+        $Local:word = $wordToComplete.Replace('"', '""')
+        $Local:ast = $commandAst.ToString().Replace('"', '""')
+        winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition | ForEach-Object {
+            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+        }
 }
 
 ###################################################################################################
