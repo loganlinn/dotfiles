@@ -13,6 +13,10 @@
 
   services.nix-daemon.enable = true;
 
+  fonts.packages = [
+    pkgs.dejavu_fonts
+  ];
+
   system.defaults = {
     NSGlobalDomain = {
       AppleKeyboardUIMode = 3;

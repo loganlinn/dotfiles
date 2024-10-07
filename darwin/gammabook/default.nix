@@ -27,7 +27,11 @@
         ../../nix/modules/programs/nixvim
       ];
 
-      programs.nixvim.enable = true;
+      programs.nixvim = {
+        enable = true;
+        defaultEditor= true;
+      };
+
       programs.kitty.enable = true;
 
       home.stateVersion = "22.11";
