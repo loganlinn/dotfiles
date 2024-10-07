@@ -163,11 +163,17 @@ in
         imports = [ nix-colors.homeManagerModule ];
         colorScheme = lib.mkDefault nix-colors.colorSchemes.doom-one;
       };
+    nixvim = {
+      imports = [
+        inputs.nixvim.homeManagerModules.nixvim
+        # ../nix/home/nixvim
+      ];
+    };
     secrets = inputs.agenix.homeManagerModules.default;
   };
 
   flake.darwinModules = {
-    common = import ../nix-darwin/common.nix;
+    common = import ../darwin/common.nix;
     home-manager = moduleWithSystem (
       systemArgs@{
         inputs',

@@ -11,10 +11,10 @@
     taps = [
       # "d12frosted/emacs-plus"
       # "railwaycat/emacsport"
-      "Azure/kubelogin"
+      # "Azure/kubelogin"
     ];
     brews = [
-      "kubelogin"
+      # "kubelogin"
       # "azure-cli"
       # "libvterm"
       # {
@@ -31,9 +31,9 @@
       # "1password"
       # "iTerm"
       # "google-chrome"
-      "kitty"
-      "slack"
-      "syncthing"
+      # "kitty"
+      # "slack"
+      # "syncthing"
     ];
     masApps = {
       Tailscale = 1475387142;

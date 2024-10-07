@@ -225,6 +225,10 @@
               };
           }
         ];
+
+        darwinConfigurations.logan-gammabook = self.lib.mkDarwinSystem "aarch64-darwin" [
+          ./darwin/gammabook
+        ];
       };
 
       # my repl depends on attrs exposed by flake-parts's debug option.
