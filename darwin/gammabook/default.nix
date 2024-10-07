@@ -22,6 +22,7 @@
         self.homeModules.nix-colors
         self.homeModules.nixvim
         ../../nix/home/dev
+        ../../nix/home/dev/nodejs.nix
         ../../nix/home/pretty.nix
         ../../nix/home/kitty
         ../../nix/modules/programs/nixvim
@@ -29,7 +30,7 @@
 
       programs.nixvim = {
         enable = true;
-        defaultEditor= true;
+        defaultEditor = true;
       };
 
       programs.kitty.enable = true;
