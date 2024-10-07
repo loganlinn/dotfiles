@@ -24,8 +24,10 @@
         ../../nix/home/dev
         ../../nix/home/pretty.nix
         ../../nix/home/kitty
+        ../../nix/modules/programs/nixvim
       ];
 
+      programs.nixvim.enable = true;
       programs.kitty.enable = true;
 
       home.stateVersion = "22.11";
