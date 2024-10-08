@@ -5,6 +5,18 @@
   lib,
   ...
 }:
+
+let
+  packages = with pkgs; [
+    nodejs
+    yarn
+    nodePackages.typescript-language-server
+    awscli2
+    mkcert
+    clickhouse
+    clickhouse-cli
+  ];
+in
 {
   imports = [
     self.darwinModules.common
@@ -34,6 +46,8 @@
       };
 
       programs.kitty.enable = true;
+
+      home.packages = packages;
 
       home.stateVersion = "22.11";
     };
