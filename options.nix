@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 with lib;
 
@@ -12,7 +17,8 @@ let
   mkOpt = type: default: mkOption { inherit type default; };
 
   defaultFontSize = if pkgs.stdenv.isLinux then 10 else 12;
-in {
+in
+{
   options.my = with types; {
     email = mkOpt (nullOr str) "logan@loganlinn.com";
     homepage = mkOpt str "https://loganlinn.com";
@@ -35,67 +41,68 @@ in {
 
     publicKeys = mkOpt (attrsOf str) { };
 
-    fonts = mkOpt (attrsOf fontType) {
-      serif = {
+    fonts = {
+      serif = mkOpt fontType {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Serif";
         size = defaultFontSize;
       };
-      sans = {
+      sans = mkOpt fontType {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Sans";
         size = defaultFontSize;
       };
-      mono = {
+      mono = mkOpt fontType {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Sans Mono";
         size = defaultFontSize;
       };
-      terminal = {
+      terminal = mkOpt fontType {
         package = cfg.nerdfonts.package;
         name = "FiraCode Nerd Font Light";
         size = 11;
       };
+      # see: https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/data/fonts
+      packages = mkOpt (listOf package) (
+        with pkgs;
+        [
+          dejavu_fonts
+          fira # sans
+          fira-code
+          fira-code-symbols
+          iosevka
+          material-design-icons # https://materialdesignicons.com/
+          material-icons
+          noto-fonts
+          noto-fonts-emoji
+          open-sans
+          recursive
+          victor-mono
+        ]
+      );
     };
 
-    fontPackages = mkOpt (listOf package) (with pkgs; [
-      # TODO Apple Fonts (SF Pro, SF Mono, SF Compact, SF Arabic, NY)
-      dejavu_fonts
-      fira # sans
-      fira-code
-      fira-code-symbols
-      iosevka
-      material-design-icons # https://materialdesignicons.com/
-      material-icons
-      noto-fonts
-      noto-fonts-emoji
-      open-sans
-      recursive
-      ubuntu_font_family
-      victor-mono
-      cfg.nerdfonts.package
-    ]);
     nerdfonts.fonts = mkOpt (listOf str) [
-      "AnonymousPro"
+      # "AnonymousPro"
       "DejaVuSansMono"
       "FiraCode"
       "FiraMono"
-      "Go-Mono"
-      "Hack"
-      "Hasklig"
-      "FantasqueSansMono"
-      "IBMPlexMono"
-      "Inconsolata"
+      # "Go-Mono"
+      # "Hack"
+      # "Hasklig"
+      # "FantasqueSansMono"
+      # "IBMPlexMono"
+      # "Inconsolata"
       "Iosevka"
       "JetBrainsMono"
-      "LiberationMono"
-      "Lilex"
-      "Meslo"
+      # "LiberationMono"
+      # "Lilex"
+      # "Meslo"
       "NerdFontsSymbolsOnly"
       "Noto"
-      "OpenDyslexic"
-      "ProFont"
-      "RobotoMono"
+      # "OpenDyslexic"
+      # "ProFont"
+      # "RobotoMono"
       "SourceCodePro"
       "SpaceMono"
       "Terminus"
@@ -103,6 +110,7 @@ in {
       "UbuntuMono"
       "VictorMono"
     ];
+
     nerdfonts.package = mkOption {
       type = package;
       readOnly = true;

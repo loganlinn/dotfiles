@@ -1,57 +1,29 @@
-{
-  inputs,
-  pkgs,
-  lib,
-  ...
-}:
+{ self, ... }:
 {
 
   imports = [
-    ./common.nix
-    ./modules/homebrew.nix
+    self.darwinModules.common
+    self.darwinModules.home-manager
+    # ./common.nix
+    # ./modules/homebrew.nix
     # ./modules/security.nix
     # ./modules/skhd.nix
     # ./modules/yabai.nix
     # ./modules/tailscale.nix
   ];
 
-  system.defaults = {
-    NSGlobalDomain = {
-      AppleKeyboardUIMode = 3;
-      ApplePressAndHoldEnabled = false;
-      InitialKeyRepeat = 25;
-      KeyRepeat = 1;
-      NSAutomaticCapitalizationEnabled = false;
-      NSAutomaticDashSubstitutionEnabled = false;
-      NSAutomaticPeriodSubstitutionEnabled = false;
-      NSAutomaticQuoteSubstitutionEnabled = false;
-      NSAutomaticSpellingCorrectionEnabled = false;
-      NSNavPanelExpandedStateForSaveMode = true;
-      NSNavPanelExpandedStateForSaveMode2 = true;
-      _HIHideMenuBar = false;
-    };
+  homebrew.enable = true;
+  homebrew.brewPrefix = "/opt/homebrew/bin";
 
-    dock = {
-      autohide = true;
-      mru-spaces = false;
-      orientation = "bottom";
-      showhidden = true;
+  home-manager.users.logan =
+    { options, config, ... }:
+    {
+      imports = [
+        self.homeModules.common
+        self.homeModules.nix-colors
+        ./nix/home/dev
+        ./nix/home/pretty.nix
+      ];
+      home.stateVersion = "22.11";
     };
-
-    finder = {
-      AppleShowAllExtensions = true;
-      QuitMenuItem = true;
-      FXEnableExtensionChangeWarning = false;
-    };
-
-    trackpad = {
-      Clicking = false;
-      TrackpadThreeFingerDrag = true;
-    };
-  };
-
-  system.keyboard = {
-    enableKeyMapping = true;
-    remapCapsLockToControl = true;
-  };
 }

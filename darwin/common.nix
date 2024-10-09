@@ -1,4 +1,10 @@
-{ pkgs, ... }:
+{
+  options,
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   users.users.logan = {
     name = "logan";
@@ -7,15 +13,20 @@
     home = "/Users/logan";
   };
 
+  homebrew.enable = lib.mkDefault true;
+
   programs.bash.enable = true;
 
   programs.zsh.enable = true;
 
   services.nix-daemon.enable = true;
 
-  fonts.packages = [
-    pkgs.dejavu_fonts
-  ];
+  fonts.packages = config.my.fonts.packages;
+
+  system.keyboard = {
+    enableKeyMapping = true;
+    remapCapsLockToControl = true;
+  };
 
   system.defaults = {
     NSGlobalDomain = {
@@ -52,25 +63,22 @@
     };
   };
 
-  system.keyboard = {
-    enableKeyMapping = true;
-    remapCapsLockToControl = true;
+  nix.configureBuildUsers = true;
+  nix.gc = {
+    automatic = true;
+    interval = {
+      Hour = 4;
+      Minute = 15;
+    };
   };
 
-  nix = {
-    configureBuildUsers = true;
-    gc = {
-      automatic = true;
-      interval = {
-        Hour = 4;
-        Minute = 15;
-      };
-    };
-    settings.experimental-features = [
+  nix.settings = {
+    experimental-features = [
       "nix-command"
       "flakes"
     ];
-    settings.keep-derivations = false;
-    settings.auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
+    keep-derivations = false;
+    auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
   };
+
 }

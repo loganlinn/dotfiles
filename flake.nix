@@ -121,59 +121,20 @@
 
           formatter = pkgs.nixpkgs-fmt;
 
-          devShells =
-            {
-              default = pkgs.mkShell {
-                inputsFrom = [
-                  config.flake-root.devShell # sets FLAKE_ROOT
-                  config.mission-control.devShell
-                ];
-                nativeBuildInputs = [
-                  config.formatter
-                  inputs'.agenix.packages.agenix
-                  pkgs.just
-                  pkgs.age
-                  pkgs.ssh-to-age
-                  pkgs.sops
-                ];
-              };
-            }
-            # // (lib.listToAttrs (
-            #   lib.forEach
-            #     [
-            #       "stable"
-            #       "beta"
-            #       "minimal"
-            #       "default"
-            #       "complete"
-            #       "latest"
-            #     ]
-            #     (toolchain: {
-            #       name = "rust-${toolchain}";
-            #       value = pkgs.mkShell {
-            #         buildInputs = with pkgs; [
-            #           cmake
-            #           llvmPackages.bintools
-            #           openssl
-            #           pkg-config
-            #           # (rust-bin.stable.latest.default.override {
-            #           #   targets = [ "wasm32-unknown-unknown" ];
-            #           # })
-            #           (fenix."${toolchain}".withComponents [
-            #             # https://rust-lang.github.io/rustup/concepts/components.html
-            #             "cargo"
-            #             "clippy"
-            #             "rust-docs"
-            #             "rust-src"
-            #             "rustc"
-            #             "rustfmt"
-            #           ])
-            #           rust-analyzer-nightly
-            #         ];
-            #       };
-            #     })
-            # ))
-          ;
+          devShells.default = pkgs.mkShell {
+            inputsFrom = [
+              config.flake-root.devShell # sets FLAKE_ROOT
+              config.mission-control.devShell
+            ];
+            nativeBuildInputs = [
+              config.formatter
+              inputs'.agenix.packages.agenix
+              pkgs.just
+              pkgs.age
+              pkgs.ssh-to-age
+              pkgs.sops
+            ];
+          };
 
           legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
             homeConfigurations = {
@@ -208,26 +169,10 @@
 
         darwinConfigurations.patchbook = self.lib.mkDarwinSystem "aarch64-darwin" [
           ./darwin/patchbook.nix
-          self.darwinModules.common
-          self.darwinModules.home-manager
-          ./nix-darwin/patchbook.nix
-          {
-            home-manager.users.logan =
-              { options, config, ... }:
-              {
-                imports = [
-                  self.homeModules.common
-                  self.homeModules.nix-colors
-                  ./nix/home/dev
-                  ./nix/home/pretty.nix
-                ];
-                home.stateVersion = "22.11";
-              };
-          }
         ];
 
-        darwinConfigurations.logan-gammabook = self.lib.mkDarwinSystem "aarch64-darwin" [
-          ./darwin/gammabook
+        darwinConfigurations.logamma = self.lib.mkDarwinSystem "aarch64-darwin" [
+          ./darwin/logamma
         ];
       };
 

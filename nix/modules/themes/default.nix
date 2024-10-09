@@ -66,7 +66,7 @@ in
         config.my.fonts.serif.package
         config.my.fonts.mono.package
         config.my.fonts.terminal.package
-      ] ++ config.my.fontPackages;
+      ] ++ config.my.fonts.packages;
 
       xdg.dataFile."nix-colors.sh" = {
         text = (shellThemeFromScheme { scheme = config.colorScheme; }).text;
