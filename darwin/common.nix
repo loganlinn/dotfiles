@@ -1,15 +1,8 @@
-{
-  options,
-  config,
-  pkgs,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 {
   users.users.${config.my.user.name} = {
-    description = "Logan Linn";
     shell = config.my.user.shell;
-    home = "/Users/logan";
+    home = "/Users/${config.my.user.name}";
   };
 
   homebrew.enable = lib.mkDefault true;
@@ -62,19 +55,15 @@
     };
   };
 
-  nix.configureBuildUsers = true;
-  nix.gc = {
-    automatic = true;
-    interval = {
-      Hour = 4;
-      Minute = 15;
-    };
-  };
+  nix.configureBuildUsers = lib.mkDefault false; # https://github.com/LnL7/nix-darwin/issues/970
+
+  nix.gc.automatic = true;
 
   nix.settings = {
     experimental-features = [
       "nix-command"
       "flakes"
+      "repl-flake"
     ];
     keep-derivations = false;
     auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
