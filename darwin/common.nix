@@ -6,10 +6,9 @@
   ...
 }:
 {
-  users.users.logan = {
-    name = "logan";
+  users.users.${config.my.user.name} = {
     description = "Logan Linn";
-    shell = pkgs.zsh;
+    shell = config.my.user.shell;
     home = "/Users/logan";
   };
 
