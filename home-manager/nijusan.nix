@@ -1,9 +1,12 @@
-{ self', config, pkgs, lib, nix-colors, ... }:
+{ self, self', config, pkgs, lib, nix-colors, ... }:
 
 let inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
 
 in {
   imports = [
+    self.homeModules.common
+    self.homeModules.nix-colors
+    self.homeModules.secrets
     ../nix/home/awesomewm.nix
     ../nix/home/common.nix
     ../nix/home/clipboard.nix

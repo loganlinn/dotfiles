@@ -1,7 +1,10 @@
-{ inputs, config, pkgs, lib, nix-colors, ... }:
+{ self, inputs, config, pkgs, lib, nix-colors, ... }:
 
 {
   imports = [
+    self.homeModules.common
+    self.homeModules.nix-colors
+    self.homeModules.secrets
     ../nix/home/dev/nix.nix
     ../nix/home/dev/nodejs.nix
     ../nix/home/dev/shell.nix

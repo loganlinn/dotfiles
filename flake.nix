@@ -148,16 +148,10 @@
         ];
 
         homeConfigurations."logan@nijusan" = self.lib.mkHomeConfiguration "x86_64-linux" [
-          self.homeModules.common
-          self.homeModules.nix-colors
-          self.homeModules.secrets
           ./home-manager/nijusan.nix
         ];
 
         homeConfigurations."logan@wijusan" = self.lib.mkHomeConfiguration "x86_64-linux" [
-          self.homeModules.common
-          self.homeModules.nix-colors
-          self.homeModules.secrets
           ./home-manager/wijusan.nix
         ];
 
