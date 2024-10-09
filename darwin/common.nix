@@ -1,7 +1,7 @@
 { config, lib, ... }:
 {
   users.users.${config.my.user.name} = {
-    shell = config.my.user.shell;
+    inherit (config.my.user) description shell openssh;
     home = "/Users/${config.my.user.name}";
   };
 
@@ -59,16 +59,9 @@
     };
   };
 
-  nix.configureBuildUsers = lib.mkDefault false; # https://github.com/LnL7/nix-darwin/issues/970
-
+  nix.configureBuildUsers = false; # https://github.com/LnL7/nix-darwin/issues/970
   nix.gc.automatic = true;
-
-  nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-      "repl-flake"
-    ];
+  nix.settings = config.my.nix.settings // {
     keep-derivations = false;
     auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
   };

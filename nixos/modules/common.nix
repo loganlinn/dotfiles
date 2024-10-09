@@ -138,22 +138,12 @@ in
 
     nix.enable = true;
     nix.package = pkgs.nixFlakes;
-    nix.settings.experimental-features = [
-      "nix-command"
-      "flakes"
-      "repl-flake"
-    ];
-    nix.settings.warn-dirty = false;
-    nix.settings.show-trace = mkDefault true;
-    nix.settings.trusted-users = [ config.my.user.name ];
-    nix.settings.auto-optimise-store = mkDefault true;
+    nix.settings = config.my.nix.settings;
     nix.gc.automatic = mkDefault true;
-
     nix.nixPath = [
       "nixpkgs=${inputs.nixpkgs}"
       "home-manager=${inputs.home-manager}"
     ];
-
     nix.sshServe.keys = config.my.authorizedKeys;
 
     nixpkgs.config.allowUnfree = true;

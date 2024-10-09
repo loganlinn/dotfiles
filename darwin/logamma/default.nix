@@ -22,6 +22,7 @@ in
     self.darwinModules.common
     self.darwinModules.home-manager
     ../modules/aerospace.nix
+    ../modules/emacs.nix
   ];
 
   homebrew.enable = true;

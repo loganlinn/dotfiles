@@ -29,17 +29,22 @@ in
     # dotfilesRepository = "https://github.com/loganlinn/dotfiles.git";
 
     user.name = mkOpt str "logan";
-    user.signingkey = mkOpt str "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
+    user.description = mkOpt str "Logan Linn";
     user.shell = mkOpt (either str package) pkgs.zsh;
+    user.packages = mkOpt (listOf package) [];
+    user.openssh = mkOpt attrs {
+      authorizedKeys.keys = cfg.authorizedKeys;
+    };
+    user.signingkey = mkOpt str "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
 
     github.username = mkOpt str "loganlinn";
+
     authorizedKeys = mkOpt (listOf str) [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa nijusan@loganlinn.com"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBwurIVpZjNpRjFva/8loWMCZobZQ3FSATVLC8LX2TDB sumaho@loganlinn.com"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINsEQb9/YUta3lDDKsSsaf515h850CRZEcRg7X0WPGDa logan@loganlinn.com"
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/IGTiUT57yPpsCHcSo0FUUBY7uTZL87vdr7EqE+fS+6FQFZbhXuzy63Y13+ssN1Cbwy7hE3I4u0HgaXnhe8Ogr+buvBYqcSCajbN8j2vVVy/WUuGRPKyczk0bZpL1V7LUt98jBMnctirVeY0YoBgEk9POWHZ4NTTK0Bsr2WAwpWUkdYPcHpEIW+ABNX4YqxZdq7ETMy18ELfE/IJz04/+9rGHvpsDLL2SXDJCj+hxofW28SaqncOv/GvTN9gpkQGpUfHbxMyHz8Xj3faiguCN70dFEUb1FVL5ilxePSp/hOYx039idGT+K5oojutT6gH8p1K2uQ12rO+auvmKVSrh logan@loganlinn.com"
     ];
 
-    publicKeys = mkOpt (attrsOf str) { };
+    # publicKeys = mkOpt (attrsOf str) { };
 
     fonts = {
       serif = mkOpt fontType {
@@ -116,6 +121,23 @@ in
       type = package;
       readOnly = true;
       default = pkgs.nerdfonts.override { inherit (cfg.nerdfonts) fonts; };
+    };
+
+    nix.settings = mkOpt attrs {
+      warn-dirty = false;
+      show-trace = true;
+      trusted-users = [ cfg.user.name ];
+      trusted-substituters = [
+        "https://loganlinn.cachix.org"
+        "https://hyprland.cachix.org"
+        "https://nix-community.cachix.org"
+      ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+        "repl-flake"
+      ];
+      auto-optimise-store = true;
     };
   };
 }

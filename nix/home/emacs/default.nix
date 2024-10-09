@@ -7,6 +7,7 @@
 
 with lib;
 
+# TODO: refactor to support macOS, i.e. emacs from homebrew (d12frosted/emacs-plus tap), but config files, extra packages, etc is the same.
 let
   cfg = config.my.emacs;
 
@@ -184,7 +185,7 @@ in
         home.sessionVariables.EMACSDIR = "${removeSuffix "/" cfg.configDir}/"; # no trailing slash!
       })
       (mkIf (cfg.enable && cfg.doom.enable) {
-        programs.emacs.enable = true;
+        programs.emacs.enable = lib.mkDefault true;
         programs.git.enable = true;
         home.packages = with pkgs; [
           binutils # for native-comp
