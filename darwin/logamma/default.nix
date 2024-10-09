@@ -21,7 +21,7 @@ in
   imports = [
     self.darwinModules.common
     self.darwinModules.home-manager
-    ../modules/homebrew.nix
+    ../modules/aerospace.nix
   ];
 
   homebrew.enable = true;

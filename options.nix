@@ -67,6 +67,7 @@ in
         with pkgs;
         [
           dejavu_fonts
+          cascadia-code
           fira # sans
           fira-code
           fira-code-symbols

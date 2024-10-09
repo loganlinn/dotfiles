@@ -5,6 +5,10 @@
     home = "/Users/${config.my.user.name}";
   };
 
+  environment.variables = {
+    HOMEBREW_NO_ANALYTICS = "1";
+  };
+
   homebrew.enable = lib.mkDefault true;
 
   programs.bash.enable = true;
