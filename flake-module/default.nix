@@ -58,16 +58,17 @@ let
   mkHomeConfiguration =
     system: modules:
     withSystem system (
-      ctx@{ config, inputs', ... }:
+      ctx@{
+        options,
+        config,
+        self',
+        inputs',
+        pkgs,
+        ...
+      }:
       inputs.home-manager.lib.homeManagerConfiguration {
-        inherit (ctx) pkgs lib;
-        modules = [
-          ../options.nix
-          # {
-          #   options.my = ctx.options.my;
-          #   config.my = ctx.config.my;
-          # }
-        ] ++ modules;
+        inherit pkgs;
+        modules = [ ../options.nix ] ++ modules;
         extraSpecialArgs = mkSpecialArgs ctx;
       }
     );
