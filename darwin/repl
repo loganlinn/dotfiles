@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [[ -n $1 ]]; then
+  darwinConfiguration=$1
+else
+  darwinConfiguration="$(scutil --get LocalHostName)"
+fi
+
+exec nix repl --file "$HERE/repl.nix" --argstr name "$darwinConfiguration"
