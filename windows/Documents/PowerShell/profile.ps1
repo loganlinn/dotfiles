@@ -16,22 +16,14 @@ $env:DOTFILES ??= "$HOME\.dotfiles"
 $env:DOCUMENTS ??= [Environment]::GetFolderPath('mydocuments')
 
 Add-PathVariable "$HOME\bin"
-Add-PathVariable "$HOME\.emacs.d\bin"
-Add-PathVariable "$APPDATA\.emacs.d\bin"
-Add-PathVariable "$env:ProgramFiles\Emacs\emacs-29.2\bin"
 
 ###################################################################################################
 # Functions
 
 function Get-SymlinkTarget {
   [CmdletBinding()]
-  param(
-    [parameter(ValueFromPipelineByPropertyName)] $Path
-  )
-  process {
-    $_ | Resolve-Path | Get-Item | Select-Object
-
-  }
+  param([parameter(ValueFromPipelineByPropertyName)] $Path)
+  process { $_ | Resolve-Path | Get-Item | Select-Object }
 }
 
 function Man { Get-Command @args -ErrorAction SilentlyContinue }
@@ -79,49 +71,53 @@ function gtl { git rev-parse --show-toplevel @args }
 function gtlr { git rev-parse --show-cdup @args }
 function gw { git show @args }
 function gwd { git rev-parse --show-prefix @args }
-@("gc", "gca", "gcm", "gcob", "gcop", "gd", "gdc", "gfo", "gl", "glr", "glrp", "gp", "gpa", "grt", "gs", "gsrt", "gsw", "gtl", "gtlr", "gw", "gwd") | Remove-Alias -Force 2>$null
+@('gc', 'gca', 'gcm', 'gcob', 'gcop', 'gd', 'gdc', 'gfo', 'gl', 'glr', 'glrp', 'gp', 'gpa', 'grt', 'gs', 'gsrt', 'gsw', 'gtl', 'gtlr', 'gw', 'gwd') | Remove-Alias -Force 2>$null
 
-Import-Module WslInterop -ErrorAction 'Continue' &&
-Import-WslCommand `
+if ( Import-Module WslInterop -ErrorAction SilentlyContinue ) {
+  Import-WslCommand 'sh', 'bash', 'zsh',
   'emacs',
-'nix',
-'nix-build',
-'nix-channel',
-'nix-collect-garbage',
-'nix-env',
-'nix-hash',
-'nix-instantiate',
-'nix-shell',
-'nix-store',
-'nix-update',
-'nixfmt',
-'home-manager',
-'sh',
-'bash',
-'zsh'
+  'grep',
+  'awk',
+  'nix',
+  'nix-build',
+  'nix-channel',
+  'nix-collect-garbage',
+  'nix-env',
+  'nix-hash',
+  'nix-instantiate',
+  'nix-shell',
+  'nix-store',
+  'nix-update',
+  'nixfmt',
+  'home-manager'
+}
+
+if ( Get-Command nvim.exe -ErrorAction SilentlyContinue ) {
+  Set-Alias -Name vim -Value nvim
+}
 
 ###################################################################################################
 # Editor
 
-if ($host.Name -eq 'ConsoleHost' && Import-Module PSReadLine -ErrorAction 'Continue') {
+if ($host.Name -eq 'ConsoleHost') {
   $script:PSReadlineOptions = @{
     EditMode                      = 'Emacs'
     HistoryNoDuplicates           = $true
     HistorySearchCursorMovesToEnd = $true
     Colors                        = @{
-      'Default' = '#e8e8d3'
-      'Comment' = '#888888'
-      'Keyword' = '#8197bf'
-      'String' = '#99ad6a'
-      'Operator' = '#c6b6ee'
-      'Variable' = '#c6b6ee'
-      'Command' = '#8197bf'
+      'Default'   = '#e8e8d3'
+      'Comment'   = '#888888'
+      'Keyword'   = '#8197bf'
+      'String'    = '#99ad6a'
+      'Operator'  = '#c6b6ee'
+      'Variable'  = '#c6b6ee'
+      'Command'   = '#8197bf'
       'Parameter' = '#e8e8d3'
-      'Type' = '#fad07a'
-      'Number' = '#cf6a4c'
-      'Member' = '#fad07a'
-      'Emphasis' = '#f0a0c0'
-      'Error' = '#902020'
+      'Type'      = '#fad07a'
+      'Number'    = '#cf6a4c'
+      'Member'    = '#fad07a'
+      'Emphasis'  = '#f0a0c0'
+      'Error'     = '#902020'
     }
   }
 
@@ -206,18 +202,18 @@ if ($host.Name -eq 'ConsoleHost' && Import-Module PSReadLine -ErrorAction 'Conti
 
 # winget
 Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
-    param($wordToComplete, $commandAst, $cursorPosition)
-        [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
-        $Local:word = $wordToComplete.Replace('"', '""')
-        $Local:ast = $commandAst.ToString().Replace('"', '""')
-        winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
+  param($wordToComplete, $commandAst, $cursorPosition)
+  [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
+  $Local:word = $wordToComplete.Replace('"', '""')
+  $Local:ast = $commandAst.ToString().Replace('"', '""')
+  winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition | ForEach-Object {
+    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+  }
 }
 
 ###################################################################################################
 # Hooks
 
-Invoke-Expression (&starship init powershell)
-
 Invoke-Expression (& { (zoxide init powershell | Out-String) })
+
+Invoke-Expression (&starship init powershell)
