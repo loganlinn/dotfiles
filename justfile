@@ -1,9 +1,10 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i "just --justfile" -p just
 
-mod info
+# mod info
 mod nixos
-mod windows
+# mod windows
+# mod firewalla
 
 # default recipe to display help information
 default:
@@ -67,3 +68,7 @@ link-nixos-flake:
 
 check-flake:
     nix run github:DeterminateSystems/flake-checker
+
+[linux,macos]
+fix-eol:
+  rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --

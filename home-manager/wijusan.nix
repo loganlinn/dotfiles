@@ -103,6 +103,7 @@
     nettools # i.e. `ifconfig` (`ip`, you're cool too)
     git-repo-manager
     wl-clipboard
+    tomb
   ];
 
   home.sessionVariables = {
