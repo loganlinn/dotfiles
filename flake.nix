@@ -100,18 +100,6 @@
 
           packages = import ./nix/pkgs { inherit pkgs; };
 
-          apps = {
-            default = {
-              type = "app";
-              program = "${pkgs.cowsay}/bin/cowsay";
-            };
-
-            nixpkgs-match = {
-              type = "app";
-              program = ''nix run github:srid/nixpkgs-match -- "$@"'';
-            };
-          };
-
           overlayAttrs = {
             inherit (inputs'.home-manager.packages) home-manager;
             inherit (inputs'.devenv.packages) devenv;
