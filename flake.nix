@@ -124,27 +124,41 @@
             ];
           };
 
-          legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
-            homeConfigurations = {
-              "logan@nijusan" = self.lib.mkHomeConfiguration ctx [
-                self.homeModules.common
-                self.homeModules.nix-colors
-                self.homeModules.secrets
-                ./home-manager/nijusan.nix
-              ];
-              "logan@wijusan" = self.lib.mkHomeConfiguration ctx [
-                self.homeModules.common
-                self.homeModules.nix-colors
-                self.homeModules.secrets
-                ./home-manager/wijusan.nix
-              ];
-            };
-          };
+          # legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
+          #   homeConfigurations = {
+          #     "logan@nijusan" = self.lib.mkHomeConfiguration ctx [
+          #       self.homeModules.common
+          #       self.homeModules.nix-colors
+          #       self.homeModules.secrets
+          #       ./home-manager/nijusan.nix
+          #     ];
+          #     "logan@wijusan" = self.lib.mkHomeConfiguration ctx [
+          #       self.homeModules.common
+          #       self.homeModules.nix-colors
+          #       self.homeModules.secrets
+          #       ./home-manager/wijusan.nix
+          #     ];
+          #   };
+          # };
         };
 
       flake = {
         nixosConfigurations.nijusan = self.lib.mkNixosSystem "x86_64-linux" [
           ./nixos/nijusan/configuration.nix
+        ];
+
+        homeConfigurations."logan@nijusan" = self.lib.mkHomeConfiguration "x86_64-linux" [
+          self.homeModules.common
+          self.homeModules.nix-colors
+          self.homeModules.secrets
+          ./home-manager/nijusan.nix
+        ];
+
+        homeConfigurations."logan@wijusan" = self.lib.mkHomeConfiguration "x86_64-linux" [
+          self.homeModules.common
+          self.homeModules.nix-colors
+          self.homeModules.secrets
+          ./home-manager/wijusan.nix
         ];
 
         nixosConfigurations.framework = self.lib.mkNixosSystem "x86_64-linux" [

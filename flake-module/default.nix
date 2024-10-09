@@ -54,18 +54,23 @@ let
       }
     );
 
+  # Home Manager "Standalone" setup
   mkHomeConfiguration =
-    systemArgs: modules:
-    inputs.home-manager.lib.homeManagerConfiguration {
-      inherit (systemArgs) pkgs lib;
-      modules = [
-        {
-          options.my = systemArgs.options.my;
-          config.my = systemArgs.config.my;
-        }
-      ] ++ modules;
-      extraSpecialArgs = mkSpecialArgs systemArgs;
-    };
+    system: modules:
+    withSystem system (
+      ctx@{ config, inputs', ... }:
+      inputs.home-manager.lib.homeManagerConfiguration {
+        inherit (ctx) pkgs lib;
+        modules = [
+          ../options.nix
+          # {
+          #   options.my = ctx.options.my;
+          #   config.my = ctx.config.my;
+          # }
+        ] ++ modules;
+        extraSpecialArgs = mkSpecialArgs ctx;
+      }
+    );
 
   mkDarwinSystem =
     system: modules:
