@@ -15,14 +15,18 @@ in
 
   homebrew.enable = mkDefault true;
 
-  programs.bash.enable = true;
-  programs.bash.enableCompletion = true;
+  programs.bash = mkDefault {
+    enable = true;
+    enableCompletion = true;
+  };
 
-  programs.zsh.enable = true;
-  programs.zsh.enableCompletion = true;
-  programs.zsh.enableFzfCompletion = true;
-  programs.zsh.enableFzfHistory = true;
-  programs.zsh.enableSyntaxHighlighting = true;
+  programs.zsh = mkDefault {
+    enable = true;
+    enableCompletion = true;
+    enableFzfCompletion = true;
+    enableFzfHistory = true;
+    enableSyntaxHighlighting = true;
+  };
 
   services.nix-daemon.enable = true;
 
@@ -34,74 +38,53 @@ in
   security.pki.certificates = [ ]; # TODO homelab certs
   security.pki.installCACerts = true;
 
-  system.keyboard = {
+  system.keyboard = mkDefault {
     enableKeyMapping = true;
     remapCapsLockToControl = true;
   };
 
-  system.defaults = {
-    ".GlobalPreferences" = {
-      "com.apple.mouse.scaling" = -1.0; # disable moouse acceleration
-    };
-
-    NSGlobalDomain = {
-      AppleKeyboardUIMode = 3;
-      ApplePressAndHoldEnabled = false;
-      InitialKeyRepeat = 25;
-      KeyRepeat = 1;
-      NSAutomaticCapitalizationEnabled = false;
-      NSAutomaticDashSubstitutionEnabled = false;
-      NSAutomaticPeriodSubstitutionEnabled = false;
-      NSAutomaticQuoteSubstitutionEnabled = false;
-      NSAutomaticSpellingCorrectionEnabled = false;
-      NSNavPanelExpandedStateForSaveMode = true;
-      NSNavPanelExpandedStateForSaveMode2 = true;
-      _HIHideMenuBar = false; # auto-hide menu bar
-      "com.apple.swipescrolldirection" = false; # disable "Natural" scrolling
-      NSUseAnimatedFocusRing = false; # disbale focus ring animnation
-      NSWindowResizeTime = 0.0; # disable resize animation
-      NSWindowShouldDragOnGesture = true;
-      "com.apple.springing.delay" = 0.0;
-    };
-
-    dock = {
-      autohide = true;
-      mru-spaces = false;
-      orientation = "bottom";
-      showhidden = true;
-      appswitcher-all-displays = true;
-    };
-
-    finder = {
-      AppleShowAllExtensions = true;
-      AppleShowAllFiles = true;
-      FXDefaultSearchScope = "SCcf"; # default to current folder instead of "This Mac"
-      FXEnableExtensionChangeWarning = false;
-      QuitMenuItem = true;
-      ShowPathbar = true;
-      ShowStatusBar = true;
-    };
-
-    trackpad = {
-      Clicking = false;
-      TrackpadThreeFingerDrag = true;
-    };
-
-    WindowManager = {
-      AutoHide = true;
-      # Click wallpaper to reveal desktop Clicking your wallpaper will move all windows out
-      # of the way to allow access to your desktop items and widgets.
-      # Default is true. false means “Only in Stage Manager” true means “Always”
-      EnableStandardClickToShowDesktop = false;
-      GloballyEnabled = false;
-      HideDesktop = true;
-      StandardHideWidgets = true;
-    };
-
-    screencapture = {
-      disable-shadow = true;
-      show-thumbnail = true;
-    };
+  system.defaults = mkDefault {
+    ".GlobalPreferences"."com.apple.mouse.scaling" = -1.0; # disable moouse acceleration
+    NSGlobalDomain."com.apple.springing.delay" = 0.0;
+    NSGlobalDomain."com.apple.swipescrolldirection" = false; # disable "Natural" scrolling
+    NSGlobalDomain.AppleKeyboardUIMode = 3;
+    NSGlobalDomain.ApplePressAndHoldEnabled = false;
+    NSGlobalDomain.InitialKeyRepeat = 25;
+    NSGlobalDomain.KeyRepeat = 1;
+    NSGlobalDomain.NSAutomaticCapitalizationEnabled = false;
+    NSGlobalDomain.NSAutomaticDashSubstitutionEnabled = false;
+    NSGlobalDomain.NSAutomaticPeriodSubstitutionEnabled = false;
+    NSGlobalDomain.NSAutomaticQuoteSubstitutionEnabled = false;
+    NSGlobalDomain.NSAutomaticSpellingCorrectionEnabled = false;
+    NSGlobalDomain.NSAutomaticWindowAnimationsEnabled = false;
+    NSGlobalDomain.NSNavPanelExpandedStateForSaveMode = true;
+    NSGlobalDomain.NSNavPanelExpandedStateForSaveMode2 = true;
+    NSGlobalDomain.NSUseAnimatedFocusRing = false; # disbale focus ring animnation
+    NSGlobalDomain.NSWindowResizeTime = 0.0; # disable resize animation
+    NSGlobalDomain.NSWindowShouldDragOnGesture = true;
+    NSGlobalDomain._HIHideMenuBar = false; # auto-hide menu bar
+    WindowManager.AutoHide = true;
+    WindowManager.EnableStandardClickToShowDesktop = false; # false is "Only in Stage Manager"
+    WindowManager.GloballyEnabled = false;
+    WindowManager.HideDesktop = true;
+    WindowManager.StandardHideWidgets = true;
+    dock.appswitcher-all-displays = true;
+    dock.autohide = true;
+    dock.mru-spaces = false;
+    dock.orientation = "bottom";
+    dock.showhidden = true;
+    finder.AppleShowAllExtensions = true;
+    finder.AppleShowAllFiles = true;
+    finder.FXDefaultSearchScope = "SCcf"; # default to current folder instead of "This Mac"
+    finder.FXEnableExtensionChangeWarning = false;
+    finder.QuitMenuItem = true;
+    finder.ShowPathbar = true;
+    finder.ShowStatusBar = true;
+    screencapture.disable-shadow = true;
+    screencapture.show-thumbnail = true;
+    trackpad.Clicking = false;
+    trackpad.TrackpadThreeFingerDrag = true;
+    universalaccess.reduceMotion = true;
   };
 
   nix.configureBuildUsers = false; # https://github.com/LnL7/nix-darwin/issues/970
