@@ -81,14 +81,12 @@ in {
 
   editor = {
     "$mod+e" = ''exec ${pkgs.yad}/bin/yad --text "No editor is configured!"'';
+    "--release $mod+$alt+n" = "exec org-capture"; # WM_NAME(STRING) = "doom-capture"
+    "--release $mod+$alt+e" = "exec doom +everywhere";
   } // optionalAttrs config.programs.emacs.enable {
     "$mod+e" = "focus parent, exec emacs";
   } // optionalAttrs config.services.emacs.enable {
     "$mod+e" = "focus parent, exec emacsclient -c -a " " -n";
-  } // optionalAttrs config.my.emacs.doom.enable {
-    "--release $mod+$alt+n" =
-      "exec org-capture"; # WM_NAME(STRING) = "doom-capture"
-    "--release $mod+$alt+e" = "exec doom +everywhere";
   };
 
   terminal = {

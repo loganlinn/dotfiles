@@ -38,6 +38,7 @@ in
         ../../nix/home/dev/nodejs.nix
         ../../nix/home/pretty.nix
         ../../nix/home/kitty
+        ../../nix/home/doom
         ../../nix/modules/programs/nixvim
       ];
 

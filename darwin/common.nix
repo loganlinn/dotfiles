@@ -5,7 +5,7 @@ let
 in
 {
   users.users.${my.user.name} = {
-    inherit (my.user) description shell openssh;
+    inherit (my.user) description shell openssh packages;
     home = "/Users/${my.user.name}";
   };
 
