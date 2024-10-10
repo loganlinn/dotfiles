@@ -15,5 +15,6 @@
         # "with-no-frame-refocus" # disables frame re-focus (ie. closing one frame does not refocus another one)
       ];
     }
+    "pngpaste" # :lang org
   ];
 }

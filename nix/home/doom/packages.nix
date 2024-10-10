@@ -5,15 +5,17 @@
 pkgs: with pkgs; {
   ":app irc" = [ gnutls ];
 
-  ":checkers spell +aspell" = [
-    (aspellWithDicts (
-      ds: with ds; [
-        en
-        en-computers
-        en-science
-      ]
-    ))
-  ];
+  # ":checkers spell +aspell" = [
+  #   (aspellWithDicts (
+  #     ds: with ds; [
+  #       en
+  #       en-computers
+  #       en-science
+  #     ]
+  #   ))
+  # ];
+
+  ":checkers spell +hunspell" = [ hunspell ];
 
   ":editor format" = [ nodePackages.prettier ];
 
@@ -29,15 +31,28 @@ pkgs: with pkgs; {
 
   ":emacs undo" = [ zstd ];
 
-  # ":lang clojure +lsp" = [ clojure-lsp ];
+  # ":lang cc" = [ glslang ];
+
+  # ":lang clojure" = [ cljfmt clojure-lsp ];
+
+  ":lang docker" = [ dockfmt ];
 
   # ":lang elixir +lsp" = [ elixir-ls ];
 
-  # ":lang go +lsp" = [ gopls ];
+  ":lang go" = [
+    gomodifytags
+    gopls
+    gore
+    gotests
+  ];
 
   # ":lang java +lsp" = [ java-language-server ];
 
+  ":lang javascript" = [ nodePackages.prettier ];
+
   ":lang latex" = [ texlive.combined.scheme-medium ];
+
+  ":lang markdown" = [ python3Packages.grip ];
 
   ":lang org +gnuplot" = [ gnuplot ];
 
@@ -45,12 +60,11 @@ pkgs: with pkgs; {
 
   ":lang org +roam" = [ sqlite ];
 
+  ":lang plantuml" = [ plantuml ];
+
   ":lang sh +lsp" = [ bash-language-server ];
 
-  ":lang sh" = [
-    shellcheck
-    shfmt
-  ];
+  ":lang sh" = [ shellcheck shfmt ];
 
   # ":lang terraform" = [ terraform ];
 
