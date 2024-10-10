@@ -45,6 +45,7 @@ devenv.local.nix
 node_modules/
 repl-result-out
 result
+result-bin
 sqlite.db
 target/
 .clj-kondo/
