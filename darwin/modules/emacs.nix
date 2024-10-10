@@ -5,7 +5,6 @@
     {
       name = "emacs-plus@31";
       args = [
-        "verbose"
         "with-c9rgreen-sonoma-icon"
         # "with-imagemagick"
         "with-native-comp" # build with native compilation aka gccemacs
