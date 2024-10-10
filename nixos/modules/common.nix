@@ -29,7 +29,13 @@ in
     networking.useDHCP = lib.mkDefault true;
 
     users.users.${config.my.user.name} = {
-      shell = config.my.user.shell;
+      inherit (my.user)
+        description
+        shell
+        openssh
+        packages
+        ;
+
       home = mkDefault "/home/${config.my.user.name}";
       isNormalUser = true;
       createHome = mkDefault true;
@@ -45,12 +51,6 @@ in
         ++ optional config.virtualisation.podman.enable "podman"
         ++ optional config.virtualisation.libvirtd.enable "libvirtd"
         ++ optional config.services.davfs2.enable "${config.services.davfs2.davGroup}";
-      openssh.authorizedKeys.keys = config.my.authorizedKeys;
-      packages = with pkgs; [
-          cachix
-          gh
-          ssh-copy-id
-        ];
     };
 
     services.openssh.enable = mkDefault true;
@@ -144,7 +144,7 @@ in
       "nixpkgs=${inputs.nixpkgs}"
       "home-manager=${inputs.home-manager}"
     ];
-    nix.sshServe.keys = config.my.authorizedKeys;
+    nix.sshServe.keys = attrValues config.my.pubkeys.ssh;
 
     nixpkgs.config.allowUnfree = true;
   };

@@ -1,13 +1,29 @@
-{ config, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   inherit (lib) mkDefault;
   inherit (config) my;
 in
 {
   users.users.${my.user.name} = {
-    inherit (my.user) description shell openssh packages;
+    inherit (my.user)
+      description
+      shell
+      openssh
+      packages
+      ;
     home = "/Users/${my.user.name}";
   };
+
+  fonts.packages = my.fonts.packages;
+
+  environment.systemPackages = with pkgs; [
+    pinentry_mac
+  ];
 
   environment.variables = {
     HOMEBREW_NO_ANALYTICS = "1";
@@ -29,8 +45,6 @@ in
   };
 
   services.nix-daemon.enable = true;
-
-  fonts.packages = my.fonts.packages;
 
   security.pam.enableSudoTouchIdAuth = mkDefault true;
 
@@ -84,7 +98,7 @@ in
     screencapture.show-thumbnail = true;
     trackpad.Clicking = false;
     trackpad.TrackpadThreeFingerDrag = true;
-    universalaccess.reduceMotion = true;
+    # universalaccess.reduceMotion = true; # unsupported as of macOS 15.0.1 (24A348)
   };
 
   nix.configureBuildUsers = false; # https://github.com/LnL7/nix-darwin/issues/970

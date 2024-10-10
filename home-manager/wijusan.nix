@@ -34,7 +34,7 @@
   # Configure Git to use ssh.exe (1Password agent forwarding)
   # https://developer.1password.com/docs/ssh/integrations/wsl/
   programs.git.extraConfig = {
-    user.signingKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN";
+    user.signingKey = config.my.pubkeys.ssh.ed25519;
     gpg.format = "ssh";
     gpg.ssh.program = "/mnt/c/Users/logan/AppData/Local/1Password/app/8/op-ssh-sign-wsl";
     commit.gpgsign = true;

@@ -169,13 +169,7 @@ in
         imports = [ nix-colors.homeManagerModule ];
         colorScheme = lib.mkDefault nix-colors.colorSchemes.doom-one;
       };
-    nixvim = {
-      imports = [
-        inputs.nixvim.homeManagerModules.nixvim
-        # ../nix/home/nixvim
-      ];
-    };
-    secrets = inputs.agenix.homeManagerModules.default;
+    # secrets = inputs.agenix.homeManagerModules.default;
   };
 
   flake.darwinModules = {
@@ -189,18 +183,19 @@ in
         config,
         pkgs,
       }:
-      darwin@{ lib, ... }:
+      ctx@{ lib, ... }:
       {
         imports = [ inputs.home-manager.darwinModules.home-manager ];
         config = {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = mkSpecialArgs systemArgs;
-          home-manager.users.${darwin.config.my.user.name} =
+          home-manager.users.${ctx.config.my.user.name} =
             { options, config, ... }:
             {
-              options.my = darwin.options.my;
-              config.my = darwin.config.my;
+              imports = [ ../options.nix ];
+              # options.my = ctx.options.my;
+              # config.my = ctx.config.my;
             };
         };
       }

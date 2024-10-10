@@ -6,17 +6,6 @@
   ...
 }:
 
-let
-  packages = with pkgs; [
-    nodejs
-    yarn
-    nodePackages.typescript-language-server
-    awscli2
-    mkcert
-    clickhouse
-    clickhouse-cli
-  ];
-in
 {
   imports = [
     self.darwinModules.common
@@ -25,15 +14,13 @@ in
     ../modules/emacs.nix
   ];
 
-  homebrew.enable = true;
-
   home-manager.users.logan =
     { options, config, ... }:
     {
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
-        self.homeModules.nixvim
+        inputs.nixvim.homeManagerModules.nixvim
         ../../nix/home/dev
         ../../nix/home/dev/nodejs.nix
         ../../nix/home/pretty.nix
@@ -49,9 +36,20 @@ in
 
       programs.kitty.enable = true;
 
-      home.packages = packages;
+      home.packages = with pkgs; [
+        aws-vault
+        awscli2
+        mkcert
+        nodePackages.typescript-language-server
+        nodejs
+        yarn
+      ];
 
       home.stateVersion = "22.11";
     };
 
+  environment.systemPackages = with pkgs; [
+    clickhouse
+    clickhouse-cli
+  ];
 }

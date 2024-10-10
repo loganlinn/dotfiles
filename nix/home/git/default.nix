@@ -79,9 +79,9 @@ with lib;
         mkDefault (if pkgs.stdenv.isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
         else "op-ssh-sign");
       gpg.ssh.allowedSignersFile = mkDefault "${pkgs.writeText "allowed_signers" ''
-        ${config.my.email} ${config.my.user.signingkey}
+        ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
       ''}";
-      user.signingkey = mkDefault config.my.user.signingkey;
+      user.signingkey = mkDefault config.my.pubkeys.ssh.ed25519;
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
