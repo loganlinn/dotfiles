@@ -39,7 +39,6 @@ in
         ../../nix/home/pretty.nix
         ../../nix/home/kitty
         ../../nix/home/doom
-        ../../nix/home/comodoro
         ../../nix/modules/programs/nixvim
       ];
 
