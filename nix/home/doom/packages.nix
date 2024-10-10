@@ -60,8 +60,6 @@ pkgs: with pkgs; {
 
   ":lang org +roam" = [ sqlite ];
 
-  ":lang plantuml" = [ plantuml ];
-
   ":lang sh +lsp" = [ bash-language-server ];
 
   ":lang sh" = [ shellcheck shfmt ];
