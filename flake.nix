@@ -159,10 +159,6 @@
           ./nixos/framework/configuration.nix
         ];
 
-        nixosConfigurations.juuni = self.lib.mkNixosSystem "x86_64-linux" [
-          ./nixos/juuni/configuration.nix
-        ];
-
         darwinConfigurations.patchbook = self.lib.mkDarwinSystem "aarch64-darwin" [
           ./darwin/patchbook.nix
         ];
