@@ -3,6 +3,13 @@
 # See: https://github.com/doomemacs/doomemacs/tree/master/modules
 # TODO devise a way for this to be linked with init.el.
 pkgs: with pkgs; {
+  default = [
+    binutils # for native-comp
+    emacs-all-the-icons-fonts
+    fd
+    ripgrep
+  ];
+
   ":app irc" = [ gnutls ];
 
   # ":checkers spell +aspell" = [
@@ -62,7 +69,10 @@ pkgs: with pkgs; {
 
   ":lang sh +lsp" = [ bash-language-server ];
 
-  ":lang sh" = [ shellcheck shfmt ];
+  ":lang sh" = [
+    shellcheck
+    shfmt
+  ];
 
   # ":lang terraform" = [ terraform ];
 
