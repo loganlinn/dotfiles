@@ -1,85 +1,86 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.my;
 
+let
+  generateNpmrc = cfg: generators.toINIWithGlobalSection {} { globalSection = cfg; };
+
+  userConfig = {
+    fund = false;
+    git-tag-version = true;
+    init-author-email = config.my.email;
+    init-author-name = config.my.github.username;
+    init-author-url = config.my.homepage;
+    sign-git-commit = true;
+    sign-git-tag = true;
+    strict-ssl = true;
+    unicode = true;
+    update-notifier = false;
+    usage = false;
+  };
+in
 {
-  options = {
-    my.npm = {
-      name = mkOption {
-        type = types.str;
-        default = config.my.github.username;
+  config = mkMerge [
+    {
+      home.packages = with pkgs; [
+        nodejs
+        yarn
+        yarn-bash-completion
+        nodePackages.pnpm
+        nodePackages.typescript-language-server
+        # nodePackages.typescript
+      ];
+
+      home.sessionVariables = {
+        # Privacy, please
+        GRAPHITE_DISABLE_TELEMETRY = "1";
+        APOLLO_TELEMETRY_DISABLED = "1";
+        NEXT_TELEMETRY_DISABLED = "1";
+        GATSBY_TELEMETRY_DISABLED = "1";
       };
-      email = mkOption {
-        type = types.str;
-        default = config.my.email;
+
+      my.shellInitExtra = ''
+        # Ensure PNPM_HOME is on path
+        if [ -n "$PNPM_HOME" ]; then
+          case :$PATH: in
+            *:$PNPM_HOME:*) ;;
+            *) export PATH=$PNPM_HOME:$PATH
+          esac
+        fi
+      '';
+    }
+    (mkIf (!config.xdg.enable) {
+      home.file.".npmrc".text = generateNpmrc userConfig;
+    })
+    (mkIf config.xdg.enable {
+      # NPM refuses to adopt XDG conventions upstream, so I enforce it myself.
+      home.sessionVariables = mkDefault {
+        PNPM_HOME = "$XDG_DATA_HOME/pnpm";
+        NPM_CONFIG_USERCONFIG = "$XDG_CONFIG_HOME/npm/config";
+        NPM_CONFIG_CACHE = "$XDG_CACHE_HOME/npm";
+        NPM_CONFIG_PREFIX = "$XDG_CACHE_HOME/npm";
+        NPM_CONFIG_TMP = "$XDG_RUNTIME_DIR/npm";
+        NODE_REPL_HISTORY = "$XDG_CACHE_HOME/node/repl_history";
       };
-      url = mkOption {
-        type = types.str;
-        default = config.my.homepage;
-      };
-    };
-  };
 
-  config = {
+      home.sessionPath = [
+        "${config.xdg.dataHome}/npm/bin"
+      ];
 
-    home.packages = with pkgs; [
-      nodejs
-      yarn
-      yarn-bash-completion
-      nodePackages.pnpm
-      nodePackages.typescript-language-server
-      # nodePackages.typescript
-    ];
-
-    home.sessionVariables = {
-      # XDG, please
-      PNPM_HOME = "${config.xdg.dataHome}/pnpm";
-      NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/config";
-      NPM_CONFIG_PREFIX = "${config.xdg.dataHome}/npm"; # written to by `npm install --global ...`
-      NPM_CONFIG_CACHE = "${config.xdg.cacheHome}/npm";
-      NODE_REPL_HISTORY = "${config.xdg.stateHome}/nodejs/repl_history";
-
-      # Privacy, please
-      GRAPHITE_DISABLE_TELEMETRY = "1";
-      APOLLO_TELEMETRY_DISABLED = "1";
-      NEXT_TELEMETRY_DISABLED = "1";
-      GATSBY_TELEMETRY_DISABLED = "1";
-    };
-
-    home.sessionPath = [
-      "${config.home.sessionVariables.NPM_CONFIG_PREFIX}/bin"
-    ];
-
-    my.shellInitExtra = ''
-      # Ensure PNPM_HOME is on path
-      if [ -n "$PNPM_HOME" ]; then
-        case :$PATH: in
-          *:$PNPM_HOME:*) ;;
-          *) export PATH=$PNPM_HOME:$PATH
-        esac
-      fi
-    '';
-
-    # https://docs.npmjs.com/cli/v8/using-npm/config
-    # $ npm config ls -l
-    # $ xh -F 'https://docs.npmjs.com/cli/v8/using-npm/config' | html2text -width 999 | grep DEPRECATED: -B3 | sed -n '/^--$/{n;p}'
-    xdg.configFile."npm/config".text = ''
-      cache = "${config.xdg.cacheHome}/npm"
-      color = true
-      fund = false
-      git = "${toExe config.programs.git}"
-      git-tag-version = true
-      init-author-email = "${config.my.npm.email}"
-      init-author-name = "${config.my.npm.name}"
-      init-author-url = "${config.my.npm.url}"
-      sign-git-commit = true
-      sign-git-tag = true
-      strict-ssl = true
-      unicode = true
-      update-notifier = false
-      usage = false
-      user-agent = "npm/{npm-version} node/{node-version}"
-    '';
-  };
+      xdg.configFile."npm/config".text = generateNpmrc (
+        userConfig
+        // {
+          cache = "$${XDG_CACHE_HOME}/npm";
+          prefix = "$${XDG_DATA_HOME}/npm";
+          tmp = "$${XDG_RUNTIME_DIR}/npm";
+        }
+      );
+    })
+  ];
 }
