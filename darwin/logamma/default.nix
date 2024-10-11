@@ -14,6 +14,15 @@
     ../modules/emacs.nix
   ];
 
+  homebrew = {
+    # onActivation.cleanup = "zap";
+    casks = [
+      # "1password"
+      "1password-cli"
+    ];
+    brews = [ ];
+  };
+
   home-manager.users.logan =
     { options, config, ... }:
     {
