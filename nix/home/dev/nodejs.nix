@@ -9,7 +9,7 @@ with lib;
 with lib.my;
 
 let
-  generateNpmrc = cfg: generators.toINIWithGlobalSection {} { globalSection = cfg; };
+  generateNpmrc = cfg: generators.toINIWithGlobalSection { } { globalSection = cfg; };
 
   userConfig = {
     fund = false;
@@ -44,6 +44,18 @@ in
         NEXT_TELEMETRY_DISABLED = "1";
         GATSBY_TELEMETRY_DISABLED = "1";
       };
+
+      programs.zsh.plugins = [
+        {
+          name = "yarn-completions";
+          src = pkgs.fetchFromGitHub {
+            owner = "g-plane";
+            repo = "zsh-yarn-autocompletions";
+            rev = "12e282950d592f32648b980c9edcdf1fd4eefb28";
+            hash = "sha256-6G0ace7ooeTAEyXPjU0HvbVjrp9Y/TbMS0xSon9P/P0=";
+          };
+        }
+      ];
 
       my.shellInitExtra = ''
         # Ensure PNPM_HOME is on path
