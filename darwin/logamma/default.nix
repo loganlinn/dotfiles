@@ -12,16 +12,20 @@
     self.darwinModules.home-manager
     ../modules/aerospace.nix
     ../modules/emacs.nix
+    ../modules/karabiner-elements
   ];
 
   homebrew = {
-    # onActivation.cleanup = "zap";
     casks = [
       # "1password"
       "1password-cli"
+      "obs"
+      "tailscale"
     ];
     brews = [ ];
   };
+
+  services.karabiner-elements.enable = false;
 
   home-manager.users.logan =
     { options, config, ... }:

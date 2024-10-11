@@ -8,7 +8,6 @@
     # ./modules/security.nix
     # ./modules/skhd.nix
     # ./modules/yabai.nix
-    # ./modules/tailscale.nix
   ];
 
   homebrew.enable = true;
