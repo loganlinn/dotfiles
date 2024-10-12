@@ -123,23 +123,6 @@
               pkgs.sops
             ];
           };
-
-          # legacyPackages = lib.optionalAttrs (ctx.system == "x86_64-linux") {
-          #   homeConfigurations = {
-          #     "logan@nijusan" = self.lib.mkHomeConfiguration ctx [
-          #       self.homeModules.common
-          #       self.homeModules.nix-colors
-          #       self.homeModules.secrets
-          #       ./home-manager/nijusan.nix
-          #     ];
-          #     "logan@wijusan" = self.lib.mkHomeConfiguration ctx [
-          #       self.homeModules.common
-          #       self.homeModules.nix-colors
-          #       self.homeModules.secrets
-          #       ./home-manager/wijusan.nix
-          #     ];
-          #   };
-          # };
         };
 
       flake = {
