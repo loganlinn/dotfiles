@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (lib) mkDefault;
+  inherit (lib) mkDefault optionalString;
   inherit (config) my;
 in
 {
@@ -31,17 +31,23 @@ in
 
   homebrew.enable = mkDefault true;
 
-  programs.bash = mkDefault {
+  programs.bash = {
     enable = true;
-    enableCompletion = true;
+    enableCompletion = mkDefault true;
   };
 
-  programs.zsh = mkDefault {
+  programs.zsh = {
     enable = true;
-    enableCompletion = true;
-    enableFzfCompletion = true;
-    enableFzfHistory = true;
-    enableSyntaxHighlighting = true;
+    enableCompletion = mkDefault true;
+    enableFzfCompletion = mkDefault true;
+    enableFzfHistory = mkDefault true;
+    enableSyntaxHighlighting = mkDefault true;
+    interactiveShellInit = optionalString config.homebrew.enable ''
+      # Tell zsh how to find brew installed completions
+      if [[ -v HOMEBREW_PREFIX ]]; then
+        fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+      fi
+    '';
   };
 
   services.nix-daemon.enable = true;
@@ -102,7 +108,7 @@ in
   };
 
   system.activationScripts.postActivation.text = ''
-    if test -f /etc/nix-darwin/flake.nix; then
+    if ! test -f /etc/nix-darwin/flake.nix; then
       echo >&2 "Missing '/etc/nix-darwin/flake.nix'. Consider \`ln -s /path/to/flake.nix /etc/nix-darwin/flake.nix\`."
     fi
   '';
