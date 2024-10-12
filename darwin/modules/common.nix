@@ -101,6 +101,12 @@ in
     # universalaccess.reduceMotion = true; # unsupported as of macOS 15.0.1 (24A348)
   };
 
+  system.activationScripts.postActivation.text = ''
+    if test -f /etc/nix-darwin/flake.nix; then
+      echo >&2 "Missing '/etc/nix-darwin/flake.nix'. Consider \`ln -s /path/to/flake.nix /etc/nix-darwin/flake.nix\`."
+    fi
+  '';
+
   nix.configureBuildUsers = false; # https://github.com/LnL7/nix-darwin/issues/970
   nix.gc.automatic = true;
   nix.settings = my.nix.settings // {

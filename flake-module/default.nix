@@ -173,9 +173,9 @@ in
   };
 
   flake.darwinModules = {
-    common = import ../darwin/common.nix;
+    common = import ../darwin/modules/common.nix;
     home-manager = moduleWithSystem (
-      systemArgs@{
+      ctx@{
         inputs',
         self,
         self',
@@ -183,20 +183,15 @@ in
         config,
         pkgs,
       }:
-      ctx@{ lib, ... }:
+      { config, lib, ... }:
       {
         imports = [ inputs.home-manager.darwinModules.home-manager ];
         config = {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = mkSpecialArgs systemArgs;
-          home-manager.users.${ctx.config.my.user.name} =
-            { options, config, ... }:
-            {
-              imports = [ ../options.nix ];
-              # options.my = ctx.options.my;
-              # config.my = ctx.config.my;
-            };
+          home-manager.extraSpecialArgs = mkSpecialArgs ctx;
+          home-manager.backupFileExtension = "backup";
+          home-manager.users.${config.my.user.name} = import ../options.nix;
         };
       }
     );

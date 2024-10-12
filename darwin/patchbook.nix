@@ -4,7 +4,6 @@
   imports = [
     self.darwinModules.common
     self.darwinModules.home-manager
-    # ./common.nix
     # ./modules/security.nix
     # ./modules/skhd.nix
     # ./modules/yabai.nix
