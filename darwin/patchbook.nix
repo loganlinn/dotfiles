@@ -19,8 +19,8 @@
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
-        ./nix/home/dev
-        ./nix/home/pretty.nix
+        ../nix/home/dev
+        ../nix/home/pretty.nix
       ];
       home.stateVersion = "22.11";
     };
