@@ -13,17 +13,22 @@
     ../modules/aerospace.nix
     ../modules/emacs.nix
     ../modules/karabiner-elements
+    {
+      homebrew.casks = [
+        # "1password"
+        "1password-cli"
+      ];
+    }
+    {
+      homebrew.taps = [ "ariga/tap" ];
+      homebrew.brews = [ "ariga/tap/atlas" ];
+    }
   ];
 
-  homebrew = {
-    casks = [
-      # "1password"
-      "1password-cli"
-      "obs"
-      "tailscale"
-    ];
-    brews = [ ];
-  };
+  homebrew.casks = [
+    "obs"
+    "tailscale"
+  ];
 
   services.karabiner-elements.enable = false;
 
