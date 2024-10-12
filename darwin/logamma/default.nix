@@ -61,6 +61,7 @@
         nodePackages.typescript-language-server
         nodejs
         yarn
+        pls
       ];
 
       home.stateVersion = "22.11";
