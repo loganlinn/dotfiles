@@ -185,7 +185,9 @@ in
       }:
       { config, lib, ... }:
       {
-        imports = [ inputs.home-manager.darwinModules.home-manager ];
+        imports = [
+          inputs.home-manager.darwinModules.home-manager
+        ];
         config = {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;

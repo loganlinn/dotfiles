@@ -40,6 +40,10 @@
     }
   ];
 
+  homebrew.brews = [
+    "nss" # used by mkcert
+  ];
+
   homebrew.casks = [
     "obs"
     "tailscale"
@@ -75,8 +79,8 @@
         mkcert
         nodePackages.typescript-language-server
         nodejs
-        yarn
         pls
+        yarn
       ];
 
       home.stateVersion = "22.11";
