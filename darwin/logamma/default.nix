@@ -14,12 +14,21 @@
     ../modules/aerospace.nix
     ../modules/emacs-plus
     ../modules/karabiner-elements
+    # 1password
     {
       homebrew.casks = [
         # "1password"
         "1password-cli"
       ];
     }
+    # clickhouse
+    {
+      environment.systemPackages = with pkgs; [
+        clickhouse
+        clickhouse-cli
+      ];
+    }
+    # atlas
     {
       homebrew.taps = [ "ariga/tap" ];
       homebrew.brews = [ "ariga/tap/atlas" ];
@@ -51,43 +60,47 @@
 
   services.karabiner-elements.enable = false;
 
-  home-manager.users.logan =
-    { options, config, ... }:
-    {
-      imports = [
-        self.homeModules.common
-        self.homeModules.nix-colors
-        inputs.nixvim.homeManagerModules.nixvim
-        ../../nix/home/dev
-        ../../nix/home/dev/nodejs.nix
-        ../../nix/home/pretty.nix
-        ../../nix/home/kitty
-        ../../nix/home/doom
-        ../../nix/modules/programs/nixvim
-      ];
+  home-manager.users.logan = {
+    imports = [
+      self.homeModules.common
+      self.homeModules.nix-colors
+      inputs.nixvim.homeManagerModules.nixvim
+      ../../nix/home/dev
+      ../../nix/home/dev/nodejs.nix
+      ../../nix/home/pretty.nix
+      ../../nix/home/kitty
+      ../../nix/home/doom
+      ../../nix/modules/programs/nixvim
+      # aws
+      {
+        home.packages = with pkgs; [
+          awscli2
+        ];
+        # TODO should we need to configure completion?
+        programs.bash.initExtra = ''
+          complete -C '${pkgs.awscli2}/bin/aws_completer' aws
+        '';
+        programs.zsh.initExtra = ''
+          complete -C '${pkgs.awscli2}/bin/aws_completer' aws
+        '';
+      }
+    ];
 
-      programs.nixvim = {
-        enable = true;
-        defaultEditor = true;
-      };
-
-      programs.kitty.enable = true;
-
-      home.packages = with pkgs; [
-        aws-vault
-        awscli2
-        mkcert
-        nodePackages.typescript-language-server
-        nodejs
-        pls
-        yarn
-      ];
-
-      home.stateVersion = "22.11";
+    programs.nixvim = {
+      enable = true;
+      defaultEditor = true;
     };
 
-  environment.systemPackages = with pkgs; [
-    clickhouse
-    clickhouse-cli
-  ];
+    programs.kitty.enable = true;
+
+    home.packages = with pkgs; [
+      mkcert
+      nodePackages.typescript-language-server
+      nodejs
+      pls
+      yarn
+    ];
+
+    home.stateVersion = "22.11";
+  };
 }

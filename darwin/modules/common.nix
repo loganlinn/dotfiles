@@ -13,7 +13,7 @@ in
     # homebrew (TODO move to own separate file)
     {
       homebrew.enable = mkDefault true;
-      programs.zsh.shellInit = optionalString config.homebrew.enable ''
+      programs.zsh.interactiveShellInit = optionalString config.homebrew.enable ''
         # Tell zsh how to find brew installed completions
         if [[ -v HOMEBREW_PREFIX ]]; then
           fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
