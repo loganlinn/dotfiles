@@ -18,6 +18,8 @@ let
   exec-ephemeral = cmd: ''
     exec-and-forget kitty sh -c ${lib.escapeShellArg cmd}"; read -p 'Press any key to close'"
   '';
+
+
 in
 {
   imports = [
@@ -32,6 +34,12 @@ in
   options = {
     programs.aerospace = {
       enable = mkEnableOption "aerospace window manager";
+
+      extraPackages = mkOption {
+        type = types.listOf types.package;
+        default = [];
+      };
+
       settings = mkOption {
         type = types.submodule {
           freeformType = toml.type;
@@ -248,6 +256,8 @@ in
 
     home-manager.users.${config.my.user.name} = {
       xdg.configFile."aerospace/aerospace.toml".source = configFile;
+
+      home.packages = cfg.extraPackages;
     };
 
     # Move windows by holding ctrl+cmd and dragging any part of the window

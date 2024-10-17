@@ -14,6 +14,8 @@
     ../modules/aerospace.nix
     ../modules/emacs-plus
     ../modules/karabiner-elements
+    ../modules/aws.nix
+    ../modules/xcode.nix
     ./homebrew.nix
     # postgresql
     {
@@ -49,6 +51,7 @@
     }
   ];
 
+  programs.emacs-plus.enable = true;
   services.karabiner-elements.enable = false;
 
   home-manager.users.logan = {
@@ -62,20 +65,9 @@
       ../../nix/home/kitty
       ../../nix/home/doom
       ../../nix/modules/programs/nixvim
-      # aws
-      {
-        home.packages = with pkgs; [
-          awscli2
-        ];
-        # TODO should we need to configure completion?
-        programs.bash.initExtra = ''
-          complete -C '${pkgs.awscli2}/bin/aws_completer' aws
-        '';
-        programs.zsh.initExtra = ''
-          complete -C '${pkgs.awscli2}/bin/aws_completer' aws
-        '';
-      }
     ];
+
+    home.shellAliases.switch = "darwin-rebuild switch --flake $HOME/.dotfiles";
 
     programs.nixvim = {
       enable = true;
