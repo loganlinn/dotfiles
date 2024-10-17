@@ -118,7 +118,6 @@ in
             # See: https://nikitabobko.github.io/AeroSpace/commands#layout
             alt-slash = "layout tiles horizontal vertical";
             alt-comma = "layout accordion horizontal vertical";
-            alt-t = "split opposite";
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#focus
             alt-h = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace left";
@@ -175,8 +174,9 @@ in
             alt-shift-tab = "move-workspace-to-monitor --wrap-around next";
 
 
-            alt-shift-f = "fullscreen";
-            alt-ctrl-f = "macos-native-fullscreen";
+            alt-shift-f = "layout floating tiling";
+            alt-ctrl-f = "fullscreen";
+            alt-ctrl-shift-f = "macos-native-fullscreen";
 
             alt-shift-c = "reload-config";
             alt-shift-x = "enable toggle";
