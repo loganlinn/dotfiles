@@ -21,6 +21,12 @@
         "1password-cli"
       ];
     }
+    # postgresql
+    {
+      environment.systemPackages = with pkgs; [
+        postgresql
+      ];
+    }
     # clickhouse
     {
       environment.systemPackages = with pkgs; [
@@ -51,6 +57,7 @@
 
   homebrew.brews = [
     "nss" # used by mkcert
+    "terminal-notifier"
   ];
 
   homebrew.casks = [

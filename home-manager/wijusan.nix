@@ -15,7 +15,6 @@
     ../nix/home/pretty.nix
     ../nix/home/yt-dlp.nix
     ../nix/modules/spellcheck.nix
-    ../nix/modules/nix-registry.nix
     ../nix/modules/programs/nixvim
     inputs.nixvim.homeManagerModules.nixvim
   ];

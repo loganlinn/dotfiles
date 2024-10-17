@@ -1,8 +1,8 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i "just --justfile" -p just
 
-# mod info
 mod nixos
+
 # mod windows
 # mod firewalla
 
@@ -10,65 +10,83 @@ mod nixos
 default:
     @just --list
 
-flake := source_dir()
-
-[linux]
-build:
-    nix run home-manager -- build
-
-[macos]
-build:
-    darwin-rebuild build --flake {{ flake }}
-
-[linux]
-switch:
-    nix run home-manager -- switch
-
-[macos]
-switch:
-    darwin-rebuild switch --flake {{ flake }}
-
-[linux]
-bootstrap:
-    nix run home-manager -- init --switch
-
-[macos]
-bootstrap:
-    nix build "{{ flake }}#darwinConfigurations.$(hostname -s).system"
-    ./result/sw/bin/darwin-rebuild switch --flake {{ source_dir() }}
-
 fmt:
     nix fmt
     just --fmt --unstable
 
-update:
-    nix flake update --commit-lock-file
+@link path link context=source_dir() force="":
+    target="{{ clean(join(context, path)) }}"; \
+    link="{{ clean(link) }}"; \
+    if [ ! -d "$(dirname "$link")" ]; then \
+      echo "{{BOLD}}{{YELLOW}} skipped:{{RESET}} {{BLUE}}$(dirname "$link"){{RESET}} does not exist"; \
+    elif [ "$(readlink -qe "$link")" = "$(readlink -qe "$target")" ]; then \
+      echo "{{BOLD}}{{GREEN}}   found:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}"; \
+    else \
+      ln -s -T "$target" "$link"; \
+      echo "{{BOLD}}{{GREEN}} created:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}"; \
+    fi;
 
-show:
-    nix flake show
+@link-flake:
+    just link-system-flake
+    just link flake.nix ~/.config/home-manager/flake.nix
 
-metadata:
-    nix flake metadata
+[macos]
+@link-system-flake:
+    just link flake.nix /etc/nix-darwin/flake.nix
 
-repl dir='.' file='repl.nix':
-    nix repl --file {{ dir }}/{{ file }}
+[linux]
+@link-system-flake:
+    just link flake.nix /etc/nixos/flake.nix
+
+[macos]
+bootstrap:
+    nix run nix-darwin -- switch --flake {{ source_dir() }}
+    just link-flake
+
+[macos]
+rebuild *args:
+    darwin-rebuild -- {{ args }}
+
+[linux]
+rebuild *args:
+    nixos-rebuild -- {{ args }}
+
+# update flake inputs
+update *args:
+    nix flake update --commit-lock-file {{ args }}
+
+repl dir='.' file='repl.nix' args="":
+    nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
 
 run app:
     nix run .#{{ app }}
 
-use-caches: (run "use-caches")
-
-home-switch: (run "home-switch")
-
 netrc:
     op inject -i netrc.tpl -o ~/.netrc
-
-link-nixos-flake:
-    test "$(readlink -qe /etc/nixos/flake.nix)" = "$(readlink -qe {{ source_dir() }}/flake.nix)" || ln -s {{ source_dir() }}/flake.nix /etc/nixos/flake.nix
 
 check-flake:
     nix run github:DeterminateSystems/flake-checker
 
-[linux,macos]
+[linux]
+[macos]
 fix-eol:
-  rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
+    rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
+
+BOLD := "$(tput bold)"
+RESET := "$(tput sgr0)"
+BLACK := "$(tput bold)$(tput setaf 0)"
+RED := "$(tput bold)$(tput setaf 1)"
+GREEN := "$(tput bold)$(tput setaf 2)"
+YELLOW := "$(tput bold)$(tput setaf 3)"
+BLUE := "$(tput bold)$(tput setaf 4)"
+MAGENTA := "$(tput bold)$(tput setaf 5)"
+CYAN := "$(tput bold)$(tput setaf 6)"
+WHITE := "$(tput bold)$(tput setaf 7)"
+BLACKB := "$(tput bold)$(tput setab 0)"
+REDB := "$(tput setab 1)$(tput setaf 0)"
+GREENB := "$(tput setab 2)$(tput setaf 0)"
+YELLOWB := "$(tput setab 3)$(tput setaf 0)"
+BLUEB := "$(tput setab 4)$(tput setaf 0)"
+MAGENTAB := "$(tput setab 5)$(tput setaf 0)"
+CYANB := "$(tput setab 6)$(tput setaf 0)"
+WHITEB := "$(tput setab 7)$(tput setaf 0)"

@@ -11,7 +11,6 @@
   minecraft-server = ./minecraft-server.nix;
   monitor-brightness = ./monitor-brightness.nix;
   networking = ./networking;
-  nix-registry = ../../nix/modules/nix-registry.nix;
   nvidia = ./nvidia.nix;
   pipewire = ./pipewire.nix;
   printing = ./printing;

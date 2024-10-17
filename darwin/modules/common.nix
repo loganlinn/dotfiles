@@ -94,7 +94,7 @@ in
       WindowManager.EnableStandardClickToShowDesktop = false; # false is "Only in Stage Manager"
       WindowManager.GloballyEnabled = false;
       WindowManager.HideDesktop = true;
-      WindowManager.StandardHideWidgets = true;
+      WindowManager.StandardHideWidgets = false;
       dock.appswitcher-all-displays = true;
       dock.autohide = true;
       dock.mru-spaces = false;
@@ -126,5 +126,6 @@ in
       keep-derivations = false;
       auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
     };
+    nix.registry = my.nix.registry;
   };
 }

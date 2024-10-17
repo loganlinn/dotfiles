@@ -1,4 +1,5 @@
 {
+  inputs ? (with builtins; (getFlake (toString ./.)).inputs),
   config,
   pkgs,
   lib,
@@ -8,10 +9,9 @@
 with lib;
 
 let
-  lib' = import ./lib/extended.nix lib;
+  myLib = (import ./lib/extended.nix lib).my;
 
   inherit (pkgs.stdenv) isLinux isDarwin;
-  inherit (lib'.my.types) fontType;
 
   cfg = config.my;
 
@@ -62,10 +62,10 @@ in
     # userDirs = mkOpt (with types; attrsOf (nullOr pathType)) { };
 
     fonts = {
-      serif = mkOption { type = fontType; };
-      sans = mkOption { type = fontType; };
-      mono = mkOption { type = fontType; };
-      terminal = mkOption { type = fontType; };
+      serif = mkOption { type = myLib.types.font; };
+      sans = mkOption { type = myLib.types.font; };
+      mono = mkOption { type = myLib.types.font; };
+      terminal = mkOption { type = myLib.types.font; };
       nerdfonts = {
         fonts = mkOpt (listOf str) [ ];
         package = mkOption {
@@ -75,6 +75,11 @@ in
         };
       };
       packages = mkOpt (listOf package) [ ];
+    };
+
+    nix.registry = mkOption {
+      type = myLib.types.nix-registry;
+      default = { };
     };
 
     nix.settings = mkOption {
@@ -128,25 +133,25 @@ in
       serif = mkDefault {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Serif";
-        size = if isLinux then 10 else 12;
+        size = mkDefault (if isLinux then 10 else 12);
       };
 
       sans = mkDefault {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Sans";
-        size = if isLinux then 10 else 12;
+        size = mkDefault (if isLinux then 10 else 12);
       };
 
       mono = mkDefault {
         package = pkgs.dejavu_fonts;
         name = "DejaVu Sans Mono";
-        size = if isLinux then 10 else 12;
+        size = mkDefault (if isLinux then 10 else 12);
       };
 
       terminal = mkDefault {
         package = cfg.fonts.nerdfonts.package;
         name = "FiraCode Nerd Font Light";
-        size = 11;
+        size = mkDefault (if isLinux then 11 else 12);
       };
 
       nerdfonts.fonts = mkDefault [
@@ -179,6 +184,11 @@ in
         recursive
         victor-mono
       ];
+    };
+
+    my.nix.registry = {
+      nixpkgs.flake = inputs.nixpkgs;
+      home-manager.flake = inputs.home-manager;
     };
 
     my.nix.settings = {

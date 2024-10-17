@@ -3,6 +3,7 @@ top@{
   inputs,
   moduleWithSystem,
   withSystem,
+  getSystem,
   ...
 }:
 
@@ -91,18 +92,63 @@ let
       }
     );
 
+  # Inputs
+  #
+  # `system`
+  #
+  # : The system triple (string). Defaults to currentSystem.
+  #
+  # `hostname`
+  #
+  # : The name of host for locating nixos/darwin config.
+  #
+  # `user`
+  #
+  # : The name of user for locating home-manager config. Defaults to value of USER env.
+  #
   mkReplAttrs =
     {
-      user ? (builtins.getEnv "USER"),
+      system ? null,
       hostname ? import ../lib/currentHostname.nix,
-      system ? builtins.currentSystem,
+      user ? (builtins.getEnv "USER"),
     }:
+    assert hostname != null;
+    assert user != null;
+    let
+      perSys =
+        if system == null then
+          self.currentSystem
+        else if builtins.isString system then # from system triple string (i.e. builtins.currentSystem)
+          getSystem system
+        else
+          system;
+      nixos = self.nixosConfigurations.${hostname} or null;
+      darwin = self.darwinConfigurations.${hostname} or null;
+      os =
+        if nixos != null then
+          assert darwin == null; # shouldn't have both
+          nixos
+        else
+          darwin;
+      hm =
+        let
+          inherit (perSys.legacyPackages) homeConfigurations;
+        in
+        os.config.home-manager.users.${user} or homeConfigurations."${user}@${hostname}"
+          or homeConfigurations.${user} or homeConfigurations.${hostname} or null;
+    in
     builtins
-    // self
     // rec {
-      inherit self;
-      inherit (self.currentSystem) legacyPackages;
-      inherit (self.currentSystem.allModuleArgs) # i.e. perSystem module args
+      inherit
+        self
+        inputs
+        nixos
+        darwin
+        os
+        hm
+        ;
+      inherit (perSys) legacyPackages;
+      inherit (perSys.allModuleArgs)
         inputs'
         self'
         config
@@ -111,11 +157,6 @@ let
         pkgs
         ;
       lib = mkLib pkgs.lib;
-      nixos = self.nixosConfigurations.${hostname} or null;
-      darwin = self.darwinConfigurations.${hostname} or null;
-      hm =
-        legacyPackages.homeConfigurations."${user}@${hostname}" or legacyPackages.homeConfigurations.${user}
-          or legacyPackages.homeConfigurations.${hostname} or nixos.config.home-manager.users.${user} or null;
     };
 in
 {
