@@ -51,6 +51,7 @@
     }
   ];
 
+  programs.xcode.enable = true;
   programs.emacs-plus.enable = true;
   services.karabiner-elements.enable = false;
 
