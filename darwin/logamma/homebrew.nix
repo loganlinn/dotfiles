@@ -10,6 +10,7 @@
       "obs"
       "tailscale"
       "1password-cli"
+      "discord"
     ];
   };
 }
