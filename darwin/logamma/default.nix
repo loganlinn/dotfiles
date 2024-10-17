@@ -14,13 +14,7 @@
     ../modules/aerospace.nix
     ../modules/emacs-plus
     ../modules/karabiner-elements
-    # 1password
-    {
-      homebrew.casks = [
-        # "1password"
-        "1password-cli"
-      ];
-    }
+    ./homebrew.nix
     # postgresql
     {
       environment.systemPackages = with pkgs; [
@@ -53,16 +47,6 @@
         })
       ];
     }
-  ];
-
-  homebrew.brews = [
-    "nss" # used by mkcert
-    "terminal-notifier"
-  ];
-
-  homebrew.casks = [
-    "obs"
-    "tailscale"
   ];
 
   services.karabiner-elements.enable = false;
