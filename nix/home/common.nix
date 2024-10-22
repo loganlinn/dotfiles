@@ -120,4 +120,6 @@
   };
 
   programs.tealdeer.enable = true; # tldr command
+
+  xdg.enable = lib.mkDefault true;
 }
