@@ -52,7 +52,9 @@
   ];
 
   programs.xcode.enable = true;
+
   programs.emacs-plus.enable = true;
+
   services.karabiner-elements.enable = false;
 
   home-manager.users.logan = {
@@ -65,6 +67,7 @@
       ../../nix/home/pretty.nix
       ../../nix/home/kitty
       ../../nix/home/doom
+      ../../nix/home/yt-dlp.nix
       ../../nix/modules/programs/nixvim
     ];
 

@@ -161,8 +161,10 @@ in
             alt-8 = "workspace 8";
             alt-9 = "workspace 9";
             alt-0 = "workspace 10";
-            alt-leftSquareBracket = "workspace prev";
-            alt-rightSquareBracket = "workspace next";
+            alt-leftSquareBracket = "workspace --wrap-around prev";
+            alt-rightSquareBracket = "workspace --wrap-around next";
+            alt-shift-leftSquareBracket =  ["move-node-to-workspace --wrap-around next" "workspace --wrap-around prev"];
+            alt-shift-rightSquareBracket = ["move-node-to-workspace --wrap-around prev" "workspace --wrap-around next"];
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
             alt-shift-1 = ["move-node-to-workspace  1" "workspace  1"];
