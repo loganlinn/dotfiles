@@ -7,7 +7,7 @@
     ./fzf.nix
     ./git
     ./gpg.nix
-    ./nix-path.nix
+    # ./nix-path.nix
     ./ranger.nix
     ./readline.nix
     ./secrets.nix
