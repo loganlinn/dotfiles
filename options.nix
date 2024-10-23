@@ -178,6 +178,7 @@ in
         iosevka
         material-design-icons # https://materialdesignicons.com/
         material-icons
+        monaspace
         noto-fonts
         noto-fonts-emoji
         open-sans
