@@ -23,13 +23,6 @@
         postgresql
       ];
     }
-    # clickhouse
-    {
-      environment.systemPackages = with pkgs; [
-        clickhouse
-        clickhouse-cli
-      ];
-    }
     # atlas
     {
       homebrew.taps = [ "ariga/tap" ];
@@ -57,6 +50,14 @@
 
   services.karabiner-elements.enable = false;
 
+  homebrew.brews = [
+    "grafana"
+  ];
+
+  homebrew.casks = [
+    "clickhouse"
+  ];
+
   home-manager.users.logan = {
     imports = [
       self.homeModules.common
@@ -81,6 +82,9 @@
     programs.kitty.enable = true;
 
     home.packages = with pkgs; [
+      devenv
+      goose
+      kcat
       mkcert
       nodePackages.typescript-language-server
       nodejs

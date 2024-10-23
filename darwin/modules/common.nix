@@ -1,11 +1,17 @@
 {
+  inputs,
   config,
   pkgs,
   lib,
   ...
 }:
 let
-  inherit (lib) mkDefault optionalString;
+  inherit (lib)
+    mkDefault
+    optionalString
+    forEach
+    listToAttrs
+    ;
   inherit (config) my;
 in
 {
@@ -119,6 +125,20 @@ in
         echo >&2 "Missing '/etc/nix-darwin/flake.nix'. Consider \`ln -s /path/to/flake.nix /etc/nix-darwin/flake.nix\`."
       fi
     '';
+
+    environment.etc = listToAttrs (
+      forEach
+        [
+          "nixpkgs"
+          "nix-darwin"
+        ]
+        (input: {
+          name = "nix/inputs/${input}";
+          value = {
+            source = "${inputs.${input}}";
+          };
+        })
+    );
 
     nix.configureBuildUsers = false; # https://github.com/LnL7/nix-darwin/issues/970
     nix.gc.automatic = true;
