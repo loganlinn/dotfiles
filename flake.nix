@@ -29,8 +29,6 @@
     ## utils
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
-    devenv.url = "github:cachix/devenv";
-    devenv.inputs.nixpkgs.follows = "nixpkgs";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -102,7 +100,6 @@
 
           overlayAttrs = {
             inherit (inputs'.home-manager.packages) home-manager;
-            inherit (inputs'.devenv.packages) devenv;
             inherit (inputs'.emacs.packages) emacs-unstable;
             inherit (inputs'.agenix.packages) agenix;
           };
