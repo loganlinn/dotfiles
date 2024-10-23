@@ -14,18 +14,6 @@ fmt:
     nix fmt
     just --fmt --unstable
 
-@link path link context=source_dir() force="":
-    target="{{ clean(join(context, path)) }}"; \
-    link="{{ clean(link) }}"; \
-    if [ ! -d "$(dirname "$link")" ]; then \
-      echo "{{BOLD}}{{YELLOW}} skipped:{{RESET}} {{BLUE}}$(dirname "$link"){{RESET}} does not exist"; \
-    elif [ "$(readlink -qe "$link")" = "$(readlink -qe "$target")" ]; then \
-      echo "{{BOLD}}{{GREEN}}   found:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}"; \
-    else \
-      ln -s -T "$target" "$link"; \
-      echo "{{BOLD}}{{GREEN}} created:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}"; \
-    fi;
-
 @link-flake:
     just link-system-flake
     just link flake.nix ~/.config/home-manager/flake.nix
@@ -52,8 +40,8 @@ rebuild *args:
     nixos-rebuild -- {{ args }}
 
 # update flake inputs
-update *args:
-    nix flake update --commit-lock-file {{ args }}
+update +inputs:
+    nix flake lock --commit-lock-file {{ prepend("--update-input ", inputs) }}
 
 repl dir='.' file='repl.nix' args="":
     nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
@@ -71,6 +59,21 @@ check-flake:
 [macos]
 fix-eol:
     rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
+
+[private]
+@link path link context=source_dir():
+    #!/usr/bin/env bash
+    target="{{ clean(join(context, path)) }}"
+    link="{{ clean(link) }}"
+    if [ ! -d "$(dirname "$link")" ]; then
+      echo "{{BOLD}}{{YELLOW}} skipped:{{RESET}} {{BLUE}}$(dirname "$link"){{RESET}} does not exist";
+    elif [ "$(readlink -qe "$link")" = "$(readlink -qe "$target")" ]; then
+      echo "{{BOLD}}{{GREEN}}   found:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}";
+    else
+      ln -s -T "$target" "$link";
+      echo "{{BOLD}}{{GREEN}} created:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}";
+    fi;
+
 
 BOLD := "$(tput bold)"
 RESET := "$(tput sgr0)"
