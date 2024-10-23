@@ -44,6 +44,10 @@
     }
   ];
 
+  environment.systemPackages = with pkgs; [
+    devenv
+  ];
+
   programs.xcode.enable = true;
 
   programs.emacs-plus.enable = true;
@@ -82,7 +86,6 @@
     programs.kitty.enable = true;
 
     home.packages = with pkgs; [
-      devenv
       goose
       kcat
       mkcert
