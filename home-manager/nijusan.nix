@@ -156,7 +156,7 @@ in {
   nix.enable = true;
   nix.package = pkgs.nixUnstable;
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+    experimental-features = [ "nix-command" "flakes" ];
     warn-dirty = false;
     accept-flake-config = true;
     run-diff-hook = true;

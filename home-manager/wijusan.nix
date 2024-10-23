@@ -121,7 +121,7 @@
   nix.package = pkgs.nixVersions.stable;
   nix.settings = {
     trusted-users = [ "root" config.home.username ];
-    experimental-features = [ "nix-command" "flakes" "repl-flake" ];
+    experimental-features = [ "nix-command" "flakes" ];
     warn-dirty = false;
     accept-flake-config = true;
     run-diff-hook = true;
