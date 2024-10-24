@@ -12,17 +12,11 @@
     self.darwinModules.common
     self.darwinModules.home-manager
     ../modules/aerospace.nix
+    ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/karabiner-elements
-    ../modules/aws.nix
+    ../modules/sunbeam
     ../modules/xcode.nix
-    ./homebrew.nix
-    # postgresql
-    {
-      environment.systemPackages = with pkgs; [
-        postgresql
-      ];
-    }
     # atlas
     {
       homebrew.taps = [ "ariga/tap" ];
@@ -45,22 +39,32 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    postgresql
     devenv
+  ];
+
+  homebrew.brews = [
+    "grafana"
+    "nss" # used by mkcert
+    "terminal-notifier" # like notify-send
+  ];
+
+  homebrew.casks = [
+    # "1password" # currently installed manually
+    "1password-cli"
+    "clickhouse" # newer version than from nixpkgs
+    "discord"
+    "obs"
+    "tailscale"
   ];
 
   programs.xcode.enable = true;
 
+  programs.sunbeam.enable = true;
+
   programs.emacs-plus.enable = true;
 
   services.karabiner-elements.enable = false;
-
-  homebrew.brews = [
-    "grafana"
-  ];
-
-  homebrew.casks = [
-    "clickhouse"
-  ];
 
   home-manager.users.logan = {
     imports = [
