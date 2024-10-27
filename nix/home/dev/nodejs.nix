@@ -32,8 +32,8 @@ in
         nodejs
         yarn
         yarn-bash-completion
-        nodePackages.pnpm
-        nodePackages.typescript-language-server
+        # nodePackages.pnpm
+        # nodePackages.typescript-language-server
         # nodePackages.typescript
       ];
 

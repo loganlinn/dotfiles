@@ -73,6 +73,7 @@
       inputs.nixvim.homeManagerModules.nixvim
       ../../nix/home/dev
       ../../nix/home/dev/nodejs.nix
+      ../../nix/home/just
       ../../nix/home/pretty.nix
       ../../nix/home/kitty
       ../../nix/home/doom
@@ -93,10 +94,9 @@
       goose
       kcat
       mkcert
-      nodePackages.typescript-language-server
       nodejs
       pls
-      yarn
+      process-compose
     ];
 
     home.stateVersion = "22.11";

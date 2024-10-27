@@ -10,30 +10,16 @@
         enable = true;
         inlayHints = true;
         servers = {
-          html = {
-            enable = true;
-          };
-          lua-ls = {
-            enable = true;
-          };
-          nixd = {
-            enable = true;
-          };
-          marksman = {
-            enable = true;
-          };
-          pyright = {
-            enable = true;
-          };
-          gopls = {
-            enable = true;
-          };
-          terraformls = {
-            enable = true;
-          };
-          yamlls = {
-            enable = true;
-          };
+          html.enable = true;
+          lua_ls.enable = true;
+          nixd.enable = true;
+          marksman.enable = true;
+          pyright.enable = true;
+          ts_ls.enable = true;
+          gopls.enable = true;
+          terraformls.enable = true;
+          yamlls.enable = true;
+          # prismals.enable = true;
         };
         keymaps = {
           silent = true;

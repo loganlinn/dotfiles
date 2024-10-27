@@ -2,6 +2,7 @@
   programs.nixvim = {
     plugins.mini = {
       enable = true;
+      # mockDevIcons = true;
       modules = {
         ai = {
           n_lines = 50;

@@ -19,7 +19,9 @@
     gitlinker.enable = true;
     illuminate.enable = true; # highlight other instances of word
     nix.enable = true;
-    surround.enable = true;
+    vim-surround.enable = true;
     trouble.enable = true;
+    web-devicons.enable = true;
+    qmk.enable = false;
   };
 }
