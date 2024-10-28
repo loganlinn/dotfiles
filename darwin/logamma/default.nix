@@ -17,6 +17,10 @@
     ../modules/karabiner-elements
     ../modules/sunbeam
     ../modules/xcode.nix
+    # dbeaver
+    {
+      homebrew.casks= ["dbeaver-community"];
+    }
     # atlas
     {
       homebrew.taps = [ "ariga/tap" ];
