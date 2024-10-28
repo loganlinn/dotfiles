@@ -11,7 +11,7 @@ with lib;
 
     home.shellAliases = {
       j = "just";
-      J = "just --global";
+      J = "just --global-justfile"; # use ~/justfile
     };
 
     home.activation.checkGlobalJustfile = hm.dag.entryAfter [ "writeBoundary" ] ''
