@@ -33,11 +33,19 @@ bootstrap:
 
 [macos]
 rebuild *args:
-    darwin-rebuild -- {{ args }}
+    darwin-rebuild {{ args }}
 
 [linux]
 rebuild *args:
-    nixos-rebuild -- {{ args }}
+    nixos-rebuild {{ args }}
+
+[macos]
+switch *args:
+    darwin-rebuild switch --flake {{ source_dir() }} {{ args }}
+
+[linux]
+switch *args:
+    nixos-rebuild switch --flake {{ source_dir() }} {{ args }}
 
 # update flake inputs
 update +inputs:
@@ -46,13 +54,13 @@ update +inputs:
 repl dir='.' file='repl.nix' args="":
     nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
 
-run app:
-    nix run .#{{ app }}
+run app *args:
+    nix run .#{{ app }} {{ args }}
 
 netrc:
     op inject -i netrc.tpl -o ~/.netrc
 
-check-flake:
+flake-checker:
     nix run github:DeterminateSystems/flake-checker
 
 [linux]
