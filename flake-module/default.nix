@@ -124,18 +124,26 @@ let
           system;
       nixos = self.nixosConfigurations.${hostname} or null;
       darwin = self.darwinConfigurations.${hostname} or null;
-      os =
-        if nixos != null then
-          assert darwin == null; # shouldn't have both
-          nixos
-        else
-          darwin;
       hm =
         let
-          inherit (perSys.legacyPackages) homeConfigurations;
+          standalone =
+            let
+              homeConfigurations = perSys.legacyPackages.homeConfigurations or null;
+            in
+            homeConfigurations."${user}@${hostname}" or homeConfigurations.${user}
+              or homeConfigurations.${hostname} or null;
+          cfg = nixos.config.home-manager or darwin.config.home-manager or null;
+          opt = nixos.options.home-manager or darwin.options.home-manager or null;
         in
-        os.config.home-manager.users.${user} or homeConfigurations."${user}@${hostname}"
-          or homeConfigurations.${user} or homeConfigurations.${hostname} or null;
+        if standalone != null then
+          standalone
+        else if (cfg.users.${user} or null) != null then
+          {
+            config = cfg.users.${user};
+            options = opt.users.type.getSubOptions [ ]; # hack
+          }
+        else
+          null;
     in
     builtins
     // rec {
@@ -144,7 +152,6 @@ let
         inputs
         nixos
         darwin
-        os
         hm
         ;
       inherit (perSys) legacyPackages;
