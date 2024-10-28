@@ -73,10 +73,11 @@
       inputs.nixvim.homeManagerModules.nixvim
       ../../nix/home/dev
       ../../nix/home/dev/nodejs.nix
-      ../../nix/home/just
-      ../../nix/home/pretty.nix
-      ../../nix/home/kitty
       ../../nix/home/doom
+      ../../nix/home/just
+      ../../nix/home/kitty
+      ../../nix/home/pretty.nix
+      ../../nix/home/wezterm
       ../../nix/home/yt-dlp.nix
       ../../nix/modules/programs/nixvim
     ];
@@ -87,6 +88,8 @@
     };
 
     programs.kitty.enable = true;
+
+    programs.wezterm.enable = true;
 
     home.shellAliases.switch = "darwin-rebuild switch --flake $HOME/.dotfiles";
 
