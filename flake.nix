@@ -102,6 +102,7 @@
             inherit (inputs'.home-manager.packages) home-manager;
             inherit (inputs'.emacs.packages) emacs-unstable;
             inherit (inputs'.agenix.packages) agenix;
+            flake-root = config.flake-root.package;
           };
 
           formatter = pkgs.nixpkgs-fmt;

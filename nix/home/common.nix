@@ -1,4 +1,10 @@
-{ config, lib, pkgs, ... }:
+{
+  self,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   imports = [
@@ -47,11 +53,12 @@
     unzip
     xh # httpie alternative
     zip
+    flake-root # nb: via overlay
   ];
 
   home.sessionVariables = {
     DOCKER_SCAN_SUGGEST = "false";
-    DOTNET_CLI_TELEMETRY_OPTOUT =  "true";
+    DOTNET_CLI_TELEMETRY_OPTOUT = "true";
     DO_NOT_TRACK = "1";
     TELEMETRY_DISABLED = "1";
     DISABLE_TELEMETRY = "1";

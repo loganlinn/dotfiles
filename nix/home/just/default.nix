@@ -11,13 +11,11 @@ with lib;
 
     home.shellAliases = {
       j = "just";
-      J = "just --global-justfile"; # use ~/justfile
+      J = "just --global-justfile";
     };
 
-    home.activation.checkGlobalJustfile = hm.dag.entryAfter [ "writeBoundary" ] ''
-      if ! [ -f "$HOME/justfile" ]; then
-        run touch "$HOME/justfile"
-      fi
+    xdg.configFile."just/justfile".text = ''
+      import? '${config.home.homeDirectory}/.dotfiles'
     '';
 
     programs.zsh.initExtra = ''
