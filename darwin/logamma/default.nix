@@ -81,14 +81,14 @@
       ../../nix/modules/programs/nixvim
     ];
 
-    home.shellAliases.switch = "darwin-rebuild switch --flake $HOME/.dotfiles";
-
     programs.nixvim = {
       enable = true;
       defaultEditor = true;
     };
 
     programs.kitty.enable = true;
+
+    home.shellAliases.switch = "darwin-rebuild switch --flake $HOME/.dotfiles";
 
     home.packages = with pkgs; [
       goose
@@ -100,5 +100,7 @@
     ];
 
     home.stateVersion = "22.11";
+
+    xdg.enable = true;
   };
 }
