@@ -4,19 +4,14 @@
   pkgs,
   ...
 }:
-with lib;
 {
   config = {
     home.packages = [ pkgs.just ];
 
     home.shellAliases = {
       j = "just";
-      J = "just --global-justfile";
+      J = "just --justfile '${config.home.homeDirectory}/.dotfiles/justfile'";
     };
-
-    xdg.configFile."just/justfile".text = ''
-      import '${config.home.homeDirectory}/.dotfiles/justfile'
-    '';
 
     programs.zsh.initExtra = ''
       compdef _just j

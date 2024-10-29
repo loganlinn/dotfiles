@@ -23,9 +23,101 @@
         ];
         mappings = {
           i = {
-            "<C-g>" = {
-              __raw = "require('telescope.actions').close";
-            };
+            "<C-h>".__raw = "which_key";
+            "<C-g>".__raw = "require('telescope.actions').close";
+            "<C-u>".__raw = "false";
+          };
+        };
+      };
+      keymaps = {
+        "<leader><space>" = "find_files";
+        "<leader>:" = "command_history";
+        "<leader>'" = "resume";
+        "<leader>bb" = "buffers";
+        "<leader>bs" = "current_buffer_fuzzy_find";
+        "<leader>bt" = "current_buffer_tags";
+        "<leader>ff" = "find_files";
+        "<leader>fg" = "diagnostics";
+        "<leader>cd" = "lsp_definitions";
+        "<leader>ct" = "lsp_type_definitions";
+        "<leader>cJ" = "lsp_document_symbols";
+        "<leader>cj" = "lsp_dynamic_workspace_symbols";
+        "<leader>cr" = "lsp_references";
+        "<leader>cy" = "lsp_incoming_calls";
+        "<leader>cY" = "lsp_outgoing_calls";
+        "<leader>cx" = "quickfix";
+        "<leader>su" = "undo";
+        "<leader>sa" = {
+          action = "autocommands";
+          options = {
+            desc = "Auto Commands";
+          };
+        };
+        "<leader>sb" = {
+          action = "current_buffer_fuzzy_find";
+          options = {
+            desc = "Buffer";
+          };
+        };
+        "<leader>sc" = {
+          action = "command_history";
+          options = {
+            desc = "Command History";
+          };
+        };
+        "<leader>sC" = {
+          action = "commands";
+          options = {
+            desc = "Commands";
+          };
+        };
+        "<leader>ss" = "symbols";
+        "<leader>sD" = {
+          action = "diagnostics";
+          options = {
+            desc = "Workspace diagnostics";
+          };
+        };
+        "<leader>sh" = {
+          action = "help_tags";
+          options = {
+            desc = "Help pages";
+          };
+        };
+        "<leader>sH" = {
+          action = "highlights";
+          options = {
+            desc = "Search Highlight Groups";
+          };
+        };
+        "<leader>sk" = {
+          action = "keymaps";
+          options = {
+            desc = "Keymaps";
+          };
+        };
+        "<leader>sM" = {
+          action = "man_pages";
+          options = {
+            desc = "Man pages";
+          };
+        };
+        "<leader>sm" = {
+          action = "marks";
+          options = {
+            desc = "Jump to Mark";
+          };
+        };
+        "<leader>so" = {
+          action = "vim_options";
+          options = {
+            desc = "Options";
+          };
+        };
+        "<leader>uC" = {
+          action = "colorscheme";
+          options = {
+            desc = "Colorscheme preview";
           };
         };
       };
@@ -46,139 +138,31 @@
       }
       {
         mode = "n";
-        key = "<leader>'";
-        action = "<cmd>Telescope resume<CR>";
-        options.desc = "Resume search";
-      }
-
-      # prefix: <leader>b
-      {
-        mode = "n";
-        key = "<leader>bb";
-        action = "<cmd>lua require('telescope.builtin').buffers()<CR>";
-        options.desc = "Find Buffer";
-      }
-      {
-        mode = "n";
-        key = "<leader>bs";
-        action = "<cmd>Telescope current_buffer_fuzzy_find<CR>";
-        options.desc = "Find Buffer";
-      }
-      {
-        mode = "n";
-        key = "<leader>bt";
-        action = "<cmd>Telescope current_buffer_tags<CR>";
-        options.desc = "Find Buffer";
+        key = "<leader>sd";
+        action.__raw = ''
+          function()
+             require("telescope.builtin").live_grep({ cwd = vim.fn.expand("%:p:h") })
+            end
+        '';
+        options.desc = "Search current directory";
       }
 
       # prefix: <leader>f
       {
         mode = "n";
-        key = "<leader>ff";
-        action = "<cmd>lua require('telescope.builtin').find_files()<CR>";
-        options.desc = "Find Files";
-      }
-      {
-        mode = "n";
         key = "<leader>fd";
-        action = ''
-          <cmd>lua require('telescope.builtin').git_files({ cwd = require('telescope.utils').buffer_dir() })<CR>
+        action.__raw = ''
+          function()
+            require("telescope.builtin").find_files({ cwd = vim.fn.expand("%:p:h") })
+          end
         '';
-        options.desc = "Find Files";
+        options.desc = "Find current directory";
       }
       {
         mode = "n";
         key = "<leader>fg";
         action = "<cmd>lua require('telescope.builtin').diagnostics()<CR>";
         options.desc = "Find Diagnostics";
-      }
-
-      # prefix: <leader>c
-      {
-        mode = "n";
-        key = "<leader>cd";
-        action = ''<cmd>Telescope lsp_definitions<CR>'';
-        options.desc = "Definitions";
-      }
-      {
-        mode = "n";
-        key = "<leader>ct";
-        action = ''<cmd>Telescope lsp_type_definitions<CR>'';
-        options.desc = "Type Definitions";
-      }
-      {
-        mode = "n";
-        key = "<leader>cJ";
-        action = ''<cmd>Telescope lsp_document_symbols<CR>'';
-        options.desc = "Document symbols";
-      }
-      {
-        mode = "n";
-        key = "<leader>cj";
-        action = ''<cmd>Telescope lsp_dynamic_workspace_symbols<CR>'';
-        options.desc = "Workspace symbols";
-      }
-      {
-        mode = "n";
-        key = "<leader>cr";
-        action = ''<cmd>Telescope lsp_references<CR>'';
-        options.desc = "References";
-      }
-      {
-        mode = "n";
-        key = "<leader>cy";
-        action = ''<cmd>Telescope lsp_incoming_calls<CR>'';
-        options.desc = "Incoming calls";
-      }
-      {
-        mode = "n";
-        key = "<leader>cY";
-        action = ''<cmd>Telescope lsp_outgoing_calls<CR>'';
-        options.desc = "Incoming calls";
-      }
-      {
-        mode = "n";
-        key = "<leader>cx";
-        action = ''<cmd>Telescope quickfix<CR>'';
-        options.desc = "Quickfix";
-      }
-
-      # prefix: <leader>s
-      {
-        mode = "n";
-        key = "<leader>s/";
-        action = ''<cmd>Telescope search_history<CR>'';
-        options.desc = "Search history";
-      }
-      {
-        mode = "n";
-        key = "<leader>su";
-        action = ''<cmd>Telescope undo<CR>'';
-        options.desc = "Undo";
-      }
-      {
-        mode = "n";
-        key = "<leader>ss";
-        action = ''<cmd>Telescope symbols<CR>'';
-        options.desc = "Symbols";
-      }
-      {
-        mode = "n";
-        key = "<leader>st";
-        action = ''<cmd>Telescope tags<CR>'';
-        options.desc = "Tags";
-      }
-      {
-        mode = "n";
-        key = "<leader>sT";
-        action = ''<cmd>Telescope tagstack<CR>'';
-        options.desc = "Tagstack";
-      }
-      {
-        mode = "n";
-        key = "<leader>sm";
-        action = "<cmd>Telescope marks<CR>";
-        options.desc = "Marks";
       }
 
       # prefix: <leader>g

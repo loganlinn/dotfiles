@@ -402,4 +402,26 @@
       desc = "Previous Tab";
     };
   }
+  {
+    mode = "n";
+    key = "<leader>b[";
+    action = "<cmd>bprevious<cr>";
+    options = {
+      desc = "Previous Buffer";
+    };
+  }
+  {
+    mode = "n";
+    key = "<leader>b]";
+    action = "<cmd>bnext<cr>";
+    options = {
+      desc = "Next Buffer";
+    };
+  }
+
+  # {
+  #   mode = "n";
+  #   key = "<leader>fd"
+  #   options.desc = "Delete current file";
+  # }
 ]
