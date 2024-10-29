@@ -418,6 +418,14 @@
       desc = "Next Buffer";
     };
   }
+  {
+    mode = "n";
+    key = "<leader>gS";
+    action = "<Cmd>Gwrite<CR>";
+    options = {
+      desc = "Stage file";
+    };
+  }
 
   # {
   #   mode = "n";

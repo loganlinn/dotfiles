@@ -28,6 +28,10 @@ return function(config)
   config.font_size = 14
   config.cell_width = 1
   config.line_height = 1.1
+  config.command_palette_font_size = config.font_size
+  config.window_frame = {
+    font = config.font
+  }
 
   config.adjust_window_size_when_changing_font_size = false
   config.enable_scroll_bar = true
@@ -42,42 +46,223 @@ return function(config)
   -- config.disable_default_key_bindings = true
 
   -- config.leader = {
-  --   key = "w",
-  --   mods = "CTRL",
+  --   key = ";",
+  --   mods = "CTRL|SHIFT",
   --   timeout_milliseconds = math.maxinteger,
   -- }
-  -- config.keys = {
-  --   {
-  --     key = "h",
-  --     mods = "LEADER",
-  --     action = action.ActivatePaneDirection("Left"),
-  --   },
-  --   {
-  --     key = "j",
-  --     mods = "LEADER",
-  --     action = action.ActivatePaneDirection("Down"),
-  --   },
-  --   {
-  --     key = "k",
-  --     mods = "LEADER",
-  --     action = action.ActivatePaneDirection("Up"),
-  --   },
-  --   {
-  --     key = "l",
-  --     mods = "LEADER",
-  --     action = action.ActivatePaneDirection("Right"),
-  --   },
-  --   {
-  --     key = "-",
-  --     mods = "LEADER",
-  --     action = action.ActivatePaneDirection("Right"),
-  --   },
-  --   {
-  --     key = "Enter",
-  --     mods = "LEADER",
-  --     action = action.ActivatePaneDirection("Right"),
-  --   },
-  -- }
+  config.use_ime = false
+  config.use_dead_keys = false
+  config.debug_key_events = false
+  config.keys = {
+    {
+      key = "f",
+      mods = "SUPER",
+      action = action.Search { CaseSensitiveString = "" },
+    },
+    {
+      key = "Home",
+      mods = "CTRL|SHIFT",
+      action = action.ScrollToTop,
+    },
+    {
+      key = "PageUp",
+      mods = "CTRL|SHIFT",
+      action = action.ScrollByPage(-1),
+    },
+    {
+      key = "PageDown",
+      mods = "CTRL|SHIFT",
+      action = action.ScrollByPage(1),
+    },
+    {
+      key = "End",
+      mods = "CTRL|SHIFT",
+      action = action.ScrollToBottom,
+    },
+    -- {
+    --   key = "[",
+    --   mods = "CTRL|SHIFT",
+    --   action = action.ActivateTabRelative(-1),
+    -- },
+    -- {
+    --   key = "]",
+    --   mods = "CTRL|SHIFT",
+    --   action = action.ActivateTabRelative(1),
+    -- },
+    {
+      key = "<",
+      mods = "CTRL|SHIFT",
+      action = action.MoveTabRelative(-1),
+    },
+    {
+      key = ">",
+      mods = "CTRL|SHIFT",
+      action = action.MoveTabRelative(1),
+    },
+    {
+      key = "1",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(0),
+    },
+    {
+      key = "2",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(1),
+    },
+    {
+      key = "3",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(2),
+    },
+    {
+      key = "4",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(3),
+    },
+    {
+      key = "5",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(4),
+    },
+    {
+      key = "6",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(5),
+    },
+    {
+      key = "7",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(6),
+    },
+    {
+      key = "8",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(7),
+    },
+    {
+      key = "9",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(8),
+    },
+    {
+      key = "0",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneByIndex(9),
+    },
+    {
+      key = "h",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneDirection("Left"),
+    },
+    {
+      key = "j",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneDirection("Down"),
+    },
+    {
+      key = "k",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneDirection("Up"),
+    },
+    {
+      key = "l",
+      mods = "CTRL|SHIFT",
+      action = action.ActivatePaneDirection("Right"),
+    },
+    {
+      key = "t",
+      mods = "CTRL|SHIFT",
+      action = action.SpawnTab 'CurrentPaneDomain'
+    },
+    {
+      key = "Enter",
+      mods = "CTRL|SHIFT",
+      action = action.SplitPane {
+        direction = 'Right',
+        size = { Percent = 50 },
+      },
+    },
+    {
+      key = "w",
+      mods = "CTRL|SHIFT",
+      action = action.CloseCurrentPane { confirm = false },
+    },
+    {
+      key = "p",
+      mods = "CTRL|SHIFT",
+      action = action.ActivateCommandPalette,
+    },
+    {
+      key = "Semicolon",
+      mods = "CTRL|SHIFT",
+      action = action.ShowLauncher,
+    },
+    {
+      key = "c",
+      mods = "CTRL|SHIFT",
+      action = action.CopyTo "Clipboard",
+    },
+    {
+      key = "v",
+      mods = "CTRL|SHIFT",
+      action = action.PasteFrom "Clipboard",
+    },
+    {
+      key = "x",
+      mods = "CTRL|SHIFT",
+      action = action.ActivateCopyMode,
+    },
+    {
+      key = "u",
+      mods = "CTRL|SHIFT",
+      action = action.CharSelect,
+    },
+    {
+      key = "Space",
+      mods = "CTRL|SHIFT",
+      action = action.QuickSelect,
+    },
+    -- {
+    --   key = "Space",
+    --   mods = "CTRL|SHIFT|ALT",
+    --   action = action.QuickSelectArgs {},
+    -- },
+    {
+      key = "f",
+      mods = "CTRL|SHIFT",
+      action = action.RotatePanes 'Clockwise'
+    },
+    {
+      key = "b",
+      mods = "CTRL|SHIFT",
+      action = action.RotatePanes 'CounterClockwise'
+    },
+    {
+      key = 'h',
+      mods = 'CTRL|SHIFT|ALT',
+      action = action.AdjustPaneSize { 'Left', 5 },
+    },
+    {
+      key = 'j',
+      mods = 'CTRL|SHIFT|ALT',
+      action = action.AdjustPaneSize { 'Down', 5 },
+    },
+    {
+      key = 'k',
+      mods = 'CTRL|SHIFT|ALT',
+      action = action.AdjustPaneSize { 'Up', 5 },
+    },
+    {
+      key = 'l',
+      mods = 'CTRL|SHIFT|ALT',
+      action = action.AdjustPaneSize { 'Right', 5 },
+    },
+    {
+      key = 'z',
+      mods = 'CTRL|SHIFT',
+      action = action.TogglePaneZoomState,
+    },
+  }
 
   -- config.launch_menu = {
   --   {
