@@ -19,7 +19,7 @@
     ../modules/xcode.nix
     # dbeaver
     {
-      homebrew.casks= ["dbeaver-community"];
+      homebrew.casks = [ "dbeaver-community" ];
     }
     # atlas
     {

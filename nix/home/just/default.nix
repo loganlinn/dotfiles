@@ -15,7 +15,7 @@ with lib;
     };
 
     xdg.configFile."just/justfile".text = ''
-      import? '${config.home.homeDirectory}/.dotfiles'
+      import '${config.home.homeDirectory}/.dotfiles/justfile'
     '';
 
     programs.zsh.initExtra = ''
