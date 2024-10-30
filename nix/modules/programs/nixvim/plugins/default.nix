@@ -19,9 +19,33 @@
     gitlinker.enable = true;
     illuminate.enable = true; # highlight other instances of word
     nix.enable = true;
-    vim-surround.enable = true;
-    trouble.enable = true;
-    web-devicons.enable = true;
     qmk.enable = false;
+    trouble.enable = true;
+    vim-surround.enable = true;
+    web-devicons.enable = true;
+
+    project-nvim = {
+      enable = true;
+      enableTelescope = true;
+      settings = {
+        detection_methods = [
+          "lsp"
+          "pattern"
+        ];
+        patterns = [
+          ".git"
+          "_darcs"
+          ".hg"
+          ".bzr"
+          ".svn"
+          "Makefile"
+          "package.json"
+          "deps.edn"
+        ];
+        scope_chdir = "tab";
+        show_hidden = true;
+        silent_chdir = false;
+      };
+    };
   };
 }
