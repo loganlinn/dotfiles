@@ -1,28 +1,33 @@
 local wezterm = require 'wezterm'
-
-local info, warn, error = wezterm.log_info, wezterm.log_warn, wezterm.log_error
-local action = wezterm.action
+local act = wezterm.action
 local mux = wezterm.mux
 
 -- local starts_with = function(str, start) return str:sub(1, #start) == start end
 -- local ends_with = function(str, ending) return ending == "" or str:sub(- #ending) == ending end
---
 -- local is_darwin = ends_with(wezterm.target_triple, "apple-darwin")
 -- local is_linux = ends_with(wezterm.target_triple, "linux-gnu")
 -- local is_windows = ends_with(wezterm.target_triple, "windows-msvc")
 
 return function(config)
-  info 'configuring...'
-
-  -- config:set_strict_mode(true)
+  config:set_strict_mode(true)
 
   config.font = wezterm.font_with_fallback {
-    "Victor Mono",
+    {
+      family = "Victor Mono",
+      weight = "Regular",
+      harfbuzz_features = {
+        -- "ss01", -- Single-storey a
+        "ss02", -- Slashed zero, variant 1
+        -- "ss03", -- Slashed zero, variant 2
+        -- "ss04", -- Slashed zero, variant 3
+        -- "ss05", -- Slashed zero, variant 4
+        -- "ss06", -- Slashed seven
+        "ss07", -- Straighter 6 and 9
+        -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
+      }
+    },
     "Cascadia Code",
-    "Fira Code",
-    "DejaVu Sans Mono",
     "JetBrains Mono",
-    "PT Mono",
     "Courier New",
   }
   config.font_size = 14
@@ -32,6 +37,7 @@ return function(config)
   config.window_frame = {
     font = config.font
   }
+  config.bold_brightens_ansi_colors = "BrightAndBold";
 
   config.adjust_window_size_when_changing_font_size = false
   config.enable_scroll_bar = true
@@ -57,210 +63,254 @@ return function(config)
     {
       key = "f",
       mods = "SUPER",
-      action = action.Search { CaseSensitiveString = "" },
+      action = act.Search { CaseSensitiveString = "" },
     },
     {
       key = "Home",
       mods = "CTRL|SHIFT",
-      action = action.ScrollToTop,
+      action = act.ScrollToTop,
     },
     {
       key = "PageUp",
       mods = "CTRL|SHIFT",
-      action = action.ScrollByPage(-1),
+      action = act.ScrollByPage(-1),
     },
     {
       key = "PageDown",
       mods = "CTRL|SHIFT",
-      action = action.ScrollByPage(1),
+      action = act.ScrollByPage(1),
     },
     {
       key = "End",
       mods = "CTRL|SHIFT",
-      action = action.ScrollToBottom,
+      action = act.ScrollToBottom,
     },
     -- {
     --   key = "[",
     --   mods = "CTRL|SHIFT",
-    --   action = action.ActivateTabRelative(-1),
+    --   action = act.ActivateTabRelative(-1),
     -- },
     -- {
     --   key = "]",
     --   mods = "CTRL|SHIFT",
-    --   action = action.ActivateTabRelative(1),
+    --   action = act.ActivateTabRelative(1),
     -- },
     {
       key = "<",
       mods = "CTRL|SHIFT",
-      action = action.MoveTabRelative(-1),
+      action = act.MoveTabRelative(-1),
     },
     {
       key = ">",
       mods = "CTRL|SHIFT",
-      action = action.MoveTabRelative(1),
+      action = act.MoveTabRelative(1),
     },
     {
       key = "1",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(0),
+      action = act.ActivatePaneByIndex(0),
     },
     {
       key = "2",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(1),
+      action = act.ActivatePaneByIndex(1),
     },
     {
       key = "3",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(2),
+      action = act.ActivatePaneByIndex(2),
     },
     {
       key = "4",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(3),
+      action = act.ActivatePaneByIndex(3),
     },
     {
       key = "5",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(4),
+      action = act.ActivatePaneByIndex(4),
     },
     {
       key = "6",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(5),
+      action = act.ActivatePaneByIndex(5),
     },
     {
       key = "7",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(6),
+      action = act.ActivatePaneByIndex(6),
     },
     {
       key = "8",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(7),
+      action = act.ActivatePaneByIndex(7),
     },
     {
       key = "9",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(8),
+      action = act.ActivatePaneByIndex(8),
     },
     {
       key = "0",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneByIndex(9),
+      action = act.ActivatePaneByIndex(9),
     },
     {
       key = "h",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneDirection("Left"),
+      action = act.ActivatePaneDirection("Left"),
     },
     {
       key = "j",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneDirection("Down"),
+      action = act.ActivatePaneDirection("Down"),
     },
     {
       key = "k",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneDirection("Up"),
+      action = act.ActivatePaneDirection("Up"),
     },
     {
       key = "l",
       mods = "CTRL|SHIFT",
-      action = action.ActivatePaneDirection("Right"),
+      action = act.ActivatePaneDirection("Right"),
     },
     {
       key = "t",
       mods = "CTRL|SHIFT",
-      action = action.SpawnTab 'CurrentPaneDomain'
+      action = act.SpawnTab 'CurrentPaneDomain'
     },
     {
       key = "Enter",
       mods = "CTRL|SHIFT",
-      action = action.SplitPane {
-        direction = 'Right',
-        size = { Percent = 50 },
-      },
+      action = act.SplitHorizontal { domain = "CurrentPaneDomain" },
+    },
+    {
+      key = "Enter",
+      mods = "CTRL|SHIFT|SUPER",
+      action = act.SplitVertical { domain = "CurrentPaneDomain" },
     },
     {
       key = "w",
       mods = "CTRL|SHIFT",
-      action = action.CloseCurrentPane { confirm = false },
+      action = act.CloseCurrentPane { confirm = false },
     },
     {
       key = "p",
       mods = "CTRL|SHIFT",
-      action = action.ActivateCommandPalette,
+      action = act.ActivateCommandPalette,
     },
     {
       key = "Semicolon",
       mods = "CTRL|SHIFT",
-      action = action.ShowLauncher,
+      action = act.ShowLauncher,
     },
     {
       key = "c",
       mods = "CTRL|SHIFT",
-      action = action.CopyTo "Clipboard",
+      action = act.CopyTo "Clipboard",
     },
     {
       key = "v",
       mods = "CTRL|SHIFT",
-      action = action.PasteFrom "Clipboard",
+      action = act.PasteFrom "Clipboard",
     },
     {
       key = "x",
       mods = "CTRL|SHIFT",
-      action = action.ActivateCopyMode,
+      action = act.ActivateCopyMode,
     },
     {
       key = "u",
       mods = "CTRL|SHIFT",
-      action = action.CharSelect,
+      action = act.CharSelect,
     },
     {
       key = "Space",
       mods = "CTRL|SHIFT",
-      action = action.QuickSelect,
+      action = act.QuickSelect,
     },
     -- {
     --   key = "Space",
     --   mods = "CTRL|SHIFT|ALT",
-    --   action = action.QuickSelectArgs {},
+    --   action = act.QuickSelectArgs {},
     -- },
     {
       key = "f",
       mods = "CTRL|SHIFT",
-      action = action.RotatePanes 'Clockwise'
+      action = act.RotatePanes 'Clockwise'
     },
     {
       key = "b",
       mods = "CTRL|SHIFT",
-      action = action.RotatePanes 'CounterClockwise'
+      action = act.RotatePanes 'CounterClockwise'
     },
     {
       key = 'h',
       mods = 'CTRL|SHIFT|ALT',
-      action = action.AdjustPaneSize { 'Left', 5 },
+      action = act.AdjustPaneSize { 'Left', 5 },
     },
     {
       key = 'j',
       mods = 'CTRL|SHIFT|ALT',
-      action = action.AdjustPaneSize { 'Down', 5 },
+      action = act.AdjustPaneSize { 'Down', 5 },
     },
     {
       key = 'k',
       mods = 'CTRL|SHIFT|ALT',
-      action = action.AdjustPaneSize { 'Up', 5 },
+      action = act.AdjustPaneSize { 'Up', 5 },
     },
     {
       key = 'l',
       mods = 'CTRL|SHIFT|ALT',
-      action = action.AdjustPaneSize { 'Right', 5 },
+      action = act.AdjustPaneSize { 'Right', 5 },
     },
     {
       key = 'z',
       mods = 'CTRL|SHIFT',
-      action = action.TogglePaneZoomState,
+      action = act.TogglePaneZoomState,
+    },
+  }
+
+  config.key_tables = {
+    -- Defines the keys that are active in our resize-pane mode.
+    -- Since we're likely to want to make multiple adjustments,
+    -- we made the activation one_shot=false. We therefore need
+    -- to define a key assignment for getting out of this mode.
+    -- 'resize_pane' here corresponds to the name="resize_pane" in
+    -- the key assignments above.
+    resize_pane = {
+      { key = 'LeftArrow',  action = act.AdjustPaneSize { 'Left', 1 } },
+      { key = 'h',          action = act.AdjustPaneSize { 'Left', 1 } },
+
+      { key = 'RightArrow', action = act.AdjustPaneSize { 'Right', 1 } },
+      { key = 'l',          action = act.AdjustPaneSize { 'Right', 1 } },
+
+      { key = 'UpArrow',    action = act.AdjustPaneSize { 'Up', 1 } },
+      { key = 'k',          action = act.AdjustPaneSize { 'Up', 1 } },
+
+      { key = 'DownArrow',  action = act.AdjustPaneSize { 'Down', 1 } },
+      { key = 'j',          action = act.AdjustPaneSize { 'Down', 1 } },
+
+      -- Cancel the mode by pressing escape
+      { key = 'Escape',     action = 'PopKeyTable' },
+    },
+
+    -- Defines the keys that are active in our activate-pane mode.
+    -- 'activate_pane' here corresponds to the name="activate_pane" in
+    -- the key assignments above.
+    activate_pane = {
+      { key = 'LeftArrow',  action = act.ActivatePaneDirection 'Left' },
+      { key = 'h',          action = act.ActivatePaneDirection 'Left' },
+
+      { key = 'RightArrow', action = act.ActivatePaneDirection 'Right' },
+      { key = 'l',          action = act.ActivatePaneDirection 'Right' },
+
+      { key = 'UpArrow',    action = act.ActivatePaneDirection 'Up' },
+      { key = 'k',          action = act.ActivatePaneDirection 'Up' },
+
+      { key = 'DownArrow',  action = act.ActivatePaneDirection 'Down' },
+      { key = 'j',          action = act.ActivatePaneDirection 'Down' },
     },
   }
 
