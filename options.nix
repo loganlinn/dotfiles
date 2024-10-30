@@ -30,6 +30,8 @@ in
     homepage = mkOpt str "https://loganlinn.com";
     github.username = mkOpt str "loganlinn";
 
+    environment.variables = mkOpt (attrsOf str) { };
+
     user = {
       name = mkOpt str "logan";
       description = mkOpt str "Logan Linn";
@@ -103,108 +105,117 @@ in
   };
 
   config = {
-    my.pubkeys.ssh.ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN ${cfg.email}";
-    my.pubkeys.ssh.rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/IGTiUT57yPpsCHcSo0FUUBY7uTZL87vdr7EqE+fS+6FQFZbhXuzy63Y13+ssN1Cbwy7hE3I4u0HgaXnhe8Ogr+buvBYqcSCajbN8j2vVVy/WUuGRPKyczk0bZpL1V7LUt98jBMnctirVeY0YoBgEk9POWHZ4NTTK0Bsr2WAwpWUkdYPcHpEIW+ABNX4YqxZdq7ETMy18ELfE/IJz04/+9rGHvpsDLL2SXDJCj+hxofW28SaqncOv/GvTN9gpkQGpUfHbxMyHz8Xj3faiguCN70dFEUb1FVL5ilxePSp/hOYx039idGT+K5oojutT6gH8p1K2uQ12rO+auvmKVSrh ${cfg.email}";
-    my.user = {
-      openssh.authorizedKeys.keys = attrValues cfg.pubkeys.ssh;
-      packages = with pkgs; [
-        curl
-        jq
-        fd
-        ripgrep
-        gh
-      ];
-    };
+    my = {
+      pubkeys.ssh.ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN ${cfg.email}";
 
-    # my.userDirs = mkDefault {
-    #   desktop = "Desktop";
-    #   documents = "Documents";
-    #   download = "Downloads";
-    #   music = "Music";
-    #   pictures = "Pictures";
-    #   publicShare = "Public";
-    #   videos = "Videos";
-    #   screenshots = "Screenshots";
-    #   code = "src";
-    #   dotfiles = ".dotfiles";
-    # };
+      pubkeys.ssh.rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/IGTiUT57yPpsCHcSo0FUUBY7uTZL87vdr7EqE+fS+6FQFZbhXuzy63Y13+ssN1Cbwy7hE3I4u0HgaXnhe8Ogr+buvBYqcSCajbN8j2vVVy/WUuGRPKyczk0bZpL1V7LUt98jBMnctirVeY0YoBgEk9POWHZ4NTTK0Bsr2WAwpWUkdYPcHpEIW+ABNX4YqxZdq7ETMy18ELfE/IJz04/+9rGHvpsDLL2SXDJCj+hxofW28SaqncOv/GvTN9gpkQGpUfHbxMyHz8Xj3faiguCN70dFEUb1FVL5ilxePSp/hOYx039idGT+K5oojutT6gH8p1K2uQ12rO+auvmKVSrh ${cfg.email}";
 
-    my.fonts = {
-      serif = mkDefault {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Serif";
-        size = mkDefault (if isLinux then 10 else 12);
+      user = {
+        openssh.authorizedKeys.keys = attrValues cfg.pubkeys.ssh;
+        packages = with pkgs; [
+          curl
+          jq
+          fd
+          ripgrep
+          gh
+        ];
       };
 
-      sans = mkDefault {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Sans";
-        size = mkDefault (if isLinux then 10 else 12);
+      environment.variables = {
+        DISABLE_TELEMETRY = "1";
+        DOCKER_SCAN_SUGGEST = "false";
+        DOTNET_CLI_TELEMETRY_OPTOUT = "true";
+        DO_NOT_TRACK = "1";
+        FLAKE_CHECKER_NO_TELEMETRY = "true";
+        NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
+        TELEMETRY_DISABLED = "1";
       };
 
-      mono = mkDefault {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Sans Mono";
-        size = mkDefault (if isLinux then 10 else 12);
+      # userDirs = mkDefault {
+      #   desktop = "Desktop";
+      #   documents = "Documents";
+      #   download = "Downloads";
+      #   music = "Music";
+      #   pictures = "Pictures";
+      #   publicShare = "Public";
+      #   videos = "Videos";
+      #   screenshots = "Screenshots";
+      #   code = "src";
+      #   dotfiles = ".dotfiles";
+      # };
+
+      fonts = {
+        serif = mkDefault {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Serif";
+          size = mkDefault (if isLinux then 10 else 12);
+        };
+
+        sans = mkDefault {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans";
+          size = mkDefault (if isLinux then 10 else 12);
+        };
+
+        mono = mkDefault {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans Mono";
+          size = mkDefault (if isLinux then 10 else 12);
+        };
+
+        terminal = mkDefault {
+          package = cfg.fonts.nerdfonts.package;
+          name = "FiraCode Nerd Font Light";
+          size = mkDefault (if isLinux then 11 else 12);
+        };
+
+        nerdfonts.fonts = mkDefault [
+          "DejaVuSansMono"
+          "FiraCode"
+          "FiraMono"
+          "Iosevka"
+          "JetBrainsMono"
+          "NerdFontsSymbolsOnly"
+          "VictorMono"
+        ];
+
+        packages = with pkgs; [
+          cfg.fonts.serif.package
+          cfg.fonts.sans.package
+          cfg.fonts.mono.package
+          cfg.fonts.terminal.package
+          cfg.fonts.nerdfonts.package
+          dejavu_fonts
+          cascadia-code
+          fira # sans
+          fira-code
+          fira-code-symbols
+          iosevka
+          material-design-icons # https://materialdesignicons.com/
+          material-icons
+          monaspace
+          noto-fonts
+          noto-fonts-emoji
+          open-sans
+          recursive
+          victor-mono
+        ];
       };
 
-      terminal = mkDefault {
-        package = cfg.fonts.nerdfonts.package;
-        name = "FiraCode Nerd Font Light";
-        size = mkDefault (if isLinux then 11 else 12);
+      nix.settings = {
+        warn-dirty = mkDefault false;
+        show-trace = mkDefault true;
+        trusted-users = [ cfg.user.name ];
+        trusted-substituters = [
+          "https://loganlinn.cachix.org"
+          "https://nix-community.cachix.org"
+        ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+        auto-optimise-store = true;
       };
-
-      nerdfonts.fonts = mkDefault [
-        "DejaVuSansMono"
-        "FiraCode"
-        "FiraMono"
-        "Iosevka"
-        "JetBrainsMono"
-        "NerdFontsSymbolsOnly"
-        "VictorMono"
-      ];
-
-      packages = with pkgs; [
-        cfg.fonts.serif.package
-        cfg.fonts.sans.package
-        cfg.fonts.mono.package
-        cfg.fonts.terminal.package
-        cfg.fonts.nerdfonts.package
-        dejavu_fonts
-        cascadia-code
-        fira # sans
-        fira-code
-        fira-code-symbols
-        iosevka
-        material-design-icons # https://materialdesignicons.com/
-        material-icons
-        monaspace
-        noto-fonts
-        noto-fonts-emoji
-        open-sans
-        recursive
-        victor-mono
-      ];
-    };
-
-    my.nix.registry = {
-      nixpkgs.flake = inputs.nixpkgs;
-      home-manager.flake = inputs.home-manager;
-    };
-
-    my.nix.settings = {
-      warn-dirty = mkDefault false;
-      show-trace = mkDefault true;
-      trusted-users = [ cfg.user.name ];
-      trusted-substituters = [
-        "https://loganlinn.cachix.org"
-        "https://nix-community.cachix.org"
-      ];
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      auto-optimise-store = true;
     };
   };
 }

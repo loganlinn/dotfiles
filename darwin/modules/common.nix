@@ -50,6 +50,8 @@ in
 
     fonts.packages = my.fonts.packages;
 
+    environment.variables = my.environment.variables;
+
     environment.systemPackages = with pkgs; [
       pinentry_mac
     ];

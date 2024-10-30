@@ -13,6 +13,7 @@ let
   systemdSupported = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
   audioEnabled = config.hardware.pulseaudio.enable || config.services.pipewire.enable;
   graphicsEnabled = config.services.xserver.enable || config.services.displayManager.enable;
+  my = config.my;
 in
 {
   imports = [
@@ -21,14 +22,7 @@ in
   ];
 
   config = {
-    networking.networkmanager.enable = mkDefault true;
-    # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
-    # (the default) this is the recommended approach. When using systemd-networkd it's
-    # still possible to use this option, but it's recommended to use it in conjunction
-    # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
-    networking.useDHCP = lib.mkDefault true;
-
-    users.users.${config.my.user.name} = {
+    users.users.${my.user.name} = {
       inherit (my.user)
         description
         shell
@@ -36,7 +30,7 @@ in
         packages
         ;
 
-      home = mkDefault "/home/${config.my.user.name}";
+      home = mkDefault "/home/${my.user.name}";
       isNormalUser = true;
       createHome = mkDefault true;
       extraGroups =
@@ -52,6 +46,13 @@ in
         ++ optional config.virtualisation.libvirtd.enable "libvirtd"
         ++ optional config.services.davfs2.enable "${config.services.davfs2.davGroup}";
     };
+
+    networking.networkmanager.enable = mkDefault true;
+    # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
+    # (the default) this is the recommended approach. When using systemd-networkd it's
+    # still possible to use this option, but it's recommended to use it in conjunction
+    # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
+    networking.useDHCP = lib.mkDefault true;
 
     services.openssh.enable = mkDefault true;
     services.openssh.startWhenNeeded = mkDefault true;
@@ -89,6 +90,7 @@ in
     programs.zsh.syntaxHighlighting.enable = mkDefault true;
     programs.zsh.histSize = mkDefault 10000;
 
+    environment.variables = my.environment.variables;
     environment.homeBinInPath = mkDefault true; # Add ~/bin to PATH
     environment.localBinInPath = mkDefault true; # Add ~/.local/bin to PATH
     environment.systemPackages =
@@ -138,13 +140,13 @@ in
 
     nix.enable = true;
     nix.package = pkgs.nixFlakes;
-    nix.settings = config.my.nix.settings;
+    nix.settings = my.nix.settings;
     nix.gc.automatic = mkDefault true;
     nix.nixPath = [
       "nixpkgs=${inputs.nixpkgs}"
       "home-manager=${inputs.home-manager}"
     ];
-    nix.sshServe.keys = attrValues config.my.pubkeys.ssh;
+    nix.sshServe.keys = attrValues my.pubkeys.ssh;
 
     nixpkgs.config.allowUnfree = true;
   };

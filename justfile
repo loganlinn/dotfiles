@@ -61,7 +61,7 @@ netrc:
     op inject -i netrc.tpl -o ~/.netrc
 
 flake-checker:
-    nix run github:DeterminateSystems/flake-checker
+    env FLAKE_CHECKER_NO_TELEMETRY=true nix run github:DeterminateSystems/flake-checker
 
 [linux]
 [macos]
