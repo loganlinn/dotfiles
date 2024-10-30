@@ -19,25 +19,48 @@ let
     exec-and-forget kitty sh -c ${lib.escapeShellArg cmd}"; read -p 'Press any key to close'"
   '';
 
-
 in
 {
   imports = [
     ./sketchybar.nix
-    {
-      # a.k.a JankyBorders
-      homebrew.taps = [ "FelixKratz/formulae" ];
-      homebrew.brews = [ "FelixKratz/formulae/borders" ];
-    }
   ];
 
   options = {
     programs.aerospace = {
       enable = mkEnableOption "aerospace window manager";
 
+      editor = mkOption {
+        type = types.str;
+        default = "open -a TextEdit";
+      };
+
+      terminal = mkOption {
+        type = types.str;
+        default = "open -a Terminal";
+      };
+
+      borders = mkOption {
+        type = types.submodule {
+          options = {
+            enable = mkEnableOption "JankyBorders";
+            settings = mkOption {
+              type = types.attrs;
+              default = {
+                active_color = "0xffe1e3e4";
+                inactive_color = "0xff494d64";
+                width = 5.0;
+              };
+            };
+          };
+        };
+        default = {
+          enable = cfg.enable;
+        };
+      };
+
       extraPackages = mkOption {
         type = types.listOf types.package;
-        default = [];
+        default = [ ];
       };
 
       settings = mkOption {
@@ -46,10 +69,13 @@ in
         };
 
         default = {
-          after-startup-command = [
-            # use gh:FelixKratz/JankyBorders to higlight focus
-            "exec-and-forget ${config.homebrew.brewPrefix}/borders"
-          ];
+          after-startup-command = optional cfg.borders.enable "exec-and-forget ${config.homebrew.brewPrefix}/borders ${
+            # https://github.com/FelixKratz/JankyBorders/wiki/Man-Page#options
+            cli.toGNUCommandLineShell {
+              mkBool = key: val: [ "--${key}=${if v then "on" else "off"}" ];
+              mkList = key: vals: [ "--${key}=${concatStringsSep "," vals}" ];
+            } cfg.borders.settings
+          }";
 
           # Start AeroSpace at login
           start-at-login = true;
@@ -115,7 +141,7 @@ in
 
           # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
           mode.main.binding = {
-            alt-enter = "exec-and-forget open -a Kitty.app";
+            alt-enter = "exec-and-forget ${cfg.terminal}";
             alt-cmd-enter = "exec-and-forget open -n -a Kitty.app";
             alt-shift-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Default";
             alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
@@ -163,26 +189,61 @@ in
             alt-0 = "workspace 10";
             alt-leftSquareBracket = "workspace --wrap-around prev";
             alt-rightSquareBracket = "workspace --wrap-around next";
-            alt-shift-leftSquareBracket =  ["move-node-to-workspace --wrap-around next" "workspace --wrap-around prev"];
-            alt-shift-rightSquareBracket = ["move-node-to-workspace --wrap-around prev" "workspace --wrap-around next"];
+            alt-shift-leftSquareBracket = [
+              "move-node-to-workspace --wrap-around next"
+              "workspace --wrap-around prev"
+            ];
+            alt-shift-rightSquareBracket = [
+              "move-node-to-workspace --wrap-around prev"
+              "workspace --wrap-around next"
+            ];
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
-            alt-shift-1 = ["move-node-to-workspace  1" "workspace  1"];
-            alt-shift-2 = ["move-node-to-workspace  2" "workspace  2"];
-            alt-shift-3 = ["move-node-to-workspace  3" "workspace  3"];
-            alt-shift-4 = ["move-node-to-workspace  4" "workspace  4"];
-            alt-shift-5 = ["move-node-to-workspace  5" "workspace  5"];
-            alt-shift-6 = ["move-node-to-workspace  6" "workspace  6"];
-            alt-shift-7 = ["move-node-to-workspace  7" "workspace  7"];
-            alt-shift-8 = ["move-node-to-workspace  8" "workspace  8"];
-            alt-shift-9 = ["move-node-to-workspace  9" "workspace  9"];
-            alt-shift-0 = ["move-node-to-workspace 10" "workspace 10"];
+            alt-shift-1 = [
+              "move-node-to-workspace  1"
+              "workspace  1"
+            ];
+            alt-shift-2 = [
+              "move-node-to-workspace  2"
+              "workspace  2"
+            ];
+            alt-shift-3 = [
+              "move-node-to-workspace  3"
+              "workspace  3"
+            ];
+            alt-shift-4 = [
+              "move-node-to-workspace  4"
+              "workspace  4"
+            ];
+            alt-shift-5 = [
+              "move-node-to-workspace  5"
+              "workspace  5"
+            ];
+            alt-shift-6 = [
+              "move-node-to-workspace  6"
+              "workspace  6"
+            ];
+            alt-shift-7 = [
+              "move-node-to-workspace  7"
+              "workspace  7"
+            ];
+            alt-shift-8 = [
+              "move-node-to-workspace  8"
+              "workspace  8"
+            ];
+            alt-shift-9 = [
+              "move-node-to-workspace  9"
+              "workspace  9"
+            ];
+            alt-shift-0 = [
+              "move-node-to-workspace 10"
+              "workspace 10"
+            ];
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
             alt-tab = "workspace-back-and-forth";
             # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
             alt-shift-tab = "move-workspace-to-monitor --wrap-around next";
-
 
             alt-shift-f = "layout floating tiling";
             alt-ctrl-f = "fullscreen";
@@ -252,13 +313,13 @@ in
 
   config = {
     homebrew = {
-      taps = [ "nikitabobko/tap" ];
+      taps = [ "nikitabobko/tap" ] ++ optional cfg.borders.enable "FelixKratz/formulae";
       casks = [ "nikitabobko/tap/aerospace" ];
+      brews = optional cfg.borders.enable "FelixKratz/formulae/borders";
     };
 
     home-manager.users.${config.my.user.name} = {
       xdg.configFile."aerospace/aerospace.toml".source = configFile;
-
       home.packages = cfg.extraPackages;
     };
 

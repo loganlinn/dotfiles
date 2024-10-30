@@ -62,6 +62,12 @@
     "tailscale"
   ];
 
+  programs.aerospace = {
+    enable = true;
+    terminal= "open -a wezterm";
+    editor = "open -a emacs";
+  };
+
   programs.xcode.enable = true;
 
   programs.sunbeam.enable = true;
