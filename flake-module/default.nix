@@ -246,4 +246,9 @@ in
       }
     );
   };
+
+  # my nix repl depends on attrs exposed by flake-parts's debug option.
+  # https://flake.parts/debug.html
+  # https://flake.parts/options/flake-parts.html#opt-debug
+  flake.debug = true;
 }

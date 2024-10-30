@@ -1,4 +1,12 @@
-{ self, inputs, config, pkgs, lib, nix-colors, ... }:
+{
+  self,
+  inputs,
+  config,
+  pkgs,
+  lib,
+  nix-colors,
+  ...
+}:
 
 {
   imports = [
@@ -51,19 +59,19 @@
 
   programs.zsh = {
     dirHashes = {
-       win = "/mnt/c/Users/logan"; # i.e. wslpath "$(wslvar HOMEPATH)"
-       AppData = "/mnt/c/Users/logan/AppData/Roaming"; # i.e. wslpath "$(wslvar AppData)" 
+      win = "/mnt/c/Users/logan"; # i.e. wslpath "$(wslvar HOMEPATH)"
+      AppData = "/mnt/c/Users/logan/AppData/Roaming"; # i.e. wslpath "$(wslvar AppData)"
     };
 
-  envExtra = ''
-    # Ensure environment is configured with ~/.nix-profile,
-    # otherwise $PATH et. al. aren't same for shell interactive modes.
-    # https://github.com/NixOS/nix/issues/2587
-    # https://github.com/NixOS/nix/issues/4376
-    if [ -e /etc/profile.d/nix.sh ]; then
-      . /etc/profile.d/nix.sh
-    fi
-  '';
+    envExtra = ''
+      # Ensure environment is configured with ~/.nix-profile,
+      # otherwise $PATH et. al. aren't same for shell interactive modes.
+      # https://github.com/NixOS/nix/issues/2587
+      # https://github.com/NixOS/nix/issues/4376
+      if [ -e /etc/profile.d/nix.sh ]; then
+        . /etc/profile.d/nix.sh
+      fi
+    '';
   };
 
   programs.xplr = {
@@ -95,7 +103,7 @@
   xdg.mimeApps.enable = true;
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-  xdg.portal.config.common.default = ["*"];
+  xdg.portal.config.common.default = [ "*" ];
 
   home.packages = with pkgs; [
     wslu
@@ -103,7 +111,6 @@
     micromamba
     socat # used with npiperelay.exe for access to named pipes in WSL
     nettools # i.e. `ifconfig` (`ip`, you're cool too)
-    git-repo-manager
     wl-clipboard
     tomb
   ];
@@ -120,8 +127,14 @@
   nix.enable = true;
   nix.package = pkgs.nixVersions.stable;
   nix.settings = {
-    trusted-users = [ "root" config.home.username ];
-    experimental-features = [ "nix-command" "flakes" ];
+    trusted-users = [
+      "root"
+      config.home.username
+    ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     warn-dirty = false;
     accept-flake-config = true;
     run-diff-hook = true;
