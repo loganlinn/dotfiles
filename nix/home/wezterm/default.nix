@@ -22,17 +22,15 @@ in
     enableBashIntegration = mkDefault true;
     enableZshIntegration = mkDefault true;
     extraConfig = ''
-      wezterm.add_to_config_reload_watch_list(wezterm.config_dir)
-
       local config = wezterm.config_builder()
 
-      -- https://github.com/wez/wezterm/issues/6005
-      config.front_end = "WebGpu"
-
+      config.front_end = "WebGpu" -- https://github.com/wez/wezterm/issues/6005
       config.color_scheme_dirs = { '${dracula}' }
       config.color_scheme = "Dracula"
 
-      return require('config')(config) or config
+      require('config')(config)
+
+      return config
     '';
   };
 

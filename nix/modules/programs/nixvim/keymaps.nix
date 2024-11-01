@@ -121,7 +121,7 @@
   {
     mode = "n";
     key = "<leader>ur";
-    action = "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>";
+    action = "<cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>";
     options = {
       desc = "Redraw / Clear hlsearch / Diff Update";
     };
@@ -426,7 +426,6 @@
       desc = "Stage file";
     };
   }
-
   # {
   #   mode = "n";
   #   key = "<leader>fd"

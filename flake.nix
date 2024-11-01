@@ -153,5 +153,7 @@
           ./darwin/logamma
         ];
       };
+
+      debug = true;
     };
 }

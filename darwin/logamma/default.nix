@@ -40,6 +40,14 @@
         })
       ];
     }
+    # terraform 
+    {
+      homebrew.taps = [ "hashicorp/tap" ];
+      homebrew.brews = [
+        "tfenv"
+        "hashicorp/tap/terraform-ls"
+      ];
+    }
   ];
 
   environment.systemPackages = with pkgs; [
@@ -64,7 +72,7 @@
 
   programs.aerospace = {
     enable = true;
-    terminal= "open -a wezterm";
+    terminal = "open -a wezterm";
     editor = "open -a emacs";
   };
 

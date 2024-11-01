@@ -1,4 +1,7 @@
 local wezterm = require 'wezterm'
+local log_info = wezterm.log_info
+local log_warn = wezterm.log_warn
+local log_error = wezterm.log_error
 local act = wezterm.action
 local mux = wezterm.mux
 
@@ -8,9 +11,37 @@ local mux = wezterm.mux
 -- local is_linux = ends_with(wezterm.target_triple, "linux-gnu")
 -- local is_windows = ends_with(wezterm.target_triple, "windows-msvc")
 
+local MOD_KEYS = { "SUPER", "CMD", "WIN", "CTRL", "SHIFT", "ALT", "OPT", "META", "LEADER" }
+
+local Key = {}
+function Key:new(mods, keys, action)
+  local obj = {
+    mods = mods,
+    keys = keys,
+    action = action
+  }
+  setmetatable(obj, self)
+  self.__index = self
+  return obj
+end
+
+local function insert_cancel_keys(tbl, action)
+  table.insert(tbl, { key = "Escape", action = action })
+  table.insert(tbl, { key = "q", action = action })
+  table.insert(tbl, { mods = 'CTRL', key = "c", action = action })
+  table.insert(tbl, { mods = 'CTRL', key = "g", action = action })
+  return tbl
+end
+
+-- local key_direction_mapping = { h = "Left", j = "Down", k = "Up", l = "Right" }
+
+-------------------------------------------------------------------------------
+--- config reference: https://wezfurlong.org/wezterm/config/lua/config
+
 return function(config)
   config:set_strict_mode(true)
 
+  config.color_scheme = "Dracula" -- github.com/dracula/wezterm
   config.font = wezterm.font_with_fallback {
     {
       family = "Victor Mono",
@@ -34,6 +65,10 @@ return function(config)
   config.cell_width = 1
   config.line_height = 1.1
   config.command_palette_font_size = config.font_size
+  -- config.command_palette_bg_color = TODO
+  -- config.command_palette_fg_color = TODO
+  config.command_palette_font_size = config.font_size
+  config.command_palette_rows = 10
   config.window_frame = {
     font = config.font
   }
@@ -42,13 +77,18 @@ return function(config)
   config.adjust_window_size_when_changing_font_size = false
   config.enable_scroll_bar = true
   config.exit_behavior = "CloseOnCleanExit" -- Use 'Hold' to not close
+  config.quit_when_all_windows_are_closed = true
+  config.switch_to_last_active_tab_when_closing_tab = true
+  config.check_for_updates = false
   config.hide_tab_bar_if_only_one_tab = true
   config.initial_cols = 140
-  config.initial_rows = 40
+  config.initial_rows = 70
   config.native_macos_fullscreen_mode = false
   config.tab_bar_at_bottom = true
-  config.use_fancy_tab_bar = false
+  config.use_fancy_tab_bar = false -- do not use native ui
   config.window_decorations = "RESIZE"
+  config.selection_word_boundary = '{}[]()"\'`.,;:'
+  config.enable_kitty_keyboard = true --  honor kitty keyboard protocol escape sequences that modify the keyboard encoding
   -- config.disable_default_key_bindings = true
 
   -- config.leader = {
@@ -59,11 +99,31 @@ return function(config)
   config.use_ime = false
   config.use_dead_keys = false
   config.debug_key_events = false
+
   config.keys = {
+    {
+      key = 'F1',
+      action = act.ShowDebugOverlay,
+    },
     {
       key = "f",
       mods = "SUPER",
       action = act.Search { CaseSensitiveString = "" },
+    },
+    {
+      key = "Enter",
+      mods = "CTRL|SHIFT",
+      action = act.SplitHorizontal { domain = "CurrentPaneDomain" },
+    },
+    {
+      key = "Enter",
+      mods = "CTRL|SHIFT|SUPER",
+      action = act.SplitVertical { domain = "CurrentPaneDomain" },
+    },
+    {
+      key = "Space",
+      mods = "CTRL|SHIFT",
+      action = act.QuickSelect,
     },
     {
       key = "Home",
@@ -85,16 +145,6 @@ return function(config)
       mods = "CTRL|SHIFT",
       action = act.ScrollToBottom,
     },
-    -- {
-    --   key = "[",
-    --   mods = "CTRL|SHIFT",
-    --   action = act.ActivateTabRelative(-1),
-    -- },
-    -- {
-    --   key = "]",
-    --   mods = "CTRL|SHIFT",
-    --   action = act.ActivateTabRelative(1),
-    -- },
     {
       key = "<",
       mods = "CTRL|SHIFT",
@@ -104,56 +154,6 @@ return function(config)
       key = ">",
       mods = "CTRL|SHIFT",
       action = act.MoveTabRelative(1),
-    },
-    {
-      key = "1",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(0),
-    },
-    {
-      key = "2",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(1),
-    },
-    {
-      key = "3",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(2),
-    },
-    {
-      key = "4",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(3),
-    },
-    {
-      key = "5",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(4),
-    },
-    {
-      key = "6",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(5),
-    },
-    {
-      key = "7",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(6),
-    },
-    {
-      key = "8",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(7),
-    },
-    {
-      key = "9",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(8),
-    },
-    {
-      key = "0",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneByIndex(9),
     },
     {
       key = "h",
@@ -179,16 +179,6 @@ return function(config)
       key = "t",
       mods = "CTRL|SHIFT",
       action = act.SpawnTab 'CurrentPaneDomain'
-    },
-    {
-      key = "Enter",
-      mods = "CTRL|SHIFT",
-      action = act.SplitHorizontal { domain = "CurrentPaneDomain" },
-    },
-    {
-      key = "Enter",
-      mods = "CTRL|SHIFT|SUPER",
-      action = act.SplitVertical { domain = "CurrentPaneDomain" },
     },
     {
       key = "w",
@@ -226,16 +216,6 @@ return function(config)
       action = act.CharSelect,
     },
     {
-      key = "Space",
-      mods = "CTRL|SHIFT",
-      action = act.QuickSelect,
-    },
-    -- {
-    --   key = "Space",
-    --   mods = "CTRL|SHIFT|ALT",
-    --   action = act.QuickSelectArgs {},
-    -- },
-    {
       key = "f",
       mods = "CTRL|SHIFT",
       action = act.RotatePanes 'Clockwise'
@@ -272,6 +252,14 @@ return function(config)
     },
   }
 
+  for i = 1, 9 do
+    table.insert(config.keys, {
+      key = tostring(i),
+      mods = "CTRL|SHIFT",
+      action = act.ActivatePaneByIndex(i - 1),
+    })
+  end
+
   config.key_tables = {
     -- Defines the keys that are active in our resize-pane mode.
     -- Since we're likely to want to make multiple adjustments,
@@ -292,8 +280,7 @@ return function(config)
       { key = 'DownArrow',  action = act.AdjustPaneSize { 'Down', 1 } },
       { key = 'j',          action = act.AdjustPaneSize { 'Down', 1 } },
 
-      -- Cancel the mode by pressing escape
-      { key = 'Escape',     action = 'PopKeyTable' },
+      { key = 'Space',      action = act.Multiple { act.TogglePaneZoomState, act.PopKeyTable } },
     },
 
     -- Defines the keys that are active in our activate-pane mode.

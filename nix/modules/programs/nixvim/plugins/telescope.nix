@@ -174,13 +174,13 @@
       }
       {
         mode = "n";
-        key = "<leader>gs";
+        key = "<leader>gg";
         action = "<cmd>Telescope git_status<CR>";
         options.desc = "Git stash";
       }
       {
         mode = "n";
-        key = "<leader>gS";
+        key = "<leader>gt";
         action = "<cmd>Telescope git_stash<CR>";
         options.desc = "Git stash";
       }

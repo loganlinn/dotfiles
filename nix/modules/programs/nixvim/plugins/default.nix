@@ -10,6 +10,7 @@
     ./nvim-filetree.nix
     ./oil.nix
     ./telescope.nix
+    ./treesitter.nix
     ./which-key.nix
   ];
 
@@ -23,6 +24,7 @@
     trouble.enable = true;
     vim-surround.enable = true;
     web-devicons.enable = true;
+    # yanky.enable = true;
 
     project-nvim = {
       enable = true;
