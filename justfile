@@ -48,8 +48,8 @@ switch *args:
     nixos-rebuild switch --flake {{ source_dir() }} {{ args }}
 
 # update flake inputs
-update +inputs:
-    nix flake lock --commit-lock-file {{ prepend("--update-input ", inputs) }}
+update *inputs:
+    nix flake update {{ inputs }}
 
 repl dir='.' file='repl.nix' args="":
     nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
