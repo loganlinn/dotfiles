@@ -1,77 +1,51 @@
-local wezterm = require 'wezterm'
-local log_info = wezterm.log_info
-local log_warn = wezterm.log_warn
-local log_error = wezterm.log_error
+local wezterm = require 'wezterm' -- https://wezfurlong.org/wezterm/config/lua/config
 local act = wezterm.action
+local color = wezterm.color
+local gui = wezterm.gui
 local mux = wezterm.mux
+local procinfo = wezterm.procinfo
+local serde = wezterm.serde
+local time = wezterm.time
+local url = wezterm.url
+local plugin = wezterm.plugin -- https://github.com/wez/wezterm/commit/e4ae8a844d8feaa43e1de34c5cc8b4f07ce525dd
 
--- local starts_with = function(str, start) return str:sub(1, #start) == start end
--- local ends_with = function(str, ending) return ending == "" or str:sub(- #ending) == ending end
--- local is_darwin = ends_with(wezterm.target_triple, "apple-darwin")
--- local is_linux = ends_with(wezterm.target_triple, "linux-gnu")
--- local is_windows = ends_with(wezterm.target_triple, "windows-msvc")
+---@class dotfiles
+local M = {}
 
-local MOD_KEYS = { "SUPER", "CMD", "WIN", "CTRL", "SHIFT", "ALT", "OPT", "META", "LEADER" }
+---@param config table
+function M.apply_to_config(config)
+  config = config or wezterm.config_builder()
 
-local Key = {}
-function Key:new(mods, keys, action)
-  local obj = {
-    mods = mods,
-    keys = keys,
-    action = action
-  }
-  setmetatable(obj, self)
-  self.__index = self
-  return obj
-end
+  ---@param attributes? table
+  ---@return table
+  local function victor_mono(attributes)
+    attributes = attributes or {}
+    attributes.harfbuzz_features = attributes.harfbuzz_features or {
+      -- "ss01", -- Single-storey a
+      "ss02", -- Slashed zero, variant 1
+      -- "ss03", -- Slashed zero, variant 2
+      -- "ss04", -- Slashed zero, variant 3
+      -- "ss05", -- Slashed zero, variant 4
+      -- "ss06", -- Slashed seven
+      "ss07", -- Straighter 6 and 9
+      -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
+    }
+    return wezterm.font("Victor Mono", attributes)
+  end
 
-local function insert_cancel_keys(tbl, action)
-  table.insert(tbl, { key = "Escape", action = action })
-  table.insert(tbl, { key = "q", action = action })
-  table.insert(tbl, { mods = 'CTRL', key = "c", action = action })
-  table.insert(tbl, { mods = 'CTRL', key = "g", action = action })
-  return tbl
-end
-
--- local key_direction_mapping = { h = "Left", j = "Down", k = "Up", l = "Right" }
-
--------------------------------------------------------------------------------
---- config reference: https://wezfurlong.org/wezterm/config/lua/config
-
-return function(config)
-  config:set_strict_mode(true)
-
-  config.color_scheme = "Dracula" -- github.com/dracula/wezterm
-  config.font = wezterm.font_with_fallback {
-    {
-      family = "Victor Mono",
-      weight = "Regular",
-      harfbuzz_features = {
-        -- "ss01", -- Single-storey a
-        "ss02", -- Slashed zero, variant 1
-        -- "ss03", -- Slashed zero, variant 2
-        -- "ss04", -- Slashed zero, variant 3
-        -- "ss05", -- Slashed zero, variant 4
-        -- "ss06", -- Slashed seven
-        "ss07", -- Straighter 6 and 9
-        -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
-      }
-    },
-    "Cascadia Code",
-    "JetBrains Mono",
-    "Courier New",
-  }
+  config.font = victor_mono { style = "Normal" }
   config.font_size = 14
   config.cell_width = 1
   config.line_height = 1.1
+  config.font_rules = {
+    { italic = true, font = victor_mono { style = "Oblique" } },
+  }
   config.command_palette_font_size = config.font_size
   -- config.command_palette_bg_color = TODO
   -- config.command_palette_fg_color = TODO
   config.command_palette_font_size = config.font_size
   config.command_palette_rows = 10
-  config.window_frame = {
-    font = config.font
-  }
+  config.window_frame = { font = config.font }
   config.bold_brightens_ansi_colors = "BrightAndBold";
 
   config.adjust_window_size_when_changing_font_size = false
@@ -89,7 +63,7 @@ return function(config)
   config.window_decorations = "RESIZE"
   config.selection_word_boundary = '{}[]()"\'`.,;:'
   config.enable_kitty_keyboard = true --  honor kitty keyboard protocol escape sequences that modify the keyboard encoding
-  -- config.disable_default_key_bindings = true
+  config.disable_default_key_bindings = true
 
   -- config.leader = {
   --   key = ";",
@@ -100,15 +74,27 @@ return function(config)
   config.use_dead_keys = false
   config.debug_key_events = false
 
+  local pane_resize = 5
   config.keys = {
     {
       key = 'F1',
+      mods = "CTRL|SHIFT",
       action = act.ShowDebugOverlay,
     },
     {
       key = "f",
       mods = "SUPER",
       action = act.Search { CaseSensitiveString = "" },
+    },
+    {
+      key = "Tab",
+      mods = "CTRL",
+      action = act.ActivateTabRelative(1),
+    },
+    {
+      key = "Tab",
+      mods = "CTRL|SHIFT",
+      action = act.ActivateTabRelative(-1),
     },
     {
       key = "Enter",
@@ -146,36 +132,6 @@ return function(config)
       action = act.ScrollToBottom,
     },
     {
-      key = "<",
-      mods = "CTRL|SHIFT",
-      action = act.MoveTabRelative(-1),
-    },
-    {
-      key = ">",
-      mods = "CTRL|SHIFT",
-      action = act.MoveTabRelative(1),
-    },
-    {
-      key = "h",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneDirection("Left"),
-    },
-    {
-      key = "j",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneDirection("Down"),
-    },
-    {
-      key = "k",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneDirection("Up"),
-    },
-    {
-      key = "l",
-      mods = "CTRL|SHIFT",
-      action = act.ActivatePaneDirection("Right"),
-    },
-    {
       key = "t",
       mods = "CTRL|SHIFT",
       action = act.SpawnTab 'CurrentPaneDomain'
@@ -184,6 +140,11 @@ return function(config)
       key = "w",
       mods = "CTRL|SHIFT",
       action = act.CloseCurrentPane { confirm = false },
+    },
+    {
+      key = "w",
+      mods = "SUPER",
+      action = act.CloseCurrentPane { confirm = true },
     },
     {
       key = "p",
@@ -226,30 +187,26 @@ return function(config)
       action = act.RotatePanes 'CounterClockwise'
     },
     {
-      key = 'h',
-      mods = 'CTRL|SHIFT|ALT',
-      action = act.AdjustPaneSize { 'Left', 5 },
-    },
-    {
-      key = 'j',
-      mods = 'CTRL|SHIFT|ALT',
-      action = act.AdjustPaneSize { 'Down', 5 },
-    },
-    {
-      key = 'k',
-      mods = 'CTRL|SHIFT|ALT',
-      action = act.AdjustPaneSize { 'Up', 5 },
-    },
-    {
-      key = 'l',
-      mods = 'CTRL|SHIFT|ALT',
-      action = act.AdjustPaneSize { 'Right', 5 },
-    },
-    {
       key = 'z',
       mods = 'CTRL|SHIFT',
       action = act.TogglePaneZoomState,
     },
+
+    -- Navigation
+    { key = "h", mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Left") },
+    { key = "j", mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Down") },
+    { key = "k", mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Up") },
+    { key = "l", mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Right") },
+
+    -- Resize
+    { key = 'h', mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Left', 5 } },
+    { key = 'j', mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Down', 5 } },
+    { key = 'k', mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Up', 5 } },
+    { key = 'l', mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Right', 5 } },
+
+    -- Moving tabs
+    { key = "<", mods = "CTRL|SHIFT",     action = act.MoveTabRelative(-1) },
+    { key = ">", mods = "CTRL|SHIFT",     action = act.MoveTabRelative(1) },
   }
 
   for i = 1, 9 do
@@ -257,6 +214,14 @@ return function(config)
       key = tostring(i),
       mods = "CTRL|SHIFT",
       action = act.ActivatePaneByIndex(i - 1),
+    })
+  end
+
+  for i = 1, 9 do
+    table.insert(config.keys, {
+      key = tostring(i),
+      mods = "SUPER",
+      action = act.ActivateTab(i - 1),
     })
   end
 
@@ -325,4 +290,20 @@ return function(config)
   --     -- set_environment_variables = { FOO = "bar" },
   --   },
   -- }
+
+  plugin.require('https://github.com/mrjones2014/smart-splits.nvim')
+      .apply_to_config(config, {
+        modifiers = {
+          move = 'CTRL|SHIFT',
+          resize = 'CTRL|SHIFT|SUPER',
+        },
+      })
+
+  -- plugin.require('https://github.com/MLFlexer/modal.wezterm').apply_to_config(config, {})
+
+  wezterm.log_info(config)
+
+  return config
 end
+
+return setmetatable(M, { __call = function(self, ...) return self.apply_to_config(...) end, })
