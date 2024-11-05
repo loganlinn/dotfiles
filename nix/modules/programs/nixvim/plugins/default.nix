@@ -22,9 +22,14 @@
     nix.enable = true;
     qmk.enable = false;
     trouble.enable = true;
+    typescript-tools.enable = true;
     vim-surround.enable = true;
     web-devicons.enable = true;
     # yanky.enable = true;
+
+    smart-splits = {
+      enable = false;
+    };
 
     project-nvim = {
       enable = true;
