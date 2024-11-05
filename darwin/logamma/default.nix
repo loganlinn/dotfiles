@@ -16,6 +16,7 @@
     ../modules/emacs-plus
     ../modules/karabiner-elements
     ../modules/sunbeam
+    ../modules/utm.nix
     ../modules/xcode.nix
     # dbeaver
     {
@@ -75,6 +76,8 @@
     terminal = "open -a wezterm";
     editor = "open -a emacs";
   };
+
+  programs.utm.enable = true;
 
   programs.xcode.enable = true;
 
