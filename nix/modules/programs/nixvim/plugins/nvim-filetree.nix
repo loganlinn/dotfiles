@@ -2,6 +2,8 @@
   programs.nixvim = {
     plugins.nvim-tree = {
       enable = true;
+      autoClose = true;
+      openOnSetup = true;
       git.enable = true;
       git.ignore = false;
       renderer.indentWidth = 1;

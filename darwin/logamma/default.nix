@@ -72,8 +72,8 @@
 
   programs.aerospace = {
     enable = true;
-    terminal = "open -a wezterm";
-    editor = "open -a emacs";
+    terminal.id = "com.github.wez.wezterm";
+    editor.id = "org.gnu.Emacs";
   };
 
   programs.xcode.enable = true;

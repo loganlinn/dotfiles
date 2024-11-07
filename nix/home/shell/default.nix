@@ -25,7 +25,17 @@ in
   };
 
   config = {
-    home.shellAliases = import ./aliases.nix;
+    home.shellAliases = {
+      "'..'" = "cd ..";
+      "'...'" = "cd ...";
+      l = "ls -lah";
+      mkd = "mkdir -p";
+
+      prunedirs = "fd -td -te -x rmdir -v";
+
+      epoch = "date +%s";
+      today = "date -Idate -dnow";
+    };
 
     programs.bash.initExtra = cfg.shellInitExtra;
 

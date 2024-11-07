@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -6,6 +11,32 @@ with lib;
   imports = [
     ./gh.nix
   ];
+
+  home.shellAliases = {
+    g = "git";
+    gc = "git commit -v";
+    gca = "git commit -v -a";
+    gcm = ''git switch "$(git default-branch || echo .)"'';
+    gcob = "git switch -c";
+    gcop = "git checkout -p";
+    gd = "git diff --color";
+    gdc = "git diff --color --cached";
+    gfo = "git fetch origin";
+    gl = "git pull";
+    glr = "git pull --rebase";
+    glrp = "glr && gp";
+    gp = "git push -u";
+    gpf = "git push --force-with-lease --force-if-includes";
+    gpa = "git push all --all";
+    gs = "git status -sb";
+    gsrt = "git rev-parse --show-toplevel";
+    gsw = "git stash show --patch";
+    gw = "git show";
+    gtl = "git rev-parse --show-toplevel";
+    gtlr = "git rev-parse --show-cdup"; # "toplevel relative"
+    gwd = "git rev-parse --show-prefix"; # "git working directory"
+    grt = ''cd -- "$(gtl || pwd)"''; # "goto root"
+  };
 
   programs.git = {
     enable = true;
@@ -15,28 +46,25 @@ with lib;
       { path = ./include/gitalias.txt; }
     ];
     aliases = {
+      toplevel = "rev-parse --show-toplevel";
+      prefix = "rev-parse --show-prefix";
+      cdup = "rev-parse --show-cdup";
       wt = "worktree";
       wtm = "worktree-main";
       wtl = "worktree-linked";
-      wtr = ''!f() {
-        for p in $(git worktree list --porcelain | ${pkgs.gawk}/bin/awk '(NR>1) && /^worktree / { print $2 }' | ${pkgs.fzf}/bin/fzf -0 -m); do
-          ${pkgs.gum}/bin/gum confirm "git worktree remove $p" &&
-          git worktree remove --force "$p"
-        done
-      }; f'';
+      wtr = ''
+        !f() {
+                for p in $(git worktree list --porcelain | ${pkgs.gawk}/bin/awk '(NR>1) && /^worktree / { print $2 }' | ${pkgs.fzf}/bin/fzf -0 -m); do
+                  ${pkgs.gum}/bin/gum confirm "git worktree remove $p" &&
+                  git worktree remove --force "$p"
+                done
+              }; f'';
       wtx = "!${./worktree-run.sh}";
       worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
       worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
       amend = "commit --amend --reuse-message HEAD";
       touch = ''!git commit --amend --date="$(date -r)"'';
       undo = "reset --soft HEAD~1";
-      stack = "!gt stack";
-      upstack = "!gt upstack";
-      us = "!gt upstack";
-      downstack = "!gt downstack";
-      ds = "!gt downstack";
-      b = "!gt branch";
-      l = "!gt log";
       default-branch = ''
         !f() {
           git rev-parse --git-dir &>/dev/null || return $?;
@@ -75,9 +103,12 @@ with lib;
       commit.verbose = true; # include diff in commit message editor
       commit.gpgsign = mkDefault true;
       gpg.format = "ssh";
-      gpg.ssh.program =
-        mkDefault (if pkgs.stdenv.isDarwin then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-        else "op-ssh-sign");
+      gpg.ssh.program = mkDefault (
+        if pkgs.stdenv.isDarwin then
+          "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+        else
+          "op-ssh-sign"
+      );
       gpg.ssh.allowedSignersFile = mkDefault "${pkgs.writeText "allowed_signers" ''
         ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
       ''}";
@@ -106,7 +137,28 @@ with lib;
 
   home.packages = with pkgs; [
     delta
+    git-absorb
+    (writeShellScriptBin "git-run" ''
+      set -eo pipefail
+
+      git rev-parse --is-inside-work-tree >/dev/null \
+      && cd "$(git rev-parse --show-toplevel)" \
+      || exit 1
+
+      while [[ $# -eq 0 ]]; do
+        unset REPLY
+        read -p "command: "
+        set -- "$REPLY"
+      done
+
+      exec "$@"
+    '')
   ];
+
+  programs.zsh.initExtra = ''
+    _git-run() { _files "$(git rev-parse --show-toplevel)" }
+    compdef _git-run git-run
+  '';
 
   programs.gpg.publicKeys = [
     {

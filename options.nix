@@ -122,6 +122,7 @@ in
       };
 
       environment.variables = {
+        DOTFILES_DIR = "${cfg.user.home}/.dotfiles";
         DISABLE_TELEMETRY = "1";
         DOCKER_SCAN_SUGGEST = "false";
         DOTNET_CLI_TELEMETRY_OPTOUT = "true";

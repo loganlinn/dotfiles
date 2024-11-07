@@ -15,10 +15,146 @@ let
 
   configFile = toml.generate "aerospace.toml" cfg.settings;
 
-  exec-ephemeral = cmd: ''
-    exec-and-forget kitty sh -c ${lib.escapeShellArg cmd}"; read -p 'Press any key to close'"
-  '';
+  # https://nikitabobko.github.io/AeroSpace/goodness#popular-apps-ids
+  appIds = {
+    "1Password" = "com.1password.1password";
+    "Activity Monitor" = "com.apple.ActivityMonitor";
+    "AirPort Utility" = "com.apple.airport.airportutility";
+    "Alacritty" = "org.alacritty";
+    "Android Studio" = "com.google.android.studio";
+    "App Store" = "com.apple.AppStore";
+    "AppCode" = "com.jetbrains.AppCode";
+    "Arc Browser" = "company.thebrowser.Browser";
+    "Audio MIDI Setup" = "com.apple.audio.AudioMIDISetup";
+    "Automator" = "com.apple.Automator";
+    "Battle.net" = "net.battle.app";
+    "Books" = "com.apple.iBooksX";
+    "Brave" = "com.brave.Browser";
+    "CLion" = "com.jetbrains.CLion";
+    "Calculator" = "com.apple.calculator";
+    "Calendar" = "com.apple.iCal";
+    "Chess" = "com.apple.Chess";
+    "Clock" = "com.apple.clock";
+    "ColorSync Utility" = "com.apple.ColorSyncUtility";
+    "Console" = "com.apple.Console";
+    "Contacts" = "com.apple.AddressBook";
+    "Dictionary" = "com.apple.Dictionary";
+    "Disk Utility" = "com.apple.DiskUtility";
+    "Docker" = "com.docker.docker";
+    "FaceTime" = "com.apple.FaceTime";
+    "Figma" = "com.figma.Desktop";
+    "Find My" = "com.apple.findmy";
+    "Finder" = "com.apple.finder";
+    "Firefox" = "org.mozilla.firefox";
+    "Freeform" = "com.apple.freeform";
+    "GIMP" = "org.gimp.gimp-2.10";
+    "Google Chrome" = "com.google.Chrome";
+    "Grapher" = "com.apple.grapher";
+    "Home" = "com.apple.Home";
+    "Inkscape" = "org.inkscape.Inkscape";
+    "IntelliJ IDEA Community" = "com.jetbrains.intellij.ce";
+    "IntelliJ IDEA Ultimate" = "com.jetbrains.intellij";
+    "Karabiner-Elements" = "org.pqrs.Karabiner-Elements.Settings";
+    "Keychain Access" = "com.apple.keychainaccess";
+    "Keynote" = "com.apple.iWork.Keynote";
+    "Kitty" = "net.kovidgoyal.kitty";
+    "Mail" = "com.apple.mail";
+    "Maps" = "com.apple.Maps";
+    "Marta" = "org.yanex.marta";
+    "Messages" = "com.apple.MobileSMS";
+    "Music" = "com.apple.Music";
+    "Notes" = "com.apple.Notes";
+    "Obsidian" = "md.obsidian";
+    "Pages" = "com.apple.iWork.Pages";
+    "Photo Booth" = "com.apple.PhotoBooth";
+    "Photos" = "com.apple.Photos";
+    "Podcasts" = "com.apple.podcasts";
+    "Preview" = "com.apple.Preview";
+    "PyCharm Community" = "com.jetbrains.pycharm.ce";
+    "PyCharm Professional" = "com.jetbrains.pycharm";
+    "QuickTime Player" = "com.apple.QuickTimePlayerX";
+    "Reminders" = "com.apple.reminders";
+    "Safari" = "com.apple.Safari";
+    "Shortcuts" = "com.apple.shortcuts";
+    "Slack" = "com.tinyspeck.slackmacgap";
+    "Spotify" = "com.spotify.client";
+    "Steam" = "com.valvesoftware.steam";
+    "Stocks" = "com.apple.stocks";
+    "Sublime Merge" = "com.sublimemerge";
+    "Sublime Text" = "com.sublimetext.4";
+    "System Settings" = "com.apple.systempreferences";
+    "TV" = "com.apple.TV";
+    "Telegram" = "com.tdesktop.Telegram";
+    "Terminal" = "com.apple.Terminal";
+    "TextEdit" = "com.apple.TextEdit";
+    "Thunderbird" = "org.mozilla.thunderbird";
+    "Time Machine" = "com.apple.backup.launcher";
+    "Todoist" = "com.todoist.mac.Todoist";
+    "Tor Browser" = "org.torproject.torbrowser";
+    "Transmission" = "org.m0k.transmission";
+    "VLC" = "org.videolan.vlc";
+    "Visual Studio Code" = "com.microsoft.VSCode";
+    "VoiceMemos" = "com.apple.VoiceMemos";
+    "VoiceOver Utility" = "com.apple.VoiceOverUtility";
+    "Weather" = "com.apple.weather";
+    "WezTerm" = "com.github.wez.wezterm";
+    "Xcode" = "com.apple.dt.Xcode";
+    "iMovie" = "com.apple.iMovieApp";
+    "iTerm2" = "com.googlecode.iterm2";
+    "kdenlive" = "org.kde.Kdenlive";
+  };
 
+  # exec-ephemeral = cmd: ''
+  #   exec-and-forget osascript -e 'tell app "Terminal" do script ${escapeShellArgs (map toString (toList cmd))}
+  # '';
+
+  layoutType = types.enum [
+    "h_tiles"
+    "v_tiles"
+    "h_accordion"
+    "v_accordion"
+    "tiles"
+    "accordion"
+    "horizontal"
+    "vertical"
+    "tiling"
+    "floating"
+  ];
+
+  appType = types.submodule (
+    { config, name, ... }:
+    {
+      options = {
+        name = mkOption {
+          type = types.nullOr types.str;
+          default = name;
+        };
+        id = mkOption {
+          description = "application bundle identifier";
+          type = types.nullOr types.str;
+          default = null;
+        };
+        exec = mkOption {
+          type = types.str;
+          default =
+            if config.id != null && config.id != "" then
+              "open -b ${escapeShellArg config.id}"
+            else if config.name != null && config.name != "" then
+              "open -a ${escapeShellArg config.name}"
+            else
+              throw "exec not provided";
+        };
+        layout = mkOption {
+          type = types.nullOr layoutType;
+          default = null;
+        };
+        workspace = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+        };
+      };
+    }
+  );
 in
 {
   imports = [
@@ -29,14 +165,23 @@ in
     programs.aerospace = {
       enable = mkEnableOption "aerospace window manager";
 
+      # apps = mkOption {
+      #   type = types.attrsOf appType;
+      #   default = {};
+      # };
+
       editor = mkOption {
-        type = types.str;
-        default = "open -a TextEdit";
+        type = appType;
+        default = {
+          exec = "open -a TextEdit";
+        };
       };
 
       terminal = mkOption {
-        type = types.str;
-        default = "open -a Terminal";
+        type = appType;
+        default = {
+          exec = "open -a Terminal";
+        };
       };
 
       borders = mkOption {
@@ -108,6 +253,57 @@ in
           # Fallback value (if you omit the key): on-focused-monitor-changed = []
           on-focused-monitor-changed = [ "move-mouse monitor-lazy-center" ];
 
+          # https://nikitabobko.github.io/AeroSpace/guide#on-window-detected-callback
+          # TODO process cfg.apps.*.layout
+          on-window-detected =
+            [
+              {
+                "if".app-id = "org.gnu.Emacs";
+                run = "move to workspace 1";
+              }
+              {
+                "if".app-id = appIds."Google Chrome";
+                run = "move to workspace 3";
+              }
+              {
+                "if".app-id = "com.linear";
+                run = "move to workspace 4";
+              }
+              {
+                "if".app-name-regex-substring = "Excalidraw";
+                run = "move to workspace 4";
+              }
+              {
+                "if".app-id = appIds.Slack;
+                run = "move to workspace 10";
+              }
+              {
+                "if".app-id = appIds.Messages;
+                run = "move to workspace 10";
+              }
+              {
+                "if".app-name-regex-substring = "SoundCloud";
+                run = "move to workspace 9";
+              }
+              {
+                "if".window-title-regex-substring = "wezterm Configuration Error";
+                run = "layout floating";
+              }
+            ]
+            ++ (forEach
+              [
+                "com.anthropic.claudefordesktop"
+                "us.zoom.xos"
+                "com.1password.1password"
+              ]
+              (app-id: {
+                "if" = {
+                  inherit app-id;
+                };
+                run = "layout floating";
+              })
+            );
+
           # You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
           # Useful if you don't use this macOS feature, but accidentally hit cmd-h or cmd-alt-h key
           # Also see: https://nikitabobko.github.io/AeroSpace/goodness#disable-hide-app
@@ -141,13 +337,13 @@ in
 
           # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
           mode.main.binding = {
-            alt-enter = "exec-and-forget ${cfg.terminal}";
+            alt-enter = "exec-and-forget ${cfg.terminal.exec}";
             alt-cmd-enter = "exec-and-forget open -n -a Kitty.app";
             alt-shift-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Default";
             alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
-            alt-a = "exec-and-forget open -a Emacs.app";
-            alt-cmd-a = "exec-and-forget open -n -a Emacs.app";
-            alt-e = "exec-and-forget open -a Finder.app";
+            alt-a = "exec-and-forget ${cfg.editor.exec}";
+            alt-e = "exec-and-forget open -b ${appIds.Finder}";
+            alt-s = "exec-and-forget open -b ${appIds.Slack}";
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#layout
             alt-slash = "layout tiles horizontal vertical";
@@ -254,20 +450,20 @@ in
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#mode
             alt-shift-semicolon = "mode service";
-            alt-shift-slash = "mode query";
+            # alt-shift-slash = "mode query";
           };
 
-          mode.query.binding = {
-            k = exec-ephemeral "aerospace config --all-keys";
-            m = exec-ephemeral "aerospace config --major-keys";
-            a = exec-ephemeral "aerospace list-apps";
-            e = exec-ephemeral "aerospace list-exec-env-vars";
-            d = exec-ephemeral "aerospace list-monitors";
-            w = exec-ephemeral "aerospace list-windows";
-            s = exec-ephemeral "aerospace list-workspaces";
-            q = "mode main";
-            esc = "mode main";
-          };
+          # mode.query.binding = {
+          #   k = exec-ephemeral "aerospace config --all-keys";
+          #   m = exec-ephemeral "aerospace config --major-keys";
+          #   a = exec-ephemeral "aerospace list-apps";
+          #   e = exec-ephemeral "aerospace list-exec-env-vars";
+          #   d = exec-ephemeral "aerospace list-monitors";
+          #   w = exec-ephemeral "aerospace list-windows";
+          #   s = exec-ephemeral "aerospace list-workspaces";
+          #   q = "mode main";
+          #   esc = "mode main";
+          # };
 
           # 'service' binding mode declaration.
           # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
