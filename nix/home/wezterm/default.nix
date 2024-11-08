@@ -17,6 +17,8 @@ in
     enableBashIntegration = mkDefault true;
     enableZshIntegration = mkDefault true;
     extraConfig = ''
+      -- Workaround: https://github.com/wez/wezterm/issues/5323#issuecomment-2095316976
+      debug = {traceback = function() end}
       package.path = "${fennel}/share/lua/${fennel.lua.luaversion}/?.lua;" .. package.path
 
       local config = require('dotfiles')
@@ -34,7 +36,7 @@ in
           }
         }')
 
-      config.color_scheme = config.color_scheme or "Dracula"
+      config.color_scheme = config.color_scheme or "Dracula (Official)"
 
       return config
     '';
