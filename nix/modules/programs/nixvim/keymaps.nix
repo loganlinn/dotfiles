@@ -412,6 +412,14 @@
   }
   {
     mode = "n";
+    key = "<leader>`";
+    action = "<cmd>bprevious<cr>";
+    options = {
+      desc = "Previous Buffer";
+    };
+  }
+  {
+    mode = "n";
     key = "<leader>b]";
     action = "<cmd>bnext<cr>";
     options = {

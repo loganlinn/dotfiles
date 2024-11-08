@@ -26,6 +26,8 @@
             "<C-h>".__raw = "which_key";
             "<C-g>".__raw = "require('telescope.actions').close";
             "<C-u>".__raw = "false";
+            "<C-j>".__raw = "require('telescope.actions').move_selection_next";
+            "<C-k>".__raw = "require('telescope.actions').move_selection_previous";
           };
         };
       };
@@ -45,7 +47,7 @@
         "<leader>cr" = "lsp_references";
         "<leader>cy" = "lsp_incoming_calls";
         "<leader>cY" = "lsp_outgoing_calls";
-        "<leader>cx" = "quickfix";
+        "<leader>cx" = "diagnostics";
         "<leader>su" = "undo";
         "<leader>sa" = {
           action = "autocommands";
@@ -72,12 +74,6 @@
           };
         };
         "<leader>ss" = "symbols";
-        "<leader>sD" = {
-          action = "diagnostics";
-          options = {
-            desc = "Workspace diagnostics";
-          };
-        };
         "<leader>sh" = {
           action = "help_tags";
           options = {
@@ -149,20 +145,18 @@
 
       # prefix: <leader>f
       {
-        mode = "n";
-        key = "<leader>fd";
+        key = "<leader>ff";
+        action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<CR>";
+        options.desc = "Find file";
+      }
+      {
+        key = "<leader>fF";
         action.__raw = ''
           function()
             require("telescope.builtin").find_files({ cwd = vim.fn.expand("%:p:h") })
           end
         '';
         options.desc = "Find current directory";
-      }
-      {
-        mode = "n";
-        key = "<leader>fg";
-        action = "<cmd>lua require('telescope.builtin').diagnostics()<CR>";
-        options.desc = "Find Diagnostics";
       }
 
       # prefix: <leader>g
