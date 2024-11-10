@@ -1,3 +1,4 @@
+{ pkgs, lib, ... }:
 {
   imports = [
     ./bufferline.nix
@@ -11,6 +12,7 @@
     ./oil.nix
     ./telescope.nix
     ./treesitter.nix
+    ./supermaven
     ./which-key.nix
     {
       programs.nixvim = {
@@ -27,6 +29,9 @@
           web-devicons.enable = true;
           # yanky.enable = true;
         };
+        extraPlugins = with pkgs.vimPlugins; [
+          zoxide-vim
+        ];
       };
     }
     {
