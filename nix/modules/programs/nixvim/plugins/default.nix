@@ -20,14 +20,14 @@
           direnv.enable = true;
           fugitive.enable = true;
           gitlinker.enable = true;
-          illuminate.enable = true; # highlight other instances of word
+          illuminate.enable = true;
           nix.enable = true;
+          nvim-autopairs.enable = true;
           qmk.enable = false;
           trouble.enable = true;
           typescript-tools.enable = true;
           vim-surround.enable = true;
           web-devicons.enable = true;
-          # yanky.enable = true;
         };
         extraPlugins = with pkgs.vimPlugins; [
           zoxide-vim

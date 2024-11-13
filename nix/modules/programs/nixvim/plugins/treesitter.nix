@@ -29,5 +29,8 @@
         ];
       };
     };
+    plugins.treesitter-context.enable = true;
+    plugins.treesitter-context.settings.max_lines = 2;
+    rainbow-delimiters.enable = true;
   };
 }
