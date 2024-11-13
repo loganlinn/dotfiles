@@ -110,7 +110,5 @@ src-for-each-exec() {
 
 # Allow this to be executed directly
 if [[ $0 == "${BASH_SOURCE[0]}" ]]; then
-	echo "Calling src-get $*"
-	set -ex
-	pwd
+  src-get "$@"
 fi

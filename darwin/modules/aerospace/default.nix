@@ -11,102 +11,13 @@ with lib;
 let
   cfg = config.programs.aerospace;
 
+  aerospace-summon-app = pkgs.writeShellScriptBin "aerospace-summon-app" (
+    builtin.readFile ./bin/aerospace-summon-app.sh
+  );
+
   toml = pkgs.formats.toml { };
 
   configFile = toml.generate "aerospace.toml" cfg.settings;
-
-  # https://nikitabobko.github.io/AeroSpace/goodness#popular-apps-ids
-  appIds = {
-    "1Password" = "com.1password.1password";
-    "Activity Monitor" = "com.apple.ActivityMonitor";
-    "AirPort Utility" = "com.apple.airport.airportutility";
-    "Alacritty" = "org.alacritty";
-    "Android Studio" = "com.google.android.studio";
-    "App Store" = "com.apple.AppStore";
-    "AppCode" = "com.jetbrains.AppCode";
-    "Arc Browser" = "company.thebrowser.Browser";
-    "Audio MIDI Setup" = "com.apple.audio.AudioMIDISetup";
-    "Automator" = "com.apple.Automator";
-    "Battle.net" = "net.battle.app";
-    "Books" = "com.apple.iBooksX";
-    "Brave" = "com.brave.Browser";
-    "CLion" = "com.jetbrains.CLion";
-    "Calculator" = "com.apple.calculator";
-    "Calendar" = "com.apple.iCal";
-    "Chess" = "com.apple.Chess";
-    "Clock" = "com.apple.clock";
-    "ColorSync Utility" = "com.apple.ColorSyncUtility";
-    "Console" = "com.apple.Console";
-    "Contacts" = "com.apple.AddressBook";
-    "Dictionary" = "com.apple.Dictionary";
-    "Disk Utility" = "com.apple.DiskUtility";
-    "Docker" = "com.docker.docker";
-    "FaceTime" = "com.apple.FaceTime";
-    "Figma" = "com.figma.Desktop";
-    "Find My" = "com.apple.findmy";
-    "Finder" = "com.apple.finder";
-    "Firefox" = "org.mozilla.firefox";
-    "Freeform" = "com.apple.freeform";
-    "GIMP" = "org.gimp.gimp-2.10";
-    "Google Chrome" = "com.google.Chrome";
-    "Grapher" = "com.apple.grapher";
-    "Home" = "com.apple.Home";
-    "Inkscape" = "org.inkscape.Inkscape";
-    "IntelliJ IDEA Community" = "com.jetbrains.intellij.ce";
-    "IntelliJ IDEA Ultimate" = "com.jetbrains.intellij";
-    "Karabiner-Elements" = "org.pqrs.Karabiner-Elements.Settings";
-    "Keychain Access" = "com.apple.keychainaccess";
-    "Keynote" = "com.apple.iWork.Keynote";
-    "Kitty" = "net.kovidgoyal.kitty";
-    "Mail" = "com.apple.mail";
-    "Maps" = "com.apple.Maps";
-    "Marta" = "org.yanex.marta";
-    "Messages" = "com.apple.MobileSMS";
-    "Music" = "com.apple.Music";
-    "Notes" = "com.apple.Notes";
-    "Obsidian" = "md.obsidian";
-    "Pages" = "com.apple.iWork.Pages";
-    "Photo Booth" = "com.apple.PhotoBooth";
-    "Photos" = "com.apple.Photos";
-    "Podcasts" = "com.apple.podcasts";
-    "Preview" = "com.apple.Preview";
-    "PyCharm Community" = "com.jetbrains.pycharm.ce";
-    "PyCharm Professional" = "com.jetbrains.pycharm";
-    "QuickTime Player" = "com.apple.QuickTimePlayerX";
-    "Reminders" = "com.apple.reminders";
-    "Safari" = "com.apple.Safari";
-    "Shortcuts" = "com.apple.shortcuts";
-    "Slack" = "com.tinyspeck.slackmacgap";
-    "Spotify" = "com.spotify.client";
-    "Steam" = "com.valvesoftware.steam";
-    "Stocks" = "com.apple.stocks";
-    "Sublime Merge" = "com.sublimemerge";
-    "Sublime Text" = "com.sublimetext.4";
-    "System Settings" = "com.apple.systempreferences";
-    "TV" = "com.apple.TV";
-    "Telegram" = "com.tdesktop.Telegram";
-    "Terminal" = "com.apple.Terminal";
-    "TextEdit" = "com.apple.TextEdit";
-    "Thunderbird" = "org.mozilla.thunderbird";
-    "Time Machine" = "com.apple.backup.launcher";
-    "Todoist" = "com.todoist.mac.Todoist";
-    "Tor Browser" = "org.torproject.torbrowser";
-    "Transmission" = "org.m0k.transmission";
-    "VLC" = "org.videolan.vlc";
-    "Visual Studio Code" = "com.microsoft.VSCode";
-    "VoiceMemos" = "com.apple.VoiceMemos";
-    "VoiceOver Utility" = "com.apple.VoiceOverUtility";
-    "Weather" = "com.apple.weather";
-    "WezTerm" = "com.github.wez.wezterm";
-    "Xcode" = "com.apple.dt.Xcode";
-    "iMovie" = "com.apple.iMovieApp";
-    "iTerm2" = "com.googlecode.iterm2";
-    "kdenlive" = "org.kde.Kdenlive";
-  };
-
-  # exec-ephemeral = cmd: ''
-  #   exec-and-forget osascript -e 'tell app "Terminal" do script ${escapeShellArgs (map toString (toList cmd))}
-  # '';
 
   layoutType = types.enum [
     "h_tiles"
@@ -120,6 +31,8 @@ let
     "tiling"
     "floating"
   ];
+
+  appIds = import ./appIds.nix;
 
   appType = types.submodule (
     { config, name, ... }:
@@ -158,7 +71,7 @@ let
 in
 {
   imports = [
-    ./sketchybar.nix
+    ../sketchybar.nix
   ];
 
   options = {
@@ -210,6 +123,25 @@ in
 
       settings = mkOption {
         type = types.submodule {
+          # TODO
+          # after-login-command: Command|Command[]
+          # after-startup-command: Command|Command[]
+          # on-focus-changed: Command|Command[]
+          # on-focused-monitor-changed: Command|Command[]
+          # enable-normalization-flatten-containers: bool
+          # enable-normalization-opposite-orientation-for-nested-containers: bool
+          # default-root-container-layout: Layout
+          # default-root-container-orientation: Orientation
+          # start-at-login: bool
+          # automatically-unhide-macos-hidden-apps: bool
+          # accordion-padding: int
+          # exec-on-workspace-change: Command[]
+          # exec: Command[]
+          # key-mapping: table<string, string>
+          # mode: map<string, Mode>
+          # gaps: Gaps
+          # workspace-to-monitor-force-assignment: map<string, string>
+          # on-window-detected
           freeformType = toml.type;
         };
 
@@ -259,31 +191,31 @@ in
             [
               {
                 "if".app-id = "org.gnu.Emacs";
-                run = "move to workspace 1";
+                run = "move-node-to-workspace 1";
               }
               {
                 "if".app-id = appIds."Google Chrome";
-                run = "move to workspace 3";
+                run = "move-node-to-workspace 3";
               }
               {
                 "if".app-id = "com.linear";
-                run = "move to workspace 4";
+                run = "move-node-to-workspace 4";
               }
               {
                 "if".app-name-regex-substring = "Excalidraw";
-                run = "move to workspace 4";
+                run = "move-node-to-workspace 4";
               }
               {
                 "if".app-id = appIds.Slack;
-                run = "move to workspace 10";
+                run = "move-node-to-workspace 10";
               }
               {
                 "if".app-id = appIds.Messages;
-                run = "move to workspace 10";
+                run = "move-node-to-workspace 10";
               }
               {
                 "if".app-name-regex-substring = "SoundCloud";
-                run = "move to workspace 9";
+                run = "move-node-to-workspace 9";
               }
               {
                 "if".window-title-regex-substring = "wezterm Configuration Error";
@@ -291,10 +223,19 @@ in
               }
             ]
             ++ (forEach
+              #! aerospace list-apps --json | jq '.[].["app-bundle-id"]'
+              #! fd -d1 -eapp . /System/Applications /Applications ~/Applications -x bash -c 'mdls -name kMDItemCFBundleIdentifier -r "{}"; echo -e ",{}";'
               [
-                "com.anthropic.claudefordesktop"
-                "us.zoom.xos"
                 "com.1password.1password"
+                "com.anthropic.claudefordesktop"
+                "com.apple.AddressBook"
+                "com.apple.AppStore"
+                "com.apple.Dictionary"
+                "com.apple.Notes"
+                "com.apple.Preview"
+                "com.apple.calculator"
+                "com.apple.finder"
+                "us.zoom.xos"
               ]
               (app-id: {
                 "if" = {
@@ -344,6 +285,7 @@ in
             alt-a = "exec-and-forget ${cfg.editor.exec}";
             alt-e = "exec-and-forget open -b ${appIds.Finder}";
             alt-s = "exec-and-forget open -b ${appIds.Slack}";
+            alt-quote = "mode apps";
 
             # See: https://nikitabobko.github.io/AeroSpace/commands#layout
             alt-slash = "layout tiles horizontal vertical";
@@ -464,6 +406,18 @@ in
           #   q = "mode main";
           #   esc = "mode main";
           # };
+          mode.apps.binding = {
+            d = "exec-and-forget open -b ${appIds.Docker}";
+            l = "exec-and-forget open -b ${appIds.Dictionary}";
+            m = "exec-and-forget open -b ${appIds.Messages}";
+            n = "exec-and-forget open -b ${appIds.Notes}";
+            r = "exec-and-forget open -b ${appIds.Reminders}";
+            s = "exec-and-forget open -b ${appIds.Slack}";
+            comma = "exec-and-forget open -b ${appIds."System Settings"}";
+            backtick = "exec-and-forget open -b ${appIds."Activity Monitor"}";
+            esc = "mode main";
+            ctrl-c = "mode main";
+          };
 
           # 'service' binding mode declaration.
           # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes

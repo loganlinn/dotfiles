@@ -11,12 +11,16 @@
   imports = [
     self.darwinModules.common
     self.darwinModules.home-manager
-    ../modules/aerospace.nix
+    ../modules/aerospace
     ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/karabiner-elements
     ../modules/sunbeam
     ../modules/xcode.nix
+    {
+      homebrew.taps = [ "TylerBrock/saw" ];
+      homebrew.brews = [ "TylerBrock/saw/saw" ];
+    }
     # dbeaver
     {
       homebrew.casks = [ "dbeaver-community" ];
@@ -53,6 +57,8 @@
   environment.systemPackages = with pkgs; [
     postgresql
     devenv
+    plistwatch
+    libplist
   ];
 
   homebrew.brews = [

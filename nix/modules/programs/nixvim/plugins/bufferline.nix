@@ -60,15 +60,6 @@
 
       {
         mode = "n";
-        key = "<leader>bd";
-        action = "<cmd>bdelete<cr>";
-        options = {
-          desc = "Delete buffer";
-        };
-      }
-
-      {
-        mode = "n";
         key = "<leader>bl";
         action = "<cmd>BufferLineCloseLeft<cr>";
         options = {

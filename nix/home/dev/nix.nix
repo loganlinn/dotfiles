@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   home.packages = with pkgs; [
@@ -16,5 +21,27 @@
     nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
     nil # language server
     toml2nix
+    (writeShellApplication {
+      name = "nix-env-print";
+      runtimeInputs = [ direnv ];
+      text = ''
+        direnv apply_dump <(nix shell --impure "$@" --command "$(command -v direnv)" dump)
+      '';
+    })
+    (writeShellApplication {
+      name = "nix-derivation-tree";
+      runtimeInputs = [
+        jq
+        tree
+        findutils
+      ];
+      text = ''
+        nix derivation show "$@" | jq '.[].outputs.[].path' | xargs tree
+      '';
+    })
   ];
+
+  my.shellInitExtra = ''
+    source-nix () { source <(nix-env-print "$@"); }
+  '';
 }

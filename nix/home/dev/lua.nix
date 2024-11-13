@@ -3,17 +3,26 @@
   lib,
   pkgs,
   ...
-}: {
-  home.packages = with pkgs; [
-    (lua.withPackages (ps: [
-      ps.luarocks
-      ps.readline
-      ps.inspect
-      ps.http
-      ps.serpent
-    ]))
-    luaformatter
-    # luarocks
-    stylua
-  ];
+}:
+{
+  config = {
+    home.packages = with pkgs; [
+      lua-language-server
+      (lua.withPackages (
+        ps: with ps; [
+          luarocks
+          readline
+          inspect
+          http
+          serpent
+          fennel
+        ]
+      ))
+      luaformatter
+      # luarocks
+      stylua
+      fnlfmt
+      fennel-ls
+    ];
+  };
 }

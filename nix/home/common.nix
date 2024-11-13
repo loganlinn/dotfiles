@@ -10,6 +10,7 @@
   imports = [
     ./accounts.nix
     ./common-linux.nix
+    ./common-darwin.nix
     ./fzf.nix
     ./git
     ./gpg.nix
@@ -53,6 +54,7 @@
     tree
     unzip
     xh # httpie alternative
+
     zip
     flake-root # nb: via overlay
   ];
@@ -65,7 +67,7 @@
     "$HOME/.local/share/cargo/bin"
     # "$HOME/.dotfiles/bin"
     # "$HOME/.krew/bin"
-    # "$HOME/go/bin"
+    "$HOME/go/bin"
   ];
 
   programs.home-manager.enable = true;

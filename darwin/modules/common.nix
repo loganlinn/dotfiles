@@ -30,7 +30,6 @@ in
   ];
 
   config = {
-
     assertions = [
       {
         assertion = config.users.users.${my.user.name}.home == "/Users/${my.user.name}";

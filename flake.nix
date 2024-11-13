@@ -29,13 +29,13 @@
     # nixvim.inputs.nixpkgs.follows = "nixpkgs";
 
     ## utils
+    _1password-shell-plugins.url = "github:1Password/shell-plugins";
     agenix.url = "github:ryantm/agenix";
     # agenix.inputs.nixpkgs.follows = "nixpkgs";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
     # flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-root.url = "github:srid/flake-root";
-    mission-control.url = "github:Platonic-Systems/mission-control";
     nix-colors.url = "github:misterio77/nix-colors";
     # nix-index-database.url = "github:Mic92/nix-index-database";
     # nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
@@ -111,7 +111,6 @@
           devShells.default = pkgs.mkShell {
             inputsFrom = [
               config.flake-root.devShell # sets FLAKE_ROOT
-              config.mission-control.devShell
             ];
             nativeBuildInputs = [
               config.formatter

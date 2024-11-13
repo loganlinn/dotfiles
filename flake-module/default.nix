@@ -168,8 +168,10 @@ let
 in
 {
   imports = [
-    ./mission-control.nix
-    { flake.nixosModules = import ../nixos/modules; }
+    {
+      flake.nixosModules = import ../nixos/modules;
+      # flake.darwinModules = import ../darwin/modules;
+    }
   ];
 
   flake.lib = {

@@ -131,7 +131,8 @@ with lib;
 
         DIRSTACKSIZE=9
 
-        fpath+=("${functionsDir}" "$HOME/.local/share/zsh/functions")
+        fpath+=("${functionsDir}" "$${XDG_DATA_HOME:-$$HOME/.local/share}/zsh/functions")
+
         ${concatLines (map (name: "autoload -Uz ${name}") (attrNames (builtins.readDir functionsDir)))}
 
         ${readFile ./clipboard.zsh}

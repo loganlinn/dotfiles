@@ -37,8 +37,19 @@ config.line_height = 1.1
 config.font_rules = {
   { italic = true, font = victor_mono { style = "Oblique" } },
 }
+-- config.freetype_load_target = "Light"
+
+config.default_cursor_style = "BlinkingBar"
 
 config.window_frame = { font = config.font }
+config.window_padding = {
+  right = "1cell",
+  left = "1cell",
+}
+config.inactive_pane_hsb = {
+  saturation = 0.9,
+  brightness = 0.8,
+}
 config.adjust_window_size_when_changing_font_size = false
 config.bold_brightens_ansi_colors = "BrightAndBold";
 config.enable_scroll_bar = true
@@ -47,68 +58,58 @@ config.initial_rows = 70
 config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false -- do not use native ui
 config.window_decorations = "RESIZE"
-config.inactive_pane_hsb = {
-  saturation = 0.90,
-  brightness = 0.75,
-}
 
--- -- The filled in variant of the < symbol
--- local SOLID_LEFT_ARROW = wezterm.nerdfonts.pl_right_hard_divider
---
--- -- The filled in variant of the > symbol
--- local SOLID_RIGHT_ARROW = wezterm.nerdfonts.pl_left_hard_divider
---
--- -- This function returns the suggested title for a tab.
--- -- It prefers the title that was set via `tab:set_title()`
--- -- or `wezterm cli set-tab-title`, but falls back to the
--- -- title of the active pane in that tab.
--- local function tab_title(tab_info)
---   local title = tab_info.tab_title
---   -- if the tab title is explicitly set, take that
---   if title and #title > 0 then
---     return title
---   end
---   -- Otherwise, use the title from the active pane
---   -- in that tab
---   return tab_info.active_pane.title
--- end
---
--- wezterm.on(
---   'format-tab-title',
---   function(tab, tabs, panes, config, hover, max_width)
---     local edge_background = '#0b0022'
---     local background = '#1b1032'
---     local foreground = '#808080'
---
---     if tab.is_active then
---       background = '#2b2042'
---       foreground = '#c0c0c0'
---     elseif hover then
---       background = '#3b3052'
---       foreground = '#909090'
---     end
---
---     local edge_foreground = background
---
---     local title = tab_title(tab)
---
---     -- ensure that the titles fit in the available space,
---     -- and that we have room for the edges.
---     title = wezterm.truncate_right(title, max_width - 2)
---
---     return {
---       { Background = { Color = edge_background } },
---       { Foreground = { Color = edge_foreground } },
---       { Text = SOLID_LEFT_ARROW },
---       { Background = { Color = background } },
---       { Foreground = { Color = foreground } },
---       { Text = title },
---       { Background = { Color = edge_background } },
---       { Foreground = { Color = edge_foreground } },
---       { Text = SOLID_RIGHT_ARROW },
---     }
---   end
--- )
+---@return string Text representation of key assignment
+local function keystr(key_assignment)
+  if (key_assignment.mod or "NONE") ~= "NONE" then
+    return string.format("%s+%s", key_assignment.key, key_assignment.mods)
+  end
+  return key_assignment.key
+end
+
+wezterm.on('update-right-status', function(window, pane)
+  local cfg = window:effective_config()
+  local color = cfg.color_schemes[cfg.color_scheme]
+  -- wezterm.log_info(color)
+
+  local status = {}
+
+  local active_key_table = window:active_key_table()
+  if active_key_table then
+    table.insert(status, { Foreground = { AnsiColor = 'Fuchsia' } })
+    table.insert(status, { Attribute = { Intensity = 'Bold' } })
+    table.insert(status, { Text = string.format(" %s ", active_key_table) })
+    table.insert(status, { Attribute = { Intensity = 'Normal' } })
+    table.insert(status,
+      {
+        Text = string.format("[%s]",
+          table.concat(
+            utils.tbl.map(function(_, v) return v.key end, cfg.key_tables[active_key_table]),
+            "|"))
+      })
+    table.insert(status, 'ResetAttributes')
+    table.insert(status, { Text = " " })
+  end
+
+  if window:leader_is_active() then
+    table.insert(status, { Foreground = { Color = "black" } })
+    table.insert(status, { Background = { Color = "green" } })
+  else
+    table.insert(status, { Foreground = { Color = "grey" } })
+  end
+  table.insert(status, { Text = " LEADER " })
+  table.insert(status, 'ResetAttributes')
+  table.insert(status, { Text = " " })
+
+  for i, workspace_name in pairs(wezterm.mux.get_workspace_names()) do
+    if workspace_name == window:active_workspace() then
+      table.insert(status, { Background = { Color = color.brights[1] } })
+    end
+    table.insert(status, { Text = string.format(" %d: %s ", i, workspace_name) })
+    table.insert(status, 'ResetAttributes')
+  end
+  window:set_right_status(wezterm.format(status))
+end)
 
 config.command_palette_font_size = config.font_size
 config.command_palette_font_size = config.font_size
@@ -120,35 +121,18 @@ config.exit_behavior = "CloseOnCleanExit" -- Use 'Hold' to not close
 config.quit_when_all_windows_are_closed = true
 config.switch_to_last_active_tab_when_closing_tab = true
 config.check_for_updates = false
-config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = false
 config.native_macos_fullscreen_mode = false
 -- config.selection_word_boundary = '{}[]()"\'`.,;:'
 
-local function insert_keys(...)
-  if config.keys == nil then config.keys = {} end
-  local p = {}
-  for k, v in pairs({ ... }) do
-    if type(k) == "number" then
-      local key = {}
-      for pk, pv in pairs(p) do key[pk] = pv end
-      for vk, vv in pairs(v) do key[vk] = vv end
-      table.insert(config.keys, key)
-    else
-      for vk, vv in pairs(v) do p[vk] = vv end
-    end
-  end
-end
-
-config.disable_default_key_bindings = true
--- config.enable_kitty_keyboard = true --  honor kitty keyboard protocol escape sequences that modify the keyboard encoding
--- config.use_ime = false
--- config.use_dead_keys = false
 -- config.debug_key_events = true
--- config.leader = {
---   mod = "CTRL|SHIFT",
---   key = "Space",
---   timeout_milliseconds = 1000,
--- }
+config.disable_default_key_bindings = true
+config.enable_kitty_keyboard = true
+config.leader = {
+  mods = "CTRL|SHIFT",
+  key = "Space",
+  timeout_milliseconds = math.maxinteger,
+}
 config.keys = {
   -- Tab Focus
   { key = "Tab",   mods = "CTRL",             action = act.ActivateTabRelative(1), },
@@ -242,6 +226,10 @@ config.keys = {
   { key = "p",         mods = "CTRL|SHIFT",     action = act.ActivateCommandPalette, },
   { key = "u",         mods = "CTRL|SHIFT",     action = act.CharSelect, },
   { key = "x",         mods = "CTRL|SHIFT",     action = act.ActivateCopyMode, },
+
+  { key = "m",         mods = "CTRL|SHIFT",     action = act.ActivateKeyTable { name = "mux" }, },
+  { key = "m",         mods = "LEADER",         action = act.ActivateKeyTable { name = "mux" }, },
+  { key = "w",         mods = "LEADER",         action = act.ActivateKeyTable { name = "window" }, },
 }
 
 for i = 1, 9 do
@@ -260,58 +248,57 @@ for i = 1, 9 do
   })
 end
 
-table.insert(config.keys, {
-  key = "F12",
-  mods = "NONE",
-  action = act.Multiple {
-    (act.ActivateKeyTable {
-      name = "cancel",
-      replace_current = true,
-    }),
-    act.EmitEvent "toggle-leader",
-  },
-})
+-- table.insert(config.keys, {
+--   key = "F12",
+--   mods = "NONE",
+--   action = act.Multiple {
+--     (act.ActivateKeyTable {
+--       name = "cancel",
+--       replace_current = true,
+--     }),
+--     act.EmitEvent "toggle-leader",
+--   },
+-- })
 
-wezterm.on("toggle-leader", function(window, pane, ...)
-  local overrides = window:get_config_overrides() or {}
-  if not overrides.leader then
-    wezterm.emit("enable-leader", window, pane, ...)
-  else
-    wezterm.emit("disable-leader", window, pane, ...)
-  end
-end)
 
-wezterm.on("enable-leader", function(window, pane, ...)
-  local overrides = window:get_config_overrides() or {}
-  -- replace it with an "impossible" leader that will never be pressed
-  overrides.leader = { key = "_", mods = "CTRL|ALT|SUPER" }
-  overrides.colors = { background = "#100000" }
-  overrides.window_background_opacity = 0.95
-  window:set_config_overrides(overrides)
-  window.perform_action(act.ActivateKeyTable { name = "cancel", }, pane)
-end)
+-- wezterm.on("toggle-leader", function(window, pane, ...)
+--   local overrides = window:get_config_overrides() or {}
+--   if not overrides.leader then
+--     wezterm.emit("enable-leader", window, pane, ...)
+--   else
+--     wezterm.emit("disable-leader", window, pane, ...)
+--   end
+-- end)
+--
+-- wezterm.on("enable-leader", function(window, pane, ...)
+--   local overrides = window:get_config_overrides() or {}
+--   -- replace it with an "impossible" leader that will never be pressed
+--   overrides.leader = { key = "_", mods = "CTRL|ALT|SUPER" }
+--   overrides.colors = { background = "#100000" }
+--   overrides.window_background_opacity = 0.95
+--   window:set_config_overrides(overrides)
+--   window.perform_action(act.ActivateKeyTable { name = "cancel", }, pane)
+-- end)
+--
+-- wezterm.on("disable-leader", function(window, pane)
+--   local overrides = window:get_config_overrides() or {}
+--   -- restore to the main leader
+--   overrides.leader = nil
+--   overrides.colors = nil
+--   overrides.window_background_opacity = nil
+--   window:set_config_overrides(overrides)
+--   window.perform_action(act.ClearKeyTableStack, pane)
+-- end)
+--
+-- wezterm.on("cancel-key-tables", function(window, pane)
+--   wezterm.emit("disable-leader", window, pane)
+--   window.perform_action(act.ClearKeyTableStack, pane)
+-- end)
 
-wezterm.on("disable-leader", function(window, pane)
-  local overrides = window:get_config_overrides() or {}
-  -- restore to the main leader
-  overrides.leader = nil
-  overrides.colors = nil
-  overrides.window_background_opacity = nil
-  window:set_config_overrides(overrides)
-  window.perform_action(act.ClearKeyTableStack, pane)
-end)
-
-wezterm.on("cancel-key-tables", function(window, pane)
-  wezterm.emit("disable-leader", window, pane)
-  window.perform_action(act.ClearKeyTableStack, pane)
-end)
-
-config.key_tables = config.key_tables or {}
-config.key_tables.cancel = {
-  { key = "c",      mods = "CTRL", action = act.Multiple { act.PopKeyTable, act.EmitEvent "cancel-leader", } },
-  { key = "g",      mods = "CTRL", action = act.Multiple { act.PopKeyTable, act.EmitEvent "cancel-leader", } },
-  { key = "Escape", mods = "NONE", action = act.Multiple { act.PopKeyTable, act.EmitEvent "cancel-leader", } },
-}
+local function insert_cancel_keys(key_table)
+  table.insert(key_table, { key = "Escape", mods = "NONE", action = act.ClearKeyTableStack })
+  table.insert(key_table, { key = "g", mods = "CTRL", action = act.ClearKeyTableStack })
+end
 
 -- (utils.KeyTable.new {
 --   name = "window",
@@ -322,33 +309,85 @@ config.key_tables.cancel = {
 --   }
 -- }).apply_to_config(config)
 
--- config.key_tables = {
---   -- window = {
---   --   { key = "d", action = act.CloseCurrentTab { confirm = true } },
---   -- },
---   resize_pane = {
---     { key = 'h',          action = act.AdjustPaneSize { 'Left', 5 } },
---     { key = 'l',          action = act.AdjustPaneSize { 'Right', 5 } },
---     { key = 'k',          action = act.AdjustPaneSize { 'Up', 5 } },
---     { key = 'j',          action = act.AdjustPaneSize { 'Down', 5 } },
---     { key = 'LeftArrow',  action = act.AdjustPaneSize { 'Left', 5 } },
---     { key = 'RightArrow', action = act.AdjustPaneSize { 'Right', 5 } },
---     { key = 'UpArrow',    action = act.AdjustPaneSize { 'Up', 5 } },
---     { key = 'DownArrow',  action = act.AdjustPaneSize { 'Down', 5 } },
---     { key = 'Space',      action = act.Multiple { act.TogglePaneZoomState, act.PopKeyTable } },
---   },
---   activate_pane = {
---     { key = 'h',          action = act.ActivatePaneDirection 'Left' },
---     { key = 'l',          action = act.ActivatePaneDirection 'Right' },
---     { key = 'k',          action = act.ActivatePaneDirection 'Up' },
---     { key = 'j',          action = act.ActivatePaneDirection 'Down' },
---
---     { key = 'LeftArrow',  action = act.ActivatePaneDirection 'Left' },
---     { key = 'RightArrow', action = act.ActivatePaneDirection 'Right' },
---     { key = 'UpArrow',    action = act.ActivatePaneDirection 'Up' },
---     { key = 'DownArrow',  action = act.ActivatePaneDirection 'Down' },
---   },
--- }
+local function with_domain_selection(window, pane, callback)
+  local choices = {}
+  for _, domain in pairs(wezterm.mux.all_domains()) do
+    table.insert(choices, { id = domain.id or domain.name, label = domain.label })
+  end
+  window:perform_action(
+    act.InputSelector {
+      action = wezterm.action_callback(function(window, pane, id, label)
+        if not id and not label then
+          return
+        end
+        local domain = wezterm.mux.get_domain(id)
+        if not domain then
+          wezterm.log_error("Domain not found: " .. tostring(id))
+          return
+        end
+        callback(domain, window, pane)
+      end),
+      title = 'domains',
+      choices = choices,
+    },
+    pane
+  )
+end
+
+
+
+config.key_tables = {
+  mux = {
+    {
+      key = "r",
+      mods = "NONE",
+      action = act.PromptInputLine {
+        description = wezterm.format {
+          { Attribute = { Intensity = 'Bold' } },
+          { Text = 'Enter name for new workspace' },
+        },
+        action = wezterm.action_callback(function(window, pane, input)
+          if input then
+            wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
+          end
+        end),
+      },
+    },
+    -- Cancel
+    { key = "Escape", mods = "NONE", action = act.ClearKeyTableStack },
+    { key = "g",      mods = "CTRL", action = act.ClearKeyTableStack },
+    { key = "c",      mods = "CTRL", action = act.ClearKeyTableStack },
+  },
+  domain = {
+
+  },
+  window = {
+    { key = "d", action = act.CloseCurrentTab { confirm = true } },
+    { key = "s", action = act.PaneSelect { mode = "SwapWithActive" } },
+  },
+  --   resize_pane = {
+  --     { key = 'h',          action = act.AdjustPaneSize { 'Left', 5 } },
+  --     { key = 'l',          action = act.AdjustPaneSize { 'Right', 5 } },
+  --     { key = 'k',          action = act.AdjustPaneSize { 'Up', 5 } },
+  --     { key = 'j',          action = act.AdjustPaneSize { 'Down', 5 } },
+  --     { key = 'LeftArrow',  action = act.AdjustPaneSize { 'Left', 5 } },
+  --     { key = 'RightArrow', action = act.AdjustPaneSize { 'Right', 5 } },
+  --     { key = 'UpArrow',    action = act.AdjustPaneSize { 'Up', 5 } },
+  --     { key = 'DownArrow',  action = act.AdjustPaneSize { 'Down', 5 } },
+  --     { key = 'Space',      action = act.Multiple { act.TogglePaneZoomState, act.PopKeyTable } },
+  --   },
+  --   activate_pane = {
+  --     { key = 'h',          action = act.ActivatePaneDirection 'Left' },
+  --     { key = 'l',          action = act.ActivatePaneDirection 'Right' },
+  --     { key = 'k',          action = act.ActivatePaneDirection 'Up' },
+  --     { key = 'j',          action = act.ActivatePaneDirection 'Down' },
+  --
+  --     { key = 'LeftArrow',  action = act.ActivatePaneDirection 'Left' },
+  --     { key = 'RightArrow', action = act.ActivatePaneDirection 'Right' },
+  --     { key = 'UpArrow',    action = act.ActivatePaneDirection 'Up' },
+  --     { key = 'DownArrow',  action = act.ActivatePaneDirection 'Down' },
+  --   },
+}
 
 config.launch_menu = {
   {

@@ -7,7 +7,10 @@
 lib.mkIf pkgs.stdenv.isLinux {
   home.keyboard = {
     layout = "us";
-    options = ["ctrl:nocaps" "compose:ralt"];
+    options = [
+      "ctrl:nocaps"
+      "compose:ralt"
+    ];
   };
 
   services.xcape.enable = true;
@@ -15,7 +18,6 @@ lib.mkIf pkgs.stdenv.isLinux {
   services.xcape.mapExpression = {
     Control_L = "Escape";
   };
-
 
   home.packages = with pkgs; [
     gcc

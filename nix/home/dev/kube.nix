@@ -12,6 +12,20 @@
     kctx = "kubectx";
     kk = "kustomize";
     kkb = "kustomize build";
+    kno = "kzf nodes";
+    kcm = "kzf configmaps";
+    kns = "kzf namespaces";
+    kpo = "kzf pods";
+    ksvc = "kzf services";
+    kpvc = "kzf persistentvolumeclaims";
+    kpv = "kzf persistentvolumes";
+    kdeploy = "kzf deployments";
+    kds = "kzf daemonsets";
+    krs = "kzf replicasets";
+    ksts = "kzf statefulsets";
+    kcrd = "kzf customresourcedefinitions";
+    kjobs = "kzf jobs";
+    kcj = "kzf cronjobs";
   };
 
   home.packages = with pkgs; [
@@ -28,6 +42,17 @@
     stern # log tailer
     minikube
     # (pkgs.callPackage ../../pkgs/kubectl-fzf.nix { })
+    (writeShellApplication {
+      name = "kzf";
+      runtimeInputs = [
+        kubectl
+        fzf
+      ];
+      text = ''
+        kubectl get "$@" --no-headers -o custom-columns=":metadata.name" |
+        fzf --exit-0 --header "$*"
+      '';
+    })
   ];
 
   programs.k9s.enable = true;

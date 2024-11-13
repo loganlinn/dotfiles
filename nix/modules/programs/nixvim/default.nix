@@ -17,6 +17,8 @@
     };
 
     opts = {
+      ignorecase = true;
+      smartcase = true;
       number = true;
       relativenumber = true;
       clipboard = "unnamedplus";
