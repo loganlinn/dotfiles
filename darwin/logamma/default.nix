@@ -97,6 +97,7 @@
       inputs.nixvim.homeManagerModules.nixvim
       ../../nix/home/dev
       ../../nix/home/dev/nodejs.nix
+      ../../nix/home/dev/lua.nix
       ../../nix/home/doom
       ../../nix/home/just
       ../../nix/home/kitty

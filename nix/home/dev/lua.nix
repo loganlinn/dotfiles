@@ -4,6 +4,7 @@
   pkgs,
   ...
 }:
+with lib;
 {
   config = {
     home.packages = with pkgs; [
