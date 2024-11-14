@@ -1,34 +1,31 @@
 #!/usr/bin/env bash
+# worktree-run.sh: start temporary worktree shell
 
 set -eo pipefail
 
-worktree_main() {
-  git worktree list --porcelain | head -n1 | cut -d' ' -f2
-}
-
-worktree_cleanup() {
-  if [[ -d $WORKTREE_PATH ]] && gum confirm "Remove worktree $(basename "$WORKTREE_PATH")? "; then
-    git worktree remove --force "$WORKTREE_PATH"
-  fi
-}
-
-trap worktree_cleanup EXIT
-
-WORKTREE_REV=$(gum input --header "worktree revision" --value 'main@{upstream}') || exit $?
-WORKTREE_COMMIT=$(git rev-parse --verify --short "${WORKTREE_REV?}") || exit $?
-
-: "${WORKTREE_PATH:=$(worktree_main).${WORKTREE_COMMIT?}}"
-
-if [[ -d $WORKTREE_PATH ]]; then
-  n=1
-  while [[ -d "$WORKTREE_PATH~$n" ]]; do
-    n=$((n + 1))
-  done
-  WORKTREE_PATH="$WORKTREE_PATH~$n"
+if ! command -v gum 2>/dev/null; then
+  gum() { nix run nixpkgs#gum -- "$@"; }
 fi
 
-git worktree add --force --detach "${WORKTREE_PATH?}" "${WORKTREE_COMMIT?}"
+# TODO args for these
+rev=$(gum input --header "Revision" --value 'main@{upstream}')
+commit=$(git rev-parse --verify --short "${rev?}")
+main_worktree_path=$(git worktree list --porcelain | head -n1 | cut -d' ' -f2)
+worktree_path=${main_worktree_path?}.${commit?}
 
-: "${WORKTREE_COMMAND:=$(gum input --header "worktree command" --value "${*:-${SHELL-bash}}" || exit $?)}"
+# get a unique name
+if [[ -d $worktree_path ]]; then
+  worktree_path="$worktree_path~$RANDOM"
+fi
 
-env --chdir="${WORKTREE_PATH?}" "${WORKTREE_COMMAND?}"
+cleanup() {
+  if [[ -d $worktree_path ]] && gum confirm "Remove worktree $(basename "$worktree_path")? "; then
+    git worktree remove --force "$worktree_path"
+  fi
+}
+trap cleanup EXIT
+
+git worktree add --force --detach "${worktree_path?}" "${commit?}"
+
+# shellcheck disable=2046
+env --chdir="${worktree_path?}" - $(gum input --header "worktree command" --value "${*:-${SHELL-bash}}")

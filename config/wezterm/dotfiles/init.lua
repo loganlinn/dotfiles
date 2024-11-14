@@ -1,41 +1,32 @@
-local wezterm = require 'wezterm' -- https://wezfurlong.org/wezterm/config/lua/config
-local act = wezterm.action
--- local color = wezterm.color
--- local gui = wezterm.gui
--- local mux = wezterm.mux
--- local procinfo = wezterm.procinfo
--- local serde = wezterm.serde
--- local time = wezterm.time
--- local url = wezterm.url
-
-local utils = require('dotfiles.utils')
+local wezterm = require("wezterm") -- https://wezfurlong.org/wezterm/config/lua/config
+local utils = require("dotfiles.utils")
 
 local config = wezterm.config_builder()
-
 config:set_strict_mode(true)
 
 local function victor_mono(fontattr)
   fontattr = fontattr or {}
   fontattr.family = "Victor Mono"
-  fontattr.harfbuzz_features = fontattr.harfbuzz_features or {
-    -- "ss01", -- Single-storey a
-    "ss02", -- Slashed zero, variant 1
-    -- "ss03", -- Slashed zero, variant 2
-    -- "ss04", -- Slashed zero, variant 3
-    -- "ss05", -- Slashed zero, variant 4
-    -- "ss06", -- Slashed seven
-    "ss07", -- Straighter 6 and 9
-    -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
-  }
+  fontattr.harfbuzz_features = fontattr.harfbuzz_features
+    or {
+      -- "ss01", -- Single-storey a
+      "ss02", -- Slashed zero, variant 1
+      -- "ss03", -- Slashed zero, variant 2
+      -- "ss04", -- Slashed zero, variant 3
+      -- "ss05", -- Slashed zero, variant 4
+      -- "ss06", -- Slashed seven
+      "ss07", -- Straighter 6 and 9
+      -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
+    }
   return wezterm.font(fontattr)
 end
 
-config.font = victor_mono { style = "Normal" }
+config.font = victor_mono({ style = "Normal" })
 config.font_size = 14
 config.cell_width = 1
 config.line_height = 1.1
 config.font_rules = {
-  { italic = true, font = victor_mono { style = "Oblique" } },
+  { italic = true, font = victor_mono({ style = "Oblique" }) },
 }
 -- config.freetype_load_target = "Light"
 
@@ -51,7 +42,7 @@ config.inactive_pane_hsb = {
   brightness = 0.8,
 }
 config.adjust_window_size_when_changing_font_size = false
-config.bold_brightens_ansi_colors = "BrightAndBold";
+config.bold_brightens_ansi_colors = "BrightAndBold"
 config.enable_scroll_bar = true
 config.initial_cols = 140
 config.initial_rows = 70
@@ -67,7 +58,7 @@ local function keystr(key_assignment)
   return key_assignment.key
 end
 
-wezterm.on('update-right-status', function(window, pane)
+wezterm.on("update-right-status", function(window, pane)
   local cfg = window:effective_config()
   local color = cfg.color_schemes[cfg.color_scheme]
   -- wezterm.log_info(color)
@@ -76,18 +67,22 @@ wezterm.on('update-right-status', function(window, pane)
 
   local active_key_table = window:active_key_table()
   if active_key_table then
-    table.insert(status, { Foreground = { AnsiColor = 'Fuchsia' } })
-    table.insert(status, { Attribute = { Intensity = 'Bold' } })
+    table.insert(status, { Foreground = { AnsiColor = "Fuchsia" } })
+    table.insert(status, { Attribute = { Intensity = "Bold" } })
     table.insert(status, { Text = string.format(" %s ", active_key_table) })
-    table.insert(status, { Attribute = { Intensity = 'Normal' } })
-    table.insert(status,
-      {
-        Text = string.format("[%s]",
-          table.concat(
-            utils.tbl.map(function(_, v) return v.key end, cfg.key_tables[active_key_table]),
-            "|"))
-      })
-    table.insert(status, 'ResetAttributes')
+    table.insert(status, { Attribute = { Intensity = "Normal" } })
+    table.insert(status, {
+      Text = string.format(
+        "[%s]",
+        table.concat(
+          utils.tbl.map(function(_, v)
+            return v.key
+          end, cfg.key_tables[active_key_table]),
+          "|"
+        )
+      ),
+    })
+    table.insert(status, "ResetAttributes")
     table.insert(status, { Text = " " })
   end
 
@@ -98,7 +93,7 @@ wezterm.on('update-right-status', function(window, pane)
     table.insert(status, { Foreground = { Color = "grey" } })
   end
   table.insert(status, { Text = " LEADER " })
-  table.insert(status, 'ResetAttributes')
+  table.insert(status, "ResetAttributes")
   table.insert(status, { Text = " " })
 
   for i, workspace_name in pairs(wezterm.mux.get_workspace_names()) do
@@ -106,7 +101,7 @@ wezterm.on('update-right-status', function(window, pane)
       table.insert(status, { Background = { Color = color.brights[1] } })
     end
     table.insert(status, { Text = string.format(" %d: %s ", i, workspace_name) })
-    table.insert(status, 'ResetAttributes')
+    table.insert(status, "ResetAttributes")
   end
   window:set_right_status(wezterm.format(status))
 end)
@@ -133,103 +128,105 @@ config.leader = {
   key = "Space",
   timeout_milliseconds = math.maxinteger,
 }
+
+local act = wezterm.action
 config.keys = {
   -- Tab Focus
-  { key = "Tab",   mods = "CTRL",             action = act.ActivateTabRelative(1), },
-  { key = "Tab",   mods = "CTRL|SHIFT",       action = act.ActivateTabRelative(-1), },
+  { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
+  { key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
 
   -- Tab Position
-  { key = "<",     mods = "CTRL|SHIFT",       action = act.MoveTabRelative(-1) },
-  { key = ">",     mods = "CTRL|SHIFT",       action = act.MoveTabRelative(1) },
+  { key = "<", mods = "CTRL|SHIFT", action = act.MoveTabRelative(-1) },
+  { key = ">", mods = "CTRL|SHIFT", action = act.MoveTabRelative(1) },
 
   -- Pane Lifecycle
-  { key = "Enter", mods = "CTRL|SHIFT",       action = act.SplitHorizontal { domain = "CurrentPaneDomain" }, },
-  { key = "Enter", mods = "CTRL|SHIFT|SUPER", action = act.SplitVertical { domain = "CurrentPaneDomain" }, },
-  { key = "t",     mods = "CTRL|SHIFT",       action = act.SpawnTab 'CurrentPaneDomain' },
-  { key = "w",     mods = "CTRL|SHIFT",       action = act.CloseCurrentPane { confirm = true }, },
-  { key = "w",     mods = "SUPER",            action = act.CloseCurrentPane { confirm = true }, },
+  { key = "Enter", mods = "CTRL|SHIFT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+  { key = "Enter", mods = "CTRL|SHIFT|SUPER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+  { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
+  { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = true }) },
+  { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
 
   -- Window Lifecycle
-  { key = "n",     mods = "SUPER",            action = act.SpawnWindow, },
+  { key = "n", mods = "SUPER", action = act.SpawnWindow },
   {
-    key = 'N',
-    mods = 'CTRL|SHIFT',
-    action = act.PromptInputLine {
-      description = wezterm.format {
-        { Attribute = { Intensity = 'Bold' } },
-        { Foreground = { AnsiColor = 'Fuchsia' } },
-        { Text = 'Enter name for new workspace' },
-      },
+    key = "N",
+    mods = "CTRL|SHIFT",
+    action = act.PromptInputLine({
+      description = wezterm.format({
+        { Attribute = { Intensity = "Bold" } },
+        { Foreground = { AnsiColor = "Fuchsia" } },
+        { Text = "Enter name for new workspace" },
+      }),
       action = wezterm.action_callback(function(window, pane, line)
         if line then
           window:perform_action(
-            act.SwitchToWorkspace {
+            act.SwitchToWorkspace({
               name = line,
-            },
+            }),
             pane
           )
         end
       end),
-    },
+    }),
   },
 
   -- Workspace
-  { key = "{",         mods = "CTRL|SHIFT", action = act.SwitchWorkspaceRelative(-1) },
-  { key = "}",         mods = "CTRL|SHIFT", action = act.SwitchWorkspaceRelative(1) },
-  { key = "Backslash", mods = "CTRL|SHIFT", action = act.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' } },
+  { key = "{", mods = "CTRL|SHIFT", action = act.SwitchWorkspaceRelative(-1) },
+  { key = "}", mods = "CTRL|SHIFT", action = act.SwitchWorkspaceRelative(1) },
+  { key = "Backslash", mods = "CTRL|SHIFT", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
 
   -- Tabs
   {
-    key = 'e',
-    mods = 'CTRL|SHIFT',
-    action = act.PromptInputLine {
-      description = 'Tab name',
+    key = "e",
+    mods = "CTRL|SHIFT",
+    action = act.PromptInputLine({
+      description = "Tab name",
       action = wezterm.action_callback(function(window, pane, line)
         if line then
           window:active_tab():set_title(line)
         end
       end),
-    },
+    }),
   },
 
   -- Pane Focus
-  { key = "h",         mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Left") },
-  { key = "j",         mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Down") },
-  { key = "k",         mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Up") },
-  { key = "l",         mods = "CTRL|SHIFT",     action = act.ActivatePaneDirection("Right") },
+  { key = "h", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Left") },
+  { key = "j", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Down") },
+  { key = "k", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Up") },
+  { key = "l", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Right") },
 
   -- Pane Size
-  { key = 'h',         mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Left', 5 } },
-  { key = 'j',         mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Down', 5 } },
-  { key = 'k',         mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Up', 5 } },
-  { key = 'l',         mods = 'CTRL|SHIFT|ALT', action = act.AdjustPaneSize { 'Right', 5 } },
+  { key = "h", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Left", 5 }) },
+  { key = "j", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Down", 5 }) },
+  { key = "k", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Up", 5 }) },
+  { key = "l", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Right", 5 }) },
 
   -- Pane Misc
-  { key = "b",         mods = "CTRL|SHIFT",     action = act.RotatePanes 'CounterClockwise' },
-  { key = 'z',         mods = 'CTRL|SHIFT',     action = act.TogglePaneZoomState, },
+  { key = "b", mods = "CTRL|SHIFT", action = act.RotatePanes("CounterClockwise") },
+  { key = "z", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
 
   -- Scroll
-  { key = "Home",      mods = "CTRL|SHIFT",     action = act.ScrollToTop, },
-  { key = "PageDown",  mods = "CTRL|SHIFT",     action = act.ScrollByPage(1), },
-  { key = "PageUp",    mods = "CTRL|SHIFT",     action = act.ScrollByPage(-1), },
-  { key = "End",       mods = "CTRL|SHIFT",     action = act.ScrollToBottom, },
+  { key = "Home", mods = "CTRL|SHIFT", action = act.ScrollToTop },
+  { key = "PageDown", mods = "CTRL|SHIFT", action = act.ScrollByPage(1) },
+  { key = "PageUp", mods = "CTRL|SHIFT", action = act.ScrollByPage(-1) },
+  { key = "End", mods = "CTRL|SHIFT", action = act.ScrollToBottom },
 
   -- System
-  { key = "c",         mods = "CTRL|SHIFT",     action = act.CopyTo "Clipboard", },
-  { key = "v",         mods = "CTRL|SHIFT",     action = act.PasteFrom "Clipboard", },
+  { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
+  { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
 
   -- Misc
-  { key = 'F1',        mods = "SUPER",          action = act.ShowDebugOverlay, },
-  { key = "f",         mods = "SUPER",          action = act.Search { CaseSensitiveString = "" }, },
-  { key = "Semicolon", mods = "CTRL|SHIFT",     action = act.ShowLauncher, },
-  { key = "'",         mods = "CTRL|SHIFT",     action = act.QuickSelect, },
-  { key = "p",         mods = "CTRL|SHIFT",     action = act.ActivateCommandPalette, },
-  { key = "u",         mods = "CTRL|SHIFT",     action = act.CharSelect, },
-  { key = "x",         mods = "CTRL|SHIFT",     action = act.ActivateCopyMode, },
+  { key = "F1", mods = "SUPER", action = act.ShowDebugOverlay },
+  { key = "f", mods = "SUPER", action = act.Search({ CaseSensitiveString = "" }) },
+  { key = "Semicolon", mods = "CTRL|SHIFT", action = act.ShowLauncher },
+  { key = "'", mods = "CTRL|SHIFT", action = act.QuickSelect },
+  { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
+  { key = "u", mods = "CTRL|SHIFT", action = act.CharSelect },
+  { key = "x", mods = "CTRL|SHIFT", action = act.ActivateCopyMode },
 
-  { key = "m",         mods = "CTRL|SHIFT",     action = act.ActivateKeyTable { name = "mux" }, },
-  { key = "m",         mods = "LEADER",         action = act.ActivateKeyTable { name = "mux" }, },
-  { key = "w",         mods = "LEADER",         action = act.ActivateKeyTable { name = "window" }, },
+  { key = "m", mods = "CTRL|SHIFT", action = act.ActivateKeyTable({ name = "mux" }) },
+  { key = "m", mods = "LEADER", action = act.ActivateKeyTable({ name = "mux" }) },
+  { key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "window" }) },
 }
 
 for i = 1, 9 do
@@ -259,7 +256,6 @@ end
 --     act.EmitEvent "toggle-leader",
 --   },
 -- })
-
 
 -- wezterm.on("toggle-leader", function(window, pane, ...)
 --   local overrides = window:get_config_overrides() or {}
@@ -315,7 +311,7 @@ local function with_domain_selection(window, pane, callback)
     table.insert(choices, { id = domain.id or domain.name, label = domain.label })
   end
   window:perform_action(
-    act.InputSelector {
+    act.InputSelector({
       action = wezterm.action_callback(function(window, pane, id, label)
         if not id and not label then
           return
@@ -327,43 +323,39 @@ local function with_domain_selection(window, pane, callback)
         end
         callback(domain, window, pane)
       end),
-      title = 'domains',
+      title = "domains",
       choices = choices,
-    },
+    }),
     pane
   )
 end
-
-
 
 config.key_tables = {
   mux = {
     {
       key = "r",
       mods = "NONE",
-      action = act.PromptInputLine {
-        description = wezterm.format {
-          { Attribute = { Intensity = 'Bold' } },
-          { Text = 'Enter name for new workspace' },
-        },
+      action = act.PromptInputLine({
+        description = wezterm.format({
+          { Attribute = { Intensity = "Bold" } },
+          { Text = "Enter name for new workspace" },
+        }),
         action = wezterm.action_callback(function(window, pane, input)
           if input then
             wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
           end
         end),
-      },
+      }),
     },
     -- Cancel
     { key = "Escape", mods = "NONE", action = act.ClearKeyTableStack },
-    { key = "g",      mods = "CTRL", action = act.ClearKeyTableStack },
-    { key = "c",      mods = "CTRL", action = act.ClearKeyTableStack },
+    { key = "g", mods = "CTRL", action = act.ClearKeyTableStack },
+    { key = "c", mods = "CTRL", action = act.ClearKeyTableStack },
   },
-  domain = {
-
-  },
+  domain = {},
   window = {
-    { key = "d", action = act.CloseCurrentTab { confirm = true } },
-    { key = "s", action = act.PaneSelect { mode = "SwapWithActive" } },
+    { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
+    { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
   },
   --   resize_pane = {
   --     { key = 'h',          action = act.AdjustPaneSize { 'Left', 5 } },
@@ -393,7 +385,7 @@ config.launch_menu = {
   {
     label = "dotfiles: edit",
     args = { "zsh", "-c", "nvim", ".dotfiles", "+cd %:p:h", "+Telescope find_files" },
-  }
+  },
 }
 
 -- wezterm.plugin
@@ -409,8 +401,7 @@ config.launch_menu = {
 --     .require('https://github.com/MLFlexer/modal.wezterm')
 --     .apply_to_config(config, {})
 
-local workspace_switcher = wezterm.plugin
-    .require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
+local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
 
 workspace_switcher.apply_to_config(config)
 

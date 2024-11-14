@@ -125,6 +125,7 @@
       nodejs
       pls
       process-compose
+      google-cloud-sdk
     ];
 
     home.stateVersion = "22.11";

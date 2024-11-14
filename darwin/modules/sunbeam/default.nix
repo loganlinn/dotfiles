@@ -37,7 +37,7 @@ in
       '';
       programs.zsh.initExtra = mkIf cfg.enableZshIntegration ''
         if [[ $TERM != "dumb" ]]; then
-          eval "$(sunbeam completion zsh)"
+          eval "$(${config.homebrew.brewPrefix}/sunbeam completion zsh)"
         fi
       '';
       programs.fish.interactiveShellInit = mkIf cfg.enableFishIntegration ''

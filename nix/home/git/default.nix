@@ -46,19 +46,22 @@ with lib;
       { path = ./include/gitalias.txt; }
     ];
     aliases = {
-      toplevel = "rev-parse --show-toplevel";
+      home = "rev-parse --show-toplevel";
       prefix = "rev-parse --show-prefix";
       cdup = "rev-parse --show-cdup";
+      run = ''!env -C "$$(git rev-parse --show-toplevel)" -'';
+      exec = ''!env -C "$$(git rev-parse --show-toplevel)" -'';
       wt = "worktree";
       wtm = "worktree-main";
       wtl = "worktree-linked";
       wtr = ''
-        !f() {
-                for p in $(git worktree list --porcelain | ${pkgs.gawk}/bin/awk '(NR>1) && /^worktree / { print $2 }' | ${pkgs.fzf}/bin/fzf -0 -m); do
-                  ${pkgs.gum}/bin/gum confirm "git worktree remove $p" &&
-                  git worktree remove --force "$p"
-                done
-              }; f'';
+        !${pkgs.writeShellScriptBin "git-worktree-rm" ''
+          for p in $(git worktree list --porcelain | ${pkgs.gawk}/bin/awk '(NR>1) && /^worktree / { print $2 }' | ${pkgs.fzf}/bin/fzf -0 -m); do
+            ${pkgs.gum}/bin/gum confirm "git worktree remove $p" &&
+            git worktree remove --force "$p"
+          done
+        ''}
+      '';
       wtx = "!${./worktree-run.sh}";
       worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
       worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
@@ -138,21 +141,6 @@ with lib;
   home.packages = with pkgs; [
     delta
     git-absorb
-    (writeShellScriptBin "git-run" ''
-      set -eo pipefail
-
-      git rev-parse --is-inside-work-tree >/dev/null \
-      && cd "$(git rev-parse --show-toplevel)" \
-      || exit 1
-
-      while [[ $# -eq 0 ]]; do
-        unset REPLY
-        read -p "command: "
-        set -- "$REPLY"
-      done
-
-      exec "$@"
-    '')
   ];
 
   programs.zsh.initExtra = ''

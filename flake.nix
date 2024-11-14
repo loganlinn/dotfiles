@@ -29,7 +29,7 @@
     # nixvim.inputs.nixpkgs.follows = "nixpkgs";
 
     ## utils
-    _1password-shell-plugins.url = "github:1Password/shell-plugins";
+    # _1password-shell-plugins.url = "github:1Password/shell-plugins";
     agenix.url = "github:ryantm/agenix";
     # agenix.inputs.nixpkgs.follows = "nixpkgs";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
