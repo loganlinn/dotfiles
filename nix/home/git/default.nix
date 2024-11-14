@@ -141,6 +141,7 @@ with lib;
   home.packages = with pkgs; [
     delta
     git-absorb
+    git-stack
   ];
 
   programs.zsh.initExtra = ''
