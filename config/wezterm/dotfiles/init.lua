@@ -177,7 +177,7 @@ config.keys = {
 
   -- Tabs
   {
-    key = "e",
+    key = "F2",
     mods = "CTRL|SHIFT",
     action = act.PromptInputLine({
       description = "Tab name",
@@ -215,11 +215,31 @@ config.keys = {
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
 
+  -- Selection
+  {
+    key = "e",
+    mods = "CTRL|SHIFT",
+    action = wezterm.action({
+      QuickSelectArgs = {
+        patterns = {
+          "[a-zA-Z]+://\\S+",
+        },
+        action = wezterm.action_callback(function(window, pane)
+          local url = window:get_selection_text_for_pane(pane)
+          window:perform_action(wezterm.action.ClearSelection, pane)
+          if url then
+            wezterm.open_with(url)
+          end
+        end),
+      },
+    }),
+  },
+  { key = "f", mods = "CTRL|SHIFT", action = act.QuickSelect },
+
   -- Misc
   { key = "F1", mods = "SUPER", action = act.ShowDebugOverlay },
   { key = "f", mods = "SUPER", action = act.Search({ CaseSensitiveString = "" }) },
   { key = "Semicolon", mods = "CTRL|SHIFT", action = act.ShowLauncher },
-  { key = "'", mods = "CTRL|SHIFT", action = act.QuickSelect },
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
   { key = "u", mods = "CTRL|SHIFT", action = act.CharSelect },
   { key = "x", mods = "CTRL|SHIFT", action = act.ActivateCopyMode },
@@ -245,91 +265,6 @@ for i = 1, 9 do
   })
 end
 
--- table.insert(config.keys, {
---   key = "F12",
---   mods = "NONE",
---   action = act.Multiple {
---     (act.ActivateKeyTable {
---       name = "cancel",
---       replace_current = true,
---     }),
---     act.EmitEvent "toggle-leader",
---   },
--- })
-
--- wezterm.on("toggle-leader", function(window, pane, ...)
---   local overrides = window:get_config_overrides() or {}
---   if not overrides.leader then
---     wezterm.emit("enable-leader", window, pane, ...)
---   else
---     wezterm.emit("disable-leader", window, pane, ...)
---   end
--- end)
---
--- wezterm.on("enable-leader", function(window, pane, ...)
---   local overrides = window:get_config_overrides() or {}
---   -- replace it with an "impossible" leader that will never be pressed
---   overrides.leader = { key = "_", mods = "CTRL|ALT|SUPER" }
---   overrides.colors = { background = "#100000" }
---   overrides.window_background_opacity = 0.95
---   window:set_config_overrides(overrides)
---   window.perform_action(act.ActivateKeyTable { name = "cancel", }, pane)
--- end)
---
--- wezterm.on("disable-leader", function(window, pane)
---   local overrides = window:get_config_overrides() or {}
---   -- restore to the main leader
---   overrides.leader = nil
---   overrides.colors = nil
---   overrides.window_background_opacity = nil
---   window:set_config_overrides(overrides)
---   window.perform_action(act.ClearKeyTableStack, pane)
--- end)
---
--- wezterm.on("cancel-key-tables", function(window, pane)
---   wezterm.emit("disable-leader", window, pane)
---   window.perform_action(act.ClearKeyTableStack, pane)
--- end)
-
-local function insert_cancel_keys(key_table)
-  table.insert(key_table, { key = "Escape", mods = "NONE", action = act.ClearKeyTableStack })
-  table.insert(key_table, { key = "g", mods = "CTRL", action = act.ClearKeyTableStack })
-end
-
--- (utils.KeyTable.new {
---   name = "window",
---   key = "w",
---   mods = "LEADER",
---   {
---     k = act.CloseCurrentTab { confirm = true },
---   }
--- }).apply_to_config(config)
-
-local function with_domain_selection(window, pane, callback)
-  local choices = {}
-  for _, domain in pairs(wezterm.mux.all_domains()) do
-    table.insert(choices, { id = domain.id or domain.name, label = domain.label })
-  end
-  window:perform_action(
-    act.InputSelector({
-      action = wezterm.action_callback(function(window, pane, id, label)
-        if not id and not label then
-          return
-        end
-        local domain = wezterm.mux.get_domain(id)
-        if not domain then
-          wezterm.log_error("Domain not found: " .. tostring(id))
-          return
-        end
-        callback(domain, window, pane)
-      end),
-      title = "domains",
-      choices = choices,
-    }),
-    pane
-  )
-end
-
 config.key_tables = {
   mux = {
     {
@@ -352,10 +287,13 @@ config.key_tables = {
     { key = "g", mods = "CTRL", action = act.ClearKeyTableStack },
     { key = "c", mods = "CTRL", action = act.ClearKeyTableStack },
   },
-  domain = {},
   window = {
     { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
     { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
+    -- Cancel
+    { key = "Escape", mods = "NONE", action = act.ClearKeyTableStack },
+    { key = "g", mods = "CTRL", action = act.ClearKeyTableStack },
+    { key = "c", mods = "CTRL", action = act.ClearKeyTableStack },
   },
   --   resize_pane = {
   --     { key = 'h',          action = act.AdjustPaneSize { 'Left', 5 } },

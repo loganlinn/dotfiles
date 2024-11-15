@@ -46,11 +46,20 @@ with lib;
       { path = ./include/gitalias.txt; }
     ];
     aliases = {
-      home = "rev-parse --show-toplevel";
+      root = "rev-parse --show-toplevel";
       prefix = "rev-parse --show-prefix";
       cdup = "rev-parse --show-cdup";
-      run = ''!env -C "$$(git rev-parse --show-toplevel)" -'';
       exec = ''!env -C "$$(git rev-parse --show-toplevel)" -'';
+
+      # git-stack
+      amend = "stack amend";
+      run = "stack run";
+      next = "stack next";
+      prev = "stack previous";
+      reword = "stack reword";
+      sync = "stack sync";
+
+      # worktree
       wt = "worktree";
       wtm = "worktree-main";
       wtl = "worktree-linked";
@@ -65,7 +74,7 @@ with lib;
       wtx = "!${./worktree-run.sh}";
       worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
       worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
-      amend = "commit --amend --reuse-message HEAD";
+      # amend = "commit --amend --reuse-message HEAD";
       touch = ''!git commit --amend --date="$(date -r)"'';
       undo = "reset --soft HEAD~1";
       default-branch = ''

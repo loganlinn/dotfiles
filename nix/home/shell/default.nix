@@ -43,6 +43,7 @@ in
       rg-ip = ''rg '((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}' '';
       woman = "man";
       termkeys = "infocmp -L1";
+      envz = "printenv | fzf ";
     };
 
     programs.bash.initExtra = cfg.shellInitExtra;

@@ -49,10 +49,21 @@ in
 
     fonts.packages = my.fonts.packages;
 
-    environment.variables = my.environment.variables;
+    environment.variables = {
+      BROWSER = mkDefault "open-url";
+    } // my.environment.variables;
 
     environment.systemPackages = with pkgs; [
       pinentry_mac
+      duti # configdefault applications
+      (writeShellScriptBin "open-url" ''
+        while (( $# )); do
+          url=$1
+          [[ $url = "*://*" ]] || url="https://$url"
+          /usr/bin/open -u "$url" || exit $?
+          shift
+        done
+      '')
     ];
 
     programs.bash = {

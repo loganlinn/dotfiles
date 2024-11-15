@@ -1,4 +1,9 @@
-{ config, pkgs, lib ? pkgs.lib, ... }:
+{
+  config,
+  pkgs,
+  lib ? pkgs.lib,
+  ...
+}:
 
 [
   {

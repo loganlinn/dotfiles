@@ -30,6 +30,8 @@ with lib;
     shellAliases = {
       sudo = "sudo ";
       commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
+      commandz = ''commands | fzf'';
+      aliasez = ''alias | fzf'';
     };
 
     shellGlobalAliases = {
@@ -109,6 +111,15 @@ with lib;
             [[ -n $selected ]] && git checkout "$selected"
           fi
         }
+
+        : "$${XDG_DATA_HOME:=$HOME/.local/share}"
+
+        if [[ ! -f "$${XDG_DATA_HOME?}/zsh/functions/_docker" ]] && (( $+commands[docker] )); then
+            mkdir -p "$${XDG_DATA_HOME?}/zsh/functions" \
+              && docker completion zsh > "$${XDG_DATA_HOME?}/zsh/functions/_docker"
+        fi
+
+        (( $fpath[(Ie)$${XDG_DATA_HOME?}/zsh/functions] )) || fpath=("$${XDG_DATA_HOME?}/zsh/functions" $fpath)
       ''}
     '';
 

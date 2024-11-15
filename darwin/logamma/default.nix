@@ -131,5 +131,8 @@
     home.stateVersion = "22.11";
 
     xdg.enable = true;
+
+    manual.html.enable = true;
+    manual.json.enable = true;
   };
 }

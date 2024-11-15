@@ -23,6 +23,8 @@
   ];
 
   home.packages = with pkgs; [
+    # neofetch
+    # pinentry
     bc
     binutils
     cmake
@@ -34,6 +36,7 @@
     duf # df alternative
     envsubst
     file
+    flake-root # nb: via overlay
     gawk
     gnugrep
     gnumake
@@ -43,8 +46,6 @@
     gzip
     lsof
     moreutils
-    # neofetch
-    # pinentry
     procs # ps alternative
     pstree
     repgrep
@@ -53,10 +54,9 @@
     sops
     tree
     unzip
+    wget
     xh # httpie alternative
-
     zip
-    flake-root # nb: via overlay
   ];
 
   home.sessionVariables = config.my.environment.variables;
