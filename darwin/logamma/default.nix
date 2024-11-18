@@ -89,7 +89,7 @@
   homebrew.brews = [
     "grafana"
     "nss" # used by mkcert
-    "terminal-notifier" # like notify-send
+    # "terminal-notifier" # like notify-send
   ];
 
   homebrew.casks = [
@@ -160,4 +160,6 @@
     manual.html.enable = true;
     manual.json.enable = true;
   };
+
+  system.stateVersion = 4;
 }
