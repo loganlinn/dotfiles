@@ -7,13 +7,17 @@
 
 with lib;
 
+let
+  config-local = "${config.xdg.configHome}/git/config.local";
+in
 {
   imports = [
     ./gh.nix
+    ./git-stack.nix
+    ./git-town.nix
   ];
 
   home.shellAliases = {
-    g = "git";
     gc = "git commit -v";
     gca = "git commit -v -a";
     gcm = ''git switch "$(git default-branch || echo .)"'';
@@ -36,28 +40,23 @@ with lib;
     gtlr = "git rev-parse --show-cdup"; # "toplevel relative"
     gwd = "git rev-parse --show-prefix"; # "git working directory"
     grt = ''cd -- "$(gtl || pwd)"''; # "goto root"
+
   };
 
   programs.git = {
     enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
-      { path = "~/.config/git/config.local"; }
+      { path = config-local; }
       { path = ./include/gitalias.txt; }
     ];
     aliases = {
+      config-local = "config --file ${config-local}";
+
       root = "rev-parse --show-toplevel";
       prefix = "rev-parse --show-prefix";
       cdup = "rev-parse --show-cdup";
       exec = ''!env -C "$$(git rev-parse --show-toplevel)" -'';
-
-      # git-stack
-      amend = "stack amend";
-      run = "stack run";
-      next = "stack next";
-      prev = "stack previous";
-      reword = "stack reword";
-      sync = "stack sync";
 
       # worktree
       wt = "worktree";
@@ -133,13 +132,6 @@ with lib;
       rebase.autosquash = true;
       stash.showPatch = true;
       stash.showIncludeUntracked = true;
-      credential."imap.fastmail.com".helper =
-        let
-          helper = pkgs.writeShellScript "fastmail-imap-credetnial-helper" ''
-            echo "password=op://Personal/cbosmbv3b7kbtk2g7eleeackiq/credential" | op inject
-          '';
-        in
-        "${helper}";
     };
     # hooks
     signing.key = mkDefault null; # let GnuPG decide
@@ -150,13 +142,7 @@ with lib;
   home.packages = with pkgs; [
     delta
     git-absorb
-    git-stack
   ];
-
-  programs.zsh.initExtra = ''
-    _git-run() { _files "$(git rev-parse --show-toplevel)" }
-    compdef _git-run git-run
-  '';
 
   programs.gpg.publicKeys = [
     {

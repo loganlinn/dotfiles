@@ -48,9 +48,34 @@
     {
       homebrew.taps = [ "hashicorp/tap" ];
       homebrew.brews = [
-        "tfenv"
+        # "tfenv"
         "hashicorp/tap/terraform-ls"
       ];
+      home-manager.users.logan = {
+        home.packages = with pkgs; [
+          tenv
+          # terraform-ls
+          tflint
+          terraformer
+          terraform-docs
+          terraform-local
+          tfsec
+          tf-summarize
+          iam-policy-json-to-terraform
+        ];
+        programs.zsh.plugins = [
+          # ~/.zsh/plugins/tenv/tenv.plugin.zsh:14: no such file or directory: /completions/_tenv
+          # {
+          #   name = "tenv";
+          #   src = pkgs.fetchFromGitHub {
+          #     owner = "tofuutils";
+          #     repo = "zsh-tenv";
+          #     rev = "2357d868d1e14917a18dfd51bf61ac739d856279";
+          #     hash = "sha256-sQNxoffHXTketr4PdTeVFMhJl239Wa7UoVcCR7wB2kw=";
+          #   };
+          # }
+        ];
+      };
     }
   ];
 
