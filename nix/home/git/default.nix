@@ -70,7 +70,7 @@ in
           done
         ''}
       '';
-      wtx = "!${./worktree-run.sh}";
+      wtx = "!${./worktree-shell.sh}";
       worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
       worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
       # amend = "commit --amend --reuse-message HEAD";

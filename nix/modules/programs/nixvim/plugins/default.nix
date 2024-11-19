@@ -31,6 +31,7 @@
         };
         extraPlugins = with pkgs.vimPlugins; [
           zoxide-vim
+          vim-eunuch
         ];
       };
     }

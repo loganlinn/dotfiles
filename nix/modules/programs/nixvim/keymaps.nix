@@ -848,12 +848,12 @@
   # TODO <leader>fR rename
   {
     key = "<leader>fy";
-    action = ''<cmd>let @+ = expand("%:.")'';
+    action = ''<cmd>let @+ = expand("%:.")<cr>'';
     options.desc = "Yank current file relative path";
   }
   {
     key = "<leader>fY";
-    action = ''<cmd>let @+ = expand("%:p")'';
+    action = ''<cmd>let @+ = expand("%:p")<cr>'';
     options.desc = "Yank current file absolute path";
   }
   {

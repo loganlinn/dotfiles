@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 # worktree-run.sh: start temporary worktree shell
-
-set -eo pipefail
+set -e
+set -o pipefail
 
 if ! command -v gum 2>/dev/null; then
-  gum() { nix run nixpkgs#gum -- "$@"; }
+  hash nix
+  gum() { nix run "nixpkgs#gum" -- "$@"; }
 fi
 
 # TODO args for these
-rev=$(gum input --header "Revision" --value 'main@{upstream}')
+rev=$(gum input --header "Worktree commit" --value 'main@{upstream}')
 commit=$(git rev-parse --verify --short "${rev?}")
 main_worktree_path=$(git worktree list --porcelain | head -n1 | cut -d' ' -f2)
-worktree_path=${main_worktree_path?}.${commit?}
 
-# get a unique name
-if [[ -d $worktree_path ]]; then
-  worktree_path="$worktree_path~$RANDOM"
+i=0
+worktree_path=${main_worktree_path?}.${commit?}
+while [[ -d $worktree_path ]]; do
+  worktree_path="${main_worktree_path?}.${commit?}.${i}"
+  i=$((i + 1))
 fi
+unset i
+worktree_path=$(gum input --header "Worktree path" --value "$worktree_path")
 
 cleanup() {
-  if [[ -d $worktree_path ]] && gum confirm "Remove worktree $(basename "$worktree_path")? "; then
+  if [[ -d $worktree_path ]] && gum confirm "Remove worktree, $(basename "$worktree_path")? "; then
     git worktree remove --force "$worktree_path"
   fi
 }
