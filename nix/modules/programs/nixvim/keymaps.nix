@@ -848,30 +848,28 @@
   # TODO <leader>fR rename
   {
     key = "<leader>fy";
-    action = ''<cmd>let @+ = expand("%:.")<cr>'';
+    action = ''<cmd>let @+ = expand("%:.") <bar> echom "Copied! " . expand("%:.")<cr>'';
     options.desc = "Yank current file relative path";
   }
   {
     key = "<leader>fY";
-    action = ''<cmd>let @+ = expand("%:p")<cr>'';
+    action = ''<cmd>let @+ = expand("%:p") <bar> echom "Copied! " . expand("%:p")<cr>'';
     options.desc = "Yank current file absolute path";
   }
   {
     key = "<leader>fM";
     action.__raw = ''
       function()
+        local file = vim.fn.expand("%")
         vim.ui.input({
-          prompt = "File mode: (octal or symbolic) ",
+          prompt = string.format("Change file permissions (%s): ", vim.fn.trim(vim.fn.system { "stat", "--format=%A", file }))
         }, function(input)
           if input then
-            local shellescape = vim.fn.shellescape
-            local command = "chmod " .. shellescape(input) .. " " .. shellescape(vim.fn.expand("%:p"))
-            local result = os.execute(command)
-            print(command .. " => " .. result)
+            print(vim.fn.system { "chmod", input, file })
           end
         end)
       end
     '';
-    options.desc = "Yank current file absolute path";
+    options.desc = "Change file mode";
   }
 ]
