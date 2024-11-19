@@ -113,6 +113,7 @@ in
       color.ui = true;
       commit.verbose = true; # include diff in commit message editor
       commit.gpgsign = mkDefault true;
+      diff.noprefix = true;
       gpg.format = "ssh";
       gpg.ssh.program = mkDefault (
         if pkgs.stdenv.isDarwin then

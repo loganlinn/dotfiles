@@ -74,6 +74,13 @@ config.hide_tab_bar_if_only_one_tab = false
 config.native_macos_fullscreen_mode = false
 -- config.selection_word_boundary = '{}[]()"\'`.,;:'
 
+config.quick_select_patterns = {
+  "[0-9a-f]{7,40}", -- SHA1 hashes, usually used for Git.
+  "[0-9a-f]{7,64}", -- SHA256 hashes, used often for getting hashes for Guix packaging.
+  "sha256-.{44,128}", -- SHA256 hashes in Base64, used often in getting hashes for Nix packaging.
+  "sha512-.{44,128}", -- SHA512 hashes in Base64, used often in getting hashes for Nix packaging.
+}
+
 -- config.debug_key_events = true
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
@@ -88,6 +95,8 @@ config.keys = {
   -- Tab Focus
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
   { key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
+  { key = "{", mods = "SUPER|SHIFT", action = act.ActivateTabRelative(-1) },
+  { key = "}", mods = "SUPER|SHIFT", action = act.ActivateTabRelative(1) },
 
   -- Tab Position
   { key = "<", mods = "CTRL|SHIFT", action = act.MoveTabRelative(-1) },
@@ -132,10 +141,10 @@ config.keys = {
   -- Tabs
   {
     key = "F2",
-    mods = "CTRL|SHIFT",
+    mods = "SUPER",
     action = act.PromptInputLine({
       description = "Tab name",
-      action = wezterm.action_callback(function(window, pane, line)
+      action = wezterm.action_callback(function(window, _pane, line)
         if line then
           window:active_tab():set_title(line)
         end
@@ -197,7 +206,7 @@ config.keys = {
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
   { key = "u", mods = "CTRL|SHIFT", action = act.CharSelect },
   { key = "x", mods = "CTRL|SHIFT", action = act.ActivateCopyMode },
-  { key = "m", mods = "CTRL|SHIFT", action = act.ActivateKeyTable({ name = "mux" }) },
+  { key = "v", mods = "LEADER", action = act.ActivateCopyMode },
   { key = "m", mods = "LEADER", action = act.ActivateKeyTable({ name = "mux" }) },
   { key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "window" }) },
   { key = "1", mods = "LEADER", action = act.SwitchToWorkspace({ name = "gamma" }) },

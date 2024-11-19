@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.my;
@@ -9,24 +14,27 @@ with lib.my;
     gitCredentialHelper.enable = true;
     settings = {
       aliases = {
-        o = "browse";
-        oi = "issue list --web";
-        or = "release view --web";
-        pck = "pr checks";
-        check-fail = ''!gh pr checks "$@" | awk '$2=="fail"{ print $4 }' '';
-        pcl = "pr close";
+        o = "!gh browse $(git rev-parse --show-prefix)";
+        fail = ''!gh pr checks "$@" | awk '$2=="fail"{ print $4 }' '';
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
-        pcr = "pr create";
+        prc = "pr create --web";
         pd = "pr diff";
         pl = "pr list";
         pm = "pr merge";
         prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
-        pre = "pr reopen";
         pro = "pr view --web";
         prs = "pr list --web";
-        pv = "pr view";
-        pvw = "pr view --web";
         ps = "pr status";
+        prz = ''
+          !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
+        '';
+
+        land = ''
+          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
+        '';
+        landf = ''
+          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch --admin
+        '';
 
         repo-fork-sync = ''!gh api /repos/{owner}/{repo}/merge-upstream --method POST --field "branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"'';
 
@@ -40,24 +48,14 @@ with lib.my;
 
         aliases = "alias list";
 
-
-        prl = ''
-          pr list
-          --json number,title,headRefName
-          --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}'
-        '';
-
-        prz = ''
-          !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
-        '';
-
-        land = ''
-          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
-        '';
-
-        landf = ''
-          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch --admin
-        '';
+        prl = concatStrings [
+          ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName "$@" --template ''
+          "'"
+          ''
+            {{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}
+          ''
+          "'"
+        ];
 
         gists = ''
           !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
@@ -87,13 +85,18 @@ with lib.my;
     # terminal = true;
     terminal = true;
     icon = "github"; # i.e. xdg.dataFile."local/share/icons/hicolor/*/apps/github.*"
-    categories = [ "Development" "Utility" "Network" "ConsoleOnly" ];
+    categories = [
+      "Development"
+      "Utility"
+      "Network"
+      "ConsoleOnly"
+    ];
     settings = {
       StartupWMClass = "gh-dash";
     };
   };
 
   xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
-    config.floating.criteria = [{ class = "gh-dash"; }];
+    config.floating.criteria = [ { class = "gh-dash"; } ];
   };
 }

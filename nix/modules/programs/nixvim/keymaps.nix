@@ -64,15 +64,6 @@
   }
   {
     mode = "n";
-    key = "<leader><tab>`";
-    action = "<cmd>b#<cr>";
-    options = {
-      silent = true;
-      desc = "Last buffer";
-    };
-  }
-  {
-    mode = "n";
     key = "<leader><tab><tab>";
     action = "<cmd>tabnew<cr>";
     options = {
@@ -806,9 +797,10 @@
   {
     mode = "n";
     key = "<leader>`";
-    action = "<cmd>bprevious<cr>";
+    action = "<cmd>b#<cr>";
     options = {
-      desc = "Previous Buffer";
+      silent = true;
+      desc = "Last buffer";
     };
   }
   {
@@ -846,6 +838,18 @@
     options.desc = "Delete current file";
   }
   # TODO <leader>fR rename
+  {
+    key = "<leader>fR";
+    action.__raw = ''
+      function()
+        local src=vim.fn.expand("%:p")
+        local rename=vim.fn.EunuchRename or vim.fn.rename
+        vim.ui.input({ prompt = "Rename: ", default = src, },
+                     function(dst) if dst then rename(src, dst) end end)
+      end
+    '';
+    options.desc = "Rename current file";
+  }
   {
     key = "<leader>fy";
     action = ''<cmd>let @+ = expand("%:.") <bar> echom "Copied! " . expand("%:.")<cr>'';

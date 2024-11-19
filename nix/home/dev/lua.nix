@@ -9,7 +9,7 @@ with lib;
   config = {
     home.packages = with pkgs; [
       lua-language-server
-      (lua.withPackages (
+      (luajit.withPackages (
         ps: with ps; [
           luarocks
           readline

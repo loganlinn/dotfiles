@@ -5,9 +5,8 @@
   pkgs,
   ...
 }:
-
+with builtins;
 with lib;
-
 {
   programs.zsh = {
     enable = true;
@@ -45,22 +44,22 @@ with lib;
 
     dirHashes =
       let
-        cfg = "$${XDG_CONFIG_HOME:-$HOME/.config}";
+        cfg = "\${XDG_CONFIG_HOME:-$HOME/.config}";
       in
       mergeAttrsList [
         (mapAttrs (name: input: "${input}") inputs)
         (rec {
           inherit cfg;
-          cache = "$${XDG_CACHE_HOME:-$HOME/.cache}";
-          data = "$${XDG_DATA_HOME:-$HOME/.local/share}";
-          state = "$${XDG_DATA_HOME:-$HOME/.local/state}";
+          cache = "\${XDG_CACHE_HOME:-$HOME/.cache}";
+          data = "\${XDG_DATA_HOME:-$HOME/.local/share}";
+          state = "\${XDG_DATA_HOME:-$HOME/.local/state}";
           bin = "$HOME/.local/bin";
 
-          dot = "$${DOTFILES_DIR:-$HOME/.dotfiles}";
-          src = "$${SRC_HOME:-$HOME/src}";
+          dot = "\${DOTFILES_DIR:-$HOME/.dotfiles}";
+          src = "\${SRC_HOME:-$HOME/src}";
           gh = "${src}/github.com";
-          doom = "$${DOOMDIR:-${cfg}/doom}";
-          emacs = "$${EMACSDIR:-${cfg}/emacs}";
+          doom = "\${DOOMDIR:-${cfg}/doom}";
+          emacs = "\${EMACSDIR:-${cfg}/emacs}";
 
           gamma = "${gh}/gamma-app/gamma";
         })
@@ -71,10 +70,10 @@ with lib;
           vids = config.xdg.userDirs.videos;
         })
         (optionalAttrs config.programs.wezterm.enable {
-          wez = "$${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}";
+          wez = ''$${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
         })
         (optionalAttrs config.programs.kitty.enable {
-          kitty = "${cfg}/kitty";
+          kitty = ''${cfg}/kitty'';
         })
       ];
 
@@ -88,70 +87,34 @@ with lib;
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
 
-    initExtraFirst = ''
-      [[ ! -f "$XDG_CONFIG_DIR/zsh/initExtraFirst.zsh" ]] || source "$XDG_CONFIG_DIR/zsh/initExtraFirst.zsh"
-
-      # Stop TRAMP (in Emacs) from hanging or term/shell from echoing back commands
-      if [[ $TERM == dumb || -n $INSIDE_EMACS ]]; then
-        unsetopt zle prompt_cr prompt_subst
-        whence -w precmd >/dev/null && unfunction precmd
-        whence -w preexec >/dev/null && unfunction preexec
-        PS1='$ '
-      fi
-    '';
+    initExtraFirst = readFile ./initExtraFirst.zsh;
 
     initExtraBeforeCompInit = ''
-      [[ ! -f "$XDG_CONFIG_DIR/zsh/initExtraBeforeCompInit.zsh" ]] || source "$XDG_CONFIG_DIR/zsh/initExtraBeforeCompInit.zsh"
-
       ${readFile ./line-editor.zsh}
-
-      # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
-      stty -ixon
 
       ${optionalString config.programs.fzf.enable ''
         source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
-
-        gco() {
-          if (( $# )); then
-            git checkout "$@"
-            return $?
-          fi
-          local selected
-          if selected=$(_fzf_git_each_ref --no-multi); then
-            [[ -n $selected ]] && git checkout "$selected"
-          fi
-        }
       ''}
+
+      ${readFile ./initExtraBeforeCompInit.zsh}
     '';
 
     initExtra =
       let
         functionsDir = toString ./functions;
+        functionNames = attrNames (builtins.readDir functionsDir);
       in
       ''
-        [[ ! -f "$XDG_CONFIG_DIR/zsh/initExtra.zsh" ]] || source "$XDG_CONFIG_DIR/zsh/initExtra.zsh"
+        : "''${DOTFILES_DIR:=$HOME/.dotfiles}"
 
-        unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
-        setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
-        setopt EQUALS               # Expansion of =command expands into full pathname of command
-        setopt LONG_LIST_JOBS       # List jobs in the long format by default.
-        setopt AUTO_RESUME          # Attempt to resume existing job before creating a new process.
-        setopt NOTIFY               # Report status of background jobs immediately.
-        unsetopt BG_NICE            # Don't run all background jobs at a lower priority.
-        unsetopt HUP                # Don't kill jobs on shell exit.
-        setopt AUTO_PUSHD           # Push the old directory onto the stack on cd.
-        setopt PUSHD_IGNORE_DUPS    # Do not store duplicates in the stack.
-        setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
+        fpath+=(
+          "$DOTFILES_DIR/nix/home/zsh/functions"
+          "$XDG_DATA_HOME/zsh/functions"
+        )
 
-        DIRSTACKSIZE=9
+        autoload -Uz ${concatStringsSep " " functionNames}
 
-        fpath+=("${functionsDir}" "$${XDG_DATA_HOME:-$$HOME/.local/share}/zsh/functions")
-
-        ${concatLines (map (name: "autoload -Uz ${name}") (attrNames (builtins.readDir functionsDir)))}
-
-        ${readFile ./clipboard.zsh}
-
-        ${readFile ./funcs.zsh}
+        ${readFile ./initExtra.zsh}
 
         ${readFile ./nixpkgs.zsh}
 
@@ -167,15 +130,4 @@ with lib;
     '';
 
   };
-
-  xdg.configFile =
-    let
-      inherit (config.lib.file) mkOutOfStoreSymlink;
-      cwd = "${config.home.homeDirectory}/.dotfiles/nix/home/zsh";
-    in
-    {
-      "zsh/initFirst.zsh".source = mkOutOfStoreSymlink "${cwd}/initFirst.zsh";
-      "zsh/initExtraBeforeCompInit.zsh".source = mkOutOfStoreSymlink "${cwd}/initExtraBeforeCompInit.zsh";
-      "zsh/initExtra.zsh".source = mkOutOfStoreSymlink "${cwd}/initExtra.zsh";
-    };
 }

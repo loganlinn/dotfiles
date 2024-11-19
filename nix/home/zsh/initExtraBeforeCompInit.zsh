@@ -1,3 +1,2 @@
-#!/usr/bin/env zsh
-
-# echo "${0:A:h}"
+# Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
+stty -ixon

@@ -129,6 +129,7 @@
       ../../nix/home/pretty.nix
       ../../nix/home/wezterm
       ../../nix/home/yt-dlp.nix
+      ../../nix/home/yazi
       ../../nix/modules/programs/nixvim
     ];
 

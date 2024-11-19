@@ -25,10 +25,8 @@ end
 
 -- M.LUA_TYPES = { "nil", "boolean", "number", "string", "userdata", "function", "thread", "table" }
 
---{{{1
 ---@class dotfiles.utils.is
 local is = {}
-M.is = is
 
 ---@param v any
 ---@param type_name "nil"|"boolean"|"number"|"string"|"userdata"|"function"|"thread"|"table"
@@ -91,8 +89,27 @@ function is.empty(v)
   return (v == nil) or (is.string(v) and v == "") or (is.table(v) and #v == 0)
 end
 
--- }}}1
+-- for fun, support: is(123).number()
+local is_value_metatable = {
+  __index = function(self, index)
+    local f = is[index]
+    if f then
+      return function(...)
+        return f(self.value, ...)
+      end
+    end
+  end,
+}
 
+is = setmetatable(is, {
+  __call = function(self, v)
+    return setmetatable({ value = v }, is_value_metatable)
+  end,
+})
+
+M.is = is
+
+--------------------------------------------------------------------------------
 ---@class dotfiles.utils.tbl
 local tbl = {}
 M.tbl = tbl

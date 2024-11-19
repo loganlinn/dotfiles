@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   imports = [
@@ -31,10 +36,8 @@
     # hyperfine        # cli benchmarking tool
     # process-compose  # process manager a la docker-compose
     du-dust
-    entr               # similar to watchexec
-    libossp_uuid       # i.e. uuid(1)
-    # openssl
-    # universal-ctags
+    entr # similar to watchexec
+    libossp_uuid # i.e. uuid(1)
     sops
     tree
     unzip

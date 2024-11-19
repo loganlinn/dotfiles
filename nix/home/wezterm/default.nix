@@ -44,5 +44,14 @@ in
 
   xdg.configFile = {
     "wezterm/dotfiles".source = mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/wezterm/dotfiles";
+    "wezterm/.luarc.json".text = builtins.toJSON {
+      workspace.library = [
+        (pkgs.fetchzip {
+          url = "https://github.com/justinsgithub/wezterm-types/archive/1518752906ba3fac0060d9efab6e4d3ec15d4b5a.zip";
+          sha256 = "sha256-dSxsrgrapUezQIGhNp/Ikc0kISfIdrlUZxUBdsLVe3A=";
+        })
+      ];
+    };
+    "wezterm/.gitignore".text = ".luarc.json";
   };
 }
