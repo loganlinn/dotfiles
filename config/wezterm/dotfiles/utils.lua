@@ -1,4 +1,4 @@
-local wezterm = require('wezterm')
+local wezterm = require("wezterm")
 
 --------------------------------------------------------------------------------
 ---@class dotfiles.utils
@@ -8,7 +8,7 @@ local M = {}
 ---@param ... nil|T
 ---@return T
 function M.coalesce(...)
-  local n = select('#', ...)
+  local n = select("#", ...)
   for i = 1, n do
     local v = select(i, ...)
     if v ~= nil then
@@ -23,7 +23,76 @@ function M.spy(...)
   return select(select("#", ...), ...)
 end
 
---------------------------------------------------------------------------------
+-- M.LUA_TYPES = { "nil", "boolean", "number", "string", "userdata", "function", "thread", "table" }
+
+--{{{1
+---@class dotfiles.utils.is
+local is = {}
+M.is = is
+
+---@param v any
+---@param type_name "nil"|"boolean"|"number"|"string"|"userdata"|"function"|"thread"|"table"
+---@return boolean
+function is.a(v, type_name)
+  return type(v) == type_name
+end
+
+---@param v any
+---@return boolean
+function is.boolean(v)
+  return is.a(v, "boolean")
+end
+
+---@param v any
+---@return boolean
+function is.number(v)
+  return is.a(v, "number")
+end
+
+---@param v any
+---@return boolean
+function is.string(v)
+  return is.a(v, "string")
+end
+
+---@param v any
+---@return boolean
+function is.userdata(v)
+  return is.a(v, "userdata")
+end
+
+---@param v any
+---@return boolean
+function is.fn(v)
+  return is.a(v, "function")
+end
+
+---@param v any
+---@return boolean
+function is.thread(v)
+  return is.a(v, "thread")
+end
+
+---@param v any
+---@return boolean
+function is.table(v)
+  return is.a(v, "table")
+end
+
+---@param v any
+---@return boolean
+function is.null(v)
+  return v == nil or is.a(v, "nil")
+end
+
+---@param v any
+---@return boolean
+function is.empty(v)
+  return (v == nil) or (is.string(v) and v == "") or (is.table(v) and #v == 0)
+end
+
+-- }}}1
+
 ---@class dotfiles.utils.tbl
 local tbl = {}
 M.tbl = tbl
@@ -33,7 +102,9 @@ M.tbl = tbl
 ---@param alt? any
 ---@return any
 function tbl.getin(t, ks, alt)
-  if type(t) ~= "table" then return nil end
+  if type(t) ~= "table" then
+    return nil
+  end
   if #ks == 0 then
     return alt
   end
@@ -51,7 +122,9 @@ end
 ---@param alt? any
 ---@return any
 function tbl.get(t, k, alt)
-  if type(t) ~= "table" then return nil end
+  if type(t) ~= "table" then
+    return nil
+  end
   return M.coalesce(t[k], alt)
 end
 
@@ -80,15 +153,45 @@ function tbl.map(fun, t)
   return o
 end
 
----@generic T
----@param pred fun(value: T): boolean
----@param t table<any, T>
----@return T[]
+---@generic V
+---@param pred fun(value: V): boolean
+---@param t V[]
+---@return V[]
 function tbl.filter(pred, t)
   local o = {}
-  for _, entry in pairs(t) do
-    if pred(entry) then
-      table.insert(o, entry)
+  for _, v in pairs(t) do
+    if pred(v) then
+      table.insert(o, v)
+    end
+  end
+  return o
+end
+
+---@generic K
+---@generic V
+---@param pred fun(key: K, value: V): boolean
+---@param t table<K, V>
+---@return table<K, V>
+function tbl.filterkv(pred, t)
+  local o = {}
+  for k, v in pairs(t) do
+    if pred(k, v) then
+      o[k] = v
+    end
+  end
+  return o
+end
+
+---@generic K
+---@generic V
+---@param t table<any, V>
+---@param ks K[]
+---@return table <K, V>
+function tbl.selectkeys(t, ks)
+  local o = {}
+  for k in pairs(ks) do
+    if not is.null(t[k]) then
+      table.insert(o, v)
     end
   end
   return o
@@ -99,8 +202,8 @@ end
 ---@param v any
 ---@return boolean, K|nil
 function tbl.contains(t, v)
-  for k, v in ipairs(t) do
-    if v == v then
+  for k, x in ipairs(t) do
+    if v == x then
       return true, k
     end
   end
@@ -125,9 +228,23 @@ function tbl.islist(t)
       return false
     end
     count = count + 1
-    if count > 64 then break end
+    if count > 64 then
+      break
+    end
   end
   return count > 0
+end
+
+function tbl.foreach(f, t)
+  for k, v in pairs(t) do
+    f(k, v)
+  end
+end
+
+function tbl.iforeach(f, t)
+  for k, v in ipairs(t) do
+    f(k, v)
+  end
 end
 
 --- We only merge empty tables or tables that are not a list
@@ -217,68 +334,9 @@ function tbl.add_reverse_lookup(t)
 end
 
 --------------------------------------------------------------------------------
-
-local LUA_TYPES = { "nil", "boolean", "number", "string", "userdata", "function", "thread", "table" }
-
----@class dotfiles.utils.is
-local is = {}
-M.is = is
-
----@param v any
----@param type_name "nil"|"boolean"|"number"|"string"|"userdata"|"function"|"thread"|"table"
----@return boolean
-function is.a(v, type_name) return type(v) == type_name end
-
----@param v any
----@return boolean
-function is.boolean(v) return is.a(v, "boolean") end
-
----@param v any
----@return boolean
-function is.number(v) return is.a(v, "number") end
-
----@param v any
----@return boolean
-function is.string(v) return is.a(v, "string") end
-
----@param v any
----@return boolean
-function is.userdata(v) return is.a(v, "userdata") end
-
----@param v any
----@return boolean
-function is.fn(v) return is.a(v, "function") end
-
----@param v any
----@return boolean
-function is.thread(v) return is.a(v, "thread") end
-
----@param v any
----@return boolean
-function is.table(v) return is.a(v, "table") end
-
----@param v any
----@return boolean
-function is.null(v) return v == nil or is.a(v, "nil") end
-
----@param v any
----@return boolean
-function is.empty(v)
-  return (v == nil) or
-      (is.string(v) and v == "") or
-      (is.table(v) and #v == 0)
-end
-
---------------------------------------------------------------------------------
 ---@class dotfiles.utils.safe
 local safe = {}
 M.safe = safe
-
-safe.is = {}
-
--- for k, f in pairs(is) do
---   safe.is[k] = function()
--- end
 
 ---@generic V
 ---@param v any
@@ -288,7 +346,9 @@ safe.is = {}
 function safe.isa(v, t, label)
   if type(v) ~= t then
     local msg = "expected " .. t .. ", got " .. type(v)
-    if label then msg = tostring(label) .. ": " .. msg end
+    if label then
+      msg = tostring(label) .. ": " .. msg
+    end
     error(msg)
   end
   return v
@@ -297,56 +357,76 @@ end
 ---@param v any
 ---@param label? string
 ---@return string
-function safe.isstring(v, label) return safe.isa(v, "string", label) end
+function safe.isstring(v, label)
+  return safe.isa(v, "string", label)
+end
 
 ---@param v any
 ---@param label? string
 ---@return table
-function safe.istable(v, label) return safe.isa(v, "table", label) end
+function safe.istable(v, label)
+  return safe.isa(v, "table", label)
+end
 
 ---@param v any
 ---@param label? string
 ---@return boolean
-function safe.isboolean(v, label) return safe.isa(v, "boolean", label) end
+function safe.isboolean(v, label)
+  return safe.isa(v, "boolean", label)
+end
 
 ---@param v any
 ---@param label? string
 ---@return number
-function safe.isnumber(v, label) return safe.isa(v, "number", label) end
+function safe.isnumber(v, label)
+  return safe.isa(v, "number", label)
+end
 
 ---@param v any
 ---@param label? string
 ---@return nil
-function safe.isnil(v, label) return safe.isa(v, "nil", label) end
+function safe.isnil(v, label)
+  return safe.isa(v, "nil", label)
+end
 
 ---@param t any
 ---@param k any
 ---@param alt? string
 ---@return string
-function safe.getstring(t, k, alt) return safe.isstring(tbl.get(t, k, alt), k) end
+function safe.getstring(t, k, alt)
+  return safe.isstring(tbl.get(t, k, alt), k)
+end
 
 ---@param t any
 ---@param k any
 ---@param alt? table
 ---@return table
-function safe.gettable(t, k, alt) return safe.istable(tbl.get(t, k, alt), k) end
+function safe.gettable(t, k, alt)
+  return safe.istable(tbl.get(t, k, alt), k)
+end
 
 ---@param t any
 ---@param k any
 ---@param alt? boolean
 ---@return boolean
-function safe.getboolean(t, k, alt) return safe.isboolean(tbl.get(t, k, alt), k) end
+function safe.getboolean(t, k, alt)
+  return safe.isboolean(tbl.get(t, k, alt), k)
+end
 
 ---@param t any
 ---@param k any
 ---@param alt? number
 ---@return number
-function safe.getnumber(t, k, alt) return safe.isnumber(tbl.get(t, k, alt), k) end
+function safe.getnumber(t, k, alt)
+  return safe.isnumber(tbl.get(t, k, alt), k)
+end
 
 ---@param t any
 ---@param k any
 ---@return nil
-function safe.getnil(t, k) return safe.isnil(safe.istable(t)[k], k) end
+function safe.getnil(t, k)
+  return safe.isnil(safe.istable(t)[k], k)
+end
 
 --------------------------------------------------------------------------------
 
@@ -354,96 +434,128 @@ function safe.getnil(t, k) return safe.isnil(safe.istable(t)[k], k) end
 local str = {}
 M.str = str
 
----@param str string
+---@param s string
 ---@param prefix string
 ---@return boolean
-function str.startswith(str, prefix) return str:sub(1, #prefix) == prefix end
+function str.startswith(s, prefix)
+  return safe.isstring(s):sub(1, #prefix) == prefix
+end
 
----@param str string
+---@param s string
 ---@param suffix string
 ---@return boolean
-function str.endswith(str, suffix) return suffix == "" or str:sub(- #suffix) == suffix end
+function str.endswith(s, suffix)
+  return suffix == "" or safe.isstring(s):sub(-#suffix) == suffix
+end
 
 --------------------------------------------------------------------------------
 
-function M.is_darwin() return str.endswith(wezterm.target_triple, "apple-darwin") end
+function M.is_darwin()
+  return str.endswith(wezterm.target_triple, "apple-darwin")
+end
 
-function M.is_linux() return str.endswith(wezterm.target_triple, "linux-gnu") end
+function M.is_linux()
+  return str.endswith(wezterm.target_triple, "linux-gnu")
+end
 
-function M.is_windows() return str.endswith(wezterm.target_triple, "windows-msvc") end
+function M.is_windows()
+  return str.endswith(wezterm.target_triple, "windows-msvc")
+end
 
 --------------------------------------------------------------------------------
--- WIP WIP WIP WIP
----@class dotfiles.utils.KeyTable
----@field apply_to_config fun(config: table): table
-local KeyTable = {}
-M.KeyTable = KeyTable
+-- -- WIP WIP WIP WIP
+-- ---@class dotfiles.utils.KeyTable
+-- ---@field apply_to_config fun(config: table): table
+-- local KeyTable = {}
+-- M.KeyTable = KeyTable
+--
+-- ---@type metatable
+-- local KeyTable_MT = {}
+--
+-- ---@pararm args table
+-- ---@return dotfiles.utils.KeyTable
+-- function KeyTable.new(args)
+--   safe.istable(args)
+--   local mods = safe.getstring(args, "mods", "LEADER")
+--   local key = safe.getstring(args, "key")
+--   local name = safe.getstring(args, "name", mods .. "_" .. key)
+--
+--   local action = {
+--     name = name,
+--     -- one_shot = safe.getboolean(args, "one_shot", true),
+--     -- timeout_milliseconds = safe.getnumber(args, "timeout_milliseconds", math.maxinteger),
+--     -- until_unknown = safe.getboolean(args, "until_unknown", true),
+--     -- replace_current = safe.getboolean(args, "replace_current", false),
+--     -- prevent_fallback = safe.getboolean(args, "prevent_fallback", false),
+--   }
+--
+--   local key_table
+--   if tbl.islist(args[1]) then
+--     key_table = args[1]
+--   else
+--     key_table = {}
+--     for k, v in pairs(args[1]) do
+--       if type(k) ~= "string" then
+--         error("expected string, got " .. type(v))
+--       end
+--       if type(v) ~= "table" then
+--         error("expected table, got " .. type(v))
+--       end
+--       table.insert(key_table, {
+--         key = safe.isstring(k),
+--         action = wezterm.action.Multiple({
+--           (wezterm.action_callback(function()
+--             wezterm.log_info("key table:", name, "action:", v)
+--           end)),
+--           v,
+--         }),
+--       })
+--     end
+--   end
+--
+--   return setmetatable({
+--     args = args,
+--     key_table = key_table,
+--     apply_to_config = function(config)
+--       local config_key_tables = safe.gettable(config, "key_tables", {})
+--       safe.getnil(config_key_tables, name)
+--       config_key_tables[name] = key_table
+--       config.key_tables = config_key_tables
+--
+--       local config_keys = safe.gettable(config, "keys", {})
+--       table.insert(config_keys, {
+--         key = args.key,
+--         mods = args.mods,
+--         action = wezterm.action.Multiple({
+--           wezterm.action.ActivateKeyTable(action),
+--           (wezterm.action_callback(function()
+--             wezterm.log_info("key table:", name, "activating")
+--           end)),
+--         }),
+--       })
+--       config.keys = config_keys
+--
+--       return config
+--     end,
+--   }, KeyTable_MT)
+-- end
 
----@type metatable
-local KeyTable_MT = {}
-
----@pararm args table
----@return dotfiles.utils.KeyTable
-function KeyTable.new(args)
-  safe.istable(args)
-  local mods = safe.getstring(args, "mods", "LEADER")
-  local key = safe.getstring(args, "key")
-  local name = safe.getstring(args, "name", mods .. "_" .. key)
-
-  local action = {
-    name = name,
-    -- one_shot = safe.getboolean(args, "one_shot", true),
-    -- timeout_milliseconds = safe.getnumber(args, "timeout_milliseconds", math.maxinteger),
-    -- until_unknown = safe.getboolean(args, "until_unknown", true),
-    -- replace_current = safe.getboolean(args, "replace_current", false),
-    -- prevent_fallback = safe.getboolean(args, "prevent_fallback", false),
-  }
-
-  local key_table
-  if tbl.islist(args[1]) then
-    key_table = args[1]
-  else
-    key_table = {}
-    for k, v in pairs(args[1]) do
-      if type(k) ~= "string" then error("expected string, got " .. type(v)) end
-      if type(v) ~= "table" then error("expected table, got " .. type(v)) end
-      table.insert(key_table, {
-        key = safe.isstring(k),
-        action = wezterm.action.Multiple {
-          (wezterm.action_callback(function()
-            wezterm.log_info("key table:", name, "action:", v)
-          end)),
-          v,
-        }
-      })
-    end
+function M.def_key_table(config, params)
+  local name = safe.getstring(params, "name")
+  local key_table = {}
+  for _, v in ipairs(params) do
+    table.insert(key_table, v)
   end
+  config.key_tables = config.key_tables or {}
+  config.key_tables[name] = key_table
 
-  return setmetatable({
-    args = args,
-    key_table = key_table,
-    apply_to_config = function(config)
-      local config_key_tables = safe.gettable(config, "key_tables", {})
-      safe.getnil(config_key_tables, name)
-      config_key_tables[name] = key_table
-      config.key_tables = config_key_tables
-
-      local config_keys = safe.gettable(config, "keys", {})
-      table.insert(config_keys, {
-        key = args.key,
-        mods = args.mods,
-        action = wezterm.action.Multiple {
-          wezterm.action.ActivateKeyTable(action),
-          (wezterm.action_callback(function()
-            wezterm.log_info("key table:", name, "activating")
-          end)),
-        },
-      })
-      config.keys = config_keys
-
-      return config
-    end
-  }, KeyTable_MT)
+  if params.key then
+    table.insert(config.keys, {
+      key = params.key,
+      mods = params.mods or "LEADER",
+      action = act.ActivateKeyTable({ name = name }),
+    })
+  end
 end
 
 --------------------------------------------------------------------------------
@@ -499,9 +611,6 @@ dbg.WINDOW_EVENTS = {
 function dbg.log_window_events()
   dbg.log_events(table.unpack(dbg.WINDOW_EVENTS))
 end
-
-_G.dotfiles = _G.dotfiles or {}
-_G.dotfiles.utils = M
 
 -- function _G.log_config(...)
 --   local config = get_config(select(1, ...))

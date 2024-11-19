@@ -65,10 +65,10 @@
   {
     mode = "n";
     key = "<leader><tab>`";
-    action = "<cmd>tablast<cr>";
+    action = "<cmd>b#<cr>";
     options = {
       silent = true;
-      desc = "Last tab";
+      desc = "Last buffer";
     };
   }
   {
@@ -288,7 +288,7 @@
   {
     mode = "v";
     key = "J";
-    action = ":m '>+1<CR>gv=gv";
+    action = ":m '>+1<cr>gv=gv";
     options = {
       silent = true;
       desc = "Move up when line is highlighted";
@@ -297,7 +297,7 @@
   {
     mode = "v";
     key = "K";
-    action = ":m '<-2<CR>gv=gv";
+    action = ":m '<-2<cr>gv=gv";
     options = {
       silent = true;
       desc = "Move down when line is highlighted";
@@ -447,7 +447,7 @@
   {
     mode = "n";
     key = "<C-f>";
-    action = "!tmux new tmux-sessionizer<CR>";
+    action = "!tmux new tmux-sessionizer<cr>";
     options = {
       desc = "Switch between projects";
     };
@@ -457,7 +457,7 @@
   {
     mode = "n";
     key = "<Esc>";
-    action = "<cmd>nohlsearch<CR>";
+    action = "<cmd>nohlsearch<cr>";
   }
 
   # {
@@ -582,7 +582,7 @@
   # {
   #   mode = "n";
   #   key = "<leader>ur";
-  #   action = "<cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>";
+  #   action = "<cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><cr>";
   #   options = {
   #     desc = "Redraw / Clear hlsearch / Diff Update";
   #   };
@@ -822,19 +822,56 @@
   {
     mode = "n";
     key = "<leader>gS";
-    action = "<Cmd>Gwrite<CR>";
+    action = "<cmd>Gwrite<cr>";
     options = {
       desc = "Stage file";
     };
   }
-  # {
-  #   mode = "n";
-  #   key = "<leader>fd"
-  #   options.desc = "Delete current file";
-  # }
   {
     key = "<leader>fD";
-    action = "<cmd>delete(expand('%')) <bar> bdelete!";
+    action.__raw = ''
+      function()
+        if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
+          local path = vim.fn.expand("%")
+          local ok, err = os.remove(path)
+          if ok then
+            vim.api.nvim_buf_delete(0, { force = true })
+            print("Deleted " .. path)
+          else
+            print("Error deleting " .. path .. ": " .. err)
+          end
+        end
+      end
+    '';
     options.desc = "Delete current file";
+  }
+  # TODO <leader>fR rename
+  {
+    key = "<leader>fy";
+    action = ''<cmd>let @+ = expand("%:.")'';
+    options.desc = "Yank current file relative path";
+  }
+  {
+    key = "<leader>fY";
+    action = ''<cmd>let @+ = expand("%:p")'';
+    options.desc = "Yank current file absolute path";
+  }
+  {
+    key = "<leader>fM";
+    action.__raw = ''
+      function()
+        vim.ui.input({
+          prompt = "File mode: (octal or symbolic) ",
+        }, function(input)
+          if input then
+            local shellescape = vim.fn.shellescape
+            local command = "chmod " .. shellescape(input) .. " " .. shellescape(vim.fn.expand("%:p"))
+            local result = os.execute(command)
+            print(command .. " => " .. result)
+          end
+        end)
+      end
+    '';
+    options.desc = "Yank current file absolute path";
   }
 ]

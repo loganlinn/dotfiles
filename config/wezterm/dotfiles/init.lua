@@ -2,7 +2,9 @@ local wezterm = require("wezterm") -- https://wezfurlong.org/wezterm/config/lua/
 local utils = require("dotfiles.utils")
 
 local config = wezterm.config_builder()
+
 config:set_strict_mode(true)
+config.automatically_reload_config = true
 
 local function victor_mono(fontattr)
   fontattr = fontattr or {}
@@ -38,8 +40,8 @@ config.window_padding = {
   left = "1cell",
 }
 config.inactive_pane_hsb = {
-  saturation = 0.9,
-  brightness = 0.8,
+  saturation = 0.7,
+  brightness = 0.7,
 }
 config.adjust_window_size_when_changing_font_size = false
 config.bold_brightens_ansi_colors = "BrightAndBold"
@@ -57,54 +59,6 @@ local function keystr(key_assignment)
   end
   return key_assignment.key
 end
-
-wezterm.on("update-right-status", function(window, pane)
-  local cfg = window:effective_config()
-  local color = cfg.color_schemes[cfg.color_scheme]
-  -- wezterm.log_info(color)
-
-  local status = {}
-
-  local active_key_table = window:active_key_table()
-  if active_key_table then
-    table.insert(status, { Foreground = { AnsiColor = "Fuchsia" } })
-    table.insert(status, { Attribute = { Intensity = "Bold" } })
-    table.insert(status, { Text = string.format(" %s ", active_key_table) })
-    table.insert(status, { Attribute = { Intensity = "Normal" } })
-    table.insert(status, {
-      Text = string.format(
-        "[%s]",
-        table.concat(
-          utils.tbl.map(function(_, v)
-            return v.key
-          end, cfg.key_tables[active_key_table]),
-          "|"
-        )
-      ),
-    })
-    table.insert(status, "ResetAttributes")
-    table.insert(status, { Text = " " })
-  end
-
-  if window:leader_is_active() then
-    table.insert(status, { Foreground = { Color = "black" } })
-    table.insert(status, { Background = { Color = "green" } })
-  else
-    table.insert(status, { Foreground = { Color = "grey" } })
-  end
-  table.insert(status, { Text = " LEADER " })
-  table.insert(status, "ResetAttributes")
-  table.insert(status, { Text = " " })
-
-  for i, workspace_name in pairs(wezterm.mux.get_workspace_names()) do
-    if workspace_name == window:active_workspace() then
-      table.insert(status, { Background = { Color = color.brights[1] } })
-    end
-    table.insert(status, { Text = string.format(" %d: %s ", i, workspace_name) })
-    table.insert(status, "ResetAttributes")
-  end
-  window:set_right_status(wezterm.format(status))
-end)
 
 config.command_palette_font_size = config.font_size
 config.command_palette_font_size = config.font_size
@@ -243,19 +197,13 @@ config.keys = {
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
   { key = "u", mods = "CTRL|SHIFT", action = act.CharSelect },
   { key = "x", mods = "CTRL|SHIFT", action = act.ActivateCopyMode },
-
   { key = "m", mods = "CTRL|SHIFT", action = act.ActivateKeyTable({ name = "mux" }) },
   { key = "m", mods = "LEADER", action = act.ActivateKeyTable({ name = "mux" }) },
   { key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "window" }) },
+  { key = "1", mods = "LEADER", action = act.SwitchToWorkspace({ name = "gamma" }) },
+  { key = "2", mods = "LEADER", action = act.SwitchToWorkspace({ name = "dotfiles" }) },
+  { key = "3", mods = "LEADER", action = act.SwitchToWorkspace({ name = "doom" }) },
 }
-
-for i = 1, 9 do
-  table.insert(config.keys, {
-    key = tostring(i),
-    mods = "CTRL|SHIFT",
-    action = act.ActivatePaneByIndex(i - 1),
-  })
-end
 
 for i = 1, 9 do
   table.insert(config.keys, {
@@ -265,23 +213,37 @@ for i = 1, 9 do
   })
 end
 
+-- for i = 1, 9 do
+--   wezterm.log_info("configuring CTRL|SHIFT+", i)
+--   table.insert(config.keys, {
+--     key = tostring(i),
+--     mods = "LEADER",
+--     action =
+--       local workspaces = wezterm.mux.get_workspaces()
+--       wezterm.log_info("workspaces", workspaces)
+--       if #workspaces <= i then
+--         window:perform_action(act.ActivateWorkspace(workspaces[i]), pane)
+--       end
+--      nd),
+--   })
+-- end
+
+local rename_workspace = act.PromptInputLine({
+  description = wezterm.format({
+    { Attribute = { Intensity = "Bold" } },
+    { Text = "Enter name for new workspace" },
+  }),
+  -- initial_value = wezterm.mux.get_active_workspace(),
+  action = wezterm.action_callback(function(window, pane, input)
+    if input then
+      wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
+    end
+  end),
+})
+
 config.key_tables = {
   mux = {
-    {
-      key = "r",
-      mods = "NONE",
-      action = act.PromptInputLine({
-        description = wezterm.format({
-          { Attribute = { Intensity = "Bold" } },
-          { Text = "Enter name for new workspace" },
-        }),
-        action = wezterm.action_callback(function(window, pane, input)
-          if input then
-            wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
-          end
-        end),
-      }),
-    },
+    { key = "r", mods = "NONE", action = rename_workspace },
     -- Cancel
     { key = "Escape", mods = "NONE", action = act.ClearKeyTableStack },
     { key = "g", mods = "CTRL", action = act.ClearKeyTableStack },
@@ -326,22 +288,8 @@ config.launch_menu = {
   },
 }
 
--- wezterm.plugin
---     .require('https://github.com/mrjones2014/smart-splits.nvim')
---     .apply_to_config(config, {
---       modifiers = {
---         move = 'CTRL|SHIFT',
---         resize = 'CTRL|SHIFT|SUPER',
---       },
---     })
-
--- wezterm.plugin
---     .require('https://github.com/MLFlexer/modal.wezterm')
---     .apply_to_config(config, {})
-
-local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
-
-workspace_switcher.apply_to_config(config)
+require("dotfiles/tabline").apply_to_config(config)
+require("dotfiles/balance").apply_to_config(config)
 
 -- wezterm.log_info(config)
 

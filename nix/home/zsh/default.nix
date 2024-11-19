@@ -43,34 +43,40 @@ with lib;
 
     sessionVariables = mkOptionDefault config.home.sessionVariables;
 
-    dirHashes = mergeAttrsList [
-      {
-        dotfiles = "$HOME/.dotfiles";
-        dots = "$HOME/.dotfiles";
-        src = "$HOME/src";
-        gh = "$HOME/src/github.com";
-        clj = "$HOME/src/github.com/clojure";
-        doom = "${config.xdg.configHome}/doom";
-        emacs = "${config.xdg.configHome}/emacs";
-        home-manager = "${inputs.home-manager}";
-        nixpkgs = "${inputs.nixpkgs}";
-      }
-      (optionalAttrs pkgs.stdenv.isDarwin {
-        nix-darwin = "${inputs.nix-darwin}";
-      })
-      (optionalAttrs config.xdg.enable {
-        cache = config.xdg.cacheHome;
-        config = config.xdg.configHome;
-        data = config.xdg.dataHome;
-        state = config.xdg.stateHome;
+    dirHashes =
+      let
+        cfg = "$${XDG_CONFIG_HOME:-$HOME/.config}";
+      in
+      mergeAttrsList [
+        (mapAttrs (name: input: "${input}") inputs)
+        (rec {
+          inherit cfg;
+          cache = "$${XDG_CACHE_HOME:-$HOME/.cache}";
+          data = "$${XDG_DATA_HOME:-$HOME/.local/share}";
+          state = "$${XDG_DATA_HOME:-$HOME/.local/state}";
+          bin = "$HOME/.local/bin";
 
-        dl = config.xdg.userDirs.download;
-        docs = config.xdg.userDirs.documents;
-        pics = config.xdg.userDirs.pictures;
-        music = config.xdg.userDirs.music;
-        vids = config.xdg.userDirs.videos;
-      })
-    ];
+          dot = "$${DOTFILES_DIR:-$HOME/.dotfiles}";
+          src = "$${SRC_HOME:-$HOME/src}";
+          gh = "${src}/github.com";
+          doom = "$${DOOMDIR:-${cfg}/doom}";
+          emacs = "$${EMACSDIR:-${cfg}/emacs}";
+
+          gamma = "${gh}/gamma-app/gamma";
+        })
+        (optionalAttrs config.xdg.enable {
+          dl = config.xdg.userDirs.download;
+          docs = config.xdg.userDirs.documents;
+          pics = config.xdg.userDirs.pictures;
+          vids = config.xdg.userDirs.videos;
+        })
+        (optionalAttrs config.programs.wezterm.enable {
+          wez = "$${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}";
+        })
+        (optionalAttrs config.programs.kitty.enable {
+          kitty = "${cfg}/kitty";
+        })
+      ];
 
     plugins = import ./plugins.nix { inherit config pkgs lib; };
 
@@ -83,6 +89,8 @@ with lib;
     '';
 
     initExtraFirst = ''
+      [[ ! -f "$XDG_CONFIG_DIR/zsh/initExtraFirst.zsh" ]] || source "$XDG_CONFIG_DIR/zsh/initExtraFirst.zsh"
+
       # Stop TRAMP (in Emacs) from hanging or term/shell from echoing back commands
       if [[ $TERM == dumb || -n $INSIDE_EMACS ]]; then
         unsetopt zle prompt_cr prompt_subst
@@ -93,6 +101,8 @@ with lib;
     '';
 
     initExtraBeforeCompInit = ''
+      [[ ! -f "$XDG_CONFIG_DIR/zsh/initExtraBeforeCompInit.zsh" ]] || source "$XDG_CONFIG_DIR/zsh/initExtraBeforeCompInit.zsh"
+
       ${readFile ./line-editor.zsh}
 
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
@@ -119,6 +129,8 @@ with lib;
         functionsDir = toString ./functions;
       in
       ''
+        [[ ! -f "$XDG_CONFIG_DIR/zsh/initExtra.zsh" ]] || source "$XDG_CONFIG_DIR/zsh/initExtra.zsh"
+
         unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
         setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
         setopt EQUALS               # Expansion of =command expands into full pathname of command
@@ -153,5 +165,17 @@ with lib;
     logoutExtra = ''
       [[ ! -f ~/.zlogout.local ]] || source ~/.zlogout.local
     '';
+
   };
+
+  xdg.configFile =
+    let
+      inherit (config.lib.file) mkOutOfStoreSymlink;
+      cwd = "${config.home.homeDirectory}/.dotfiles/nix/home/zsh";
+    in
+    {
+      "zsh/initFirst.zsh".source = mkOutOfStoreSymlink "${cwd}/initFirst.zsh";
+      "zsh/initExtraBeforeCompInit.zsh".source = mkOutOfStoreSymlink "${cwd}/initExtraBeforeCompInit.zsh";
+      "zsh/initExtra.zsh".source = mkOutOfStoreSymlink "${cwd}/initExtra.zsh";
+    };
 }

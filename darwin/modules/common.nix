@@ -53,12 +53,12 @@ in
 
     environment.systemPackages = with pkgs; [
       pinentry_mac
-      duti # configdefault applications
+      # duti # configdefault applications
     ];
 
     programs.bash = {
       enable = true;
-      enableCompletion = mkDefault true;
+      completion.enable = true;
     };
 
     programs.zsh = {

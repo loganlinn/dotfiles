@@ -1,10 +1,16 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   imports = [
     ./readline.nix
     ./shell/starship.nix
   ];
 
-  programs.bat.enable = true;
+  programs.bat = {
+    enable = true;
+    config = {
+      theme = "TwoDark";
+    };
+  };
 
   programs.bottom.enable = true;
 
@@ -25,6 +31,8 @@
     enableZshIntegration = true;
   };
 
-  home.packages = with pkgs; [
-  ];
+  home.packages =
+    with pkgs;
+    [
+    ];
 }

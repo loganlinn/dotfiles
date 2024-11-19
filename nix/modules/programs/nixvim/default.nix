@@ -31,8 +31,8 @@
       breakindent = true;
       cursorline = true;
       scrolloff = 8;
-      foldmethod = "manual";
-      foldenable = false;
+      foldmethod = "expr";
+      foldenable = true;
       linebreak = true;
       spell = false;
       swapfile = false;

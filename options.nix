@@ -166,7 +166,7 @@ in
 
         terminal = mkDefault {
           package = cfg.fonts.nerdfonts.package;
-          name = "FiraCode Nerd Font Light";
+          name = "Victor Mono";
           size = mkDefault (if isLinux then 11 else 12);
         };
 
