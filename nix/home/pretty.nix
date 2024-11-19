@@ -31,8 +31,12 @@
     enableZshIntegration = true;
   };
 
-  home.packages =
-    with pkgs;
-    [
-    ];
+  home.packages = with pkgs; [
+    bat-extras.prettybat
+    bat-extras.batwatch
+    bat-extras.batpipe
+    bat-extras.batman
+    bat-extras.batgrep
+    bat-extras.batdiff
+  ];
 }
