@@ -1,8 +1,13 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   programs.tmux = {
-    enable = tue;
+    enable = true;
     sensibleOnTop = true;
     mouse = true;
     shortcut = "f";
@@ -16,6 +21,5 @@
     [[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX
   '';
 
-  xdg.configFile."tmux/tmux.conf".source = config.lib.file.mkOutOfStoreSymlink
-    "${config.home.homeDirectory}/.dotfiles/config/tmux/tmux.conf";
+  xdg.configFile."tmux/tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/tmux/tmux.conf";
 }

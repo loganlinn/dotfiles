@@ -52,6 +52,7 @@ in
     environment.variables = my.environment.variables;
 
     environment.systemPackages = with pkgs; [
+      bashInteractive
       pinentry_mac
       # duti # configdefault applications
     ];

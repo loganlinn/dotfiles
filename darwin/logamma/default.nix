@@ -146,13 +146,14 @@
     home.shellAliases.switch = "darwin-rebuild switch --flake $HOME/.dotfiles";
 
     home.packages = with pkgs; [
+      flyctl
+      google-cloud-sdk
       goose
       kcat
       mkcert
       nodejs
       pls
       process-compose
-      google-cloud-sdk
     ];
 
     home.stateVersion = "22.11";

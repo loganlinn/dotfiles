@@ -1,3 +1,7 @@
+{ config, ... }:
+let
+  inherit (config.lib.nixvim) mkRaw;
+in
 {
   programs.nixvim = {
     plugins.telescope = {
@@ -23,11 +27,11 @@
         ];
         mappings = {
           i = {
-            "<C-h>".__raw = "which_key";
-            "<C-g>".__raw = "require('telescope.actions').close";
-            "<C-u>".__raw = "false";
-            "<C-j>".__raw = "require('telescope.actions').move_selection_next";
-            "<C-k>".__raw = "require('telescope.actions').move_selection_previous";
+            "<C-h>" = mkRaw "which_key";
+            "<C-g>" = mkRaw "require('telescope.actions').close";
+            "<C-u>" = mkRaw "false";
+            "<C-j>" = mkRaw "require('telescope.actions').move_selection_next";
+            "<C-k>" = mkRaw "require('telescope.actions').move_selection_previous";
           };
         };
       };
@@ -129,18 +133,30 @@
       {
         mode = "n";
         key = "<leader>*";
-        action = "<cmd>lua require('telescope-live-grep-args.shortcuts').grep_visual_selection()<CR>";
+        action = mkRaw ''function() require('telescope-live-grep-args.shortcuts').grep_visual_selection() end '';
         options.desc = "Grep Selection";
       }
       {
         mode = "n";
         key = "<leader>sd";
-        action.__raw = ''
+        action = mkRaw ''
           function()
-             require("telescope.builtin").live_grep({ cwd = vim.fn.expand("%:p:h") })
-            end
-        '';
+            require('telescope').extensions.live_grep_args.live_grep_args({ search_dir = vim.fn.expand('%:p:h') })
+          end'';
         options.desc = "Search current directory";
+      }
+      {
+        mode = "n";
+        key = "<leader>sD";
+        action = mkRaw ''
+          function()
+            vim.ui.input({ prompt = 'Directory: ', default = vim.fn.expand('%:p:h') }, function(search_dir)
+              if #(search_dir or "") == 0 then return end
+              require('telescope').extensions.live_grep_args.live_grep_args({ search_dir = vim.fn.expand('%:p:h') });
+            end)
+          end
+        '';
+        options.desc = "Search other directory";
       }
 
       # prefix: <leader>f
@@ -151,7 +167,7 @@
       }
       {
         key = "<leader>fF";
-        action.__raw = ''
+        action = mkRaw ''
           function()
             require("telescope.builtin").find_files({ cwd = vim.fn.expand("%:p:h") })
           end

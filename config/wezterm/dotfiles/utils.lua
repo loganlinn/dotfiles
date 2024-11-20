@@ -479,6 +479,19 @@ function M.is_windows()
   return str.endswith(wezterm.target_triple, "windows-msvc")
 end
 
+---@generic T
+---@param t { linux?: T, darwin?: T, windows?: T}
+---@return T
+function M.platform_cond(t)
+  if M.is_linux() then
+    return t.linux
+  elseif M.is_darwin() then
+    return t.darwin
+  elseif M.is_windows() then
+    return t.windows
+  end
+end
+
 --------------------------------------------------------------------------------
 -- -- WIP WIP WIP WIP
 -- ---@class dotfiles.utils.KeyTable

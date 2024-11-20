@@ -37,6 +37,7 @@
     # process-compose  # process manager a la docker-compose
     du-dust
     entr # similar to watchexec
+    gum
     libossp_uuid # i.e. uuid(1)
     sops
     tree

@@ -1,19 +1,16 @@
 { config, ... }:
 {
-  imports = [ ./plugins ];
+  imports = [
+    ./plugins
+    ./keymaps.nix
+  ];
 
   programs.nixvim = {
     vimAlias = !(config.programs.neovim.vimAlias or false);
 
     colorscheme = "dracula";
-
     colorschemes = {
       dracula.enable = true;
-      # gruvbox.enable = true;
-      kanagawa.enable = true;
-      # nightfox.enable = true;
-      # one.enable = true;
-      # tokyonight.enable = true;
     };
 
     opts = {
@@ -47,8 +44,6 @@
     globals = {
       mapleader = " ";
     };
-
-    keymaps = import ./keymaps.nix;
 
     extraConfigVim = ''
       cnoreabbrev Q q

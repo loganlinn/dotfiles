@@ -8,7 +8,7 @@
 with lib;
 
 let
-  config-local = "${config.xdg.configHome}/git/config.local";
+  privateConfigFile = "${config.xdg.configHome}/git/config.local";
 in
 {
   imports = [
@@ -47,16 +47,15 @@ in
     enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
-      { path = config-local; }
+      { path = privateConfigFile; }
       { path = ./include/gitalias.txt; }
     ];
     aliases = {
-      config-local = "config --file ${config-local}";
+      config-private = "config --file ${privateConfigFile}";
 
       root = "rev-parse --show-toplevel";
       prefix = "rev-parse --show-prefix";
       cdup = "rev-parse --show-cdup";
-      exec = ''!env -C "$$(git rev-parse --show-toplevel)" -'';
 
       # worktree
       wt = "worktree";

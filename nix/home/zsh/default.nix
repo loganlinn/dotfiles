@@ -70,7 +70,7 @@ with lib;
           vids = config.xdg.userDirs.videos;
         })
         (optionalAttrs config.programs.wezterm.enable {
-          wez = ''$${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
+          wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
         })
         (optionalAttrs config.programs.kitty.enable {
           kitty = ''${cfg}/kitty'';
