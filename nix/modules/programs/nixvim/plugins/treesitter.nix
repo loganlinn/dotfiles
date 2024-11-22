@@ -1,6 +1,9 @@
 { pkgs, ... }:
 {
   programs.nixvim = {
+    # highlighting languages contained in strings of home-manager config using treesitter. how niche.
+    plugins.hmts.enable = true;
+
     plugins.treesitter = {
       enable = true;
       grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [

@@ -1,4 +1,8 @@
 { config, ... }:
+
+let
+  inherit (config.lib.nixvim) mkRaw;
+in
 {
   imports = [
     ./plugins
@@ -7,12 +11,10 @@
 
   programs.nixvim = {
     vimAlias = !(config.programs.neovim.vimAlias or false);
-
     colorscheme = "dracula";
     colorschemes = {
       dracula.enable = true;
     };
-
     opts = {
       ignorecase = true;
       smartcase = true;
@@ -40,11 +42,9 @@
       splitkeep = "screen";
       splitright = true;
     };
-
     globals = {
       mapleader = " ";
     };
-
     extraConfigVim = ''
       cnoreabbrev Q q
       cnoreabbrev Q! q!
@@ -52,16 +52,11 @@
       cnoreabbrev W! w!
       cnoreabbrev Wq wq
       cnoreabbrev Wq! wq!
-    '';
 
-    extraConfigLua = ''
-      autocmd("VimResized", {
-        pattern = "*",
-        callback = function()
-          -- get current tab and run winc =
-          vim.cmd "wincmd ="
-        end,
-      })
+      augroup UIEvents
+        autocmd!
+        autocmd VimResized * wincmd =
+      augroup END
     '';
   };
 }

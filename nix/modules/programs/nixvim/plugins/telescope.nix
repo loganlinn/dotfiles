@@ -7,7 +7,11 @@ in
     extraPlugins = with pkgs.vimPlugins; [
       {
         plugin = smart-open-nvim;
-        config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
+        config =
+          let
+            extension = if pkgs.stdenv.hostPlatform.isDarwin then "dylib" else "so";
+          in
+          "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${extension}'";
       }
       telescope-live-grep-args-nvim
       telescope-zoxide
@@ -34,9 +38,10 @@ in
           "^output/"
           "^target/"
         ];
+        # keybindings _within_ telescope
         mappings = {
           i = {
-            "<C-h>" = mkRaw "which_key";
+            "<C-h>" = "which_key";
             "<C-g>" = mkRaw "require('telescope.actions').close";
             "<C-u>" = mkRaw "false";
             "<C-j>" = mkRaw "require('telescope.actions').move_selection_next";
@@ -139,7 +144,7 @@ in
         ];
         key = "<leader><space>";
         options.desc = "Find files";
-        action = mkRaw ''require("telescope").extensions.smart_open.smart_open() '';
+        action = mkRaw ''function() require("telescope").extensions.smart_open.smart_open() end'';
       }
       {
         mode = [
