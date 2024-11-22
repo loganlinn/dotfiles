@@ -1,6 +1,6 @@
 local wezterm = require("wezterm") -- https://wezfurlong.org/wezterm/config/lua/config
+local log_info, log_warn, log_error = wezterm.log_info, wezterm.log_warn, wezterm.log_error
 local act = require("dotfiles.util.action")
-local log = require("dotfiles.util.log")
 local balance = require("dotfiles.balance")
 local tabline = require("dotfiles.tabline")
 local utils = require("dotfiles.utils")
@@ -106,6 +106,7 @@ local function with_cancel_keys(key_table)
   return key_table
 end
 
+--
 config.keys = {
   -- Tab
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
@@ -122,8 +123,22 @@ config.keys = {
   { key = "\\", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left" }) },
   { key = "_", mods = "LEADER", action = act.SplitPane({ direction = "Down", top_level = true }) },
   { key = "_", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up", top_level = true }) },
-  { key = "1", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
-  { key = "2", mods = "CTRL|SHIFT", action = act.ToggleSidePane },
+  { key = "!", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
+  {
+    key = "@",
+    mods = "CTRL|SHIFT",
+    action = wezterm.action_callback(function(window, pane)
+      local tab = window:active_tab()
+      wezterm.log_info("pane info", tab:panes_with_info())
+      -- local panes = tab:panes()
+      -- local sidepane = pane:split({
+      --   direction = "Right",
+      --   size = 0.3,
+      --   top_level = true,
+      -- })
+      -- sidepane:activate()
+    end),
+  },
   { key = "b", mods = "CTRL|SHIFT", action = act.RotatePanes("CounterClockwise") },
   { key = "h", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Left") },
   { key = "h", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Left", 5 }) },
@@ -240,12 +255,12 @@ define_key_table(
 )
 
 wezterm.on("window-resized", function(window, pane)
-  log.info("on: window-resized")
+  log_info("on: window-resized")
 end)
 
 wezterm.on("window-config-reloaded", function(window)
   wezterm.GLOBAL.config_reloaded_count = (wezterm.GLOBAL.config_reloaded_count or 0) + 1
-  log.info("on: window-config-reloaded", wezterm.GLOBAL.config_reloaded_count)
+  log_info("on: window-config-reloaded", wezterm.GLOBAL.config_reloaded_count)
 end)
 
 tabline.apply_to_config(config)

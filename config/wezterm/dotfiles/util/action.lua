@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local log_info = wezterm.log_info
 
 local M = setmetatable({}, {
   __index = wezterm.action,
@@ -43,16 +44,17 @@ M.SwitchToNamedWorkspace = wezterm.action.PromptInputLine({
   end),
 })
 
-M.ToggleSidePane = wezterm.action_callback(function(window, pane)
+M.ActivateRightPane = wezterm.action_callback(function(window, pane)
   local tab = window:active_tab()
-  wezterm.info("pane info", tab:panes_with_info())
-  local panes = tab:panes()
-  local sidepane = pane:split({
-    direction = "Right",
-    size = 0.3,
-    top_level = true,
-  })
-  sidepane:activate()
+  wezterm.log_info("pane info", tab:panes_with_info())
+
+  -- local panes = tab:panes()
+  -- local sidepane = pane:split({
+  --   direction = "Right",
+  --   size = 0.3,
+  --   top_level = true,
+  -- })
+  -- sidepane:activate()
 end)
 
 return M
