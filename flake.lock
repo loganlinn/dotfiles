@@ -1313,7 +1313,8 @@
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_11",
         "nixpkgs-stable": "nixpkgs-stable_3",
-        "nixvim": "nixvim"
+        "nixvim": "nixvim",
+        "wezterm-types": "wezterm-types"
       }
     },
     "rust-overlay": {
@@ -1415,6 +1416,22 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "wezterm-types": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1706845895,
+        "narHash": "sha256-dSxsrgrapUezQIGhNp/Ikc0kISfIdrlUZxUBdsLVe3A=",
+        "owner": "justinsgithub",
+        "repo": "wezterm-types",
+        "rev": "1518752906ba3fac0060d9efab6e4d3ec15d4b5a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "justinsgithub",
+        "repo": "wezterm-types",
         "type": "github"
       }
     },
