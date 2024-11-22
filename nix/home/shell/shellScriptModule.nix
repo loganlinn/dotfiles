@@ -1,4 +1,4 @@
-{ pkgs, lib }:
+{ writeShellApplication, lib }:
 
 with lib;
 
@@ -90,7 +90,7 @@ types.submodule (
       };
     };
     config = {
-      package = pkgs.writeShellApplication {
+      package = writeShellApplication {
         inherit (config)
           name
           text

@@ -1,9 +1,18 @@
-{ config, ... }:
+{ pkgs, config, ... }:
 let
   inherit (config.lib.nixvim) mkRaw;
 in
 {
   programs.nixvim = {
+    extraPlugins = with pkgs.vimPlugins; [
+      {
+        plugin = smart-open-nvim;
+        config = "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.so'";
+      }
+      telescope-live-grep-args-nvim
+      telescope-zoxide
+    ];
+
     plugins.telescope = {
       enable = true;
       extensions = {
@@ -36,7 +45,6 @@ in
         };
       };
       keymaps = {
-        "<leader><space>" = "find_files";
         "<leader>:" = "command_history";
         "<leader>'" = "resume";
         "<leader>bb" = "buffers";
@@ -125,19 +133,37 @@ in
 
     keymaps = [
       {
-        mode = "n";
+        mode = [
+          "n"
+          "v"
+        ];
+        key = "<leader><space>";
+        options.desc = "Find files";
+        action = mkRaw ''require("telescope").extensions.smart_open.smart_open() '';
+      }
+      {
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>/";
         action = "<cmd>lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>";
         options.desc = "Grep Files";
       }
       {
-        mode = "n";
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>*";
         action = mkRaw ''function() require('telescope-live-grep-args.shortcuts').grep_visual_selection() end '';
         options.desc = "Grep Selection";
       }
       {
-        mode = "n";
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>sd";
         action = mkRaw ''
           function()
@@ -146,7 +172,10 @@ in
         options.desc = "Search current directory";
       }
       {
-        mode = "n";
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>sD";
         action = mkRaw ''
           function()
@@ -161,11 +190,19 @@ in
 
       # prefix: <leader>f
       {
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>ff";
         action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<CR>";
         options.desc = "Find file";
       }
       {
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>fF";
         action = mkRaw ''
           function()
@@ -201,7 +238,10 @@ in
         options.desc = "Git commits";
       }
       {
-        mode = "n";
+        mode = [
+          "n"
+          "v"
+        ];
         key = "<leader>gf";
         action = "<cmd>Telescope git_files<CR>";
         options.desc = "Git files";

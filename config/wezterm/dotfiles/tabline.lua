@@ -95,6 +95,4 @@ tabline.setup({
   extensions = {},
 })
 
-wezterm.log_info(tabline.get_colors())
-
 return tabline

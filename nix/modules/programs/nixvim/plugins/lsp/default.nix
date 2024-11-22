@@ -1,5 +1,8 @@
 {
-  imports = [ ./lspsaga.nix ];
+  imports = [
+    ./lspsaga.nix
+    ./lua_ls.nix
+  ];
 
   programs.nixvim = {
     plugins = {

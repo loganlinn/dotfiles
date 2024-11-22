@@ -53,5 +53,15 @@
       cnoreabbrev Wq wq
       cnoreabbrev Wq! wq!
     '';
+
+    extraConfigLua = ''
+      autocmd("VimResized", {
+        pattern = "*",
+        callback = function()
+          -- get current tab and run winc =
+          vim.cmd "wincmd ="
+        end,
+      })
+    '';
   };
 }

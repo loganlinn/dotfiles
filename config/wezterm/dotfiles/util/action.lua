@@ -43,4 +43,16 @@ M.SwitchToNamedWorkspace = wezterm.action.PromptInputLine({
   end),
 })
 
+M.ToggleSidePane = wezterm.action_callback(function(window, pane)
+  local tab = window:active_tab()
+  wezterm.info("pane info", tab:panes_with_info())
+  local panes = tab:panes()
+  local sidepane = pane:split({
+    direction = "Right",
+    size = 0.3,
+    top_level = true,
+  })
+  sidepane:activate()
+end)
+
 return M

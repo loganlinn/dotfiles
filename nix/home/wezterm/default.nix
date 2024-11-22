@@ -20,10 +20,6 @@ let
     rev = "0db525a46b5242ee15fd4a52f887e172fbde8e51";
     hash = "sha256-sEoXqIAqedezT7cA0HhPsIfu1bWWxJS5+cd7nwK/Aps=";
   };
-  wezterm-types = pkgs.fetchzip {
-    url = "https://github.com/justinsgithub/wezterm-types/archive/1518752906ba3fac0060d9efab6e4d3ec15d4b5a.zip";
-    sha256 = "sha256-dSxsrgrapUezQIGhNp/Ikc0kISfIdrlUZxUBdsLVe3A=";
-  };
 in
 {
   programs.wezterm = {
@@ -41,9 +37,5 @@ in
   xdg.configFile = {
     "wezterm/dotfiles".source = mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/wezterm/dotfiles";
     "wezterm/colors/dracula".source = dracula;
-    "wezterm/.luarc.json".text = builtins.toJSON {
-      workspace.library = [ wezterm-types ];
-    };
-    "wezterm/.gitignore".text = ".luarc.json";
   };
 }

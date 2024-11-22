@@ -1,6 +1,5 @@
 #! /usr/bin/env nix
 #! nix shell nixpkgs#just nixpkgs#gum --command just --justfile
-
 # mod nixos
 # mod windows
 # mod firewalla
@@ -70,14 +69,33 @@ fix-eol:
     target="{{ clean(join(context, path)) }}"
     link="{{ clean(link) }}"
     if [ ! -d "$(dirname "$link")" ]; then
-      echo "{{BOLD}}{{YELLOW}} skipped:{{RESET}} {{BLUE}}$(dirname "$link"){{RESET}} does not exist";
+      echo "{{ BOLD }}{{ YELLOW }} skipped:{{ RESET }} {{ BLUE }}$(dirname "$link"){{ RESET }} does not exist";
     elif [ "$(readlink -qe "$link")" = "$(readlink -qe "$target")" ]; then
-      echo "{{BOLD}}{{GREEN}}   found:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}";
+      echo "{{ BOLD }}{{ GREEN }}   found:{{ RESET }} {{ BLUE }}$link{{ RESET }} -> {{ BLUE }}$target{{ RESET }}";
     else
       ln -s -T "$target" "$link";
-      echo "{{BOLD}}{{GREEN}} created:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}";
+      echo "{{ BOLD }}{{ GREEN }} created:{{ RESET }} {{ BLUE }}$link{{ RESET }} -> {{ BLUE }}$target{{ RESET }}";
     fi;
 
 fmt:
     nix fmt
     just --fmt --unstable
+
+BOLD := "$(tput bold)"
+RESET := "$(tput sgr0)"
+BLACK := "$(tput bold)$(tput setaf 0)"
+RED := "$(tput bold)$(tput setaf 1)"
+GREEN := "$(tput bold)$(tput setaf 2)"
+YELLOW := "$(tput bold)$(tput setaf 3)"
+BLUE := "$(tput bold)$(tput setaf 4)"
+MAGENTA := "$(tput bold)$(tput setaf 5)"
+CYAN := "$(tput bold)$(tput setaf 6)"
+WHITE := "$(tput bold)$(tput setaf 7)"
+BLACKB := "$(tput bold)$(tput setab 0)"
+REDB := "$(tput setab 1)$(tput setaf 0)"
+GREENB := "$(tput setab 2)$(tput setaf 0)"
+YELLOWB := "$(tput setab 3)$(tput setaf 0)"
+BLUEB := "$(tput setab 4)$(tput setaf 0)"
+MAGENTAB := "$(tput setab 5)$(tput setaf 0)"
+CYANB := "$(tput setab 6)$(tput setaf 0)"
+WHITEB := "$(tput setab 7)$(tput setaf 0)"

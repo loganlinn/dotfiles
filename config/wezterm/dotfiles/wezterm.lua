@@ -72,7 +72,7 @@ config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
 
 config.leader = {
-  mods = utils.platform_cond({
+  mods = utils.match_platform({
     linux = "META",
     darwin = "CMD",
     windows = "ALT",
@@ -80,6 +80,32 @@ config.leader = {
   key = "Space",
   timeout_milliseconds = math.maxinteger,
 }
+
+local function define_key(mods, key, action)
+  if config.keys == nil then
+    config.keys = {}
+  end
+  local key = { key = key, mods = mods or "NONE", action = action or act.Nop }
+  table.insert(config.keys, key)
+  return key
+end
+
+local function define_key_table(name, mods, key, key_table)
+  if config.key_tables == nil then
+    config.key_tables = {}
+  end
+  define_key(mods, key, act.ActivateKeyTable({ name = name }))
+  config.key_tables[name] = key_table
+  return key_table
+end
+
+local function with_cancel_keys(key_table)
+  table.insert(key_table, { key = "Escape", action = act.ClearKeyTableStack })
+  table.insert(key_table, { key = "g", mods = "CTRL", action = act.ClearKeyTableStack })
+  table.insert(key_table, { key = "c", mods = "CTRL", action = act.ClearKeyTableStack })
+  return key_table
+end
+
 config.keys = {
   -- Tab
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
@@ -96,6 +122,8 @@ config.keys = {
   { key = "\\", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left" }) },
   { key = "_", mods = "LEADER", action = act.SplitPane({ direction = "Down", top_level = true }) },
   { key = "_", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up", top_level = true }) },
+  { key = "1", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
+  { key = "2", mods = "CTRL|SHIFT", action = act.ToggleSidePane },
   { key = "b", mods = "CTRL|SHIFT", action = act.RotatePanes("CounterClockwise") },
   { key = "h", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Left") },
   { key = "h", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Left", 5 }) },
@@ -108,7 +136,6 @@ config.keys = {
   { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
   { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = true }) },
   { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
-  { key = "z", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
   { key = "|", mods = "LEADER", action = act.SplitPane({ direction = "Right", top_level = true }) },
   { key = "|", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left", top_level = true }) },
   -- Window
@@ -120,11 +147,10 @@ config.keys = {
   { key = "PageUp", mods = "CTRL|SHIFT", action = act.ScrollByPage(-1) },
   { key = "End", mods = "CTRL|SHIFT", action = act.ScrollToBottom },
 
-  -- System
+  -- Clipboard
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
-
-  -- Selection
+  { key = "f", mods = "CTRL|SHIFT", action = act.QuickSelect },
   {
     key = "e",
     mods = "CTRL|SHIFT",
@@ -143,24 +169,22 @@ config.keys = {
       },
     }),
   },
-  { key = "f", mods = "CTRL|SHIFT", action = act.QuickSelect },
-
   -- Workspace
   { key = "n", mods = "SUPER", action = act.SwitchToNamedWorkspace },
   { key = "[", mods = "SUPER|SHIFT", action = act.SwitchWorkspaceRelative(-1) },
   { key = "]", mods = "SUPER|SHIFT", action = act.SwitchWorkspaceRelative(1) },
   { key = "Tab", mods = "LEADER", action = act.ActivateKeyTable({ name = "workspace" }) },
   { key = ".", mods = "LEADER", action = act.RenameWorkspace },
-
-  -- Misc
+  -- Other
   { key = "F1", mods = "SUPER", action = act.ShowDebugOverlay },
   { key = "F2", mods = "SUPER", action = act.RenameTab },
   { key = "F5", mods = "SUPER", action = act.ReloadConfiguration },
   { key = "F9", mods = "SUPER", action = wezterm.action.ShowTabNavigator },
   { key = "f", mods = "SUPER", action = act.Search({ CaseSensitiveString = "" }) },
+  { key = "-", mods = "SUPER", action = wezterm.action.DecreaseFontSize },
+  { key = "=", mods = "SUPER", action = wezterm.action.IncreaseFontSize },
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
-
-  { key = ":", mods = "LEADER", action = act.ShowLauncher },
+  { key = ";", mods = "SUPER", action = act.ShowLauncher },
   { key = "Space", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
   { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
   { key = "i", mods = "LEADER", action = act.ActivateKeyTable({ name = "insert" }) },
@@ -179,89 +203,52 @@ for i = 1, 9 do
   })
 end
 
-config.key_tables = {
-  workspace = {
-    { key = ".", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
-    -- Cancel
-    { key = "Escape", action = act.ClearKeyTableStack },
-    { key = "g", mods = "CTRL", action = act.ClearKeyTableStack },
-    { key = "c", mods = "CTRL", action = act.ClearKeyTableStack },
-  },
-  toggle = {
+config.key_tables = {}
+
+define_key_table(
+  "toggle",
+  "LEADER",
+  "t",
+  with_cancel_keys({
     { key = "z", action = act.TogglePaneZoomState },
     { key = "s", action = act.ToggleAlwaysOnTop },
     { key = "s", mods = "SHIFT", action = act.ToggleAlwaysOnBottom },
     { key = "f", action = act.ToggleFullScreen },
-  },
-}
+  })
+)
 
-local function define_key_table(opts)
-  assert(is.table(opts))
-  local name = safe.getstring(opts, "name")
-  local key = safe.getstring(opts, "key")
-  local mods = safe.getstring(opts, "mods")
+define_key_table(
+  "window",
+  "LEADER",
+  "w",
+  with_cancel_keys({
+    { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
+    { key = "n", action = act.SpawnWindow },
+    { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
+  })
+)
 
-  local key_table = config.key_tables and config.key_tables[name] or {}
-  for _, key_assignment in ipairs(opts) do
-    assert(is.table(key_assignment))
-    assert(is.string(key_assignment.key))
-    assert(is.some(key_assignment.action))
-    table.insert(key_table, key_assignment)
-  end
+define_key_table(
+  "insert",
+  "LEADER",
+  "i",
+  with_cancel_keys({
+    { key = "u", action = act.CharSelect },
+    { key = "p", action = act.PasteFrom("Clipboard") },
+    { key = "P", action = act.PasteFrom("PrimarySelection") },
+  })
+)
 
-  if not opts.disable_default_key_bindings then
-    table.insert(key_table, { key = "Escape", action = act.ClearKeyTableStack })
-    table.insert(key_table, { key = "g", mods = "CTRL", action = act.ClearKeyTableStack })
-    table.insert(key_table, { key = "c", mods = "CTRL", action = act.ClearKeyTableStack })
-  end
+wezterm.on("window-resized", function(window, pane)
+  log.info("on: window-resized")
+end)
 
-  if config.key_tables == nil then
-    config.key_tables = {}
-  end
-  config.key_tables[name] = key_table
-
-  local activate_key = { key = key, mods = mods, action = act.ActivateKeyTable({ name = name }) }
-  if opts.parent ~= nil then
-    table.insert(safe.gettable(config.key_tables, opts.parent), activate_key)
-  else
-    if config.keys == nil then
-      config.keys = {}
-    end
-    table.insert(config.keys, activate_key)
-  end
-
-  log.info("configured key table", name, activate_key, key_table)
-end
-
-define_key_table({
-  name = "window",
-  key = "w",
-  mods = "LEADER",
-  { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
-  { key = "n", action = act.SpawnWindow },
-  { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
-})
-
-define_key_table({
-  name = "insert",
-  key = "i",
-  mods = "LEADER",
-
-  { key = "u", action = act.CharSelect },
-  { key = "p", action = act.PasteFrom("Clipboard") },
-  { key = "P", action = act.PasteFrom("PrimarySelection") },
-})
-
-config.launch_menu = {
-  {
-    label = "dotfiles: edit",
-    args = { "zsh", "-c", "nvim", ".dotfiles", "+cd %:p:h", "+Telescope find_files" },
-  },
-}
+wezterm.on("window-config-reloaded", function(window)
+  wezterm.GLOBAL.config_reloaded_count = (wezterm.GLOBAL.config_reloaded_count or 0) + 1
+  log.info("on: window-config-reloaded", wezterm.GLOBAL.config_reloaded_count)
+end)
 
 tabline.apply_to_config(config)
 balance.apply_to_config(config)
-
--- wezterm.log_info(config)
 
 return config

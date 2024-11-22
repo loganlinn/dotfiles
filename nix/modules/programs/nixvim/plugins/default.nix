@@ -22,11 +22,13 @@
           fugitive.enable = true;
           gitlinker.enable = true;
           illuminate.enable = true;
+          lazy.enable = true;
           nix.enable = true;
           nvim-autopairs.enable = true;
           qmk.enable = false;
           snacks.enable = true;
           sniprun.enable = true;
+          spectre.enable = true;
           trouble.enable = true;
           typescript-tools.enable = true;
           vim-surround.enable = true;
@@ -35,8 +37,6 @@
         extraPlugins = with pkgs.vimPlugins; [
           zoxide-vim
           vim-eunuch
-          telescope-live-grep-args-nvim
-          telescope-zoxide
           # vim-bbye
           # (pkgs.vimUtils.buildVimPlugin {
           #   name = "vim-symlink";
@@ -48,6 +48,7 @@
           #   };
           # })
         ];
+
       };
     }
   ];
