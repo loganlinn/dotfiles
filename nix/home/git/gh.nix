@@ -66,10 +66,6 @@ with lib.my;
         '';
       };
     };
-
-    extensions = with pkgs; [
-      gh-dash
-    ];
   };
 
   xdg.configFile."gh-dash/config.yml".source = ../../../config/gh-dash/config.yml;

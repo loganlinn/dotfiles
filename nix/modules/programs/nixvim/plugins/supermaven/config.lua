@@ -1,19 +1,16 @@
-require("supermaven-nvim").setup {
+require("supermaven-nvim").setup({
   keymaps = {
-    accept_suggestion = "<Tab>",
+    accept_suggestion = "<C-f>",
     clear_suggestion = "<C-]>",
-    accept_word = "<C-j>"
+    accept_word = "<C-j>",
   },
 
-  ignore_filetypes = { cpp = true },
-
-  -- color = {
-  --   suggestion_color = "#ffffff",
-  --   cterm = 244,
-  -- },
+  ignore_filetypes = {
+    "envrc",
+  },
 
   -- set to "off" to disable logging completely
-  log_level = "info",
+  log_level = "warn",
 
   -- disables inline completion for use with cmp
   disable_inline_completion = false,
@@ -22,5 +19,7 @@ require("supermaven-nvim").setup {
   disable_keymaps = false,
 
   -- condition to check for stopping supermaven, `true` means to stop supermaven when the condition is true.
-  condition = function() return false end
-}
+  condition = function()
+    return string.match(vim.fn.expand("%:t"), ".envrc")
+  end,
+})

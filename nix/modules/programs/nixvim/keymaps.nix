@@ -1,5 +1,4 @@
 { config, ... }:
-
 let
   inherit (config.lib.nixvim) mkRaw;
 in
@@ -850,7 +849,7 @@ in
         function()
           assert(vim.fn.exists(":Move"), "eunuch-:Move not found")
           local prompt = "Move to: "
-          local default = vim.fn.expand("%:p")
+          local default = vim.fn.expand("%:p:~")
           vim.ui.input({ prompt = prompt, default = default }, function(dest)
             if #(dest or "") == 0 then return end
             vim.cmd(":Move " .. dest)
@@ -869,7 +868,7 @@ in
           vim.ui.input({ prompt = prompt }, function(input)
             if #(input or "") == 0 then return end
             if vim.fn.exists(":Chmod") then
-              vim.fn.cmd("Chmod " .. input)
+              vim.cmd("Chmod " .. input)
             else
               print(vim.fn.system { "chmod", input, file })
             end
@@ -887,6 +886,22 @@ in
       key = "<leader>fY";
       action = ''<cmd>let @+ = expand("%:p") <bar> echom "Copied! " . expand("%:p")<cr>'';
       options.desc = "Yank current file absolute path";
+    }
+    # Open stuff
+    {
+      key = "<leader>oe";
+      action = mkRaw ''
+        function()
+          -- local line, column = TODO
+          vim.fn.system {
+            "emacsclient",
+            "--no-wait",
+            -- string.format("+%n:%n", line, column),
+            vim.fn.expand("%:p")
+          }
+        end
+      '';
+      options.desc = "Open file in Emacs";
     }
   ];
 }

@@ -1,18 +1,14 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i "just --justfile" -p just
+#! /usr/bin/env nix
+#! nix shell nixpkgs#just nixpkgs#gum --command just --justfile
 
-mod nixos
-
+# mod nixos
 # mod windows
 # mod firewalla
 
-# default recipe to display help information
-default:
-    @just --list
+default: help
 
-fmt:
-    nix fmt
-    just --fmt --unstable
+help:
+    @just --list --unsorted
 
 @link-flake:
     just link-system-flake
@@ -82,22 +78,6 @@ fix-eol:
       echo "{{BOLD}}{{GREEN}} created:{{RESET}} {{BLUE}}$link{{RESET}} -> {{BLUE}}$target{{RESET}}";
     fi;
 
-
-BOLD := "$(tput bold)"
-RESET := "$(tput sgr0)"
-BLACK := "$(tput bold)$(tput setaf 0)"
-RED := "$(tput bold)$(tput setaf 1)"
-GREEN := "$(tput bold)$(tput setaf 2)"
-YELLOW := "$(tput bold)$(tput setaf 3)"
-BLUE := "$(tput bold)$(tput setaf 4)"
-MAGENTA := "$(tput bold)$(tput setaf 5)"
-CYAN := "$(tput bold)$(tput setaf 6)"
-WHITE := "$(tput bold)$(tput setaf 7)"
-BLACKB := "$(tput bold)$(tput setab 0)"
-REDB := "$(tput setab 1)$(tput setaf 0)"
-GREENB := "$(tput setab 2)$(tput setaf 0)"
-YELLOWB := "$(tput setab 3)$(tput setaf 0)"
-BLUEB := "$(tput setab 4)$(tput setaf 0)"
-MAGENTAB := "$(tput setab 5)$(tput setaf 0)"
-CYANB := "$(tput setab 6)$(tput setaf 0)"
-WHITEB := "$(tput setab 7)$(tput setaf 0)"
+fmt:
+    nix fmt
+    just --fmt --unstable

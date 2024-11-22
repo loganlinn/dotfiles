@@ -25,6 +25,7 @@
           nix.enable = true;
           nvim-autopairs.enable = true;
           qmk.enable = false;
+          snacks.enable = true;
           sniprun.enable = true;
           trouble.enable = true;
           typescript-tools.enable = true;

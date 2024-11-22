@@ -15,6 +15,7 @@ in
     ./gh.nix
     ./git-stack.nix
     ./git-town.nix
+    ./lazygit.nix
   ];
 
   home.shellAliases = {

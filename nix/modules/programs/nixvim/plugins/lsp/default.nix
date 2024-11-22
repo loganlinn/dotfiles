@@ -6,6 +6,23 @@
       lsp-format = {
         enable = true;
       };
+      none-ls = {
+        enable = true;
+        sources.code_actions = {
+          gitrebase.enable = true;
+          gitsigns.enable = true;
+          refactoring.enable = true;
+          impl.enable = true;
+          ts_node_action.enable = true;
+        };
+        # sources.completion = {
+        #   luasnip.enable = true;
+        #   clj_kondo.enable = true;
+        # };
+        sources.formatting = {
+          just.enable = true;
+        };
+      };
       lsp = {
         enable = true;
         inlayHints = true;

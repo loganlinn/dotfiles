@@ -67,10 +67,18 @@ tabline.setup({
       left = wezterm.nerdfonts.pl_left_hard_divider,
       right = wezterm.nerdfonts.pl_right_hard_divider,
     },
+    color_overrides = {
+      normal_mode = {
+        b = { bg = "#6272A4", fg = "#F8F8F2" },
+      },
+    },
   },
   sections = {
     tabline_a = { "mode" },
-    tabline_b = { "workspace" },
+    tabline_b = {
+      { Attribute = { Intensity = "Bold" } },
+      "workspace",
+    },
     tabline_c = { " " },
     tab_active = {
       "index",
@@ -81,10 +89,12 @@ tabline.setup({
     },
     tab_inactive = { "index", { "process", padding = { left = 0, right = 1 } } },
     tabline_x = { "ram", "cpu" },
-    tabline_y = { "datetime", "battery" },
+    tabline_y = { "datetime" },
     tabline_z = { "hostname" },
   },
   extensions = {},
 })
+
+wezterm.log_info(tabline.get_colors())
 
 return tabline

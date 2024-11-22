@@ -4,6 +4,12 @@ local wezterm = require("wezterm")
 ---@class dotfiles.utils
 local M = {}
 
+M.complement = function(f)
+  return function(...)
+    return not f(...)
+  end
+end
+
 ---@generic T
 ---@param ... nil|T
 ---@return T
@@ -17,13 +23,6 @@ function M.coalesce(...)
   end
   return nil
 end
-
-function M.spy(...)
-  wezterm.log_info("spy:", ...)
-  return select(select("#", ...), ...)
-end
-
--- M.LUA_TYPES = { "nil", "boolean", "number", "string", "userdata", "function", "thread", "table" }
 
 ---@class dotfiles.utils.is
 local is = {}
@@ -82,6 +81,9 @@ end
 function is.null(v)
   return v == nil or is.a(v, "nil")
 end
+
+is.void = is.null
+is.some = M.complement(is.null)
 
 ---@param v any
 ---@return boolean
@@ -648,5 +650,23 @@ end
 --   if #ks == 0 then
 --   end
 -- end
+
+--------------------------------------------------------------------------------
+---@class dotfiles.utils.act
+local act = {}
+M.act = act
+
+--------------------------------------------------------------------------------
+---@class dotfiles.utils.act
+local key = {}
+M.key = key
+
+key.create = function(key, mods, action)
+  return {
+    key = key,
+    mods = mods,
+    action = action,
+  }
+end
 
 return M
