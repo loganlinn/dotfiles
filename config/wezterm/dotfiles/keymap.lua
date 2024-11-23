@@ -1,6 +1,6 @@
-local wezterm = require("wezterm") -- https://wezfurlong.org/wezterm/config/lua/config
-local utils = require("dotfiles.utils")
-local is, safe = utils.is, utils.safe
+local wezterm = require("wezterm")
+local util = require("dotfiles.util")
+local is, safe = util.is, util.safe
 
 local M = {}
 

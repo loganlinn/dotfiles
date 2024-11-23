@@ -1,20 +1,18 @@
 { pkgs, config, ... }:
 let
   inherit (config.lib.nixvim) mkRaw;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  sqllite_clib_path = "${pkgs.sqlite.out}/lib/libsqlite3.${if isDarwin then "dylib" else "so"}";
 in
 {
   programs.nixvim = {
-    extraPlugins = with pkgs.vimPlugins; [
+    extraPlugins = [
       {
-        plugin = smart-open-nvim;
-        config =
-          let
-            extension = if pkgs.stdenv.hostPlatform.isDarwin then "dylib" else "so";
-          in
-          "let g:sqlite_clib_path = '${pkgs.sqlite.out}/lib/libsqlite3.${extension}'";
+        plugin = pkgs.vimPlugins.smart-open-nvim;
+        config = "let g:sqlite_clib_path = '${sqllite_clib_path}'";
       }
-      telescope-live-grep-args-nvim
-      telescope-zoxide
+      pkgs.vimPlugins.telescope-live-grep-args-nvim
+      pkgs.vimPlugins.telescope-zoxide
     ];
 
     plugins.telescope = {
@@ -22,7 +20,7 @@ in
       extensions = {
         file-browser.enable = true;
         frecency.enable = true;
-        fzf-native.enable = true;
+        fzf-native.enable = true; # also used by smart-open
         live-grep-args.enable = true;
         # manix.enable = true;
         undo.enable = true;

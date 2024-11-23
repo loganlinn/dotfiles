@@ -8,6 +8,10 @@
 with builtins;
 with lib;
 {
+  home.packages = [
+    (pkgs.writeScriptBin "zshi" (builtins.readFile ./bin/zshi))
+  ];
+
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -114,9 +118,15 @@ with lib;
 
         autoload -Uz ${concatStringsSep " " functionNames}
 
-        ${readFile ./initExtra.zsh}
+        bindkey -s '^G^g' ' git status^M' # ctrl-space (^M is accept line)
+        bindkey -s '^G^s' ' git snapshot^M'
+        bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
+        bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+        bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
 
         ${readFile ./nixpkgs.zsh}
+
+        ${readFile ./initExtra.zsh}
 
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '';

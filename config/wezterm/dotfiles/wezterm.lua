@@ -1,15 +1,14 @@
-local wezterm = require("wezterm") -- https://wezfurlong.org/wezterm/config/lua/config
-local log_info, log_warn, log_error = wezterm.log_info, wezterm.log_warn, wezterm.log_error
-local act = require("dotfiles.util.action")
-local balance = require("dotfiles.balance")
-local tabline = require("dotfiles.tabline")
-local utils = require("dotfiles.utils")
-local is, safe = utils.is, utils.safe
+local wezterm = require("wezterm")
+local start_time = wezterm.time.now()
+local act = require("dotfiles.action")
+local util = require("dotfiles.util")
+local is, safe, tbl = util.is, util.safe, util.tbl
+local log_info = wezterm.log_info
 
-local function victor_mono(fontattr)
-  fontattr = fontattr or {}
-  fontattr.family = "Victor Mono"
-  fontattr.harfbuzz_features = fontattr.harfbuzz_features
+local function victor_mono(font)
+  font = font or {}
+  font.family = "Victor Mono"
+  font.harfbuzz_features = font.harfbuzz_features
     or {
       -- "ss01", -- Single-storey a
       "ss02", -- Slashed zero, variant 1
@@ -20,9 +19,11 @@ local function victor_mono(fontattr)
       "ss07", -- Straighter 6 and 9
       -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
     }
-  return wezterm.font(fontattr)
+  return wezterm.font(font)
 end
 
+---@module "wezterm.config"
+---@type Config
 local config = wezterm.config_builder()
 -- config.debug_key_events = true
 config:set_strict_mode(true)
@@ -72,7 +73,7 @@ config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
 
 config.leader = {
-  mods = utils.match_platform({
+  mods = util.match_platform({
     linux = "META",
     darwin = "CMD",
     windows = "ALT",
@@ -81,30 +82,28 @@ config.leader = {
   timeout_milliseconds = math.maxinteger,
 }
 
-local function define_key(mods, key, action)
-  if config.keys == nil then
-    config.keys = {}
-  end
-  local key = { key = key, mods = mods or "NONE", action = action or act.Nop }
-  table.insert(config.keys, key)
-  return key
-end
-
-local function define_key_table(name, mods, key, key_table)
-  if config.key_tables == nil then
-    config.key_tables = {}
-  end
-  define_key(mods, key, act.ActivateKeyTable({ name = name }))
-  config.key_tables[name] = key_table
-  return key_table
-end
-
-local function with_cancel_keys(key_table)
-  table.insert(key_table, { key = "Escape", action = act.ClearKeyTableStack })
-  table.insert(key_table, { key = "g", mods = "CTRL", action = act.ClearKeyTableStack })
-  table.insert(key_table, { key = "c", mods = "CTRL", action = act.ClearKeyTableStack })
-  return key_table
-end
+-- local keymap = { config = config }
+-- function keymap:key(keyseq, action)
+--   assert(is.table(keyseq))
+--   assert(#keyseq >= 1)
+--   assert(tbl.every(is.string, keyseq))
+--   local key = table.remove(keyseq)
+--   local mods = table.concat(keyseq, "|")
+--   if mods == "" then mods = "NONE" end
+--   action = action or act.Nop
+--   table.insert(self.config.keys, {
+--     key = key,
+--     mods = mods,
+--     action = action,
+--   })
+-- end
+-- function keymap:key_table(name, prefix, keys)
+--   local key_tables = config.key_tables or {}
+--   self:key(prefix, act.ActivateKeyTable({ name = name }))
+--   key_tables[name] = keys
+--   return keys
+-- end
+--
 
 --
 config.keys = {
@@ -141,13 +140,15 @@ config.keys = {
   },
   { key = "b", mods = "CTRL|SHIFT", action = act.RotatePanes("CounterClockwise") },
   { key = "h", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Left") },
-  { key = "h", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Left", 5 }) },
   { key = "j", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Down") },
-  { key = "j", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Down", 5 }) },
   { key = "k", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Up") },
-  { key = "k", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Up", 5 }) },
   { key = "l", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Right") },
+  { key = "h", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Left", 5 }) },
+  { key = "j", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Down", 5 }) },
+  { key = "k", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Up", 5 }) },
   { key = "l", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Right", 5 }) },
+  { key = "_", mods = "SUPER|SHIFT", action = act.AdjustPaneSizeSmart(5) },
+  { key = "+", mods = "SUPER|SHIFT", action = act.AdjustPaneSizeSmart(5) },
   { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
   { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = true }) },
   { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
@@ -196,6 +197,7 @@ config.keys = {
   { key = "F5", mods = "SUPER", action = act.ReloadConfiguration },
   { key = "F9", mods = "SUPER", action = wezterm.action.ShowTabNavigator },
   { key = "f", mods = "SUPER", action = act.Search({ CaseSensitiveString = "" }) },
+  { key = "0", mods = "SUPER", action = wezterm.action.ResetFontSize },
   { key = "-", mods = "SUPER", action = wezterm.action.DecreaseFontSize },
   { key = "=", mods = "SUPER", action = wezterm.action.IncreaseFontSize },
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
@@ -218,52 +220,46 @@ for i = 1, 9 do
   })
 end
 
-config.key_tables = {}
+config.keys = config.keys or {}
+config.key_tables = config.key_tables or {}
 
-define_key_table(
-  "toggle",
-  "LEADER",
-  "t",
-  with_cancel_keys({
+require("dotfiles.util.keymap")
+  :create()
+  :bind({
+    prefix = { key = "t", mods = "LEADER" },
     { key = "z", action = act.TogglePaneZoomState },
     { key = "s", action = act.ToggleAlwaysOnTop },
     { key = "s", mods = "SHIFT", action = act.ToggleAlwaysOnBottom },
     { key = "f", action = act.ToggleFullScreen },
   })
-)
-
-define_key_table(
-  "window",
-  "LEADER",
-  "w",
-  with_cancel_keys({
+  :bind({
+    prefix = { key = "w", mods = "LEADER" },
     { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
     { key = "n", action = act.SpawnWindow },
     { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
   })
-)
+  :apply_to_config(config)
 
-define_key_table(
-  "insert",
-  "LEADER",
-  "i",
-  with_cancel_keys({
-    { key = "u", action = act.CharSelect },
-    { key = "p", action = act.PasteFrom("Clipboard") },
-    { key = "P", action = act.PasteFrom("PrimarySelection") },
-  })
-)
+-- define_key_table(
+--   "window",
+--   "LEADER",
+--   "w",
+-- )
+--
+-- define_key_table(
+--   "insert",
+--   "LEADER",
+--   "i",
+--   with_cancel_keys({
+--     { key = "u", action = act.CharSelect },
+--     { key = "p", action = act.PasteFrom("Clipboard") },
+--     { key = "P", action = act.PasteFrom("PrimarySelection") },
+--   })
+-- )
 
-wezterm.on("window-resized", function(window, pane)
-  log_info("on: window-resized")
-end)
+require("dotfiles.balance").apply_to_config(config)
+require("dotfiles.tabline").apply_to_config(config)
+require("dotfiles.hyperlink").apply_to_config(config)
 
-wezterm.on("window-config-reloaded", function(window)
-  wezterm.GLOBAL.config_reloaded_count = (wezterm.GLOBAL.config_reloaded_count or 0) + 1
-  log_info("on: window-config-reloaded", wezterm.GLOBAL.config_reloaded_count)
-end)
-
-tabline.apply_to_config(config)
-balance.apply_to_config(config)
-
+log_info("DONE", "elapsed=" .. util.time_diff_ms(wezterm.time.now(), start_time) .. "ms")
 return config

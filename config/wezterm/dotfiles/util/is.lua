@@ -8,7 +8,7 @@
 local M = {}
 
 for _, t in ipairs({ "boolean", "number", "string", "userdata", "thread", "table" }) do
-  M[t:gsub("^%l", string.upper)] = function(v)
+  M[t] = function(v)
     return type(v) == t
   end
 end

@@ -1,8 +1,14 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 let
   inherit (config.lib.nixvim) mkRaw;
 in
 {
+  # dependencies of keymap below
+  programs.nixvim.extraPlugins = with pkgs.vimPlugins; [
+    { plugin = vim-bbye; }
+    { plugin = vim-eunuch; }
+  ];
+
   programs.nixvim.keymaps = [
     # Disable arrow keys
     {
@@ -177,44 +183,99 @@ in
         desc = "Other window";
       };
     }
-
+    {
+      mode = "n";
+      key = "<leader>wk";
+      action = "<C-W>c";
+      options = {
+        silent = true;
+        desc = "Kill window";
+      };
+    }
     {
       mode = "n";
       key = "<leader>wd";
       action = "<C-W>c";
       options = {
         silent = true;
-        desc = "Delete window";
+        desc = "Kill window";
       };
     }
-
     {
       mode = "n";
-      key = "<leader>w-";
+      key = "<leader>ws";
       action = "<C-W>s";
       options = {
         silent = true;
         desc = "Split window below";
       };
     }
-
     {
       mode = "n";
-      key = "<leader>w|";
+      key = "<leader>wv";
       action = "<C-W>v";
       options = {
         silent = true;
         desc = "Split window right";
       };
     }
-
     {
       mode = "n";
-      key = "<C-s>";
-      action = "<cmd>w<cr><esc>";
+      key = "<leader>w+";
+      action = "<cmd>resize +2<cr>";
+      options = {
+        desc = "Increase height";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>w-";
+      action = "<cmd>resize -2<cr>";
+      options = {
+        desc = "Decrease height";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>w<";
+      action = "<cmd>vertical resize -2<cr>";
+      options = {
+        desc = "Decrease width";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>w>";
+      action = "<cmd>vertical resize +2<cr>";
+      options = {
+        desc = "Increase width";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>wr";
+      action = "<C-W>r";
       options = {
         silent = true;
-        desc = "Save file";
+        desc = "Rotate windows down/right";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>wR";
+      action = "<C-W>R";
+      options = {
+        silent = true;
+        desc = "Rotate windows up/left";
+      };
+    }
+    {
+      mode = "n";
+      key = "<leader>wx";
+      action = "<C-W>x";
+      options = {
+        silent = true;
+        desc = "Exchange next window";
       };
     }
 
@@ -458,38 +519,6 @@ in
 
     # {
     #   mode = "n";
-    #   key = "<C-Up>";
-    #   action = "<cmd>resize +2<cr>";
-    #   options = {
-    #     desc = "Increase Window Height";
-    #   };
-    # }
-    # {
-    #   mode = "n";
-    #   key = "<C-Down>";
-    #   action = "<cmd>resize -2<cr>";
-    #   options = {
-    #     desc = "Decrease Window Height";
-    #   };
-    # }
-    # {
-    #   mode = "n";
-    #   key = "<C-Left>";
-    #   action = "<cmd>vertical resize -2<cr>";
-    #   options = {
-    #     desc = "Decrease Window Width";
-    #   };
-    # }
-    # {
-    #   mode = "n";
-    #   key = "<C-Right>";
-    #   action = "<cmd>vertical resize +2<cr>";
-    #   options = {
-    #     desc = "Increase Window Width";
-    #   };
-    # }
-    # {
-    #   mode = "n";
     #   key = "<A-j>";
     #   action = "<cmd>m .+1<cr>==";
     #   options = {
@@ -702,63 +731,6 @@ in
         desc = "Inspect Pos";
       };
     }
-    # {
-    #   mode = "t";
-    #   key = "<esc><esc>";
-    #   action = "<c-\\><c-n>";
-    #   options = {
-    #     desc = "Enter Normal Mode";
-    #   };
-    # }
-    # {
-    #   mode = "t";
-    #   key = "<C-h>";
-    #   action = "<cmd>wincmd h<cr>";
-    #   options = {
-    #     desc = "Go to Left Window";
-    #   };
-    # }
-    # {
-    #   mode = "t";
-    #   key = "<C-j>";
-    #   action = "<cmd>wincmd j<cr>";
-    #   options = {
-    #     desc = "Go to Lower Window";
-    #   };
-    # }
-    # {
-    #   mode = "t";
-    #   key = "<C-k>";
-    #   action = "<cmd>wincmd k<cr>";
-    #   options = {
-    #     desc = "Go to Upper Window";
-    #   };
-    # }
-    # {
-    #   mode = "t";
-    #   key = "<C-l>";
-    #   action = "<cmd>wincmd l<cr>";
-    #   options = {
-    #     desc = "Go to Right Window";
-    #   };
-    # }
-    # {
-    #   mode = "t";
-    #   key = "<C-/>";
-    #   action = "<cmd>close<cr>";
-    #   options = {
-    #     desc = "Hide Terminal";
-    #   };
-    # }
-    # {
-    #   mode = "n";
-    #   key = "<leader>ww";
-    #   action = "<C-W>p";
-    #   options = {
-    #     desc = "Other Window";
-    #     remap = true;
-    #   };
-    # }
     {
       mode = "n";
       key = "<leader><tab>n";
@@ -824,15 +796,25 @@ in
         desc = "Stage file";
       };
     }
+
+    {
+      mode = [
+        "n"
+        "v"
+      ];
+      key = "<leader>bk";
+      action = "<cmd>Bwipeout<cr>"; # vim-bbye
+      options.desc = "Kill buffer";
+    }
     {
       key = "<leader>fD";
       action = mkRaw ''
         function()
           if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
             local path = vim.fn.expand("%")
+            vim.cmd("Bwipeout") # vim-bbye
             local ok, err = os.remove(path)
             if ok then
-              vim.api.nvim_buf_delete(0, { force = true })
               print("Deleted " .. path)
             else
               print("Error deleting " .. path .. ": " .. err)

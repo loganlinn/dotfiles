@@ -110,6 +110,7 @@
       "--type-add"
       "clj:include:clojure,edn"
       "--smart-case"
+      "--hyperlink-format=kitty" # supported by wezterm, probably others
     ];
   };
 

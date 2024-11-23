@@ -35,12 +35,9 @@
           web-devicons.enable = true;
         };
         extraPlugins = with pkgs.vimPlugins; [
-          { plugin = vim-bbye; }
-          { plugin = vim-eunuch; }
           { plugin = vim-just; }
           { plugin = zoxide-vim; }
         ];
-
       };
     }
   ];

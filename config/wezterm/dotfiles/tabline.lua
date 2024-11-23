@@ -49,6 +49,18 @@ local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabl
 --   window:set_right_status(wezterm.format(status))
 -- end)
 
+wezterm.GLOBAL.counters = wezterm.GLOBAL.counters or {}
+local inc_counter = function(name, amount)
+  local count = (wezterm.GLOBAL.counters[name] or 0) + (amount or 1)
+  wezterm.log_info("wezterm.GLOBAL.counters['" .. name .. "']", "=>", count)
+  wezterm.GLOBAL.counters[name] = count
+  return count
+end
+
+wezterm.on("window-config-reloaded", function(window)
+  inc_counter("window-config-reloaded." .. tostring(window:window_id()))
+end)
+
 tabline.setup({
   options = {
     icons_enabled = false,
@@ -88,7 +100,7 @@ tabline.setup({
       { "zoomed", padding = 0 },
     },
     tab_inactive = { "index", { "process", padding = { left = 0, right = 1 } } },
-    tabline_x = { "ram", "cpu" },
+    tabline_x = { "ram", "cpu", wezterm.GLOBAL.con },
     tabline_y = { "datetime" },
     tabline_z = { "hostname" },
   },

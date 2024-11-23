@@ -1,13 +1,12 @@
 local is = require("dotfiles.util.is")
 
----@class dotfiles.utils.tbl
-local tbl = {}
+local M = {}
 
 ---@param t table
 ---@param ks string[]
 ---@param alt? any
 ---@return any
-function tbl.getin(t, ks, alt)
+function M.getin(t, ks, alt)
   if type(t) ~= "table" then
     return nil
   end
@@ -27,7 +26,7 @@ end
 ---@param k string
 ---@param alt? any
 ---@return any
-function tbl.get(t, k, alt)
+function M.get(t, k, alt)
   if type(t) ~= "table" then
     return nil
   end
@@ -40,7 +39,7 @@ end
 ---@generic K
 ---@param t table<K, any>
 ---@return K[]
-function tbl.keys(t)
+function M.keys(t)
   local ks = {}
   for k, _ in pairs(t) do
     table.insert(ks, k)
@@ -54,7 +53,7 @@ end
 ---@param fun fun(k: K, v: V1): V2
 ---@param t table<K, V1>
 ---@return table<K, V2>
-function tbl.map(fun, t)
+function M.map(fun, t)
   local o = setmetatable({}, getmetatable(t))
   for k, v in pairs(t) do
     rawset(o, k, fun(k, v))
@@ -66,7 +65,7 @@ end
 ---@param pred fun(value: V): boolean
 ---@param t V[]
 ---@return V[]
-function tbl.filter(pred, t)
+function M.filter(pred, t)
   local o = {}
   for _, v in pairs(t) do
     if pred(v) then
@@ -81,7 +80,7 @@ end
 ---@param pred fun(key: K, value: V): boolean
 ---@param t table<K, V>
 ---@return table<K, V>
-function tbl.filterkv(pred, t)
+function M.filterkv(pred, t)
   local o = {}
   for k, v in pairs(t) do
     if pred(k, v) then
@@ -96,7 +95,7 @@ end
 ---@param t table<any, V>
 ---@param ks K[]
 ---@return table <K, V>
-function tbl.selectkeys(t, ks)
+function M.selectkeys(t, ks)
   local o = {}
   for k in pairs(ks) do
     if not is.null(t[k]) then
@@ -110,7 +109,7 @@ end
 ---@param t table<K, any>
 ---@param v any
 ---@return boolean, K|nil
-function tbl.contains(t, v)
+function M.contains(t, v)
   for k, x in ipairs(t) do
     if v == x then
       return true, k
@@ -121,13 +120,13 @@ end
 
 ---@param t table Table to check
 ---@return boolean `true` if `t` is empty
-function tbl.isempty(t)
+function M.isempty(t)
   return next(t) == nil
 end
 
 ---@param t table
 ---@return boolean `true` if array-like table, else `false`
-function tbl.islist(t)
+function M.islist(t)
   if type(t) ~= "table" then
     return false
   end
@@ -144,22 +143,31 @@ function tbl.islist(t)
   return count > 0
 end
 
-function tbl.foreach(f, t)
+function M.foreach(f, t)
   for k, v in pairs(t) do
     f(k, v)
   end
 end
 
-function tbl.iforeach(f, t)
+function M.iforeach(f, t)
   for k, v in ipairs(t) do
     f(k, v)
   end
 end
 
+function M.every(pred, t)
+  for k, v in pairs(t) do
+    if not pred(k, v) then
+      return false
+    end
+  end
+  return true
+end
+
 --- We only merge empty tables or tables that are not a list
 ---@private
 local function can_merge(v)
-  return type(v) == "table" and (tbl.isempty(v) or not tbl.islist(v))
+  return type(v) == "table" and (M.isempty(v) or not M.islist(v))
 end
 
 ---@private
@@ -199,7 +207,7 @@ end
 ---      - "force": use value from the rightmost map
 ---@param ... table Two or more map-like tables
 ---@return table Merged table
-function tbl.extend(behavior, ...)
+function M.extend(behavior, ...)
   return tbl_extend(behavior, false, ...)
 end
 
@@ -213,7 +221,7 @@ end
 ---      - "force": use value from the rightmost map
 ---@param ... T2 Two or more map-like tables
 ---@return T1|T2 (table) Merged table
-function tbl.deep_extend(behavior, ...)
+function M.deep_extend(behavior, ...)
   return tbl_extend(behavior, true, ...)
 end
 
@@ -224,8 +232,8 @@ end
 --- Note that this *modifies* the input.
 ---@param t table Table to add the reverse to
 ---@return table o
-function tbl.add_reverse_lookup(t)
-  local keys = tbl.keys(t)
+function M.add_reverse_lookup(t)
+  local keys = M.keys(t)
   for _, k in ipairs(keys) do
     local v = t[k]
     if t[v] then
