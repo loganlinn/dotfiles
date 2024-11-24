@@ -1,19 +1,24 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 with lib;
 let
-  flakeDirectory = "${config.home.homeDirectory}/.dotfiles";
   hmConfigDir = "${config.xdg.configHome}/home-manager";
-in {
+in
+{
   # Create symlink at ~/.config/home-manager to this flake, allowing home-manager(1) to work without additional arguments
-  home.activation.linkHomeManagerFlake =
-    hm.dag.entryAfter [ "writeBoundary" ] ''
-      if [[ ! -d ${hmConfigDir} ]] && [[ -d ${flakeDirectory} ]]; then
-        run ln $VERBOSE_ARG -s "${flakeDirectory}" "${hmConfigDir}"
-      fi
-    '';
+  home.activation.linkHomeManagerFlake = hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [[ ! -d ${hmConfigDir} ]] && [[ -d ${config.my.flakeDirectory} ]]; then
+      run ln $VERBOSE_ARG -s "${config.my.flakeDirectory}" "${hmConfigDir}"
+    fi
+  '';
 
-} // lib.mkIf pkgs.stdenv.isLinux {
+}
+// lib.mkIf pkgs.stdenv.isLinux {
   # # desktop notifications for home-manager activation DAG
   # home.extraActivationPath = [ pkgs.libnotify ];
 

@@ -37,10 +37,10 @@ config.font_rules = {
 }
 config.default_cursor_style = "BlinkingBar"
 config.window_frame = { font = config.font }
-config.window_padding = {
-  right = "1cell",
-  left = "1cell",
-}
+-- config.window_padding = {
+--   right = "1cell",
+--   left = "1cell",
+-- }
 config.inactive_pane_hsb = {
   saturation = 0.7,
   brightness = 0.7,
@@ -71,41 +71,15 @@ config.quick_select_patterns = {
 }
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
-
 config.leader = {
-  mods = util.match_platform({
-    linux = "META",
-    darwin = "CMD",
-    windows = "ALT",
-  }),
-  key = "Space",
+  -- mods = util.match_platform({
+  --   linux = "META",
+  --   darwin = "CMD",
+  --   windows = "ALT",
+  -- }),
+  key = "F13",
   timeout_milliseconds = math.maxinteger,
 }
-
--- local keymap = { config = config }
--- function keymap:key(keyseq, action)
---   assert(is.table(keyseq))
---   assert(#keyseq >= 1)
---   assert(tbl.every(is.string, keyseq))
---   local key = table.remove(keyseq)
---   local mods = table.concat(keyseq, "|")
---   if mods == "" then mods = "NONE" end
---   action = action or act.Nop
---   table.insert(self.config.keys, {
---     key = key,
---     mods = mods,
---     action = action,
---   })
--- end
--- function keymap:key_table(name, prefix, keys)
---   local key_tables = config.key_tables or {}
---   self:key(prefix, act.ActivateKeyTable({ name = name }))
---   key_tables[name] = keys
---   return keys
--- end
---
-
---
 config.keys = {
   -- Tab
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
@@ -122,7 +96,7 @@ config.keys = {
   { key = "\\", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left" }) },
   { key = "_", mods = "LEADER", action = act.SplitPane({ direction = "Down", top_level = true }) },
   { key = "_", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up", top_level = true }) },
-  { key = "!", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
+  { key = "Space", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
   {
     key = "@",
     mods = "CTRL|SHIFT",
@@ -147,8 +121,6 @@ config.keys = {
   { key = "j", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Down", 5 }) },
   { key = "k", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Up", 5 }) },
   { key = "l", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Right", 5 }) },
-  { key = "_", mods = "SUPER|SHIFT", action = act.AdjustPaneSizeSmart(5) },
-  { key = "+", mods = "SUPER|SHIFT", action = act.AdjustPaneSizeSmart(5) },
   { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
   { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = true }) },
   { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
@@ -158,15 +130,17 @@ config.keys = {
   { key = "n", mods = "SUPER|SHIFT", action = act.SpawnWindow },
 
   -- Scroll
-  { key = "Home", mods = "CTRL|SHIFT", action = act.ScrollToTop },
-  { key = "PageDown", mods = "CTRL|SHIFT", action = act.ScrollByPage(1) },
-  { key = "PageUp", mods = "CTRL|SHIFT", action = act.ScrollByPage(-1) },
-  { key = "End", mods = "CTRL|SHIFT", action = act.ScrollToBottom },
+  { key = "Home", mods = "SUPER", action = act.ScrollToTop },
+  { key = "PageDown", mods = "SUPER", action = act.ScrollByPage(1) },
+  { key = "PageUp", mods = "SUPER", action = act.ScrollByPage(-1) },
+  { key = "End", mods = "SUPER", action = act.ScrollToBottom },
+  { key = "UpArrow", mods = "SUPER", action = act.ScrollToPrompt(-1) },
+  { key = "DownArrow", mods = "SUPER", action = act.ScrollToPrompt(1) },
 
   -- Clipboard
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
-  { key = "f", mods = "CTRL|SHIFT", action = act.QuickSelect },
+  { key = "F", mods = "CTRL|SHIFT", action = act.QuickSelect },
   {
     key = "e",
     mods = "CTRL|SHIFT",
@@ -200,6 +174,8 @@ config.keys = {
   { key = "0", mods = "SUPER", action = wezterm.action.ResetFontSize },
   { key = "-", mods = "SUPER", action = wezterm.action.DecreaseFontSize },
   { key = "=", mods = "SUPER", action = wezterm.action.IncreaseFontSize },
+  { key = "-", mods = "SUPER|CTRL", action = act.AdjustPaneSizeSmart(5) },
+  { key = "=", mods = "SUPER|CTRL", action = act.AdjustPaneSizeSmart(5) },
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
   { key = ";", mods = "SUPER", action = act.ShowLauncher },
   { key = "Space", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
@@ -223,22 +199,33 @@ end
 config.keys = config.keys or {}
 config.key_tables = config.key_tables or {}
 
-require("dotfiles.util.keymap")
-  :create()
-  :bind({
-    prefix = { key = "t", mods = "LEADER" },
-    { key = "z", action = act.TogglePaneZoomState },
-    { key = "s", action = act.ToggleAlwaysOnTop },
-    { key = "s", mods = "SHIFT", action = act.ToggleAlwaysOnBottom },
-    { key = "f", action = act.ToggleFullScreen },
-  })
-  :bind({
-    prefix = { key = "w", mods = "LEADER" },
-    { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
-    { key = "n", action = act.SpawnWindow },
-    { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
-  })
-  :apply_to_config(config)
+config.key_tables["insert"] = {
+  { key = "u", action = act.CharSelect },
+  { key = "p", action = act.PasteFrom("Clipboard") },
+  { key = "P", action = act.PasteFrom("PrimarySelection") },
+}
+
+-- require("dotfiles.util.keymap")
+--   :create()
+--   :bind({
+--     prefix = { "toggle", key = "t", mods = "LEADER" },
+--     { key = "z", action = act.TogglePaneZoomState },
+--     { key = "s", action = act.ToggleAlwaysOnTop },
+--     { key = "s", mods = "SHIFT", action = act.ToggleAlwaysOnBottom },
+--     { key = "f", action = act.ToggleFullScreen },
+--   })
+--   :bind({
+--     prefix = { "window", key = "w", mods = "LEADER" },
+--     { key = "d", action = act.CloseCurrentTab({ confirm = true }) },
+--     { key = "n", action = act.SpawnWindow },
+--     { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
+--   })
+--   :bind({
+--     prefix = { key = "!", mods = "LEADER" },
+--     { key = "Home", action = act.SpawnDotfilesCommandInNewTab("switch") },
+--   })
+-- :bind({ prefix = {"help", key = "h", mods = "LEADER" }, })
+-- :apply_to_config(config)
 
 -- define_key_table(
 --   "window",
@@ -262,4 +249,5 @@ require("dotfiles.tabline").apply_to_config(config)
 require("dotfiles.hyperlink").apply_to_config(config)
 
 log_info("DONE", "elapsed=" .. util.time_diff_ms(wezterm.time.now(), start_time) .. "ms")
+
 return config

@@ -8,6 +8,31 @@ M.is = is
 M.safe = safe
 M.tbl = tbl
 
+M.inc = function(n)
+  return n + 1
+end
+
+M.dec = function(n)
+  return n - 1
+end
+
+---@generic T
+---@param ... T
+---@return T
+M.spy = function(...)
+  wezterm.log_info("spy:", ...)
+  return ...
+end
+
+---@param v any
+---@return any[]
+local function tolist(v)
+  if not is.table(v) or #v == 0 and next(v) ~= nil then
+    return { v }
+  end
+  return v
+end
+
 ---@generic T
 ---@param ... nil|T
 ---@return T
@@ -73,6 +98,71 @@ function M.time_diff_ms(t1, t2)
   local t2_s = math.tointeger(t2:format("%s"))
   local t2_f = math.tointeger(t2:format("%f"))
   return (t1_s + (t1_f / 1000000)) - (t2_s + (t2_f / 1000000))
+end
+
+local atom = {}
+atom.prototype = {}
+atom.metatable = {
+  __index = atom.prototype,
+  __newindex = function()
+    error("atom: attempt to modify a read-only table", 2)
+  end,
+}
+
+function atom.prototype:deref()
+  return wezterm.GLOBAL[self.name]
+end
+
+function atom.prototype:reset(newval, ...)
+  local oldval = self:deref()
+  for key, fn in pairs(self.watches) do
+    if fn then
+      local ok, err = pcall(fn, key, self, oldval, newval, ...)
+      if not ok then
+        wezterm.log_error("atom", self.name, "watch", key, "error", err)
+        return self
+      end
+    end
+  end
+  wezterm.GLOBAL[self.name] = newval
+  return self
+end
+
+function atom.prototype:swap(update, ...)
+  return self:reset(update(self:deref(), ...), ...)
+end
+
+function atom.prototype:add_watch(key, fn)
+  assert(self.watches[key] == nil)
+  self.watches[key] = fn
+  return self
+end
+
+function atom.prototype:remove_watch(key)
+  self.watches[key] = nil
+  return self
+end
+
+function atom:new(name)
+  return setmetatable({
+    name = name,
+    watches = {},
+  }, atom.metatable)
+end
+
+setmetatable(atom, { __call = atom.new })
+
+M.atom = atom
+
+function M.event_counter(event)
+  local counter = atom:new("event.count\00" .. event)
+  counter:swap(function(current)
+    return current or 0
+  end)
+  local inc = wezterm.on(event, function(window, pane, ...)
+    counter:swap(M.inc, window, pane)
+  end)
+  return counter
 end
 
 return M

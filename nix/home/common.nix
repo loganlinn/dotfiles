@@ -22,42 +22,53 @@
     ./shell
   ];
 
-  home.packages = with pkgs; [
-    # neofetch
-    # pinentry
-    bc
-    binutils
-    cmake
-    coreutils-full # installs gnu versions
-    curl
-    dig
-    dogdns # dig on steroids
-    du-dust # du alternative
-    duf # df alternative
-    envsubst
-    file
-    flake-root # nb: via overlay
-    gawk
-    gnugrep
-    gnumake
-    gnused
-    gnutar
-    gnutls
-    gzip
-    lsof
-    moreutils
-    procs # ps alternative
-    pstree
-    repgrep
-    rlwrap
-    sd # sed alternative
-    sops
-    tree
-    unzip
-    wget
-    xh # httpie alternative
-    zip
-  ];
+  home.packages =
+    with pkgs;
+    [
+      # neofetch
+      # pinentry
+      bc
+      binutils
+      cmake
+      coreutils-full # installs gnu versions
+      curl
+      dig
+      dogdns # dig on steroids
+      du-dust # du alternative
+      duf # df alternative
+      envsubst
+      file
+      flake-root # nb: via overlay
+      just
+      gawk
+      gnugrep
+      gnumake
+      gnused
+      gnutar
+      gnutls
+      gzip
+      lsof
+      moreutils
+      procs # ps alternative
+      pstree
+      repgrep
+      rlwrap
+      sd # sed alternative
+      sops
+      tree
+      unzip
+      wget
+      xh # httpie alternative
+      zip
+    ]
+    ++ (lib.catAttrs "package" (lib.attrValues config.my.shellScripts));
+
+  my.shellScripts.dotfiles = {
+    runtimeInputs = [ pkgs.just ];
+    text = ''exec just --justfile "${config.my.flakeDirectory}/justfile" "$@"'';
+  };
+
+  home.shellAliases.switch = "dotfiles switch";
 
   home.sessionVariables = config.my.environment.variables;
 

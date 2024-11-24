@@ -32,8 +32,6 @@ in
   };
 
   config = {
-    home.packages = catAttrs "package" (attrValues config.my.shellScripts);
-
     home.shellAliases = {
       "'..'" = "cd ..";
       "'...'" = "cd ...";

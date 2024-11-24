@@ -30,6 +30,9 @@ in
     homepage = mkOpt str "https://loganlinn.com";
     github.username = mkOpt str "loganlinn";
 
+    flakeDirectory = mkOpt pathStr "${cfg.user.home}/.dotfiles";
+    flakeRepository = mkOpt str "https://github.com/loganlinn/dotfiles";
+
     environment.variables = mkOpt (attrsOf str) { };
 
     user = {
@@ -122,7 +125,7 @@ in
       };
 
       environment.variables = {
-        DOTFILES_DIR = "${cfg.user.home}/.dotfiles";
+        DOTFILES_DIR = cfg.flakeDirectory;
         DISABLE_TELEMETRY = "1";
         DOCKER_SCAN_SUGGEST = "false";
         DOTNET_CLI_TELEMETRY_OPTOUT = "true";

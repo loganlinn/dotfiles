@@ -31,6 +31,7 @@
         inlayHints = true;
         servers = {
           awk_ls.enable = false;
+          fennel_ls.enable = true;
           gopls.enable = true;
           html.enable = true;
           janet_lsp.enable = false;
@@ -48,12 +49,19 @@
           ts_ls.enable = true;
           yamlls.enable = true;
         };
+        # NOTE: lspsaga provides its own keymaps
+        # SEE: ./lspsaga.nix
+        # SEE: https://nvimdev.github.io/lspsaga/
         keymaps = {
           silent = true;
           lspBuf = {
             gd = {
               action = "definition";
               desc = "Goto Definition";
+            };
+            gk = {
+              action = "type_definition";
+              desc = "Type Definition";
             };
             gr = {
               action = "references";
@@ -67,38 +75,11 @@
               action = "implementation";
               desc = "Goto Implementation";
             };
-            gT = {
-              action = "type_definition";
-              desc = "Type Definition";
-            };
-            # Use LSP saga keybinding instead
-            # K = {
-            #   action = "hover";
-            #   desc = "Hover";
-            # };
-            # "<leader>cw" = {
-            #   action = "workspace_symbol";
-            #   desc = "Workspace Symbol";
-            # };
             "<leader>cr" = {
               action = "rename";
               desc = "Rename";
             };
           };
-          # diagnostic = {
-          #   "<leader>cd" = {
-          #     action = "open_float";
-          #     desc = "Line Diagnostics";
-          #   };
-          #   "[d" = {
-          #     action = "goto_next";
-          #     desc = "Next Diagnostic";
-          #   };
-          #   "]d" = {
-          #     action = "goto_prev";
-          #     desc = "Previous Diagnostic";
-          #   };
-          # };
         };
       };
     };

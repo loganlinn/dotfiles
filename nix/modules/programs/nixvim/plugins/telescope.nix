@@ -20,7 +20,8 @@ in
       extensions = {
         file-browser.enable = true;
         frecency.enable = true;
-        fzf-native.enable = true; # also used by smart-open
+        fzf-native.enable = false;
+        fzy-native.enable = true;
         live-grep-args.enable = true;
         # manix.enable = true;
         undo.enable = true;
@@ -213,41 +214,6 @@ in
           end
         '';
         options.desc = "Find current directory";
-      }
-
-      # prefix: <leader>g
-      {
-        mode = "n";
-        key = "<leader>gb";
-        action = "<cmd>Telescope git_branches<CR>";
-        options.desc = "Git files";
-      }
-      {
-        mode = "n";
-        key = "<leader>gg";
-        action = "<cmd>Telescope git_status<CR>";
-        options.desc = "Git stash";
-      }
-      {
-        mode = "n";
-        key = "<leader>gt";
-        action = "<cmd>Telescope git_stash<CR>";
-        options.desc = "Git stash";
-      }
-      {
-        mode = "n";
-        key = "<leader>gc";
-        action = "<cmd>Telescope git_commits<CR>";
-        options.desc = "Git commits";
-      }
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>gf";
-        action = "<cmd>Telescope git_files<CR>";
-        options.desc = "Git files";
       }
 
       # prefix: <leader>h

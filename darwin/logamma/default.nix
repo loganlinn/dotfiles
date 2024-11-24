@@ -143,8 +143,6 @@
 
     programs.wezterm.enable = true;
 
-    home.shellAliases.switch = "darwin-rebuild switch --flake $HOME/.dotfiles";
-
     home.packages = with pkgs; [
       flyctl
       google-cloud-sdk

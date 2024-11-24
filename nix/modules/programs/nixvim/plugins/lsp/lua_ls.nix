@@ -6,7 +6,8 @@
       telemetry.enable = false;
       workspace.checkThirdParty = false;
       workspace.library = [
-        "${inputs.wezterm-types}"
+        # TODO use lazydev.nvim
+        "${inputs.wezterm-types}/types"
       ];
     };
   };

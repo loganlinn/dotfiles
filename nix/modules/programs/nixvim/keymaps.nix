@@ -406,28 +406,24 @@ in
     }
     #
     # Remap for dealing with word wrap and adding jumps to the jumplist.
-    {
-      mode = "n";
-      key = "j";
-      action = mkRaw "
-    [[(v:count > 1 ? 'm`' . v:count : 'g') . 'j']]
-    ";
-      options = {
-        expr = true;
-        desc = "Remap for dealing with word wrap and adding jumps to the jumplist.";
-      };
-    }
-    {
-      mode = "n";
-      key = "k";
-      action = mkRaw "
-        [[(v:count > 1 ? 'm`' . v:count : 'g') . 'k']]
-      ";
-      options = {
-        expr = true;
-        desc = "Remap for dealing with word wrap and adding jumps to the jumplist.";
-      };
-    }
+    # {
+    #   mode = "n";
+    #   key = "j";
+    #   action = mkRaw "[[(v:count > 1 ? 'm`' . v:count : 'g') . 'j']]";
+    #   options = {
+    #     expr = true;
+    #     desc = "Remap for dealing with word wrap and adding jumps to the jumplist.";
+    #   };
+    # }
+    # {
+    #   mode = "n";
+    #   key = "k";
+    #   action = mkRaw "[[(v:count > 1 ? 'm`' . v:count : 'g') . 'k']]";
+    #   options = {
+    #     expr = true;
+    #     desc = "Remap for dealing with word wrap and adding jumps to the jumplist.";
+    #   };
+    # }
 
     {
       mode = "n";
@@ -500,14 +496,16 @@ in
       key = "<C-c>";
       action = "<Esc>";
     }
-
+    # For when I'm emacs-brained
     {
-      mode = "n";
-      key = "<C-f>";
-      action = "!tmux new tmux-sessionizer<cr>";
-      options = {
-        desc = "Switch between projects";
-      };
+      mode = [
+        "l"
+        "n"
+        "o"
+        "v"
+      ];
+      key = "<C-g>";
+      action = "<Esc>";
     }
 
     # Set highlight on search, but clear on pressing <Esc> in normal mode
@@ -812,7 +810,7 @@ in
         function()
           if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
             local path = vim.fn.expand("%")
-            vim.cmd("Bwipeout") # vim-bbye
+            vim.cmd("Bwipeout")
             local ok, err = os.remove(path)
             if ok then
               print("Deleted " .. path)

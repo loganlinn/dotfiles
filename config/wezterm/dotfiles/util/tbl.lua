@@ -249,3 +249,5 @@ function M.add_reverse_lookup(t)
   end
   return t
 end
+
+return M
