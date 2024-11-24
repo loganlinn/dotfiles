@@ -21,7 +21,7 @@ in
     programs.nixvim = {
       vimAlias = !(config.programs.neovim.vimAlias or false);
       # colorscheme = "dracula";
-      colorscheme = "catpuccin";
+      colorscheme = "catppuccin";
       colorschemes = {
         # dracula.enable = true;
         catppuccin.enable = true;
