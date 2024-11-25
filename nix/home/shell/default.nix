@@ -66,8 +66,7 @@ in
            --exec-batch printf '%s\0' \; \
          | while IFS= read -r -d $'\0' dir; do
            if [[ ! -d "$dir" ]]; then
-             dir=$(realpath --relative-to=. --canonicalize-missing "$dir")
-             printf 'removed empty directory: '%s'\n' "$(realpath --relativedir)"
+             printf 'removed empty directory: '%s'\n' "$(realpath --relative-to=. --canonicalize-missing "$dir")"
            fi
          done
       '';

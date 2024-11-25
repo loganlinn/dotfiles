@@ -73,15 +73,7 @@ config.quick_select_patterns = {
 }
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
-config.leader = {
-  -- mods = util.match_platform({
-  --   linux = "META",
-  --   darwin = "CMD",
-  --   windows = "ALT",
-  -- }),
-  key = "F13",
-  timeout_milliseconds = math.maxinteger,
-}
+config.leader = { key = "F13", timeout_milliseconds = math.maxinteger }
 config.keys = {
   -- Tab
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },

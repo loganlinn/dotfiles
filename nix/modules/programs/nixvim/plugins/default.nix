@@ -14,7 +14,6 @@
     ./oil.nix
     ./project.nix
     ./supermaven
-    ./tangerine
     ./telescope.nix
     ./treesitter.nix
     ./which-key.nix
@@ -36,9 +35,10 @@
       web-devicons.enable = true;
     };
     extraPlugins = with pkgs.vimPlugins; [
+      { plugin = lazydev-nvim; }
       { plugin = vim-just; }
-      { plugin = zoxide-vim; }
       { plugin = vim-lion; }
+      { plugin = zoxide-vim; }
     ];
   };
 }
