@@ -24,6 +24,7 @@
       illuminate.enable = true;
       nix.enable = true;
       nvim-autopairs.enable = true;
+      nvim-colorizer.enable = true;
       qmk.enable = false;
       snacks.enable = true;
       sniprun.enable = true;
@@ -36,6 +37,7 @@
     extraPlugins = with pkgs.vimPlugins; [
       { plugin = vim-just; }
       { plugin = zoxide-vim; }
+      { plugin = vim-lion; }
     ];
   };
 }

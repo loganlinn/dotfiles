@@ -166,6 +166,14 @@ in
       {
         mode = [
           "n"
+        ];
+        key = "<leader>cf";
+        action = "<cmd>lua vim.lsp.buf.formatting()<CR>";
+        options.desc = "Format buffer";
+      }
+      {
+        mode = [
+          "n"
           "v"
         ];
         key = "<leader>sd";

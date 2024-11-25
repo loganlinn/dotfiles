@@ -49,7 +49,7 @@ function M.callable(v)
     return false
   else
     local mt = getmetatable(v)
-    return type(mt) == "table" and type(mt.__call) == "function"
+    return M.table(mt) and M.callable(mt.__call)
   end
 end
 

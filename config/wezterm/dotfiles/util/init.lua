@@ -24,9 +24,10 @@ M.spy = function(...)
   return ...
 end
 
----@param v any
----@return any[]
-local function tolist(v)
+---@generic T
+---@param v T|T[]
+---@return T[]
+M.tolist = function(v)
   if not is.table(v) or #v == 0 and next(v) ~= nil then
     return { v }
   end
@@ -77,7 +78,7 @@ function M.is_windows()
 end
 
 ---@generic T
----@param t { linux?: T, darwin?: T, windows?: T}
+---@param t { linux?: T, darwin?: T, windows?: T, default?: T }
 ---@return T
 function M.match_platform(t)
   if M.is_linux() then
@@ -87,6 +88,7 @@ function M.match_platform(t)
   elseif M.is_windows() then
     return t.windows
   end
+  return t.default
 end
 
 ---@param t1 wezterm.Time
@@ -99,6 +101,42 @@ function M.time_diff_ms(t1, t2)
   local t2_f = math.tointeger(t2:format("%f"))
   return (t1_s + (t1_f / 1000000)) - (t2_s + (t2_f / 1000000))
 end
+
+--------------------------------------------------------------------------------
+
+do
+  local prototype = {
+    deref = function(self)
+      if self.__fn then
+        local ok, val = pcall(self.__fn)
+        if ok then
+          self.__val = val
+        else
+          self.__err = val
+        end
+        self.__fn = nil
+      end
+      if self.__err then
+        error(self.__err, 2)
+      end
+      return self.__val
+    end,
+    realized = function(self)
+      return self.__fn == nil
+    end,
+  }
+
+  local metatable = {
+    __index = prototype,
+    __call = prototype.deref,
+  }
+
+  M.delay = function(fn)
+    return setmetatable({ __fn = fn, __val = nil, __err = nil }, metatable)
+  end
+end
+
+--------------------------------------------------------------------------------
 
 local atom = {}
 atom.prototype = {}
@@ -143,9 +181,10 @@ function atom.prototype:remove_watch(key)
   return self
 end
 
-function atom:new(name)
+function atom:new(id)
+  assert(id ~= nil)
   return setmetatable({
-    name = name,
+    name = id,
     watches = {},
   }, atom.metatable)
 end

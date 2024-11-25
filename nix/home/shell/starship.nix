@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   programs.starship = {
@@ -13,13 +18,13 @@
         "$localip"
         "$shlvl"
         # "$singularity"
-        "$kubernetes"
+        # "$kubernetes"
         "$directory"
         # "$vcsh"
         "$git_branch"
         "$git_commit"
         "$git_state"
-        "$git_metrics"
+        "$git_metrics" # note: disabled by default
         "$git_status"
         # "$hg_branch"
         "$docker_context"
@@ -37,41 +42,41 @@
         "$erlang"
         "$golang"
         "$haskell"
-        "$haxe"
-        "$helm"
+        # "$haxe"
+        # "$helm"
         "$java"
         "$julia"
-        "$kotlin"
+        # "$kotlin"
         "$lua"
-        "$nim"
+        # "$nim"
         "$nodejs"
-        "$ocaml"
-        "$opa"
-        "$perl"
-        "$php"
-        "$pulumi"
-        "$purescript"
+        # "$ocaml"
+        # "$opa"
+        # "$perl"
+        # "$php"
+        # "$pulumi"
+        # "$purescript"
         "$python"
         # "$raku"
-        "$rlang"
+        # "$rlang"
         # "$red"
-        "$ruby"
+        # "$ruby"
         "$rust"
         "$scala"
         "$swift"
         "$terraform"
         "$vlang"
-        "$vagrant"
+        # "$vagrant"
         "$zig"
-        "$buf"
+        # "$buf"
         "$guix_shell"
         "$nix_shell"
         "$conda"
         "$meson"
         "$spack"
-        "$memory_usage"
+        # "$memory_usage"
         "$aws"
-        "$gcloud"
+        # "$gcloud"
         "$openstack"
         "$azure"
         "$env_var"
@@ -79,9 +84,8 @@
         "$custom"
         "$sudo"
         "$cmd_duration"
-
         "$line_break"
-
+        ########################################################################
         "$vi_mode"
         "$jobs"
         "$battery"
@@ -92,10 +96,10 @@
         "$shell"
         "$character"
       ];
-      gcloud.disabled = true;
-      git_commit.disabled = false;
-      git_commit.only_detached = false;
-      kubernetes.disabled = true;
+      git_commit = {
+        disabled = false;
+        only_detached = false;
+      };
     };
   };
 }

@@ -121,7 +121,8 @@
       "--type-add"
       "clj:include:clojure,edn"
       "--smart-case"
-      "--hyperlink-format=kitty" # supported by wezterm, probably others
+      "--hyperlink-format=kitty" # note: also supported by wezterm
+      "--follow"
     ];
   };
 

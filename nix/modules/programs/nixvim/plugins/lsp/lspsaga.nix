@@ -89,7 +89,6 @@
           silent = true;
         };
       }
-
       # {
       #   mode = "n";
       #   key = "gD";
@@ -99,7 +98,6 @@
       #     silent = true;
       #   };
       # }
-
       {
         mode = "n";
         key = "gI";
@@ -109,17 +107,15 @@
           silent = true;
         };
       }
-
-      {
-        mode = "n";
-        key = "gT";
-        action = "<cmd>Lspsaga peek_type_definition<CR>";
-        options = {
-          desc = "Type Definition";
-          silent = true;
-        };
-      }
-
+      # {
+      #   mode = "n";
+      #   key = "gT";
+      #   action = "<cmd>Lspsaga peek_type_definition<CR>";
+      #   options = {
+      #     desc = "Type Definition";
+      #     silent = true;
+      #   };
+      # }
       {
         mode = "n";
         key = "K";
@@ -129,7 +125,6 @@
           silent = true;
         };
       }
-
       {
         mode = "n";
         key = "<leader>cw";
@@ -139,7 +134,6 @@
           silent = true;
         };
       }
-
       {
         mode = "n";
         key = "<leader>cr";
@@ -149,7 +143,6 @@
           silent = true;
         };
       }
-
       {
         mode = "n";
         key = "<leader>ca";
@@ -159,7 +152,6 @@
           silent = true;
         };
       }
-
       {
         mode = "n";
         key = "<leader>cd";
@@ -169,7 +161,6 @@
           silent = true;
         };
       }
-
       {
         mode = "n";
         key = "[d";
@@ -179,7 +170,6 @@
           silent = true;
         };
       }
-
       {
         mode = "n";
         key = "]d";

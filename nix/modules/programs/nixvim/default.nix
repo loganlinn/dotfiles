@@ -19,13 +19,8 @@ in
   #
   config = {
     programs.nixvim = {
-      vimAlias = !(config.programs.neovim.vimAlias or false);
-      # colorscheme = "dracula";
-      colorscheme = "catppuccin";
-      colorschemes = {
-        # dracula.enable = true;
-        catppuccin.enable = true;
-      };
+      vimAlias = true;
+      colorschemes.dracula.enable = true;
       opts = {
         ignorecase = true;
         smartcase = true;
@@ -56,6 +51,14 @@ in
       globals = {
         mapleader = " ";
       };
+      autoCmd = [
+        {
+          event = "VimResized";
+          pattern = "*";
+          command = "wincmd =";
+          desc = "Resize splits when vim is resized";
+        }
+      ];
       extraConfigVim = ''
         cnoreabbrev Q q
         cnoreabbrev Q! q!
@@ -63,11 +66,6 @@ in
         cnoreabbrev W! w!
         cnoreabbrev Wq wq
         cnoreabbrev Wq! wq!
-
-        augroup UIEvents
-          autocmd!
-          autocmd VimResized * wincmd =
-        augroup END
       '';
     };
   };

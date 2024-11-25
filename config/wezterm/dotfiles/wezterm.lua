@@ -37,10 +37,12 @@ config.font_rules = {
 }
 config.default_cursor_style = "BlinkingBar"
 config.window_frame = { font = config.font }
--- config.window_padding = {
---   right = "1cell",
---   left = "1cell",
--- }
+config.window_padding = {
+  left = "1cell",
+  right = "1cell",
+  top = "0.5cell",
+  bottom = "0.5cell",
+}
 config.inactive_pane_hsb = {
   saturation = 0.7,
   brightness = 0.7,

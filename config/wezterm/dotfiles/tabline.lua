@@ -1,90 +1,102 @@
 local wezterm = require("wezterm")
-local warn = wezterm.log_warn
-local util = require("dotfiles.util")
 local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
+local info, warn = wezterm.log_info, wezterm.log_warn
+local nerdfonts = wezterm.nerdfonts ---@cast table<string, string>
+local util = require("dotfiles.util")
 
--- wezterm.on("update-right-status", function(window, pane)
---   local cfg = window:effective_config()
---   local color = cfg.color_schemes[cfg.color_scheme]
---   -- wezterm.log_info(color)
---
---   window:set_right_status(wezterm.format(status))
--- end)
+local custom_components = {}
 
--- Custom tabline components
-local components = {}
-do
-  local LEADER_IS_INACTIVE_TEXT = wezterm.format({
-    { Foreground = { Color = "grey" } },
-    { Text = " LEADER " },
-  })
-  local LEADER_IS_ACTIVE_TEXT = wezterm.format({
-    { Foreground = { Color = "black" } },
-    { Background = { Color = "green" } },
-    { Text = " LEADER " },
-  })
-  function components.leader(window)
-    if not window or not window.leader_is_active then
+-- Helper to ensure component configured for window
+local function window_component(callback)
+  return function(window, ...)
+    if not window or not window.window_id then
       warn("expected window argument, got", window)
-      return
+      return ""
     end
+    return callback(window, ...)
+  end
+end
+
+-- Leader key status
+function custom_components.leader()
+  -- memoizes to avoid recomputing identical style strings
+  local leader_active = util.delay(function()
+    local scheme = tabline.get_colors().scheme
+    return wezterm.format({
+      { Background = { Color = scheme.ansi[7] } },
+      { Foreground = { Color = scheme.ansi[1] } },
+      { Attribute = { Intensity = "Bold" } },
+      { Text = " LEADER " },
+      "ResetAttributes",
+    })
+  end)
+  local leader_inactive = util.delay(function()
+    local scheme = tabline.get_colors().scheme
+    return wezterm.format({
+      { Foreground = { Color = scheme.tab_bar.inactive_tab.fg_color } },
+      { Text = " LEADER " },
+      "ResetAttributes",
+    })
+  end)
+  return window_component(function(window)
     if window:leader_is_active() then
-      return LEADER_IS_ACTIVE_TEXT
-    else
-      return LEADER_IS_INACTIVE_TEXT
+      return leader_active()
     end
-  end
+    return leader_inactive()
+  end)
 end
 
-function components.key_table(window)
-  if not window or not window.effective_config then
-    warn("expected window argument, got", window)
-    return
-  end
-  local active_key_table = window:active_key_table()
-  if active_key_table then
-    return wezterm.format({ Text = string.format(" %s ", active_key_table) })
-    -- table.insert(status, { Foreground = { AnsiColor = "Fuchsia" } })
-    -- table.insert(status, { Attribute = { Intensity = "Bold" } })
-    -- table.insert(status, { Text = string.format(" %s ", active_key_table) })
-    -- table.insert(status, { Attribute = { Intensity = "Normal" } })
-    -- table.insert(status, {
-    --   Text = string.format(
-    --     "[%s]",
-    --     table.concat(
-    --       util.tbl.map(function(_, v)
-    --         return v.key
-    --       end,
-    --       window:effective_config().key_tables[active_key_table]),
-    --       "|"
-    --     )
-    --   ),
-    -- })
-    -- table.insert(status, "ResetAttributes")
-    -- table.insert(status, { Text = " " })
-  end
-  return ""
+-- Key table status
+function custom_components.key_table()
+  return window_component(function(window)
+    local active_key_table = window:active_key_table()
+    if active_key_table then
+      return wezterm.format({ Text = string.format(" %s ", active_key_table) })
+      -- table.insert(status, { Foreground = { AnsiColor = "Fuchsia" } })
+      -- table.insert(status, { Attribute = { Intensity = "Bold" } })
+      -- table.insert(status, { Text = string.format(" %s ", active_key_table) })
+      -- table.insert(status, { Attribute = { Intensity = "Normal" } })
+      -- table.insert(status, {
+      --   Text = string.format(
+      --     "[%s]",
+      --     table.concat(
+      --       util.tbl.map(function(_, v)
+      --         return v.key
+      --       end,
+      --       window:effective_config().key_tables[active_key_table]),
+      --       "|"
+      --     )
+      --   ),
+      -- })
+      -- table.insert(status, "ResetAttributes")
+      -- table.insert(status, { Text = " " })
+    end
+    return ""
+  end)
 end
 
-local config_reload_count = util.event_counter("window-config-reloaded")
-function components.config_reload_count(window)
-  return string.format(" v%d ", config_reload_count:deref())
+function custom_components.config_reload_count()
+  local state = util.event_counter("window-config-reloaded")
+  return function(_)
+    return string.format(" v%d ", state:deref())
+  end
 end
 
 tabline.setup({
+  extensions = {},
   options = {
     icons_enabled = false,
     section_separators = {
-      left = wezterm.nerdfonts.pl_left_hard_divider,
-      right = wezterm.nerdfonts.pl_right_hard_divider,
+      left = nerdfonts.pl_left_hard_divider,
+      right = nerdfonts.pl_right_hard_divider,
     },
     component_separators = {
-      left = wezterm.nerdfonts.pl_left_soft_divider,
-      right = wezterm.nerdfonts.pl_right_soft_divider,
+      left = nerdfonts.pl_left_soft_divider,
+      right = nerdfonts.pl_right_soft_divider,
     },
     tab_separators = {
-      left = wezterm.nerdfonts.pl_left_hard_divider,
-      right = wezterm.nerdfonts.pl_right_hard_divider,
+      left = nerdfonts.pl_left_hard_divider,
+      right = nerdfonts.pl_right_hard_divider,
     },
     color_overrides = {
       normal_mode = {
@@ -112,9 +124,9 @@ tabline.setup({
       { "zoomed", padding = 0 },
     },
     tabline_x = {
-      components.key_table,
-      components.leader,
-      components.config_reload_count,
+      custom_components.key_table(),
+      custom_components.leader(),
+      custom_components.config_reload_count(),
       "ram",
     },
     tabline_y = {
@@ -124,7 +136,6 @@ tabline.setup({
       "hostname",
     },
   },
-  extensions = {},
 })
 
 return tabline
