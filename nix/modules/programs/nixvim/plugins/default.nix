@@ -14,6 +14,7 @@
     ./oil.nix
     ./project.nix
     ./supermaven
+    ./tangerine
     ./telescope.nix
     ./treesitter.nix
     ./which-key.nix
