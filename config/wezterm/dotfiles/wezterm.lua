@@ -120,6 +120,26 @@ config.keys = {
   { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
   { key = "|", mods = "LEADER", action = act.SplitPane({ direction = "Right", top_level = true }) },
   { key = "|", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left", top_level = true }) },
+  {
+    key = "T",
+    mods = "LEADER|SHIFT",
+    action = act.PaneSelect({ mode = "MoveToNewTab", show_pane_ids = true }),
+  },
+  {
+    key = "W",
+    mods = "LEADER|SHIFT",
+    action = act.PaneSelect({ mode = "MoveToNewWindow", show_pane_ids = true }),
+  },
+  {
+    key = "M",
+    mods = "LEADER|SHIFT",
+    action = act.PaneSelect({ mode = "SwapWithActive", show_pane_ids = true }),
+  },
+  {
+    key = "R",
+    mods = "LEADER|SHIFT",
+    action = act.PaneSelect({ mode = "SwapWithActiveKeepFocus", show_pane_ids = true }),
+  },
   -- Window
   { key = "n", mods = "SUPER|SHIFT", action = act.SpawnWindow },
 
@@ -241,6 +261,11 @@ config.key_tables["insert"] = {
 require("dotfiles.balance").apply_to_config(config)
 require("dotfiles.tabline").apply_to_config(config)
 require("dotfiles.hyperlink").apply_to_config(config)
+
+wezterm.on("open-uri", function(window, pane, uri)
+  wezterm.log_info("open-uri", uri)
+  wezterm.open_with(uri)
+end)
 
 log_info("DONE", "elapsed=" .. util.time_diff_ms(wezterm.time.now(), start_time) .. "ms")
 

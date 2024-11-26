@@ -4,12 +4,12 @@
     ./bufferline.nix
     ./comment.nix
     ./conform.nix
+    ./harpoon.nix
     ./git
     ./lazy.nix
     ./lsp
     ./lualine.nix
     ./mini.nix
-    ./nvim-autopairs.nix
     ./nvim-filetree.nix
     ./oil.nix
     ./project.nix
@@ -21,8 +21,11 @@
   programs.nixvim = {
     plugins = {
       direnv.enable = true;
+      helpview.enable = true;
       illuminate.enable = true;
       nix.enable = true;
+      noice.enable = true;
+      notify.enable = true;
       nvim-autopairs.enable = true;
       nvim-colorizer.enable = true;
       qmk.enable = false;

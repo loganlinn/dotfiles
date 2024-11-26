@@ -5,18 +5,13 @@ with lib;
     plugins.nvim-tree =
       {
         enable = true;
-        autoClose = true;
         openOnSetup = true;
-        git.enable = true;
-        git.ignore = false;
-        renderer.indentWidth = 1;
-        diagnostics.enable = true;
-        view.float.enable = true;
+        autoReloadOnWrite = true;
         updateFocusedFile.enable = true;
         liveFilter.alwaysShowFolders = false;
       }
       // optionalAttrs pkgs.stdenv.isDarwin {
-        trash.cmd = "/usr/bin/trash";
+        trash.cmd = "/usr/bin/trash"; # avaiilble since macOS 14.0
       };
 
     keymaps = [

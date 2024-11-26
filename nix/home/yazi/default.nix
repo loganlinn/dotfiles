@@ -10,6 +10,7 @@
     enable = true;
     enableBashIntegration = true;
     enableZshIntegration = true;
+    enableFishIntegration = true;
     shellWrapperName = "yy";
     initLua = builtins.readFile ./init.lua;
     keymap = {

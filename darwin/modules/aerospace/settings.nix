@@ -24,140 +24,150 @@ let
 
   # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
   mode = {
-    main = {
-      binding = {
-        alt-enter = "exec-and-forget ${cfg.terminal.exec}";
-        alt-cmd-enter = "exec-and-forget open -n -a Kitty.app";
-        alt-shift-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Default";
-        alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
-        alt-a = "exec-and-forget ${cfg.editor.exec}";
-        alt-e = "exec-and-forget open -b ${app-ids.Finder}";
-        alt-s = "exec-and-forget open -b ${app-ids.Slack}";
-        alt-quote = "mode apps";
+    main.binding = {
+      alt-enter = "exec-and-forget ${cfg.terminal.exec}";
+      alt-cmd-enter = "exec-and-forget open -n -a Kitty.app";
+      alt-shift-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Default";
+      alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
+      alt-a = "exec-and-forget ${cfg.editor.exec}";
+      alt-e = "exec-and-forget open -b ${app-ids.Finder}";
+      alt-s = "exec-and-forget open -b ${app-ids.Slack}";
+      alt-quote = "mode apps";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#layout
-        alt-slash = "layout tiles horizontal vertical";
-        alt-comma = "layout accordion horizontal vertical";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#layout
+      alt-slash = "layout tiles horizontal vertical";
+      alt-comma = "layout accordion horizontal vertical";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#focus
-        alt-h = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace left";
-        alt-j = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace down";
-        alt-k = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace up";
-        alt-l = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace right";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#focus
+      alt-h = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace left";
+      alt-j = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace down";
+      alt-k = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace up";
+      alt-l = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace right";
 
-        alt-cmd-h = "focus-monitor left";
-        alt-cmd-j = "focus-monitor down";
-        alt-cmd-k = "focus-monitor up";
-        alt-cmd-l = "focus-monitor right";
+      alt-cmd-h = "focus-monitor left";
+      alt-cmd-j = "focus-monitor down";
+      alt-cmd-k = "focus-monitor up";
+      alt-cmd-l = "focus-monitor right";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#move
-        alt-shift-h = "move left";
-        alt-shift-j = "move down";
-        alt-shift-k = "move up";
-        alt-shift-l = "move right";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#move
+      alt-shift-h = "move left";
+      alt-shift-j = "move down";
+      alt-shift-k = "move up";
+      alt-shift-l = "move right";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#resize
-        alt-shift-minus = "resize smart -48";
-        alt-shift-equal = "resize smart +48";
-        alt-ctrl-shift-minus = "resize smart -256";
-        alt-ctrl-shift-equal = "resize smart +256";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#resize
+      alt-shift-minus = "resize smart -48";
+      alt-shift-equal = "resize smart +48";
+      alt-ctrl-shift-minus = "resize smart -256";
+      alt-ctrl-shift-equal = "resize smart +256";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
-        alt-backtick = "workspace 0";
-        alt-1 = "workspace 1";
-        alt-2 = "workspace 2";
-        alt-3 = "workspace 3";
-        alt-4 = "workspace 4";
-        alt-5 = "workspace 5";
-        alt-6 = "workspace 6";
-        alt-7 = "workspace 7";
-        alt-8 = "workspace 8";
-        alt-9 = "workspace 9";
-        alt-0 = "workspace 10";
-        alt-leftSquareBracket = "workspace --wrap-around prev";
-        alt-rightSquareBracket = "workspace --wrap-around next";
-        alt-shift-leftSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around next";
-        alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
+      alt-backtick = "workspace 0";
+      alt-1 = "workspace 1";
+      alt-2 = "workspace 2";
+      alt-3 = "workspace 3";
+      alt-4 = "workspace 4";
+      alt-5 = "workspace 5";
+      alt-6 = "workspace 6";
+      alt-7 = "workspace 7";
+      alt-8 = "workspace 8";
+      alt-9 = "workspace 9";
+      alt-0 = "workspace 10";
+      alt-leftSquareBracket = "workspace --wrap-around prev";
+      alt-rightSquareBracket = "workspace --wrap-around next";
+      alt-shift-leftSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around next";
+      alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
-        alt-shift-1 = "move-node-to-workspace --focus-follows-window  1";
-        alt-shift-2 = "move-node-to-workspace --focus-follows-window  2";
-        alt-shift-3 = "move-node-to-workspace --focus-follows-window  3";
-        alt-shift-4 = "move-node-to-workspace --focus-follows-window  4";
-        alt-shift-5 = "move-node-to-workspace --focus-follows-window  5";
-        alt-shift-6 = "move-node-to-workspace --focus-follows-window  6";
-        alt-shift-7 = "move-node-to-workspace --focus-follows-window  7";
-        alt-shift-8 = "move-node-to-workspace --focus-follows-window  8";
-        alt-shift-9 = "move-node-to-workspace --focus-follows-window  9";
-        alt-shift-0 = "move-node-to-workspace --focus-follows-window 10";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
+      alt-shift-1 = "move-node-to-workspace --focus-follows-window  1";
+      alt-shift-2 = "move-node-to-workspace --focus-follows-window  2";
+      alt-shift-3 = "move-node-to-workspace --focus-follows-window  3";
+      alt-shift-4 = "move-node-to-workspace --focus-follows-window  4";
+      alt-shift-5 = "move-node-to-workspace --focus-follows-window  5";
+      alt-shift-6 = "move-node-to-workspace --focus-follows-window  6";
+      alt-shift-7 = "move-node-to-workspace --focus-follows-window  7";
+      alt-shift-8 = "move-node-to-workspace --focus-follows-window  8";
+      alt-shift-9 = "move-node-to-workspace --focus-follows-window  9";
+      alt-shift-0 = "move-node-to-workspace --focus-follows-window 10";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
-        alt-tab = "workspace-back-and-forth";
-        # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
-        alt-shift-tab = "move-workspace-to-monitor --wrap-around next";
+      # https://nikitabobko.github.io/AeroSpace/commands#move-node-to-monitor
+      alt-shift-right = "move-node-to-monitor --focus-follows-window --wrap-around right";
+      alt-shift-down = "move-node-to-monitor --focus-follows-window --wrap-around down";
+      alt-shift-up = "move-node-to-monitor --focus-follows-window --wrap-around up";
+      alt-shift-left = "move-node-to-monitor --focus-follows-window --wrap-around left";
+      # pgup/pgdown are not supported by aerospace (yet)
+      # See: https://github.com/nikitabobko/AeroSpace/issues/748
+      # alt-shift-pageDown = "move-node-to-monitor --focus-follows-window --wrap-around next";
+      # alt-shift-pageUp = "move-node-to-monitor --focus-follows-window --wrap-around prev";
 
-        alt-shift-f = "layout floating tiling";
-        alt-ctrl-f = "fullscreen";
-        alt-ctrl-shift-f = "macos-native-fullscreen";
+      # https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
+      # alt-ctrl-shift-pageDown = "move-workspace-to-monitor --wrap-around next";
+      # alt-ctrl-shift-pageUp = "move-workspace-to-monitor --wrap-around prev";
+      alt-ctrl-shift-right = "move-workspace-to-monitor --wrap-around next";
+      alt-ctrl-shift-left = "move-workspace-to-monitor --wrap-around prev";
 
-        alt-shift-c = "reload-config";
-        alt-shift-x = "enable toggle";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
+      alt-tab = "workspace-back-and-forth";
+      # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
+      alt-shift-tab = "move-workspace-to-monitor --wrap-around next";
 
-        # See: https://nikitabobko.github.io/AeroSpace/commands#mode
-        alt-shift-semicolon = "mode service";
-        # alt-shift-slash = "mode query";
-      };
+      alt-shift-f = "layout floating tiling";
+      alt-ctrl-f = "fullscreen";
+      alt-ctrl-shift-f = "macos-native-fullscreen";
+
+      alt-shift-c = "reload-config";
+      alt-shift-x = "enable toggle";
+
+      # See: https://nikitabobko.github.io/AeroSpace/commands#mode
+      alt-shift-semicolon = "mode service";
+      # alt-shift-slash = "mode query";
     };
-    apps = {
-      binding = {
-        d = "exec-and-forget open -b ${app-ids.Docker}";
-        l = "exec-and-forget open -b ${app-ids.Dictionary}";
-        m = "exec-and-forget open -b ${app-ids.Messages}";
-        n = "exec-and-forget open -b ${app-ids.Notes}";
-        r = "exec-and-forget open -b ${app-ids.Reminders}";
-        s = "exec-and-forget open -b ${app-ids.Slack}";
-        comma = "exec-and-forget open -b ${app-ids."System Settings"}";
-        backtick = "exec-and-forget open -b ${app-ids."Activity Monitor"}";
-        esc = "mode main";
-        ctrl-c = "mode main";
-      };
+    apps.binding = prefix-mode-binding // {
+      d = "exec-and-forget open -b ${app-ids.Docker}";
+      l = "exec-and-forget open -b ${app-ids.Dictionary}";
+      m = "exec-and-forget open -b ${app-ids.Messages}";
+      n = "exec-and-forget open -b ${app-ids.Notes}";
+      r = "exec-and-forget open -b ${app-ids.Reminders}";
+      s = "exec-and-forget open -b ${app-ids.Slack}";
+      comma = "exec-and-forget open -b ${app-ids."System Settings"}";
+      backtick = "exec-and-forget open -b ${app-ids."Activity Monitor"}";
+      esc = "mode main";
+      ctrl-c = "mode main";
     };
     # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
-    service = {
-      binding = mode-quit-binding // {
-        r = [
-          "flatten-workspace-tree"
-          "mode main"
-        ]; # reset layout
-        f = [
-          "layout floating tiling"
-          "mode main"
-        ]; # Toggle between floating and tiling layout
-        backspace = [
-          "close-all-windows-but-current"
-          "mode main"
-        ];
-        alt-shift-h = [
-          "join-with left"
-          "mode main"
-        ];
-        alt-shift-j = [
-          "join-with down"
-          "mode main"
-        ];
-        alt-shift-k = [
-          "join-with up"
-          "mode main"
-        ];
-        alt-shift-l = [
-          "join-with right"
-          "mode main"
-        ];
-      };
+    service.binding = prefix-mode-binding // {
+      r = [
+        "flatten-workspace-tree"
+        "mode main"
+      ]; # reset layout
+      f = [
+        "layout floating tiling"
+        "mode main"
+      ]; # Toggle between floating and tiling layout
+      backspace = [
+        "close-all-windows-but-current"
+        "mode main"
+      ];
+      alt-shift-h = [
+        "join-with left"
+        "mode main"
+      ];
+      alt-shift-j = [
+        "join-with down"
+        "mode main"
+      ];
+      alt-shift-k = [
+        "join-with up"
+        "mode main"
+      ];
+      alt-shift-l = [
+        "join-with right"
+        "mode main"
+      ];
     };
   };
 
-  mode-quit-binding = {
+  prefix-mode-binding = {
     q = "mode main";
     esc = "mode main";
     ctrl-c = "mode main";

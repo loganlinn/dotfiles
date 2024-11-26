@@ -1,27 +1,69 @@
 local wezterm = require("wezterm")
+
 local is = require("dotfiles.util.is")
 local safe = require("dotfiles.util.safe")
-local tbl = require("dotfiles.util.tbl")
 
-local M = {}
+local M = setmetatable({}, {
+  __index = function(_, k)
+    error("Key does not exist: " .. tostring(k))
+  end,
+})
+
 M.is = is
 M.safe = safe
-M.tbl = tbl
+M.tbl = require("dotfiles.util.tbl")
+M.window = require("dotfiles.util.window")
+M.delay = require("dotfiles.util.delay")
 
+---@param f function
+---@param ... any
+---@return function
+M.partial = function(f, ...)
+  local bound = { ... }
+  return function(...)
+    return f(table.unpack(bound), ...)
+  end
+end
+
+---@generic F : function
+---@param f F
+---@return F
+M.fnil = function(f)
+  return function(v, ...)
+    if v ~= nil then
+      return f(v, ...)
+    end
+  end
+end
+
+---@param number
+---@return number
 M.inc = function(n)
   return n + 1
 end
 
+---@param number
+---@return number
 M.dec = function(n)
   return n - 1
+end
+
+local spy_log = function(label, ...)
+  wezterm.log_info("spy", label, ...)
+  return ...
 end
 
 ---@generic T
 ---@param ... T
 ---@return T
 M.spy = function(...)
-  wezterm.log_info("spy:", ...)
-  return ...
+  return spy_log("VAL", ...)
+end
+
+M.fspy = function(f)
+  return function(...)
+    return spy_log("RET", f(spy_log("ARG", ...)))
+  end
 end
 
 ---@generic T
@@ -37,7 +79,7 @@ end
 ---@generic T
 ---@param ... nil|T
 ---@return T
-function M.coalesce(...)
+M.coalesce = function(...)
   local n = select("#", ...)
   for i = 1, n do
     local v = select(i, ...)
@@ -48,34 +90,31 @@ function M.coalesce(...)
   return nil
 end
 
-local str = {}
-M.str = str
-
 ---@param s string
 ---@param prefix string
 ---@return boolean
-function str.startswith(s, prefix)
-  return M.safe.isstring(s):sub(1, #prefix) == prefix
+M.startswith = function(s, prefix)
+  return string.sub(s, 1, #prefix) == prefix
 end
 
 ---@param s string
 ---@param suffix string
 ---@return boolean
-function str.endswith(s, suffix)
-  return suffix == "" or M.safe.isstring(s):sub(-#suffix) == suffix
+M.endswith = function(s, suffix)
+  return suffix == "" or string.sub(s, -#suffix) == suffix
 end
 
-function M.is_darwin()
-  return str.endswith(wezterm.target_triple, "apple-darwin")
-end
+M.is_darwin = M.delay(function()
+  return M.endswith(wezterm.target_triple, "apple-darwin")
+end)
 
-function M.is_linux()
-  return str.endswith(wezterm.target_triple, "linux-gnu")
-end
+M.is_linux = M.delay(function()
+  return M.endswith(wezterm.target_triple, "linux-gnu")
+end)
 
-function M.is_windows()
-  return str.endswith(wezterm.target_triple, "windows-msvc")
-end
+M.is_windows = M.delay(function()
+  return M.endswith(wezterm.target_triple, "windows-msvc")
+end)
 
 ---@generic T
 ---@param t { linux?: T, darwin?: T, windows?: T, default?: T }
@@ -88,7 +127,7 @@ function M.match_platform(t)
   elseif M.is_windows() then
     return t.windows
   end
-  return t.default
+  return t.default or error("no platform matched")
 end
 
 ---@param t1 wezterm.Time
@@ -102,99 +141,8 @@ function M.time_diff_ms(t1, t2)
   return (t1_s + (t1_f / 1000000)) - (t2_s + (t2_f / 1000000))
 end
 
---------------------------------------------------------------------------------
-
-do
-  local prototype = {
-    deref = function(self)
-      if self.__fn then
-        local ok, val = pcall(self.__fn)
-        if ok then
-          self.__val = val
-        else
-          self.__err = val
-        end
-        self.__fn = nil
-      end
-      if self.__err then
-        error(self.__err, 2)
-      end
-      return self.__val
-    end,
-    realized = function(self)
-      return self.__fn == nil
-    end,
-  }
-
-  local metatable = {
-    __index = prototype,
-    __call = prototype.deref,
-  }
-
-  M.delay = function(fn)
-    return setmetatable({ __fn = fn, __val = nil, __err = nil }, metatable)
-  end
-end
-
---------------------------------------------------------------------------------
-
-local atom = {}
-atom.prototype = {}
-atom.metatable = {
-  __index = atom.prototype,
-  __newindex = function()
-    error("atom: attempt to modify a read-only table", 2)
-  end,
-}
-
-function atom.prototype:deref()
-  return wezterm.GLOBAL[self.name]
-end
-
-function atom.prototype:reset(newval, ...)
-  local oldval = self:deref()
-  for key, fn in pairs(self.watches) do
-    if fn then
-      local ok, err = pcall(fn, key, self, oldval, newval, ...)
-      if not ok then
-        wezterm.log_error("atom", self.name, "watch", key, "error", err)
-        return self
-      end
-    end
-  end
-  wezterm.GLOBAL[self.name] = newval
-  return self
-end
-
-function atom.prototype:swap(update, ...)
-  return self:reset(update(self:deref(), ...), ...)
-end
-
-function atom.prototype:add_watch(key, fn)
-  assert(self.watches[key] == nil)
-  self.watches[key] = fn
-  return self
-end
-
-function atom.prototype:remove_watch(key)
-  self.watches[key] = nil
-  return self
-end
-
-function atom:new(id)
-  assert(id ~= nil)
-  return setmetatable({
-    name = id,
-    watches = {},
-  }, atom.metatable)
-end
-
-setmetatable(atom, { __call = atom.new })
-
-M.atom = atom
-
 function M.event_counter(event)
-  local counter = atom:new("event.count\00" .. event)
+  local counter = require("dotfiles.util.atom"):new("event.count\00" .. event)
   counter:swap(function(current)
     return current or 0
   end)

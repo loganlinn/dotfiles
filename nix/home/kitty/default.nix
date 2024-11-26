@@ -40,6 +40,7 @@ in
     font = config.my.fonts.terminal;
     shellIntegration.enableBashIntegration = true;
     shellIntegration.enableZshIntegration = true;
+    shellIntegration.enableFishIntegration = true;
     keybindings = {
       "ctrl+alt+1" = "goto_tab 1";
       "ctrl+alt+2" = "goto_tab 2";

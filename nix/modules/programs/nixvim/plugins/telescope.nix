@@ -11,12 +11,14 @@ in
         plugin = pkgs.vimPlugins.smart-open-nvim;
         config = "let g:sqlite_clib_path = '${sqllite_clib_path}'";
       }
-      pkgs.vimPlugins.telescope-live-grep-args-nvim
+      # pkgs.vimPlugins.telescope-live-grep-args-nvim # neweded since using nixvim options below?
       pkgs.vimPlugins.telescope-zoxide
+      pkgs.vimPlugins.telescope-github-nvim
     ];
 
     plugins.telescope = {
       enable = true;
+      # https://github.com/nix-community/nixvim/tree/main/plugins/by-name/telescope/extensions
       extensions = {
         file-browser.enable = true;
         frecency.enable = true;
@@ -40,18 +42,23 @@ in
         # keybindings _within_ telescope
         mappings = {
           i = {
+            "<C-a>" = "which_key";
             "<C-h>" = "which_key";
-            "<C-g>" = mkRaw "require('telescope.actions').close";
-            "<C-u>" = mkRaw "false";
-            "<C-j>" = mkRaw "require('telescope.actions').move_selection_next";
-            "<C-k>" = mkRaw "require('telescope.actions').move_selection_previous";
+            # "<C-g>" = mkRaw "require('telescope.actions').close";
+            "<C-g>" = "close";
+            "<C-u>" = mkRaw "false"; # clear prompt
+            # "<C-j>" = mkRaw "require('telescope.actions').move_selection_next";
+            # "<C-k>" = mkRaw "require('telescope.actions').move_selection_previous";
+            "<C-j>" = "move_selection_next";
+            "<C-k>" = "move_selection_previous";
           };
         };
       };
       keymaps = {
         "<leader>:" = "command_history";
         "<leader>'" = "resume";
-        "<leader>bb" = "buffers";
+        "<leader>bb" = "buffers"; # doom: project buffers
+        "<leader><" = "buffers"; # doom: all buffers
         "<leader>bs" = "current_buffer_fuzzy_find";
         "<leader>bt" = "current_buffer_tags";
         "<leader>ff" = "find_files";
@@ -133,6 +140,9 @@ in
           };
         };
       };
+      luaConfig.post = ''
+        require('telescope').load_extension('gh')
+      '';
     };
 
     keymaps = [
@@ -151,7 +161,11 @@ in
           "v"
         ];
         key = "<leader>/";
-        action = "<cmd>lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>";
+        action = mkRaw ''
+          function()
+            require('telescope').extensions.live_grep_args.live_grep_args()
+          end
+        '';
         options.desc = "Grep Files";
       }
       {
@@ -160,7 +174,10 @@ in
           "v"
         ];
         key = "<leader>*";
-        action = mkRaw ''function() require('telescope-live-grep-args.shortcuts').grep_visual_selection() end '';
+        action = mkRaw ''
+          function()
+            require('telescope-live-grep-args.shortcuts').grep_visual_selection()
+          end '';
         options.desc = "Grep Selection";
       }
       {
@@ -179,7 +196,9 @@ in
         key = "<leader>sd";
         action = mkRaw ''
           function()
-            require('telescope').extensions.live_grep_args.live_grep_args({ search_dir = vim.fn.expand('%:p:h') })
+            require('telescope').extensions.live_grep_args.live_grep_args({
+              search_dir = vim.fn.expand('%:p:h')
+            })
           end'';
         options.desc = "Search current directory";
       }
@@ -189,11 +208,15 @@ in
           "v"
         ];
         key = "<leader>sD";
+        # TODO use Telescope file_browser to select directory for seearch context
+        # https://nix-community.github.io/nixvim/search/?query=telescope.extensions.file&option_scope=0&option=plugins.telescope.extensions.file-browser.settings.browse_folders
         action = mkRaw ''
           function()
             vim.ui.input({ prompt = 'Directory: ', default = vim.fn.expand('%:p:h') }, function(search_dir)
               if #(search_dir or "") == 0 then return end
-              require('telescope').extensions.live_grep_args.live_grep_args({ search_dir = vim.fn.expand('%:p:h') });
+              require('telescope').extensions.live_grep_args.live_grep_args({
+                search_dir = vim.fn.expand('%:p:h')
+              })
             end)
           end
         '';

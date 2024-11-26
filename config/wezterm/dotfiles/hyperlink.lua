@@ -27,25 +27,6 @@ function M.apply_to_config(config)
     -- TODO: support more of nix flakerefs <https://github.com/NixOS/nix/blob/master/src/nix/flake.md>
   )
 
-  wezterm.on("open-uri", function(window, pane, uri)
-    wezterm.log_info("open-uri", uri)
-    -- local start, match_end = uri:find 'mailto:'
-    -- if start == 1 then
-    --   local recipient = uri:sub(match_end + 1)
-    --   window:perform_action(
-    --   wezterm.action.SpawnCommandInNewWindow {
-    --     args = { 'mutt', recipient },
-    --   },
-    --   pane
-    --   )
-    --   -- prevent the default action from opening in a browser
-    --   return false
-    -- end
-    -- otherwise, by not specifying a return value, we allow later
-    -- handlers and ultimately the default action to caused the
-    -- URI to be opened in the browser
-  end)
-
   return config, def_hyperlink_rules
 end
 
