@@ -27,26 +27,25 @@ in
       trash = optionalAttrs pkgs.stdenv.isDarwin {
         cmd = "/usr/bin/trash"; # avaiilble since macOS 14.0
       };
-      onAttach = mkRaw ''
-        function(buffer)
-          local function inc_tree_width() require("nvim-tree.api").tree.resize({ width = { relative = "+5" }}) end
-          local function dec_tree_width() require("nvim-tree.api").tree.resize({ width = { relative = "-5" }}) end
-          vim.keymap.set("n", "<S-.>", inc_width, { buffer = buffer, noremap = true, silent = true, nowait = true, desc = "Increase width" })
-          vim.keymap.set("n", "<S-,>", dec_width, { buffer = buffer, noremap = true, silent = true, nowait = true, desc = "Decrease width" })
-        end
-      '';
+      # onAttach = mkRaw ''
+      #   function(buffer)
+      #     -- FIXME: <gt> not working, and tree resizes after losing focus anyway
+      #     vim.keymap.set("n", "<lt>", function() require("nvim-tree.api").tree.resize({ width = { relative = "-3" }}) end, { buffer = buffer, noremap = true, silent = true, nowait = true, desc = "Increase width" })
+      #     vim.keymap.set("n", "<gt>", function() require("nvim-tree.api").tree.resize({ width = { relative = "+3" }}) end, { buffer = buffer, noremap = true, silent = true, nowait = true, desc = "Decrease width" })
+      #   end
+      # '';
     };
 
     keymaps = [
       {
         mode = "n";
         key = "<leader>op";
-        action = "<cmd>lua require('nvim-tree.api').tree.toggle({ find_file = true })<CR>";
+        action = "<cmd>lua require('nvim-tree.api').tree.toggle({ find_file = false })<CR>";
         options.desc = "Project tree";
       }
       {
         mode = "n";
-        key = "<leader>op";
+        key = "<leader>oP";
         action = "<cmd>lua require('nvim-tree.api').tree.toggle({ find_file = true })<CR>";
         options.desc = "File tree";
       }
