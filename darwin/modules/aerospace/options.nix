@@ -29,10 +29,50 @@ let
     # gaps: Gaps
     # workspace-to-monitor-force-assignment: map<string, string>
     # on-window-detected
+    options = {
+      mode = mkOption {
+        type = types.attrsOf modeModule;
+        default = { };
+      };
+    };
     freeformType = toml.type;
   };
 
-  app = types.submodule (
+  modeModule =
+    with lib.types;
+    let
+      modifierNames = [
+        "cmd"
+        "alt"
+        "ctrl"
+        "shift"
+      ];
+      checkHotkey =
+        binding:
+        let
+          syms = strings.splitString "-" binding;
+          mods = lists.init syms;
+          key = lists.last syms;
+          nonEmptyString = x: builtins.match "[ \t\n]*" x == null;
+        in
+        nonEmptyString key && all (x: elem x modifierNames) mods && lists.allUnique mods;
+      checkBindings = bindings: all checkHotkey (attrNames bindings);
+      commandType = either nonEmptyStr (nonEmptyListOf nonEmptyStr);
+      bindingsType = addCheck (attrsOf commandType) checkBindings;
+    in
+    submodule (
+      { name, config, ... }:
+      {
+        options = {
+          binding = mkOption {
+            type = bindingsType;
+            default = { };
+          };
+        };
+      }
+    );
+
+  appModule = types.submodule (
     { config, name, ... }:
     {
       options = {
@@ -86,14 +126,14 @@ in
     enable = mkEnableOption "aerospace window manager";
 
     editor = mkOption {
-      type = app;
+      type = appModule;
       default = {
         exec = "open -a TextEdit";
       };
     };
 
     terminal = mkOption {
-      type = app;
+      type = appModule;
       default = {
         exec = "open -a Terminal";
       };
@@ -101,7 +141,7 @@ in
 
     # TODO generalize ^^
     # apps = mkOption {
-    #   type = types.attrsOf appType;
+    #   type = types.attrsOf appModule;
     #   default = {};
     # };
 

@@ -8,6 +8,7 @@
       enable = true;
       grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [
         bash
+        fennel
         json
         just
         lua
@@ -30,6 +31,21 @@
           "gitcommit"
           "gitignore"
         ];
+        textobjects.enable = true;
+        highlight = {
+          enable = true;
+          disable = ''
+            function(lang, bufnr)
+              return vim.api.nvim_buf_line_count(bufnr) > 10000
+            end
+          '';
+        };
+        incremental_selection = {
+          enable = false;
+        };
+        # indent = {
+        #   enable = false;
+        # };
       };
     };
     plugins.treesitter-context.enable = true;

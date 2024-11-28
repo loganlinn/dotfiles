@@ -9,6 +9,31 @@ with lib;
 let
   cfg = config.programs.aerospace;
 
+  focus-or-launch-app-id = pkgs.writeShellScript "focus-or-launch-app" ''
+    set -e
+    set -o pipefail
+
+    app_bundle_id=''${1:?app-bundle-id}
+
+    window_id=$(
+      ${config.homebrew.brewPrefix}/aerospace list-windows \
+        --app-bundle-id "$app_bundle_id" \
+        --monitor all \
+        --format '%{window-id}' |
+      head -n1 ||
+      true
+    )
+
+    if [[ -n $window_id ]]; then
+      echo >&2 "Focusing window: $window_id"
+      ${config.homebrew.brewPrefix}/aerospace focus --window-id "$window_id"
+    else
+      echo >&2 "Launching app: $app_bundle_id"
+      /usr/bin/open -b "$app_bundle_id"
+    fi
+  '';
+
+  # All possible modifiers: cmd, alt, ctrl, shift
   # All possible keys:
   # - Letters.        a, b, c, ..., z
   # - Numbers.        0, 1, 2, ..., 9
@@ -19,20 +44,20 @@ let
   # - Keypad special. keypadClear, keypadDecimalMark, keypadDivide, keypadEnter, keypadEqual,
   #                   keypadMinus, keypadMultiply, keypadPlus
   # - Arrows.         left, down, up, right
-
-  # All possible modifiers: cmd, alt, ctrl, shift
-
+  #
+  # Note: [pageUp/pageDown are not supported](https://github.com/nikitabobko/AeroSpace/issues/748).
+  #
   # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
   mode = {
     main.binding = {
-      alt-enter = "exec-and-forget ${cfg.terminal.exec}";
-      alt-cmd-enter = "exec-and-forget open -n -a Kitty.app";
+      alt-enter = "exec-and-forget ${focus-or-launch-app-id} ${cfg.terminal.id}";
       alt-shift-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Default";
       alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
       alt-a = "exec-and-forget ${cfg.editor.exec}";
-      alt-e = "exec-and-forget open -b ${app-ids.Finder}";
+      alt-period = "exec-and-forget open -b ${app-ids.Finder}";
       alt-s = "exec-and-forget open -b ${app-ids.Slack}";
-      alt-quote = "mode apps";
+      alt-m = "exec-and-forget open -b ${app-ids.Messages}";
+      alt-o = "mode apps";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#layout
       alt-slash = "layout tiles horizontal vertical";
@@ -90,21 +115,9 @@ let
       alt-shift-9 = "move-node-to-workspace --focus-follows-window  9";
       alt-shift-0 = "move-node-to-workspace --focus-follows-window 10";
 
-      # https://nikitabobko.github.io/AeroSpace/commands#move-node-to-monitor
-      alt-shift-right = "move-node-to-monitor --focus-follows-window --wrap-around right";
-      alt-shift-down = "move-node-to-monitor --focus-follows-window --wrap-around down";
-      alt-shift-up = "move-node-to-monitor --focus-follows-window --wrap-around up";
-      alt-shift-left = "move-node-to-monitor --focus-follows-window --wrap-around left";
-      # pgup/pgdown are not supported by aerospace (yet)
-      # See: https://github.com/nikitabobko/AeroSpace/issues/748
-      # alt-shift-pageDown = "move-node-to-monitor --focus-follows-window --wrap-around next";
-      # alt-shift-pageUp = "move-node-to-monitor --focus-follows-window --wrap-around prev";
-
       # https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
       # alt-ctrl-shift-pageDown = "move-workspace-to-monitor --wrap-around next";
       # alt-ctrl-shift-pageUp = "move-workspace-to-monitor --wrap-around prev";
-      alt-ctrl-shift-right = "move-workspace-to-monitor --wrap-around next";
-      alt-ctrl-shift-left = "move-workspace-to-monitor --wrap-around prev";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
       alt-tab = "workspace-back-and-forth";
@@ -119,8 +132,36 @@ let
       alt-shift-x = "enable toggle";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#mode
+      alt-shift-m = "mode monitor";
       alt-shift-semicolon = "mode service";
       # alt-shift-slash = "mode query";
+    };
+    monitor.binding = prefix-mode-binding // {
+      # https://nikitabobko.github.io/AeroSpace/commands#move-node-to-monitor
+      shift-h = [
+        "move-node-to-monitor --focus-follows-window right"
+        "mode main"
+      ];
+      shift-j = [
+        "move-node-to-monitor --focus-follows-window down"
+        "mode main"
+      ];
+      shift-k = [
+        "move-node-to-monitor --focus-follows-window up"
+        "mode main"
+      ];
+      shift-l = [
+        "move-node-to-monitor --focus-follows-window left"
+        "mode main"
+      ];
+      shift-period = [
+        "move-workspace-to-monitor next"
+        "mode main"
+      ];
+      shift-comma = [
+        "move-workspace-to-monitor prev"
+        "mode main"
+      ];
     };
     apps.binding = prefix-mode-binding // {
       d = "exec-and-forget open -b ${app-ids.Docker}";
