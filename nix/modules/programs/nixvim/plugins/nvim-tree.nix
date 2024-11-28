@@ -17,7 +17,7 @@ in
       git.ignore = false;
       liveFilter.alwaysShowFolders = false;
       openOnSetup = true;
-      openOnSetupFile = true;
+      openOnSetupFile = false;
       renderer.icons.gitPlacement = "signcolumn";
       renderer.icons.show.git = false;
       renderer.indentMarkers.enable = true;

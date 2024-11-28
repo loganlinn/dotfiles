@@ -24,7 +24,7 @@ let
 in
 {
   programs.wezterm = {
-    package = inputs.wezterm.packages.${pkgs.system}.default;
+    # package = inputs.wezterm.packages.${pkgs.system}.default;
     enable = mkDefault true;
     enableBashIntegration = mkDefault true;
     enableZshIntegration = mkDefault true;

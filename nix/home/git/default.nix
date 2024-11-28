@@ -65,7 +65,44 @@ in
       root = "rev-parse --show-toplevel";
       prefix = "rev-parse --show-prefix";
       cdup = "rev-parse --show-cdup";
-      fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-toplevel)"'';
+      fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
+      rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
+
+      stash-search = ''
+        !f() {
+          if ! (( $# )); then
+            set -- "$(${pkgs.gum}/bin/gum input --prompt="regex: " --placeholder=pattern)" || return "$?";
+          fi;
+          git stash list -i -G"$@";
+        }; f
+      '';
+      stash-show-file = ''
+        !f() {
+          local stash=$1
+          local file=$2
+          if [[ -z $stash ]]; then
+            stash=$(
+              git stash list |
+              ${pkgs.fzf}/bin/fzf --border-label '🥡 Stashes' --delimiter=: --preview "git show --color=always {1}" "$@" |
+              cut -d: -f1
+            ) || return $?;
+          fi;
+          if [[ -z $file ]]; then
+            file=$(
+              git ls-files "$(git rev-parse --show-toplevel)" |
+              ${pkgs.fzf}/bin/fzf  --color=always --preview="git diff $stash^! -- {1}"
+            ) || return $?;
+          fi;
+          git diff "$stash"^! -- "$file";
+        }; f'';
+      # stash-checkout-file = ''
+      #   !f() {
+      #     local idx=''${1-0};
+      #     local file=''${2?main};
+      #     if [[ $idx =  ]]
+      #     shift;
+      #     git checkout "stash@{$idx}" -- "$@";
+      #   }; f'';
 
       # worktree
       wt = "worktree";
