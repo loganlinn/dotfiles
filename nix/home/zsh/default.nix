@@ -118,9 +118,9 @@ with lib;
 
         autoload -Uz ${concatStringsSep " " functionNames}
 
-        bindkey -s '^G^g' ' git status^M' # ctrl-space (^M is accept line)
-        bindkey -s '^G^s' ' git snapshot^M'
-        bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
+        bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
+        bindkey -s '^G^S' ' git snapshot^M'
+        bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
         bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
         bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
 

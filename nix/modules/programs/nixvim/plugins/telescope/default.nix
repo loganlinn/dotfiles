@@ -11,25 +11,11 @@ in
         plugin = pkgs.vimPlugins.smart-open-nvim;
         config = "let g:sqlite_clib_path = '${sqllite_clib_path}'";
       }
-      # pkgs.vimPlugins.telescope-live-grep-args-nvim # neweded since using nixvim options below?
       pkgs.vimPlugins.telescope-zoxide
       pkgs.vimPlugins.telescope-github-nvim
     ];
-
     plugins.telescope = {
       enable = true;
-      # https://github.com/nix-community/nixvim/tree/main/plugins/by-name/telescope/extensions
-      extensions = {
-        file-browser.enable = true;
-        frecency.enable = true;
-        fzf-native.enable = false;
-        fzy-native.enable = true;
-        live-grep-args.enable = true;
-        # manix.enable = true;
-        undo.enable = true;
-        ui-select.enable = true;
-        # ui-select.settings.codeactions = false;
-      };
       settings.defaults = {
         file_ignore_patterns = [
           "^.direnv/"
@@ -44,16 +30,29 @@ in
           i = {
             "<C-a>" = "which_key";
             "<C-h>" = "which_key";
-            # "<C-g>" = mkRaw "require('telescope.actions').close";
             "<C-g>" = "close";
             "<C-u>" = mkRaw "false"; # clear prompt
-            # "<C-j>" = mkRaw "require('telescope.actions').move_selection_next";
-            # "<C-k>" = mkRaw "require('telescope.actions').move_selection_previous";
             "<C-j>" = "move_selection_next";
             "<C-k>" = "move_selection_previous";
           };
         };
       };
+      # https://github.com/nix-community/nixvim/tree/main/plugins/by-name/telescope/extensions
+      extensions.file-browser = {
+        enable = true;
+        settings = {
+          cwd_to_path = true;
+          git_status = true;
+        };
+      };
+      extensions.frecency.enable = true;
+      extensions.fzf-native.enable = false;
+      extensions.fzy-native.enable = true;
+      extensions.live-grep-args.enable = true;
+      extensions.undo.enable = true;
+      extensions.ui-select.enable = true;
+      # extensions.manix.enable = true;
+      # extensions.ui-select.settings.codeactions = false;
       keymaps = {
         "<leader>:" = "command_history";
         "<leader>'" = "resume";

@@ -10,14 +10,8 @@ local function victor_mono(font)
   font.family = "Victor Mono"
   font.harfbuzz_features = font.harfbuzz_features
     or {
-      -- "ss01", -- Single-storey a
       "ss02", -- Slashed zero, variant 1
-      -- "ss03", -- Slashed zero, variant 2
-      -- "ss04", -- Slashed zero, variant 3
-      -- "ss05", -- Slashed zero, variant 4
-      -- "ss06", -- Slashed seven
       "ss07", -- Straighter 6 and 9
-      -- "ss08", -- More fishlike turbofish (previous default ::< ligature)
     }
   return wezterm.font(font)
 end
@@ -35,8 +29,12 @@ config.line_height = 1.1
 config.font_rules = {
   { italic = true, font = victor_mono({ style = "Oblique" }) },
 }
-config.default_cursor_style = "BlinkingBar"
-config.window_frame = { font = config.font }
+-- config.default_cursor_style = "BlinkingBar"
+-- config.cursor_blink_rate = 666
+-- config.cursor_thickness = 2
+-- config.cursor_blink_ease_in = "Constant"
+-- config.cursor_blink_ease_out = "Constant"
+-- config.animation_fps = 1
 config.window_padding = {
   left = "1cell",
   right = "1cell",
@@ -74,7 +72,21 @@ config.quick_select_patterns = {
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
 config.leader = { key = "F13", timeout_milliseconds = math.maxinteger }
-config.keys = {
+--[[ Hyper, Super, Meta, Cancel, Backspace, Tab, Clear, Enter, Shift, Escape, LeftShift, RightShift, Control, LeftControl, RightControl, Alt, LeftAlt, RightAlt, Menu, LeftMenu, RightMenu, Pause, CapsLock, VoidSymbol, PageUp, PageDown, End, Home, LeftArrow, RightArrow, UpArrow, DownArrow, Select, Print, Execute, PrintScreen, Insert, Delete, Help, LeftWindows, RightWindows, Applications, Sleep, Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, Multiply, Add, Separator, Subtract, Decimal, Divide, NumLock, ScrollLock, BrowserBack, BrowserForward, BrowserRefresh, BrowserStop, BrowserSearch, BrowserFavorites, BrowserHome, VolumeMute, VolumeDown, VolumeUp, MediaNextTrack, MediaPrevTrack, MediaStop, MediaPlayPause, ApplicationLeftArrow, ApplicationRightArrow, ApplicationUpArrow, ApplicationDownArrow, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24. ]]
+local function add_keys(...)
+  config.keys = config.keys or {}
+  for i = 1, select("#", ...) do
+    local arg = select(i, ...)
+    if arg then
+      local mods, key, action = arg.mods or arg[1], arg.key or arg[2], arg.action or arg[3]
+      if key and action then
+        wezterm.log_info("adding key", key, mods, action)
+        table.insert(config.keys, { key = key, mods = mods, action = action })
+      end
+    end
+  end
+end
+add_keys(
   -- Tab
   { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
   { key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
@@ -82,7 +94,8 @@ config.keys = {
   { key = "}", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(1) },
   { key = "<", mods = "CTRL|SHIFT", action = act.MoveTabRelative(-1) },
   { key = ">", mods = "CTRL|SHIFT", action = act.MoveTabRelative(1) },
-  { key = "Enter", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
+  { key = "Enter", mods = "CTRL|SHIFT", action = act.SplitPaneAuto() },
+  { key = "Space", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
   -- Pane
   { key = "-", mods = "LEADER", action = act.SplitPane({ direction = "Down" }) },
   { key = "-", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up" }) },
@@ -90,7 +103,6 @@ config.keys = {
   { key = "\\", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left" }) },
   { key = "_", mods = "LEADER", action = act.SplitPane({ direction = "Down", top_level = true }) },
   { key = "_", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up", top_level = true }) },
-  { key = "Space", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
   {
     key = "@",
     mods = "CTRL|SHIFT",
@@ -111,10 +123,14 @@ config.keys = {
   { key = "j", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Down") },
   { key = "k", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Up") },
   { key = "l", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Right") },
-  { key = "h", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Left", 5 }) },
-  { key = "j", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Down", 5 }) },
-  { key = "k", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Up", 5 }) },
-  { key = "l", mods = "CTRL|SHIFT|ALT", action = act.AdjustPaneSize({ "Right", 5 }) },
+  { key = "T", mods = "CTRL|SHIFT", action = act.MovePaneToNewTab },
+  { key = "M", mods = "CTRL|SHIFT", action = act.MovePaneToNewTab },
+  { key = "LeftArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Left", 5 }) },
+  { key = "DownArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Down", 5 }) },
+  { key = "UpArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Up", 5 }) },
+  { key = "RightArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Right", 5 }) },
+  { key = ">", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Right", 25 }) },
+  { key = "<", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Left", 25 }) },
   { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
   { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = true }) },
   { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
@@ -183,13 +199,14 @@ config.keys = {
   { key = "F1", mods = "SUPER", action = act.ShowDebugOverlay },
   { key = "F2", mods = "SUPER", action = act.RenameTab },
   { key = "F5", mods = "SUPER", action = act.ReloadConfiguration },
-  { key = "F9", mods = "SUPER", action = wezterm.action.ShowTabNavigator },
+  { key = "F6", mods = "SUPER", action = act.DumpWindow },
+  { key = "F7", mods = "SUPER", action = act.ToggleDebugKeyEvents },
+  { key = "F9", mods = "SUPER", action = act.ShowTabNavigator },
+  { key = "F10", mods = "SUPER", action = act.InputSelectorDemo },
   { key = "f", mods = "SUPER", action = act.Search({ CaseSensitiveString = "" }) },
   { key = "0", mods = "SUPER", action = wezterm.action.ResetFontSize },
   { key = "-", mods = "SUPER", action = wezterm.action.DecreaseFontSize },
   { key = "=", mods = "SUPER", action = wezterm.action.IncreaseFontSize },
-  { key = "-", mods = "SUPER|CTRL", action = act.AdjustPaneSizeSmart(5) },
-  { key = "=", mods = "SUPER|CTRL", action = act.AdjustPaneSizeSmart(5) },
   { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
   { key = ";", mods = "SUPER", action = act.ShowLauncher },
   { key = "Space", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
@@ -200,8 +217,8 @@ config.keys = {
   { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
   { key = "t", mods = "LEADER", action = act.ActivateKeyTable({ name = "toggle" }) },
   { key = "v", mods = "LEADER", action = act.ActivateCopyMode },
-  { key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "window" }) },
-}
+  { key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "window" }) }
+)
 for i = 1, 9 do
   table.insert(config.keys, {
     key = tostring(i),
@@ -234,10 +251,6 @@ config.key_tables["insert"] = {
 --     { key = "n", action = act.SpawnWindow },
 --     { key = "s", action = act.PaneSelect({ mode = "SwapWithActive" }) },
 --   })
---   :bind({
---     prefix = { key = "!", mods = "LEADER" },
---     { key = "Home", action = act.SpawnDotfilesCommandInNewTab("switch") },
---   })
 -- :bind({ prefix = {"help", key = "h", mods = "LEADER" }, })
 -- :apply_to_config(config)
 
@@ -264,6 +277,8 @@ require("dotfiles.hyperlink").apply_to_config(config)
 
 wezterm.on("open-uri", function(window, pane, uri)
   wezterm.log_info("open-uri", uri)
+  local url = wezterm.url.parse(uri)
+  -- TODO
   wezterm.open_with(uri)
 end)
 

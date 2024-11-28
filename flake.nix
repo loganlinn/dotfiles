@@ -44,6 +44,7 @@
     # nixpkgs-match.url = "github:srid/nixpkgs-match";
     # sops-nix.url = "github:Mic92/sops-nix";
     # sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    wezterm.url = "github:wez/wezterm?dir=nix";
     wezterm-types.url = "github:justinsgithub/wezterm-types";
     wezterm-types.flake = false;
   };

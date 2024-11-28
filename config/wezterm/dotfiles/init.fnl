@@ -1,0 +1,2 @@
+(local wezterm (require :wezterm))
+

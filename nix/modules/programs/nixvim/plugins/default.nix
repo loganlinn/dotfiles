@@ -10,11 +10,11 @@
     ./lsp
     ./lualine.nix
     ./mini.nix
-    ./nvim-filetree.nix
+    ./nvim-tree.nix
     ./oil.nix
     ./project.nix
     ./supermaven
-    ./telescope.nix
+    ./telescope
     ./treesitter.nix
     ./which-key.nix
   ];

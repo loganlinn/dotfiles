@@ -41,8 +41,16 @@ in
     gtlr = "git rev-parse --show-cdup"; # "toplevel relative"
     gwd = "git rev-parse --show-prefix"; # "git working directory"
     grt = ''cd -- "$(gtl || pwd)"''; # "goto root"
-
   };
+
+  programs.zsh.initExtra = ''
+    bindkey -s '^G^g' ' git status^M'
+    bindkey -s '^G^f' ' git fetch^M'
+    bindkey -s '^G^s' ' git snapshot^M'
+    bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
+    bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
+    bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+  '';
 
   programs.git = {
     enable = true;
@@ -57,6 +65,7 @@ in
       root = "rev-parse --show-toplevel";
       prefix = "rev-parse --show-prefix";
       cdup = "rev-parse --show-cdup";
+      fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-toplevel)"'';
 
       # worktree
       wt = "worktree";

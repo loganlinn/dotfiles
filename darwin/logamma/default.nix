@@ -91,7 +91,7 @@
 
   programs.aerospace = {
     enable = true;
-    terminal.id = "com.github.wez.wezterm";
+    terminal.exec = "wezterm cli spawn --new-window";
     editor.id = "org.gnu.Emacs";
   };
 
