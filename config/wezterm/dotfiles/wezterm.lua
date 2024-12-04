@@ -71,7 +71,10 @@ config.quick_select_patterns = {
 }
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
-config.leader = { key = "F13", timeout_milliseconds = math.maxinteger }
+-- config.leader = { mods = "SUPER", key = "Space" }
+config.leader = { mods = "CTRL|SHIFT", key = "Space" }
+-- config.leader = { key = "F13" }
+config.leader.timeout_milliseconds = math.maxinteger
 --[[ Hyper, Super, Meta, Cancel, Backspace, Tab, Clear, Enter, Shift, Escape, LeftShift, RightShift, Control, LeftControl, RightControl, Alt, LeftAlt, RightAlt, Menu, LeftMenu, RightMenu, Pause, CapsLock, VoidSymbol, PageUp, PageDown, End, Home, LeftArrow, RightArrow, UpArrow, DownArrow, Select, Print, Execute, PrintScreen, Insert, Delete, Help, LeftWindows, RightWindows, Applications, Sleep, Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, Multiply, Add, Separator, Subtract, Decimal, Divide, NumLock, ScrollLock, BrowserBack, BrowserForward, BrowserRefresh, BrowserStop, BrowserSearch, BrowserFavorites, BrowserHome, VolumeMute, VolumeDown, VolumeUp, MediaNextTrack, MediaPrevTrack, MediaStop, MediaPlayPause, ApplicationLeftArrow, ApplicationRightArrow, ApplicationUpArrow, ApplicationDownArrow, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24. ]]
 local function add_keys(...)
   config.keys = config.keys or {}
@@ -95,7 +98,7 @@ add_keys(
   { key = "<", mods = "CTRL|SHIFT", action = act.MoveTabRelative(-1) },
   { key = ">", mods = "CTRL|SHIFT", action = act.MoveTabRelative(1) },
   { key = "Enter", mods = "CTRL|SHIFT", action = act.SplitPaneAuto() },
-  { key = "Space", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
+  { key = "Z", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
   -- Pane
   { key = "-", mods = "LEADER", action = act.SplitPane({ direction = "Down" }) },
   { key = "-", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up" }) },
