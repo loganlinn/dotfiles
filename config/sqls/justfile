@@ -1,0 +1,12 @@
+sqls_config := env("XDG_CONFIG_HOME", env("HOME") / ".config") / "sqls" / "config.yml"
+
+default:
+  @just --list
+
+clean:
+  rm -f "{{ sqls_config }}"
+
+config:
+  mkdir -p "{{ parent_dir(sqls_config) }}"
+  op inject --in-file config.template.yml --out-file "{{ sqls_config }}" 
+  chmod 600 "{{ sqls_config }}"

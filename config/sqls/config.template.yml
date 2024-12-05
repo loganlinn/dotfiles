@@ -1,0 +1,10 @@
+connections:
+  - alias: ch-local 
+    driver: clickhouse
+    dataSourceName: clickhouse://localhost:9000
+  - alias: ch-staging
+    driver: clickhouse
+    dataSourceName: clickhouse://{{ op://gamma-staging/clickhouse/username }}:{{ op://gamma-staging/clickhouse/password }}@{{ op://gamma-staging/clickhouse/server }}:{{ op://gamma-staging/clickhouse/port }}/{{ op://gamma-staging/clickhouse/database }}?secure=true
+  - alias: ch-PROD
+    driver: clickhouse
+    dataSourceName: clickhouse://{{ op://gamma-prod/clickhouse/username }}:{{ op://gamma-prod/clickhouse/password }}@{{ op://gamma-prod/clickhouse/server }}:{{ op://gamma-prod/clickhouse/port }}/{{ op://gamma-prod/clickhouse/database }}?secure=true
