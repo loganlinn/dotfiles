@@ -42,6 +42,9 @@ with lib;
       "...." = "../../..";
       "....." = "../../../..";
       "......" = "../../../../..";
+      # https://github.com/sharkdp/bat/blob/master/README.md#highlighting---help-messages
+      "--help" = ''--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain'';
+      "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain'';
     };
 
     sessionVariables = mkOptionDefault config.home.sessionVariables;
