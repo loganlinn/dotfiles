@@ -1,19 +1,29 @@
 local wezterm = require("wezterm")
 
-local is = require("dotfiles.util.is")
-local safe = require("dotfiles.util.safe")
-
 local M = setmetatable({}, {
   __index = function(_, k)
     error("Key does not exist: " .. tostring(k))
   end,
 })
 
-M.is = is
-M.safe = safe
+M.is = require("dotfiles.util.is")
+M.safe = require("dotfiles.util.safe")
 M.tbl = require("dotfiles.util.tbl")
 M.window = require("dotfiles.util.window")
 M.delay = require("dotfiles.util.delay")
+M.debug = require("dotfiles.util.debug")
+
+--- Equivalent to `dirname(1)`
+---@param path string
+---@return string
+function M.dirname(path)
+  if string.match(path, ".-/.-") then
+    local name = string.gsub(path, "(.*/)(.*)", "%1")
+    return name
+  else
+    return ""
+  end
+end
 
 ---@param f function
 ---@param ... any
@@ -70,7 +80,7 @@ end
 ---@param v T|T[]
 ---@return T[]
 M.tolist = function(v)
-  if not is.table(v) or #v == 0 and next(v) ~= nil then
+  if not M.is.table(v) or #v == 0 and next(v) ~= nil then
     return { v }
   end
   return v
@@ -130,15 +140,21 @@ function M.match_platform(t)
   return t.default or error("no platform matched")
 end
 
+---Returns a UNIX timestamp
+---@param time? wezterm.Time Specific time to use, defaults to current time.
+---@return number The number of milliseconds since 1970-01-01 00:00 UTC.
+function M.unix_timestamp_ms(time)
+  if time == nil then
+    time = wezterm.time.now()
+  end
+  return tonumber(time:format("%s%.f")) * 1000
+end
+
 ---@param t1 wezterm.Time
 ---@param t2 wezterm.Time
 ---@return number
 function M.time_diff_ms(t1, t2)
-  local t1_s = math.tointeger(t1:format("%s"))
-  local t1_f = math.tointeger(t1:format("%f"))
-  local t2_s = math.tointeger(t2:format("%s"))
-  local t2_f = math.tointeger(t2:format("%f"))
-  return (t1_s + (t1_f / 1000000)) - (t2_s + (t2_f / 1000000))
+  return M.unix_timestamp_ms(t1) - M.unix_timestamp_ms(t2)
 end
 
 function M.event_counter(event)

@@ -14,7 +14,6 @@
     ../modules/aerospace
     ../modules/aws.nix
     ../modules/emacs-plus
-    ../modules/karabiner-elements
     ../modules/sunbeam
     ../modules/xcode.nix
     {
@@ -83,7 +82,7 @@
   homebrew.casks = [
     # "1password" # currently installed manually
     "1password-cli"
-    "clickhouse" # newer version than from nixpkgs
+    # "clickhouse" # newer version than from nixpkgs
     "discord"
     "obs"
     "tailscale"
@@ -100,8 +99,6 @@
   programs.sunbeam.enable = true;
 
   programs.emacs-plus.enable = true;
-
-  services.karabiner-elements.enable = false;
 
   home-manager.users.logan = {
     imports = [
@@ -120,12 +117,16 @@
       ../../nix/home/wezterm
       ../../nix/home/yazi
       ../../nix/home/yt-dlp.nix
+      # ../../nix/home/waveterm
       ../../nix/modules/programs/nixvim
     ];
 
     programs.nixvim = {
       enable = true;
       defaultEditor = true;
+      plugins.lsp.servers.nixd.settings.options = {
+        darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
+      };
     };
 
     programs.kitty.enable = true;
@@ -147,8 +148,8 @@
 
     xdg.enable = true;
 
-    manual.html.enable = true;
-    manual.json.enable = true;
+    # manual.html.enable = true;
+    # manual.json.enable = true;
   };
 
   system.stateVersion = 4;

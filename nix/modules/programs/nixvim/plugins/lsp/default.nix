@@ -1,4 +1,10 @@
 {
+  self,
+  inputs,
+  config,
+  ...
+}:
+{
   imports = [
     ./lspsaga.nix
     ./lua_ls.nix
@@ -42,9 +48,28 @@
           jsonls.enable = true;
           jqls.enable = true;
           marksman.enable = true;
+          nil_ls.enable = false;
+          nil_ls.settings = {
+            # diagnostics.ignored = [ ];
+            # formatting.command = [ "nixpkgs-fmt" ];
+            # type.weakNilCheck = false;
+            # nix.flake.autoArchive = null;
+            # nix.flake.autoEvalInputs = true;
+            # nix.flake.nixpkgsInputName = "nixpkgs";
+            # nix.maxMemoryMB = 2500;
+          };
           nixd.enable = true;
+          nixd.settings = {
+            formatting.command = [ "nixpkgs-fmt" ];
+            diagnostic.suppress = [ "sema-escaping-with" ];
+            nixpkgs.expr = ''import ${inputs.nixpkgs} {}'';
+            options.flake.expr = ''(builtins.getFlake "${
+              config.my.flakeDirectory or self
+            }").currentSystem.options'';
+          };
           prismals.enable = false;
           pyright.enable = true;
+          sqls.enable = true;
           terraformls.enable = true;
           ts_ls.enable = true;
           yamlls.enable = true;

@@ -27,8 +27,6 @@ local function update_config_overrides(window, update)
   return overrides
 end
 
-local function inspect_window(window) end
-
 --- Creates callback action
 ---@param fn fun(window: Window, pane: Pane, ...): any
 M.fn = function(fn)
@@ -60,6 +58,48 @@ end)
 M.RenameWorkspace = M.PromptInputLineSimple("Workspace name:", function(_, _, name)
   wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), name)
 end)
+
+-- M.WorkspaceSelector = function(opts)
+--   return M.fn(function(window, pane)
+--     -- Here you can dynamically construct a longer list if needed
+--
+--     local home = wezterm.home_dir
+--     local workspaces = {
+--       { id = home, label = "Home" },
+--       { id = home .. "/work", label = "Work" },
+--       { id = home .. "/personal", label = "Personal" },
+--       { id = home .. "/.config", label = "Config" },
+--     }
+--
+--     window:perform_action(
+--       wezterm.action.InputSelector({
+--         action = wezterm.action_callback(function(inner_window, inner_pane, id, label)
+--           if not id and not label then
+--             wezterm.log_info("cancelled")
+--           else
+--             wezterm.log_info("id = " .. id)
+--             wezterm.log_info("label = " .. label)
+--             inner_window:perform_action(
+--               wezterm.action.SwitchToWorkspace({
+--                 name = label,
+--                 spawn = {
+--                   label = "Workspace: " .. label,
+--                   cwd = id,
+--                 },
+--               }),
+--               inner_pane
+--             )
+--           end
+--         end),
+--         title = "Choose Workspace",
+--         choices = workspaces,
+--         fuzzy = true,
+--         fuzzy_description = "Fuzzy find and/or make a workspace",
+--       }),
+--       pane
+--     )
+--   end)
+-- end
 
 M.SwitchToNamedWorkspace = M.PromptInputLineSimple("Workspace name:", function(window, pane, name)
   window:perform_action(wezterm.action.SwitchToWorkspace({ name = name }), pane)
@@ -96,6 +136,13 @@ M.SplitPaneAuto = function(args)
   end)
 end
 
+custom_action.ActivateKeyTable = function(opts)
+  return wezterm.action.Multiple({
+    wezterm.action.ActivateKeyTable(opts),
+    wezterm.action.EmitEvent("activate-key-table"),
+  })
+end
+
 M.ActivateRightPane = M.fn(function(window, pane)
   local tab = window:active_tab()
   local panes = tab:panes()
@@ -108,10 +155,17 @@ M.ActivateRightPane = M.fn(function(window, pane)
   -- sidepane:activate()
 end)
 
-M.MovePaneToNewTab = M.fn(function(_, pane)
-  pane:move_to_new_tab()
-end)
+M.MovePaneToNewTab = function(opts)
+  opts = opts or {}
+  return M.fn(function(_, pane)
+    local tab = pane:move_to_new_tab()
+    if opts.activate then
+      tab:activate()
+    end
+  end)
+end
 
+--- FIXME FIXME FIXME FIXME FIXME FIXME
 ---@param workspace? string
 M.MovePaneToWorkspace = function(workspace)
   if workspace then
@@ -131,6 +185,19 @@ M.ToggleDebugKeyEvents = M.fn(function(window, _)
     return overrides
   end)
 end)
+
+M.QuickSelectUrl = wezterm.action.QuickSelectArgs({
+  patterns = {
+    "[a-zA-Z]+://\\S+",
+  },
+  action = wezterm.action_callback(function(window, pane)
+    local url = window:get_selection_text_for_pane(pane)
+    window:perform_action(wezterm.action.ClearSelection, pane)
+    if url then
+      wezterm.open_with(url)
+    end
+  end),
+})
 
 M.InputSelectorDemo = M.InputSelector({
   action = wezterm.action_callback(function(window, pane, id, label)

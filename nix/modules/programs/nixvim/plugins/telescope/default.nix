@@ -1,8 +1,31 @@
-{ pkgs, config, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   inherit (config.lib.nixvim) mkRaw;
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
   sqllite_clib_path = "${pkgs.sqlite.out}/lib/libsqlite3.${if isDarwin then "dylib" else "so"}";
+  mkRaw' =
+    lua:
+    mkRaw (
+      lib.trim ''
+        function()
+          ${lib.trim lua}
+        end
+      ''
+    );
+  mkKeymap = mode: key: options: action: {
+    mode = if lib.isString mode then lib.stringToCharacters mode else mode;
+    key = key;
+    action = action;
+    options = if lib.isString options then { desc = options; } else options;
+  };
+  mkKeymap' =
+    mode: key: options: action-lua:
+    mkKeymap mode key options (mkRaw' action-lua);
 in
 {
   programs.nixvim = {
@@ -48,7 +71,19 @@ in
       extensions.frecency.enable = true;
       extensions.fzf-native.enable = false;
       extensions.fzy-native.enable = true;
-      extensions.live-grep-args.enable = true;
+      extensions.live-grep-args = {
+        enable = true;
+        settings = {
+          auto_quoting = true;
+          mappings = {
+            i = {
+              # "<C-'>" = mkRaw' ''require("telescope-live-grep-args.actions").quote_prompt()'';
+              # "<C-->" = mkRaw' ''require("telescope-live-grep-args.actions").quote_prompt({ postfix = " -" })'';
+              "<C-space>" = "to_fuzzy_refine";
+            };
+          };
+        };
+      };
       extensions.undo.enable = true;
       extensions.ui-select.enable = true;
       # extensions.manix.enable = true;
@@ -77,19 +112,13 @@ in
             desc = "Auto Commands";
           };
         };
-        "<leader>sb" = {
-          action = "current_buffer_fuzzy_find";
-          options = {
-            desc = "Buffer";
-          };
-        };
-        "<leader>sc" = {
+        "<leader>s:" = {
           action = "command_history";
           options = {
             desc = "Command History";
           };
         };
-        "<leader>sC" = {
+        "<leader>hc" = {
           action = "commands";
           options = {
             desc = "Commands";
@@ -145,44 +174,44 @@ in
     };
 
     keymaps = [
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader><space>";
-        options.desc = "Find files";
-        action = mkRaw ''function() require("telescope").extensions.smart_open.smart_open() end'';
-      }
+      (mkKeymap' "nv" "<leader><space>" "Find files" ''
+        require("telescope").extensions.smart_open.smart_open()
+      '')
       {
         mode = [
           "n"
           "v"
         ];
         key = "<leader>/";
-        action = mkRaw ''
-          function()
-            require('telescope').extensions.live_grep_args.live_grep_args()
-          end
-        '';
+        action = mkRaw' ''require('telescope').extensions.live_grep_args.live_grep_args()'';
         options.desc = "Grep Files";
       }
       {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>*";
-        action = mkRaw ''
-          function()
-            require('telescope-live-grep-args.shortcuts').grep_visual_selection()
-          end '';
-        options.desc = "Grep Selection";
+        mode = [ "n" ];
+        key = "<leader>sb";
+        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer()'';
+        options.desc = "Grep word at cursor";
       }
       {
-        mode = [
-          "n"
-        ];
+        mode = [ "v" ];
+        key = "<leader>sb";
+        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer()'';
+        options.desc = "Grep visual selection";
+      }
+      {
+        mode = [ "n" ];
+        key = "<leader>*";
+        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_word_under_cursor()'';
+        options.desc = "Grep word at cursor";
+      }
+      {
+        mode = [ "v" ];
+        key = "<leader>*";
+        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_visual_selection()'';
+        options.desc = "Grep visual selection";
+      }
+      {
+        mode = [ "n" ];
         key = "<leader>cf";
         action = "<cmd>lua vim.lsp.buf.formatting()<CR>";
         options.desc = "Format buffer";
@@ -193,34 +222,39 @@ in
           "v"
         ];
         key = "<leader>sd";
-        action = mkRaw ''
-          function()
-            require('telescope').extensions.live_grep_args.live_grep_args({
-              search_dir = vim.fn.expand('%:p:h')
-            })
-          end'';
+        action = mkRaw' ''
+          require('telescope').extensions.live_grep_args.live_grep_args({
+            search_dirs = { vim.fn.expand('%:p:h') }
+          })
+        '';
         options.desc = "Search current directory";
       }
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>sD";
-        # TODO use Telescope file_browser to select directory for seearch context
-        # https://nix-community.github.io/nixvim/search/?query=telescope.extensions.file&option_scope=0&option=plugins.telescope.extensions.file-browser.settings.browse_folders
-        action = mkRaw ''
-          function()
-            vim.ui.input({ prompt = 'Directory: ', default = vim.fn.expand('%:p:h') }, function(search_dir)
-              if #(search_dir or "") == 0 then return end
-              require('telescope').extensions.live_grep_args.live_grep_args({
-                search_dir = vim.fn.expand('%:p:h')
-              })
-            end)
+
+      (mkKeymap' "n" "<leader>sd" "Grep current directory" ''
+        require('telescope').extensions.live_grep_args.live_grep_args({
+          search_dirs = { vim.fn.expand('%:p:h') }
+        })
+      '')
+      (mkKeymap' "v" "<leader>sd" "Grep current directory" ''
+        require("telescope-live-grep-args.shortcuts").grep_visual_selection({
+          search_dirs = { vim.fn.expand('%:p:h') }
+        })
+      '')
+
+      # TODO use Telescope file_browser to select directory for seearch context
+      # https://nix-community.github.io/nixvim/search/?query=telescope.extensions.file&option_scope=0&option=plugins.telescope.extensions.file-browser.settings.browse_folders
+      (mkKeymap' "nv" "<leader>sD" "Search other dir" ''
+        vim.ui.input({
+          prompt = 'Directory: ',
+          default = vim.fn.expand('%:p:h')
+        }, function(search_dir)
+          if #(search_dir or "") > 0 then
+            require('telescope').extensions.live_grep_args.live_grep_args({
+              search_dirs = { search_dir }
+            })
           end
-        '';
-        options.desc = "Search other directory";
-      }
+        end)
+      '')
 
       # prefix: <leader>f
       {
@@ -238,11 +272,7 @@ in
           "v"
         ];
         key = "<leader>fF";
-        action = mkRaw ''
-          function()
-            require("telescope.builtin").find_files({ cwd = vim.fn.expand("%:p:h") })
-          end
-        '';
+        action = mkRaw' ''require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") }'';
         options.desc = "Find current directory";
       }
 

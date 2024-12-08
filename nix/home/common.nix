@@ -54,6 +54,7 @@
       repgrep
       rlwrap
       sd # sed alternative
+      trurl
       sops
       tree
       unzip
@@ -129,14 +130,46 @@
   programs.jq.enable = true;
 
   programs.lsd = {
-    enable = true;
+    enable = false;
     enableAliases = true;
     settings = {
       date = "relative";
+      hyperlink = "auto";
+      sorting.dir-grouping = "first";
+      header = true;
+      icons.separator = " ";
+      indicators = true;
+      blocks = [
+        "permission"
+        "user"
+        "group"
+        "size"
+        "date"
+        "git"
+        "name"
+      ];
     };
+  };
+
+  programs.eza = {
+    enable = !config.programs.lsd.enable;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
+    enableFishIntegration = true;
+    colors = "auto";
+    git = true;
+    icons = "auto";
+    extraOptions = [
+      "--group-directories-first"
+      "--header"
+      "--time-style=relative"
+      "--hyperlink"
+      "--color-scale=all"
+      "--color-scale-mode=gradient"
+    ];
   };
 
   programs.tealdeer.enable = true; # tldr command
 
-  xdg.enable = lib.mkDefault true;
+  xdg.enable = true;
 }

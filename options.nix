@@ -71,14 +71,6 @@ in
       sans = mkOption { type = myLib.types.font; };
       mono = mkOption { type = myLib.types.font; };
       terminal = mkOption { type = myLib.types.font; };
-      nerdfonts = {
-        fonts = mkOpt (listOf str) [ ];
-        package = mkOption {
-          type = package;
-          readOnly = true;
-          default = pkgs.nerdfonts.override { fonts = cfg.fonts.nerdfonts.fonts; };
-        };
-      };
       packages = mkOpt (listOf package) [ ];
     };
 
@@ -162,47 +154,35 @@ in
         };
 
         mono = mkDefault {
-          package = pkgs.dejavu_fonts;
-          name = "DejaVu Sans Mono";
+          package = pkgs.nerd-fonts.victor-mono;
+          name = "Victor Mono";
           size = mkDefault (if isLinux then 10 else 12);
         };
 
         terminal = mkDefault {
-          package = cfg.fonts.nerdfonts.package;
+          package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
           size = mkDefault (if isLinux then 11 else 12);
         };
-
-        nerdfonts.fonts = mkDefault [
-          "DejaVuSansMono"
-          "FiraCode"
-          "FiraMono"
-          "Iosevka"
-          "JetBrainsMono"
-          "NerdFontsSymbolsOnly"
-          "VictorMono"
-        ];
 
         packages = with pkgs; [
           cfg.fonts.serif.package
           cfg.fonts.sans.package
           cfg.fonts.mono.package
           cfg.fonts.terminal.package
-          cfg.fonts.nerdfonts.package
+          nerd-fonts.dejavu-sans-mono
+          nerd-fonts.fira-code
+          nerd-fonts.fira-mono
+          nerd-fonts.jetbrains-mono
+          nerd-fonts.symbols-only
+          nerd-fonts.victor-mono
           dejavu_fonts
           cascadia-code
-          fira # sans
-          fira-code
-          fira-code-symbols
-          iosevka
-          material-design-icons # https://materialdesignicons.com/
-          material-icons
           monaspace
           noto-fonts
           noto-fonts-emoji
           open-sans
           recursive
-          victor-mono
         ];
       };
 

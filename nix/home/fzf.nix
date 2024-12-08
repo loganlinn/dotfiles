@@ -1,5 +1,21 @@
-{ config, lib, ... }:
+{
+  inputs,
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
+let
+  walker-skip-dirs = [
+    ".cache"
+    ".direnv"
+    ".git"
+    "node_modules"
+  ];
+  walker-skip-option = "--walker-skip=[${builtins.concatStringsSep "," walker-skip-dirs}]";
+  termcopy = pkgs.writeShellScriptBin "termcopy" ../../bin/termcopy;
+in
 {
   programs.fzf = {
     enable = true;
@@ -10,9 +26,12 @@
       lib.mkIf (config ? colorScheme) (
         with config.colorScheme.palette;
         [
+          "--multi"
           "--layout=reverse"
-          "--border"
+          "--highlight-line"
           "--inline-info"
+          "--border"
+          "--cycle"
           "--color 'bg:#${base00}'"
           "--color 'fg:#${base05}'"
           "--color 'preview-fg:#${base05}'"
@@ -29,8 +48,34 @@
           "--color 'marker:#${base0E}'" # Multi-select marker
           "--color 'spinner:#${base0E}'" # Streaming input indicator
           "--color 'header:#${base0D}'" # Header
+          "--bind='ctrl-g:jump'"
+          "--bind='esc:close'"
+          "--bind='f5:refresh-preview'"
+          "--bind='ctrl-\:become(${pkgs.moreutils}/bin/vipe <<< {})"
         ]
       )
     );
+
+    fileWidgetOptions = [
+      walker-skip-option
+      "--preview='${pkgs.bat}/bin/bat --color=always --style=numbers {}'"
+    ];
+
+    changeDirWidgetOptions = [
+      walker-skip-option
+      "--preview='${pkgs.eza}/bin/eza --color=always --tree --level=3 --classify=never --width=$FZF_PREVIEW_COLUMNS {}'"
+    ];
+
+    historyWidgetOptions = [
+      "--sort"
+      "--exact"
+      "--preview='echo -n {2..} | ${pkgs.bat}/bin/bat --color=always --plain --language=bash'"
+      "--preview-window up:3"
+      "--bind='ctrl-y:execute-silent(echo -n {2..} | ${termcopy})+abort'"
+    ];
   };
+
+  my.shellInitExtra = ''
+    source ${inputs.fzf-git}/share/fzf-git-sh/fzf-git.sh
+  '';
 }

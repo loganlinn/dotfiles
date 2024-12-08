@@ -24,6 +24,12 @@
           HostKeyAlgorithms = "+ssh-rsa";
         };
       };
+      "sr.ht" = {
+        host = "*.sr.ht":
+        extraOptions = {
+          PreferredAuthentications= "publickey":
+        };
+      };
     };
     extraConfig = ''
       TCPKeepAlive yes

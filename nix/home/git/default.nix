@@ -21,26 +21,19 @@ in
   home.shellAliases = {
     gc = "git commit -v";
     gca = "git commit -v -a";
-    gcm = ''git switch "$(git default-branch || echo .)"'';
+    gcm = ''git switch "$(git default-branch || echo main)"'';
     gcob = "git switch -c";
     gcop = "git checkout -p";
     gd = "git diff --color";
     gdc = "git diff --color --cached";
     gfo = "git fetch origin";
-    gl = "git pull";
-    glr = "git pull --rebase";
+    gl = "git log --oneline --decorate";
     glrp = "glr && gp";
     gp = "git push -u";
-    gpf = "git push --force-with-lease --force-if-includes";
     gpa = "git push all --all";
+    grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
     gs = "git status -sb";
-    gsrt = "git rev-parse --show-toplevel";
-    gsw = "git stash show --patch";
     gw = "git show";
-    gtl = "git rev-parse --show-toplevel";
-    gtlr = "git rev-parse --show-cdup"; # "toplevel relative"
-    gwd = "git rev-parse --show-prefix"; # "git working directory"
-    grt = ''cd -- "$(gtl || pwd)"''; # "goto root"
   };
 
   programs.zsh.initExtra = ''
@@ -62,9 +55,10 @@ in
     aliases = {
       config-private = "config --file ${privateConfigFile}";
 
-      root = "rev-parse --show-toplevel";
-      prefix = "rev-parse --show-prefix";
+      toplevel = "rev-parse --show-toplevel";
       cdup = "rev-parse --show-cdup";
+      prefix = "rev-parse --show-prefix";
+
       fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
       rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
 
@@ -155,6 +149,7 @@ in
       advice.skippedCherryPicks = false;
       advice.statusHints = false;
       branch.autoSetupRebase = "always";
+      branch.autoSetupMerge = "always";
       branch.sort = "-committerdate";
       color.ui = true;
       commit.verbose = true; # include diff in commit message editor

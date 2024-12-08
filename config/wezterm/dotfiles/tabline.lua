@@ -124,16 +124,15 @@ tabline.setup({
       { "zoomed", padding = 0 },
     },
     tabline_x = {
-      custom_components.key_table(),
       custom_components.leader(),
-      custom_components.config_reload_count(),
-      "ram",
+      -- custom_components.config_reload_count(),
     },
     tabline_y = {
-      "datetime",
+      "ram",
     },
     tabline_z = {
-      "hostname",
+      "datetime",
+      -- "hostname",
     },
   },
 })

@@ -32,7 +32,7 @@ in
     system.defaults.NSGlobalDomain.NSWindowShouldDragOnGesture = lib.mkDefault true;
 
     # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-mission-control
-    system.defaults.dock.expose-group-by-app = lib.mkDefault true; # `true` means OFF
+    system.defaults.dock.expose-group-apps = lib.mkDefault true; # `true` means OFF
 
     # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-displays-have-separate-spaces
     system.defaults.spaces.spans-displays = lib.mkDefault true; # `true` means OFF

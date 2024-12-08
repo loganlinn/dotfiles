@@ -45,8 +45,23 @@
     # sops-nix.url = "github:Mic92/sops-nix";
     # sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     wezterm.url = "github:wez/wezterm?dir=nix";
-    wezterm-types.url = "github:justinsgithub/wezterm-types";
-    wezterm-types.flake = false;
+    wezterm-types = {
+      url = "github:justinsgithub/wezterm-types";
+      flake = false;
+    };
+    ## srcs
+    fzf-tab = {
+      url = "github:Aloxaf/fzf-tab";
+      flake = false;
+    };
+    forgit = {
+      url = "github:wfxr/forgit";
+      flake = false;
+    };
+    fzf-git = {
+      url = "github:junegunn/fzf-git.sh";
+      flake = false;
+    };
   };
 
   nixConfig = {
@@ -94,9 +109,7 @@
             config = import ./config/nixpkgs/config.nix;
             overlays = [
               self.overlays.default
-              # TODO: use overlay conditionally, i.e. https://github.com/hlissner/dotfiles/blob/1e2ca74b02d2d92005352bf328acc86abb10efbd/modules/editors/emacs.nix#L28-L31
               inputs.emacs-overlay.overlays.default
-              # inputs.fenix.overlays.default
             ];
           };
 
@@ -107,6 +120,10 @@
             inherit (inputs'.emacs.packages) emacs-unstable;
             inherit (inputs'.agenix.packages) agenix;
             flake-root = config.flake-root.package;
+            fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
+              version = inputs.fzf-git-sh.shortRev;
+              src = inputs.fzf-git-sh;
+            });
           };
 
           formatter = pkgs.nixpkgs-fmt;
@@ -156,6 +173,7 @@
         ];
       };
 
+      # flake-parts debug info integrated in various places (usually where `builtins.getFlake` is used)
       debug = true;
     };
 }

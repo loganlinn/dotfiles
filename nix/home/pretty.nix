@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   imports = [
     ./readline.nix
@@ -13,17 +13,6 @@
   };
 
   programs.bottom.enable = true;
-
-  programs.fzf = {
-    enable = true;
-  };
-
-  programs.lsd = {
-    enable = true;
-    enableAliases = true;
-  };
-
-  programs.tealdeer.enable = true; # tldr command
 
   programs.zoxide = {
     enable = true;

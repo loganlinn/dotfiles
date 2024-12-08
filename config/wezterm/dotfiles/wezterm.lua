@@ -2,10 +2,8 @@ local wezterm = require("wezterm")
 local start_time = wezterm.time.now()
 local act = require("dotfiles.action")
 local util = require("dotfiles.util")
-local is, safe, tbl = util.is, util.safe, util.tbl
-local log_info = wezterm.log_info
 
-local function victor_mono(font)
+local function victor_mono_font(font)
   font = font or {}
   font.family = "Victor Mono"
   font.harfbuzz_features = font.harfbuzz_features
@@ -16,18 +14,17 @@ local function victor_mono(font)
   return wezterm.font(font)
 end
 
----@module "wezterm.config"
----@type Config
 local config = wezterm.config_builder()
+
 -- config.debug_key_events = true
 config:set_strict_mode(true)
 config.automatically_reload_config = true
-config.font = victor_mono({ style = "Normal" })
+config.font = victor_mono_font({ style = "Normal" })
 config.font_size = 14
 config.cell_width = 1
 config.line_height = 1.1
 config.font_rules = {
-  { italic = true, font = victor_mono({ style = "Oblique" }) },
+  { italic = true, font = victor_mono_font({ style = "Oblique" }) },
 }
 -- config.default_cursor_style = "BlinkingBar"
 -- config.cursor_blink_rate = 666
@@ -62,18 +59,53 @@ config.switch_to_last_active_tab_when_closing_tab = true
 config.check_for_updates = false
 config.hide_tab_bar_if_only_one_tab = false
 config.native_macos_fullscreen_mode = false
+config.hyperlink_rules = {
+  {
+    format = "$1",
+    highlight = 1,
+    regex = "\\((\\w+://\\S+)\\)",
+  },
+  {
+    format = "$1",
+    highlight = 1,
+    regex = "\\[(\\w+://\\S+)\\]",
+  },
+  {
+    format = "$1",
+    highlight = 1,
+    regex = "<(\\w+://\\S+)>",
+  },
+  {
+    format = "$0",
+    highlight = 0,
+    regex = "\\b\\w+://\\S+[)/a-zA-Z0-9-]+",
+  },
+  {
+    format = "https://linear.app/gamma-app/issue/$1",
+    highlight = 1,
+    regex = "\\b([gG]-\\d+)\\b",
+  },
+  {
+    regex = [[error: could not format file ([^:]+):.+starting from line (\d+).+character (\d+).+ending on line (\d+).+character (\d+)]],
+    format = [[file://$1#$2.$3:$4.$5]],
+    highlight = 1,
+  },
+}
 config.quick_select_patterns = {
-  "[0-9a-f]{7,40}", -- SHA1 hashes, usually used for Git.
-  "[0-9a-f]{7,64}", -- SHA256 hashes, used often for getting hashes for Guix packaging.
+  "[\\h]{7,40}", -- SHA1 hashes, usually used for Git.
+  "[\\h]{7,64}", -- SHA256 hashes, used often for getting hashes for Guix packaging.
   "sha256-.{44,128}", -- SHA256 hashes in Base64, used often in getting hashes for Nix packaging.
   "sha512-.{44,128}", -- SHA512 hashes in Base64, used often in getting hashes for Nix packaging.
   "'nix [^']+.drv'", -- single quoted strings
+  [[(?:[-._~/a-zA-Z0-9])*[/ ](?:[-._~/a-zA-Z0-9]+)]], -- unix paths
+  "(?<= | | | | | | | | | | | | | |󰢬 | | | |└──|├──)\\s?(\\S+)",
 }
+for _, pattern in ipairs(wezterm.default_hyperlink_rules()) do
+  table.insert(config.quick_select_patterns, pattern.regex)
+end
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
--- config.leader = { mods = "SUPER", key = "Space" }
 config.leader = { mods = "CTRL|SHIFT", key = "Space" }
--- config.leader = { key = "F13" }
 config.leader.timeout_milliseconds = math.maxinteger
 --[[ Hyper, Super, Meta, Cancel, Backspace, Tab, Clear, Enter, Shift, Escape, LeftShift, RightShift, Control, LeftControl, RightControl, Alt, LeftAlt, RightAlt, Menu, LeftMenu, RightMenu, Pause, CapsLock, VoidSymbol, PageUp, PageDown, End, Home, LeftArrow, RightArrow, UpArrow, DownArrow, Select, Print, Execute, PrintScreen, Insert, Delete, Help, LeftWindows, RightWindows, Applications, Sleep, Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, Multiply, Add, Separator, Subtract, Decimal, Divide, NumLock, ScrollLock, BrowserBack, BrowserForward, BrowserRefresh, BrowserStop, BrowserSearch, BrowserFavorites, BrowserHome, VolumeMute, VolumeDown, VolumeUp, MediaNextTrack, MediaPrevTrack, MediaStop, MediaPlayPause, ApplicationLeftArrow, ApplicationRightArrow, ApplicationUpArrow, ApplicationDownArrow, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24. ]]
 local function add_keys(...)
@@ -83,144 +115,97 @@ local function add_keys(...)
     if arg then
       local mods, key, action = arg.mods or arg[1], arg.key or arg[2], arg.action or arg[3]
       if key and action then
-        wezterm.log_info("adding key", key, mods, action)
+        -- wezterm.log_info("adding key", key, mods, action)
         table.insert(config.keys, { key = key, mods = mods, action = action })
       end
     end
   end
 end
+
 add_keys(
   -- Tab
-  { key = "Tab", mods = "CTRL", action = act.ActivateTabRelative(1) },
-  { key = "Tab", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
-  { key = "{", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(-1) },
-  { key = "}", mods = "CTRL|SHIFT", action = act.ActivateTabRelative(1) },
-  { key = "<", mods = "CTRL|SHIFT", action = act.MoveTabRelative(-1) },
-  { key = ">", mods = "CTRL|SHIFT", action = act.MoveTabRelative(1) },
-  { key = "Enter", mods = "CTRL|SHIFT", action = act.SplitPaneAuto() },
-  { key = "Z", mods = "CTRL|SHIFT", action = act.TogglePaneZoomState },
+  { "CTRL", "Tab", act.ActivateTabRelative(1) },
+  { "CTRL|SHIFT", "Tab", act.ActivateTabRelative(-1) },
+  { "CTRL|SHIFT", "{", act.ActivateTabRelative(-1) },
+  { "CTRL|SHIFT", "}", act.ActivateTabRelative(1) },
+  { "CTRL|SHIFT", ",", act.MoveTabRelative(-1) },
+  { "CTRL|SHIFT", ".", act.MoveTabRelative(1) },
+  { "CTRL|SHIFT", "Enter", act.SplitPaneAuto() },
+  { "CTRL|SHIFT", "Z", act.TogglePaneZoomState },
+  { "CTRL|SHIFT", "`", act.TogglePaneZoomState },
   -- Pane
-  { key = "-", mods = "LEADER", action = act.SplitPane({ direction = "Down" }) },
-  { key = "-", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up" }) },
-  { key = "\\", mods = "LEADER", action = act.SplitPane({ direction = "Right" }) },
-  { key = "\\", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left" }) },
-  { key = "_", mods = "LEADER", action = act.SplitPane({ direction = "Down", top_level = true }) },
-  { key = "_", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Up", top_level = true }) },
-  {
-    key = "@",
-    mods = "CTRL|SHIFT",
-    action = wezterm.action_callback(function(window, pane)
-      local tab = window:active_tab()
-      wezterm.log_info("pane info", tab:panes_with_info())
-      -- local panes = tab:panes()
-      -- local sidepane = pane:split({
-      --   direction = "Right",
-      --   size = 0.3,
-      --   top_level = true,
-      -- })
-      -- sidepane:activate()
-    end),
-  },
-  { key = "b", mods = "CTRL|SHIFT", action = act.RotatePanes("CounterClockwise") },
-  { key = "h", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Left") },
-  { key = "j", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Down") },
-  { key = "k", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Up") },
-  { key = "l", mods = "CTRL|SHIFT", action = act.ActivatePaneDirection("Right") },
-  { key = "T", mods = "CTRL|SHIFT", action = act.MovePaneToNewTab },
-  { key = "M", mods = "CTRL|SHIFT", action = act.MovePaneToNewTab },
-  { key = "LeftArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Left", 5 }) },
-  { key = "DownArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Down", 5 }) },
-  { key = "UpArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Up", 5 }) },
-  { key = "RightArrow", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Right", 5 }) },
-  { key = ">", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Right", 25 }) },
-  { key = "<", mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ "Left", 25 }) },
-  { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
-  { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = true }) },
-  { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = true }) },
-  { key = "|", mods = "LEADER", action = act.SplitPane({ direction = "Right", top_level = true }) },
-  { key = "|", mods = "LEADER|CTRL", action = act.SplitPane({ direction = "Left", top_level = true }) },
-  {
-    key = "T",
-    mods = "LEADER|SHIFT",
-    action = act.PaneSelect({ mode = "MoveToNewTab", show_pane_ids = true }),
-  },
-  {
-    key = "W",
-    mods = "LEADER|SHIFT",
-    action = act.PaneSelect({ mode = "MoveToNewWindow", show_pane_ids = true }),
-  },
-  {
-    key = "M",
-    mods = "LEADER|SHIFT",
-    action = act.PaneSelect({ mode = "SwapWithActive", show_pane_ids = true }),
-  },
-  {
-    key = "R",
-    mods = "LEADER|SHIFT",
-    action = act.PaneSelect({ mode = "SwapWithActiveKeepFocus", show_pane_ids = true }),
-  },
+  { "CTRL|SHIFT", "b", act.RotatePanes("CounterClockwise") },
+  { "CTRL|SHIFT", "h", act.ActivatePaneDirection("Left") },
+  { "CTRL|SHIFT", "j", act.ActivatePaneDirection("Down") },
+  { "CTRL|SHIFT", "k", act.ActivatePaneDirection("Up") },
+  { "CTRL|SHIFT", "l", act.ActivatePaneDirection("Right") },
+  { "CTRL|SHIFT", "T", act.SpawnTab("CurrentPaneDomain") },
+  { "CTRL|SHIFT", "LeftArrow", act.AdjustPaneSize({ "Left", 5 }) },
+  { "CTRL|SHIFT", "DownArrow", act.AdjustPaneSize({ "Down", 5 }) },
+  { "CTRL|SHIFT", "UpArrow", act.AdjustPaneSize({ "Up", 5 }) },
+  { "CTRL|SHIFT", "RightArrow", act.AdjustPaneSize({ "Right", 5 }) },
+  { "CTRL|SHIFT", ">", act.AdjustPaneSize({ "Right", 25 }) },
+  { "CTRL|SHIFT", "<", act.AdjustPaneSize({ "Left", 25 }) },
+  { "CTRL|SHIFT", "t", act.SpawnTab("CurrentPaneDomain") },
+  { "CTRL|SHIFT", "w", act.CloseCurrentPane({ confirm = true }) },
+  { "SUPER", "w", act.CloseCurrentPane({ confirm = true }) },
   -- Window
-  { key = "n", mods = "SUPER|SHIFT", action = act.SpawnWindow },
-
+  { "SUPER|SHIFT", "n", act.SpawnWindow },
   -- Scroll
-  { key = "Home", mods = "SUPER", action = act.ScrollToTop },
-  { key = "PageDown", mods = "SUPER", action = act.ScrollByPage(1) },
-  { key = "PageUp", mods = "SUPER", action = act.ScrollByPage(-1) },
-  { key = "End", mods = "SUPER", action = act.ScrollToBottom },
-  { key = "UpArrow", mods = "SUPER", action = act.ScrollToPrompt(-1) },
-  { key = "DownArrow", mods = "SUPER", action = act.ScrollToPrompt(1) },
-
+  { "SUPER", "Home", act.ScrollToTop },
+  { "SUPER", "PageDown", act.ScrollByPage(1) },
+  { "SUPER", "PageUp", act.ScrollByPage(-1) },
+  { "SUPER", "End", act.ScrollToBottom },
+  { "SUPER", "UpArrow", act.ScrollToPrompt(-1) },
+  { "SUPER", "DownArrow", act.ScrollToPrompt(1) },
   -- Clipboard
-  { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
-  { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
-  { key = "F", mods = "CTRL|SHIFT", action = act.QuickSelect },
-  {
-    key = "e",
-    mods = "CTRL|SHIFT",
-    action = wezterm.action({
-      QuickSelectArgs = {
-        patterns = {
-          "[a-zA-Z]+://\\S+",
-        },
-        action = wezterm.action_callback(function(window, pane)
-          local url = window:get_selection_text_for_pane(pane)
-          window:perform_action(wezterm.action.ClearSelection, pane)
-          if url then
-            wezterm.open_with(url)
-          end
-        end),
-      },
-    }),
-  },
+  { "CTRL|SHIFT", "c", act.CopyTo("Clipboard") },
+  { "CTRL|SHIFT", "v", act.PasteFrom("Clipboard") },
+  { "CTRL|SHIFT", "F", act.QuickSelect },
+  { "CTRL|SHIFT", "e", act.QuickSelectUrl }, -- https://loganlinn.com
   -- Workspace
-  { key = "n", mods = "SUPER", action = act.SwitchToNamedWorkspace },
-  { key = "[", mods = "SUPER|SHIFT", action = act.SwitchWorkspaceRelative(-1) },
-  { key = "]", mods = "SUPER|SHIFT", action = act.SwitchWorkspaceRelative(1) },
-  { key = "Tab", mods = "LEADER", action = act.ActivateKeyTable({ name = "workspace" }) },
-  { key = ".", mods = "LEADER", action = act.RenameWorkspace },
+  { "SUPER", "n", act.SwitchToNamedWorkspace },
+  -- Leader
+  { "LEADER", "|", act.SplitPane({ direction = "Right", top_level = true }) },
+  { "LEADER|CTRL", "|", act.SplitPane({ direction = "Left", top_level = true }) },
+  { "LEADER", ".", act.RenameWorkspace },
+  { "LEADER", "-", act.SplitPane({ direction = "Down" }) },
+  { "LEADER|CTRL", "-", act.SplitPane({ direction = "Up" }) },
+  { "LEADER", "\\", act.SplitPane({ direction = "Right" }) },
+  { "LEADER|CTRL", "\\", act.SplitPane({ direction = "Left" }) },
+  { "LEADER", "_", act.SplitPane({ direction = "Down", top_level = true }) },
+  { "LEADER|CTRL", "_", act.SplitPane({ direction = "Up", top_level = true }) },
+  { "LEADER", "T", act.MovePaneToNewTab({ activate = true }) },
+  { "LEADER|SHIFT", "W", act.PaneSelect({ mode = "MoveToNewWindow" }) },
+  { "LEADER|SHIFT", "M", act.PaneSelect({ mode = "SwapWithActive" }) },
+  { "LEADER|SHIFT", "R", act.PaneSelect({ mode = "SwapWithActiveKeepFocus" }) },
+  { "LEADER|SHIFT", "Tab", act.SwitchWorkspaceRelative(-1) },
+  { "LEADER", "Tab", act.SwitchWorkspaceRelative(1) },
+  { "LEADER", "Space", act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
+  { "LEADER", "h", act.ActivatePaneDirection("Left") },
+  { "LEADER", "j", act.ActivatePaneDirection("Down") },
+  { "LEADER", "k", act.ActivatePaneDirection("Up") },
+  { "LEADER", "l", act.ActivatePaneDirection("Right") },
+  { "LEADER", "v", act.ActivateCopyMode },
+  -- { "LEADER", "Tab", act.ActivateKeyTable({ name = "workspace" }) },
+  { "LEADER", "i", act.ActivateKeyTable({ name = "insert" }) },
+  { "LEADER", "t", act.ActivateKeyTable({ name = "toggle" }) },
+  { "LEADER", "w", act.ActivateKeyTable({ name = "window" }) },
+  { "LEADER", "g", act.ActivateKeyTable({ name = "git" }) },
   -- Other
-  { key = "F1", mods = "SUPER", action = act.ShowDebugOverlay },
-  { key = "F2", mods = "SUPER", action = act.RenameTab },
-  { key = "F5", mods = "SUPER", action = act.ReloadConfiguration },
-  { key = "F6", mods = "SUPER", action = act.DumpWindow },
-  { key = "F7", mods = "SUPER", action = act.ToggleDebugKeyEvents },
-  { key = "F9", mods = "SUPER", action = act.ShowTabNavigator },
-  { key = "F10", mods = "SUPER", action = act.InputSelectorDemo },
-  { key = "f", mods = "SUPER", action = act.Search({ CaseSensitiveString = "" }) },
-  { key = "0", mods = "SUPER", action = wezterm.action.ResetFontSize },
-  { key = "-", mods = "SUPER", action = wezterm.action.DecreaseFontSize },
-  { key = "=", mods = "SUPER", action = wezterm.action.IncreaseFontSize },
-  { key = "p", mods = "CTRL|SHIFT", action = act.ActivateCommandPalette },
-  { key = ";", mods = "SUPER", action = act.ShowLauncher },
-  { key = "Space", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
-  { key = "h", mods = "LEADER", action = act.ActivatePaneDirection("Left") },
-  { key = "i", mods = "LEADER", action = act.ActivateKeyTable({ name = "insert" }) },
-  { key = "j", mods = "LEADER", action = act.ActivatePaneDirection("Down") },
-  { key = "k", mods = "LEADER", action = act.ActivatePaneDirection("Up") },
-  { key = "l", mods = "LEADER", action = act.ActivatePaneDirection("Right") },
-  { key = "t", mods = "LEADER", action = act.ActivateKeyTable({ name = "toggle" }) },
-  { key = "v", mods = "LEADER", action = act.ActivateCopyMode },
-  { key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "window" }) }
+  { "SUPER", "F1", act.ShowDebugOverlay },
+  { "SUPER", "F2", act.RenameTab },
+  { "SUPER", "F5", act.ReloadConfiguration },
+  { "SUPER", "F6", act.DumpWindow },
+  { "SUPER", "F7", act.ToggleDebugKeyEvents },
+  { "SUPER", "F9", act.ShowTabNavigator },
+  { "SUPER", "F10", act.InputSelectorDemo },
+  { "SUPER", "f", act.Search({ CaseSensitiveString = "" }) },
+  { "SUPER", "0", wezterm.action.ResetFontSize },
+  { "SUPER", "-", wezterm.action.DecreaseFontSize },
+  { "SUPER", "=", wezterm.action.IncreaseFontSize },
+  { "CTRL|SHIFT", "p", act.ActivateCommandPalette },
+  { "SUPER", ";", act.ShowLauncher }
 )
 for i = 1, 9 do
   table.insert(config.keys, {
@@ -238,6 +223,10 @@ config.key_tables["insert"] = {
   { key = "p", action = act.PasteFrom("Clipboard") },
   { key = "P", action = act.PasteFrom("PrimarySelection") },
 }
+--
+-- config.key_tables["git"] = {
+--   { key = "a", mods = "CTRL", action = act.SpawnCommandInNewWindow({ args = { "gh", "pr", "checks", "--watch" } }) },
+-- }
 
 -- require("dotfiles.util.keymap")
 --   :create()
@@ -274,17 +263,42 @@ config.key_tables["insert"] = {
 --   })
 -- )
 
-require("dotfiles.balance").apply_to_config(config)
+-- Debug events
+for _, event in ipairs({
+  "mux-startup",
+  "gui-startup",
+  "gui-attached",
+  "open-uri",
+}) do
+  wezterm.on(event, function(...)
+    wezterm.log_info("EVENT", event, "args=", { ... })
+  end)
+end
+
 require("dotfiles.tabline").apply_to_config(config)
-require("dotfiles.hyperlink").apply_to_config(config)
+require("dotfiles.balance").apply_to_config(config)
 
 wezterm.on("open-uri", function(window, pane, uri)
-  wezterm.log_info("open-uri", uri)
   local url = wezterm.url.parse(uri)
-  -- TODO
-  wezterm.open_with(uri)
+  wezterm.log_info("parsed url", url)
+
+  if url.scheme == "file" then
+    -- window:perform_action(
+    --   act.SpawnCommandInNewTab({
+    --     cwd = util.dirname(url.file_path),
+    --     args = { "zsh", "-c", 'yazi "$1"', "zsh", url.file_path },
+    --     -- args = { "yazi", url.file_path },
+    --   }),
+    --   pane
+    -- )
+
+    wezterm.open_with(uri, "WezTerm")
+    return false
+  else
+    wezterm.open_with(uri)
+  end
 end)
 
-log_info("DONE", "elapsed=" .. util.time_diff_ms(wezterm.time.now(), start_time) .. "ms")
+wezterm.log_info("FINISH", "wezterm.lua", "elapsed: " .. util.time_diff_ms(wezterm.time.now(), start_time) .. " ms")
 
 return config

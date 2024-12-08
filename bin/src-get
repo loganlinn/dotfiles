@@ -11,6 +11,9 @@ src-repo-url() {
 		*://*) # i.e. https://github.com/loganlinn/dotfiles
 			printf "%s\n" "$1"
 			;;
+    *@*:*) # i.e. git@github.com:loganlinn/dotfiles
+      printf "%s\n" "$1"
+      ;;
 		*.*/*) # i.e. github.com/loganlinn/dotfiles
 			echo "https://$1"
 			;;

@@ -84,8 +84,20 @@ with lib;
         })
       ];
 
-    plugins = import ./plugins.nix { inherit config pkgs lib; };
-
+    plugins = [
+      {
+        name = "forgit";
+        src = inputs.forgit;
+      }
+      {
+        name = "fzf-tab";
+        src = inputs.fzf-tab;
+      }
+      {
+        name = "colored-man-pages";
+        src = ./plugins/colored-man-pages;
+      }
+    ];
     envExtra = ''
       [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
     '';
@@ -98,11 +110,6 @@ with lib;
 
     initExtraBeforeCompInit = ''
       ${readFile ./line-editor.zsh}
-
-      ${optionalString config.programs.fzf.enable ''
-        source ${pkgs.fzf-git-sh}/share/fzf-git-sh/fzf-git.sh
-      ''}
-
       ${readFile ./initExtraBeforeCompInit.zsh}
     '';
 
