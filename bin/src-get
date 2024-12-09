@@ -1,46 +1,92 @@
 #!/usr/bin/env bash
 
+# declare -gx SRC_GIT_HOME
+# declare -gx SRC_GIT_DEFAULT_OPTS
+# declare -gx SRC_GIT_CLONE_OPTS=${SRC_GIT_CLONE_OPTS:-'--depth=1 --progress'}
+
 src-home() {
-	export SRC_HOME
-	printf '%s\n' "${SRC_HOME:=$HOME/src}"
+  export SRC_HOME
+  printf '%s' "${SRC_HOME:=$HOME/src}"
 }
 
-# Normalize input into URL
-src-repo-url() {
-	case $1 in
-		*://*) # i.e. https://github.com/loganlinn/dotfiles
-			printf "%s\n" "$1"
-			;;
-    *@*:*) # i.e. git@github.com:loganlinn/dotfiles
-      printf "%s\n" "$1"
+# Normalizes argument into git valid repository (URL)
+src-repo() {
+  while (($#)); do
+    case $1 in
+    -h | --help)
+      echo "usage: src-repo arg"
+      return
       ;;
-		*.*/*) # i.e. github.com/loganlinn/dotfiles
-			echo "https://$1"
-			;;
-		*/*) # i.e. loganlinn/dotfiles
-			echo "https://github.com/$1"
-			;;
-		*)
-			(
-				set -eo pipefail
-				gh repo list "$@" |
-					fzf -m --layout=reverse --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all |
-					cut -f1 |
-					sed -e 's|^|https://github.com/|' -e 's|$|.git|'
-			)
-			;;
-	esac
+    -*)
+      echo >&2 "src-repo: invalid option '$1'"
+      return 1
+      ;;
+    *)
+      break
+      ;;
+    esac
+  done
+
+  case $1 in
+  *://*) # i.e. https://github.com/loganlinn/dotfiles
+    printf "%s\n" "$1"
+    ;;
+  *@*:*) # i.e. git@github.com:loganlinn/dotfiles
+    printf "%s\n" "$1"
+    ;;
+  *.*/*) # i.e. github.com/loganlinn/dotfiles
+    echo "https://$1"
+    ;;
+  */*) # i.e. loganlinn/dotfiles
+    echo "https://github.com/$1"
+    ;;
+  *)
+    (
+      set -eo pipefail
+      gh repo list "$@" |
+        fzf -m --layout=reverse --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all |
+        cut -f1 |
+        sed -e 's|^|https://github.com/|' -e 's|$|.git|'
+    )
+    ;;
+  esac
 }
 
-src-repo-path() {
-	for url; do
-		local path
+src-dir() {
+  while (($#)); do
+    case $1 in
+    -h | --help)
+      echo "usage: src-dir [-h|--help] [--] arg..."
+      return
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo >&2 "src-dir: invalid option '$1'"
+      return 1
+      ;;
+    *)
+      break
+      ;;
+    esac
+  done
 
-		path="${url#*://}"   # strip prefix
-		path="${path%%.git}" # strip suffix
-
-		printf "%s/%s\n" "$(src-home)" "$path"
-	done
+  for arg; do
+    local path
+    case "$arg" in
+    *@*:*)
+      path="${arg#*@}"
+      path=${path/:/\/}
+      ;;
+    *)
+      path="${arg#*://}"
+      ;;
+    esac
+    path="${path%%.git}"
+    printf "%s" "$(src-home)/$path"
+  done
 }
 
 #
@@ -48,67 +94,70 @@ src-repo-path() {
 #        src-get <owner>/<repo>
 #
 src-get() {
-	local debug_flag=false
+  case $1 in
+  -h | --help | help)
+    echo "Usage: src-get <repository>"
+    echo "       src-get <owner>/<repo>"
+    return 0
+    ;;
+  --debug)
+    shift
+    set -x
+    ;;
+  --)
+    shift
+    ;;
+  -*)
+    echo "src-get: unknown '$1' option" >&2
+    echo "Try 'src-get --help' for more information." >&2
+    return 1
+    ;;
+  esac
 
-	case $1 in
-		-h | --help | help)
-			echo "Usage: src-get <repository>"
-			echo "       src-get <owner>/<repo>"
-			return 0
-			;;
-		--debug)
-			shift
-			debug_flag=true
-			;;
-		--)
-			shift
-			;;
-		-*)
-			echo "src-get: unknown '$1' option" >&2
-			echo "Try 'src-get --help' for more information." >&2
-			return 1
-			;;
-	esac
+  if [[ -z $1 ]]; then
+    echo "src-get: missing operand" >&2
+    echo "Try 'src-get --help' for more information." >&2
+    return 1
+  fi
 
-	if [[ -z $1 ]]; then
-		echo "src-get: missing operand" >&2
-		echo "Try 'src-get --help' for more information." >&2
-		return 1
-	fi
+  for arg; do
+    for repo in $(src-repo "$arg"); do
+      local dir
+      dir=$(src-dir "$repo")
 
-	local src_repo
-	local src_path
+      if [[ ! -d $dir ]]; then
+        local gitcmd
+        gitcmd=$(printf 'git clone --depth=1 --progress -- %q %q' "$repo" "$dir")
+        if $gitcmd; then
+          echo >&2 "src-get: ✅ $gitcmd"
+        else
+          return $?
+        fi
+      fi
 
-	! $debug_flag || [[ -z ${SRC_GET_DEBUG-} ]] || set -x
+      cd -- "$dir"
+      echo >&2 "src-get: ✅ cd -- '$dir'"
 
-	for repo; do
-		for src_repo in $(src-repo-url "$repo"); do
-			src_path=$(src-repo-path "$src_repo")
-
-			if [[ ! -d $src_path ]]; then
-				git clone --depth=1 --progress -- "$src_repo" "$src_path" &&
-					cd "$src_path" ||
-					return $?
-			else
-				cd -- "$src_path"
-			fi
-		done
-	done
+      if zoxide add "$dir" >/dev/null 2>&1; then
+        echo >&2 "src-get: ✅ zoxide add '$dir'"
+      fi
+    done
+  done
 }
 
 src-for-each-exec() {
-	local shell
+  local shell
 
-	# run each command in subshell, first determine shell.
-	# since $SHELL is not always reliable, we determine from PID.
-	shell=$(ps -p $$ -o args= | sed -e 's/^.*-//' -e 's/ .*$//')
-	# womp, womp
-	if ! hash "$shell" >/dev/null 2>&1; then
-		shell=${SHELL:-bash}
-	fi
+  # run each command in subshell, first determine shell.
+  # since $SHELL is not always reliable, we determine from PID.
+  shell=$(ps -p $$ -o args= | sed -e 's/^.*-//' -e 's/ .*$//')
+  # womp, womp
+  if ! hash "$shell" >/dev/null 2>&1; then
+    shell=${SHELL:-bash}
+  fi
 
-	find "$(src-home)" -type d -name '.git' -prune \
-		-execdir "$shell" -c "$*" _ {} \;
+  find "$(src-home)" -type d -name '.git' -prune \
+    -execdir "$shell" -c "$*" _ {} \;
 }
 
 # Allow this to be executed directly
