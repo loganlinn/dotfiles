@@ -7,33 +7,47 @@
 let
   inherit (config.lib.nixvim) mkRaw;
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  sqllite_clib_path = "${pkgs.sqlite.out}/lib/libsqlite3.${if isDarwin then "dylib" else "so"}";
+
   mkRaw' =
     lua:
-    mkRaw (
-      lib.trim ''
-        function()
-          ${lib.trim lua}
-        end
-      ''
-    );
-  mkKeymap = mode: key: options: action: {
+    let
+      thunk = # lua
+        ''
+          function()
+            ${lib.trim lua}
+          end
+        '';
+    in
+    mkRaw (lib.trim thunk);
+
+  toKeymap = mode: key: options: action: {
     mode = if lib.isString mode then lib.stringToCharacters mode else mode;
     key = key;
-    action = action;
-    options = if lib.isString options then { desc = options; } else options;
+    action = action; # TODO can check if __raw, then wrap implicit `function() ... end` to cut down on noise
+    options =
+      if lib.isString options then
+        {
+          desc = options;
+          # silent = true;
+          # noremap = true;
+        }
+      else
+        options;
   };
-  mkKeymap' =
+  toKeymap' =
     mode: key: options: action-lua:
-    mkKeymap mode key options (mkRaw' action-lua);
+    toKeymap mode key options (mkRaw' action-lua);
 in
 {
   programs.nixvim = {
+
+    # used by smart-open
+    globals.sqlite_clib_path = "${pkgs.sqlite.out}/lib/libsqlite3.${
+      if isDarwin then "dylib" else "so"
+    }";
+
     extraPlugins = [
-      {
-        plugin = pkgs.vimPlugins.smart-open-nvim;
-        config = "let g:sqlite_clib_path = '${sqllite_clib_path}'";
-      }
+      pkgs.vimPlugins.smart-open-nvim
       pkgs.vimPlugins.telescope-zoxide
       pkgs.vimPlugins.telescope-github-nvim
     ];
@@ -54,7 +68,9 @@ in
             "<C-a>" = "which_key";
             "<C-h>" = "which_key";
             "<C-g>" = "close";
-            "<C-u>" = mkRaw "false"; # clear prompt
+            "<C-u>" = {
+              __raw = "false";
+            }; # clear prompt
             "<C-j>" = "move_selection_next";
             "<C-k>" = "move_selection_previous";
           };
@@ -66,6 +82,27 @@ in
         settings = {
           cwd_to_path = true;
           git_status = true;
+          grouped = true;
+          select_buffer = true;
+          collapse_dirs = true;
+          use_fd = true;
+          hidden.file_browser = true;
+          hidden.folder_browser = true;
+          path = "%:p:h";
+          prompt_path = true;
+          mappings = {
+            i = {
+              # "<Tab>" = ""; # TODO make this key go into directory :|
+              "<D-bs>" = "remove";
+              "<F2>" = "rename";
+              "<F3>" = "move";
+            };
+            n = {
+              "<D-bs>" = "remove";
+              "<F3>" = "move";
+              "<F2>" = "rename";
+            };
+          };
         };
       };
       extensions.frecency.enable = true;
@@ -87,7 +124,6 @@ in
       extensions.undo.enable = true;
       extensions.ui-select.enable = true;
       # extensions.manix.enable = true;
-      # extensions.ui-select.settings.codeactions = false;
       keymaps = {
         "<leader>:" = "command_history";
         "<leader>'" = "resume";
@@ -95,7 +131,7 @@ in
         "<leader><" = "buffers"; # doom: all buffers
         "<leader>bs" = "current_buffer_fuzzy_find";
         "<leader>bt" = "current_buffer_tags";
-        "<leader>ff" = "find_files";
+        "<leader>ff" = "file_browser";
         "<leader>fg" = "diagnostics";
         "<leader>cd" = "lsp_definitions";
         "<leader>ct" = "lsp_type_definitions";
@@ -168,114 +204,82 @@ in
           };
         };
       };
-      luaConfig.post = ''
-        require('telescope').load_extension('gh')
-      '';
+      luaConfig.post = # lua
+        ''
+          require('telescope').load_extension('gh')
+        '';
     };
 
     keymaps = [
-      (mkKeymap' "nv" "<leader><space>" "Find files" ''
-        require("telescope").extensions.smart_open.smart_open()
-      '')
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>/";
-        action = mkRaw' ''require('telescope').extensions.live_grep_args.live_grep_args()'';
-        options.desc = "Grep Files";
-      }
-      {
-        mode = [ "n" ];
-        key = "<leader>sb";
-        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer()'';
-        options.desc = "Grep word at cursor";
-      }
-      {
-        mode = [ "v" ];
-        key = "<leader>sb";
-        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer()'';
-        options.desc = "Grep visual selection";
-      }
-      {
-        mode = [ "n" ];
-        key = "<leader>*";
-        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_word_under_cursor()'';
-        options.desc = "Grep word at cursor";
-      }
-      {
-        mode = [ "v" ];
-        key = "<leader>*";
-        action = mkRaw' ''require("telescope-live-grep-args.shortcuts").grep_visual_selection()'';
-        options.desc = "Grep visual selection";
-      }
-      {
-        mode = [ "n" ];
-        key = "<leader>cf";
-        action = "<cmd>lua vim.lsp.buf.formatting()<CR>";
-        options.desc = "Format buffer";
-      }
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>sd";
-        action = mkRaw' ''
+      (toKeymap "nv" "<leader><space>" "Find files" {
+        __raw = ''function() require("telescope").extensions.smart_open.smart_open{ filename_first = false } end'';
+      })
+      (toKeymap "nv" "<leader>fF" "Find from directory" {
+        # __raw = ''require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") }'';
+        __raw = ''function() require("telescope").extensions.smart_open.smart_open{ cwd_only = true, filename_first = false } end'';
+      })
+      (toKeymap "nv" "<leader>/" "Grep files" {
+        __raw = ''function() require('telescope').extensions.live_grep_args.live_grep_args() end'';
+      })
+      (toKeymap "n" "<leader>sb" "Grep word in buffer" {
+        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer() end'';
+      })
+      (toKeymap "v" "<leader>sb" "Grep selection in buffer" {
+        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer() end'';
+      })
+      (toKeymap "n" "<leader>*" "Grep word under cursor" {
+        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor() end'';
+      })
+      (toKeymap "v" "<leader>*" "Grep selection in buffer" {
+        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection() end'';
+      })
+      (toKeymap "nv" "<leader>cf" "Format buffer" {
+        __raw = ''
+          function()
+            vim.lsp.buf.format({
+              async = true,
+              filter = function(client) return client.name ~= "ts_ls" end,
+            })
+          end'';
+      })
+      (toKeymap "v" "<leader>ce" "LSP format expr" { __raw = ''function() vim.lsp.formatexpr() end''; })
+      (toKeymap' "nv" "<leader>sd" "Search current directory" # lua
+        ''
           require('telescope').extensions.live_grep_args.live_grep_args({
             search_dirs = { vim.fn.expand('%:p:h') }
           })
-        '';
-        options.desc = "Search current directory";
-      }
-
-      (mkKeymap' "n" "<leader>sd" "Grep current directory" ''
-        require('telescope').extensions.live_grep_args.live_grep_args({
-          search_dirs = { vim.fn.expand('%:p:h') }
-        })
-      '')
-      (mkKeymap' "v" "<leader>sd" "Grep current directory" ''
-        require("telescope-live-grep-args.shortcuts").grep_visual_selection({
-          search_dirs = { vim.fn.expand('%:p:h') }
-        })
-      '')
-
+        ''
+      )
+      (toKeymap' "n" "<leader>sd" "Grep current directory" # lua
+        ''
+          require('telescope').extensions.live_grep_args.live_grep_args({
+            search_dirs = { vim.fn.expand('%:p:h') }
+          })
+        ''
+      )
+      (toKeymap' "v" "<leader>sd" "Grep current directory" # lua
+        ''
+          require("telescope-live-grep-args.shortcuts").grep_visual_selection({
+            search_dirs = { vim.fn.expand('%:p:h') }
+          })
+        ''
+      )
       # TODO use Telescope file_browser to select directory for seearch context
       # https://nix-community.github.io/nixvim/search/?query=telescope.extensions.file&option_scope=0&option=plugins.telescope.extensions.file-browser.settings.browse_folders
-      (mkKeymap' "nv" "<leader>sD" "Search other dir" ''
-        vim.ui.input({
-          prompt = 'Directory: ',
-          default = vim.fn.expand('%:p:h')
-        }, function(search_dir)
-          if #(search_dir or "") > 0 then
-            require('telescope').extensions.live_grep_args.live_grep_args({
-              search_dirs = { search_dir }
-            })
-          end
-        end)
-      '')
-
-      # prefix: <leader>f
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>ff";
-        action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<CR>";
-        options.desc = "Find file";
-      }
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>fF";
-        action = mkRaw' ''require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") }'';
-        options.desc = "Find current directory";
-      }
-
+      (toKeymap' "nv" "<leader>sD" "Search other dir" # lua
+        ''
+          vim.ui.input({
+            prompt = 'Directory: ',
+            default = vim.fn.expand('%:p:h')
+          }, function(search_dir)
+            if #(search_dir or "") > 0 then
+              require('telescope').extensions.live_grep_args.live_grep_args({
+                search_dirs = { search_dir }
+              })
+            end
+          end)
+        ''
+      )
       # prefix: <leader>h
       {
         mode = "n";

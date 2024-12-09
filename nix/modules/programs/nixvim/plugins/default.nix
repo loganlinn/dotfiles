@@ -2,14 +2,16 @@
 {
   imports = [
     ./bufferline.nix
+    ./cmp.nix
     ./comment.nix
     ./conform.nix
-    ./harpoon.nix
     ./git
+    ./harpoon.nix
     ./lazy.nix
     ./lsp
     ./lualine.nix
     ./mini.nix
+    ./notify.nix
     ./nvim-tree.nix
     ./oil.nix
     ./project.nix

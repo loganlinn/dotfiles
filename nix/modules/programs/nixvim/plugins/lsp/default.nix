@@ -37,6 +37,7 @@
         inlayHints = true;
         servers = {
           awk_ls.enable = false;
+          eslint.enable = true;
           fennel_ls.enable = true;
           gopls.enable = true;
           html.enable = true;

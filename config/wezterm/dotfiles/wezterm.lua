@@ -61,6 +61,7 @@ config.command_palette_font_size = config.font_size
 config.command_palette_font_size = config.font_size
 config.command_palette_rows = 10
 config.exit_behavior = "CloseOnCleanExit" -- Use 'Hold' to not close
+config.exit_behavior_messaging = "Terse"
 config.quit_when_all_windows_are_closed = true
 config.switch_to_last_active_tab_when_closing_tab = true
 config.check_for_updates = false
@@ -112,6 +113,7 @@ for _, pattern in ipairs(wezterm.default_hyperlink_rules()) do
 end
 config.disable_default_key_bindings = true
 config.enable_kitty_keyboard = true
+config.enable_csi_u_key_encoding = false
 config.leader = { mods = "CTRL|SHIFT", key = "Space" }
 config.leader.timeout_milliseconds = math.maxinteger
 --[[ Hyper, Super, Meta, Cancel, Backspace, Tab, Clear, Enter, Shift, Escape, LeftShift, RightShift, Control, LeftControl, RightControl, Alt, LeftAlt, RightAlt, Menu, LeftMenu, RightMenu, Pause, CapsLock, VoidSymbol, PageUp, PageDown, End, Home, LeftArrow, RightArrow, UpArrow, DownArrow, Select, Print, Execute, PrintScreen, Insert, Delete, Help, LeftWindows, RightWindows, Applications, Sleep, Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, Multiply, Add, Separator, Subtract, Decimal, Divide, NumLock, ScrollLock, BrowserBack, BrowserForward, BrowserRefresh, BrowserStop, BrowserSearch, BrowserFavorites, BrowserHome, VolumeMute, VolumeDown, VolumeUp, MediaNextTrack, MediaPrevTrack, MediaStop, MediaPlayPause, ApplicationLeftArrow, ApplicationRightArrow, ApplicationUpArrow, ApplicationDownArrow, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24. ]]
@@ -160,6 +162,8 @@ add_keys(
   { "SUPER|SHIFT", "n", act.SpawnWindow },
   { "CTRL|SHIFT", "9", act.SwitchWorkspaceRelative(-1) },
   { "CTRL|SHIFT", "0", act.SwitchWorkspaceRelative(1) },
+  { "SUPER|CTRL|SHIFT", "]", wezterm.action.ToggleAlwaysOnTop },
+  { "SUPER|CTRL|SHIFT", "[", wezterm.action.ToggleAlwaysOnBottom },
   -- Scroll
   { "SUPER", "Home", act.ScrollToTop },
   { "SUPER", "PageDown", act.ScrollByPage(1) },
@@ -173,7 +177,8 @@ add_keys(
   { "CTRL|SHIFT", "F", act.QuickSelect },
   { "CTRL|SHIFT", "e", act.QuickSelectUrl }, -- https://loganlinn.com
   -- Workspace
-  { "SUPER", "n", act.SwitchToNamedWorkspace },
+  { "SUPER", "o", act.SwitchToNamedWorkspace },
+  { "SUPER", "n", act.SpawnWindow },
   -- Leader
   { "LEADER", "|", act.SplitPane({ direction = "Right", top_level = true }) },
   { "LEADER|CTRL", "|", act.SplitPane({ direction = "Left", top_level = true }) },
@@ -202,6 +207,7 @@ add_keys(
   { "LEADER", "w", act.ActivateKeyTable({ name = "window" }) },
   { "LEADER", "g", act.ActivateKeyTable({ name = "git" }) },
   -- Other
+  { "SUPER|SHIFT", "q", act.QuitApplication },
   { "SUPER", "F1", act.ShowDebugOverlay },
   { "SUPER", "F2", act.RenameTab },
   { "SUPER", "F5", act.ReloadConfiguration },
