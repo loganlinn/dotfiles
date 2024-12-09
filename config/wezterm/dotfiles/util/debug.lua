@@ -16,6 +16,11 @@ function M.get_mux_window(arg)
   end
 end
 
+---@return MuxWindow
+M.mux_window = function(arg)
+  return M.get_mux_window(arg) or error("failed to get MuxWindow from " .. tostring(arg))
+end
+
 ---@param arg any
 ---@return Window|nil
 function M.get_gui_window(arg)
@@ -28,6 +33,11 @@ function M.get_gui_window(arg)
   if arg.window then
     return M.get_gui_window(arg:window())
   end
+end
+
+---@return Window
+M.gui_window = function(arg)
+  return M.get_gui_window(arg) or error("failed to get GuiWindow from " .. tostring(arg))
 end
 
 ---@param window Window
@@ -82,30 +92,73 @@ M.dump_process = function(proc_info)
   }
 end
 
----@param panel_info PaneInformation
-M.dump_pane = function(panel_info)
-  ---@type MuxPane
-  local pane = panel_info.pane or error("no pane")
+---@class PaneInformation
+---@field index number the topological pane index
+---@field is_active boolean a boolean indicating whether this is the active pane within the tab
+---@field is_zoomed boolean a boolean indicating whether this pane is zoomed
+---@field left number The offset from the top left corner of the containing tab to the top left corner of this pane, in cells.
+---@field top number The offset from the top left corner of the containing tab to the top left corner of this pane, in cells.
+---@field width number The width of this pane in cells
+---@field height number The height of this pane in cells
+---@field pixel_width number The width of this pane in pixels
+---@field pixel_height number The height of this pane in pixels
+---@field pane Pane
+
+-- Resolve PaneInformation table via its tab.
+---@param pane Pane
+---@return PaneInformation
+M.resolve_pane_info = function(pane)
+  for _, pane_info in pairs(pane:tab():panes_with_info()) do
+    if pane_info.pane:pane_id() == pane:pane_id() then
+      return pane_info
+    end
+  end
+end
+
+local PANE_INFO_FIELDS =
+  { "index", "is_active", "is_zoomed", "left", "top", "width", "height", "pixel_width", "pixel_height", "pane" }
+
+M.is_pane_info = function(val)
+  if type(val) ~= "userdata" then
+    return false
+  end
+  for _, field in ipairs(PANE_INFO_FIELDS) do
+    if val[field] == nil then
+      return false
+    end
+  end
+  return true
+end
+
+---@param PaneInformation
+---@return table
+M.dump_pane_info = function(pane_info)
+  local data = {}
+  for _, field in ipairs(PANE_INFO_FIELDS) do
+    if field == "pane" then
+      data[field] = M.dump_pane(pane_info[field])
+    else
+      data[field] = pane_info[field]
+    end
+  end
+  return data
+end
+
+---@param pane Pane
+---@return table
+M.dump_pane = function(pane)
   return {
-    index = panel_info.index,
-    is_active = panel_info.is_active,
-    is_zoomed = panel_info.is_zoomed,
-    left = panel_info.left,
-    top = panel_info.top,
-    width = panel_info.width,
-    height = panel_info.height,
-    pixel_width = panel_info.pixel_width,
-    pixel_height = panel_info.pixel_height,
-    get_current_working_dir = M.dump_url(pane:get_current_working_dir()),
-    get_cursor_position = pane:get_cursor_position(),
-    get_dimensions = pane:get_dimensions(),
-    get_domain_name = pane:get_domain_name(),
-    get_foreground_process_info = M.dump_process(pane:get_foreground_process_info()),
-    get_foreground_process_name = pane:get_foreground_process_name(),
-    get_metadata = pane:get_metadata(),
-    get_title = pane:get_title(),
-    get_tty_name = pane:get_tty_name(),
-    get_user_vars = pane:get_user_vars(),
+    pane_id = pane:pane_id(),
+    current_working_dir = M.dump_url(pane:get_current_working_dir()),
+    cursor_position = pane:get_cursor_position(),
+    dimensions = pane:get_dimensions(),
+    domain_name = pane:get_domain_name(),
+    foreground_process_info = M.dump_process(pane:get_foreground_process_info()),
+    foreground_process_name = pane:get_foreground_process_name(),
+    metadata = pane:get_metadata(),
+    title = pane:get_title(),
+    tty_name = pane:get_tty_name(),
+    user_vars = pane:get_user_vars(),
     has_unseen_output = pane:has_unseen_output(),
     is_alt_screen_active = pane:is_alt_screen_active(),
   }
@@ -116,7 +169,7 @@ M.dump_tab_info = function(tab_info)
   local mux_tab = tab_info.tab or error("no tab")
   local panes = {}
   for _, pane_info in pairs(mux_tab:panes_with_info()) do
-    table.insert(panes, M.dump_pane(pane_info))
+    table.insert(panes, M.dump_pane_info(pane_info))
   end
   return {
     index = tab_info.index,
@@ -146,6 +199,26 @@ M.dump_window = function(win)
     keyboard_modifiers = gui_win:keyboard_modifiers(),
     tabs = tabs,
   }
+end
+
+M.datafy = function(x)
+  if type(x) ~= "userdata" then
+    return x
+  end
+end
+
+M.inspect = function(window, data, title)
+  wezterm.log_info("dump", data)
+
+  local json_encode = (wezterm.serde and wezterm.serde.json_encode_pretty)
+    or wezterm.json_encode
+    or error("json_encode function")
+
+  local tab = M.mux_window(window):spawn_tab({
+    args = { "zsh", "-l", "-c", [[ jless <<<"$1" || true ]], "-s", json_encode(data) },
+  })
+
+  tab:set_title(title or "inspect")
 end
 
 return M

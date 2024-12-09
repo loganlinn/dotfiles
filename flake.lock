@@ -469,7 +469,7 @@
         "type": "github"
       }
     },
-    "fzf-git": {
+    "fzf-git-sh": {
       "flake": false,
       "locked": {
         "lastModified": 1733469651,
@@ -1499,7 +1499,7 @@
         "flake-parts": "flake-parts_2",
         "flake-root": "flake-root",
         "forgit": "forgit",
-        "fzf-git": "fzf-git",
+        "fzf-git-sh": "fzf-git-sh",
         "fzf-tab": "fzf-tab",
         "home-manager": "home-manager_2",
         "hyprland": "hyprland",

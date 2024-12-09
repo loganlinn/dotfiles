@@ -41,10 +41,25 @@ function custom_components.leader()
   return window_component(function(window)
     if window:leader_is_active() then
       return leader_active()
+    else
+      return leader_inactive()
     end
-    return leader_inactive()
   end)
 end
+
+custom_components.active_tab = window_component(function(window)
+  local tab = window:active_tab()
+  local tab_title = tab:get_title()
+  if not tab_title or #tab_title == 0 then
+    tab_title = "#" .. tostring(tab:tab_id())
+  end
+  return string.format(" %s ", tab_title)
+end)
+
+custom_components.active_key_table = window_component(function(window)
+  local key_table = window:active_key_table()
+  return string.format(" %s ", key_table or "MAIN")
+end)
 
 -- Key table status
 function custom_components.key_table()
@@ -82,8 +97,27 @@ function custom_components.config_reload_count()
   end
 end
 
+local active_key_table_extension = {
+  "active_key_table",
+  events = {
+    show = "active_key_table.show",
+    hide = "active_key_table.hide",
+    -- delay = 3,
+    callback = function(window)
+      wezterm.log_info("Extension was shown")
+    end,
+  },
+  sections = {
+    tabline_x = {
+      custom_components.active_key_table,
+    },
+  },
+}
+
 tabline.setup({
-  extensions = {},
+  extensions = {
+    active_key_table_extension,
+  },
   options = {
     icons_enabled = false,
     section_separators = {
@@ -124,11 +158,13 @@ tabline.setup({
       { "zoomed", padding = 0 },
     },
     tabline_x = {
-      custom_components.leader(),
       -- custom_components.config_reload_count(),
+      custom_components.leader(),
+      -- "ram",
     },
     tabline_y = {
-      "ram",
+      custom_components.active_tab,
+      "window",
     },
     tabline_z = {
       "datetime",
@@ -136,5 +172,8 @@ tabline.setup({
     },
   },
 })
+
+-- wezterm.emit("active_key_table.show")
+wezterm.emit("active_key_table.hide")
 
 return tabline

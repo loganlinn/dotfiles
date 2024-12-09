@@ -19,29 +19,17 @@ local M = setmetatable({}, {
   end,
 })
 
-local function update_config_overrides(window, update)
-  local overrides = window:get_config_overrides() or {}
-  overrides = update(overrides) or overrides
-  wezterm.log_info("window.config_overrides", window, overrides)
-  window:set_config_overrides(overrides)
-  return overrides
-end
-
---- Creates callback action
----@param fn fun(window: Window, pane: Pane, ...): any
-M.fn = function(fn)
-  return wezterm.action_callback(fn)
-end
+local action_callback = wezterm.action_callback
 
 M.PromptInputLineSimple = function(description, callback)
-  return M.PromptInputLine({
+  return wezterm.action.PromptInputLine({
     description = wezterm.format({
       { Attribute = { Intensity = "Bold" } },
       { Foreground = { AnsiColor = "Fuchsia" } },
       { Text = description },
       "ResetAttributes",
     }),
-    action = M.fn(function(window, pane, input, ...)
+    action = action_callback(function(window, pane, input, ...)
       if input ~= nil and input ~= "" then
         callback(window, pane, input, ...)
       else
@@ -105,59 +93,51 @@ M.SwitchToNamedWorkspace = M.PromptInputLineSimple("Workspace name:", function(w
   window:perform_action(wezterm.action.SwitchToWorkspace({ name = name }), pane)
 end)
 
-M.DumpWindow = M.fn(function(window, _)
-  local data = require("dotfiles.util.debug").dump_window(window)
+M.DumpWindow = action_callback(function(window, _)
+  local m = require("dotfiles.util.debug")
+  m.inspect(window, m.dump_window(window), tostring(window))
+end)
 
-  wezterm.log_info(data)
-
-  local json_encode
-  if wezterm.serde then
-    json_encode = wezterm.serde.json_encode_pretty
-  end
-  json_encode = json_encode or wezterm.json_encode
-
-  window:mux_window():spawn_tab({
-    args = { "zsh", "-l", "-c", [[ jless <<<"$1" || true ]], "-s", json_encode(data) },
-  })
+M.DumpPane = action_callback(function(window, pane)
+  local m = require("dotfiles.util.debug")
+  m.inspect(window, m.dump_pane(pane), tostring(pane))
 end)
 
 M.SplitPaneAuto = function(args)
   args = args or {}
 
-  return M.fn(function(window, pane)
+  return action_callback(function(_, pane)
     local pane_dimensions = pane:get_dimensions()
     if 0.6 > ((pane_dimensions.pixel_height or 1) / (pane_dimensions.pixel_width or 1)) then
       args.direction = "Right"
     else
       args.direction = "Bottom"
     end
+    args.set_environment_variables = {
+      WEZTERM_INIT_USER_VAR = "POPUP=Right",
+    }
     local new_pane = pane:split(args)
     new_pane:activate()
   end)
 end
 
-custom_action.ActivateKeyTable = function(opts)
-  return wezterm.action.Multiple({
-    wezterm.action.ActivateKeyTable(opts),
-    wezterm.action.EmitEvent("activate-key-table"),
-  })
+M.ToggleDockedPane = function(direction)
+  return action_callback(function(window, pane)
+    local tab = window:active_tab()
+    local edge_pane = tab:get_pane_direction(direction)
+
+    -- local sidepane = pane:split({
+    --   direction = "Right",
+    --   size = 0.3,
+    --   top_level = true,
+    -- })
+    -- sidepane:activate()
+  end)
 end
-
-M.ActivateRightPane = M.fn(function(window, pane)
-  local tab = window:active_tab()
-  local panes = tab:panes()
-
-  -- local sidepane = pane:split({
-  --   direction = "Right",
-  --   size = 0.3,
-  --   top_level = true,
-  -- })
-  -- sidepane:activate()
-end)
 
 M.MovePaneToNewTab = function(opts)
   opts = opts or {}
-  return M.fn(function(_, pane)
+  return action_callback(function(_, pane)
     local tab = pane:move_to_new_tab()
     if opts.activate then
       tab:activate()
@@ -169,7 +149,7 @@ end
 ---@param workspace? string
 M.MovePaneToWorkspace = function(workspace)
   if workspace then
-    M.fn(function(_, pane)
+    action_callback(function(_, pane)
       pane:move_to_new_tab()
     end)
   else
@@ -179,11 +159,42 @@ M.MovePaneToWorkspace = function(workspace)
   end
 end
 
-M.ToggleDebugKeyEvents = M.fn(function(window, _)
-  update_config_overrides(window, function(overrides)
+-- Applies function to current value of window config overrides, then
+-- sets configu overrides to returned value.
+---@param f fun(current_config_overides: Config|nil): Config|nil
+---@param window Window
+---@return Config|nil updated
+local function apply_to_config_overrides(f, window)
+  local result = f(window:get_config_overrides())
+  window:set_config_overrides(result)
+  return result
+end
+
+---@param param
+---@param config_key?
+M.UpdateConfigOverrides = function(param)
+  if type(param) == "function" then
+    return action_callback(function(window, _)
+      window:set_config_overrides(param(window:get_config_overrides()))
+    end)
+  elseif type(param) == "table" then
+    return action_callback(function(window, _)
+      local overrides = window:get_config_overrides() or {}
+      for config_key, f in pairs(param) do
+        overrides[config_key] = f(overrides[config_key])
+      end
+      window:set_config_overrides(overrides)
+    end)
+  else
+    error("expected function or table, got: " .. tostring(type(param)))
+  end
+end
+
+M.ToggleDebugKeyEvents = action_callback(function(window, _)
+  apply_to_config_overrides(function(overrides)
     overrides.debug_key_events = not overrides.debug_key_events
     return overrides
-  end)
+  end, window)
 end)
 
 M.QuickSelectUrl = wezterm.action.QuickSelectArgs({

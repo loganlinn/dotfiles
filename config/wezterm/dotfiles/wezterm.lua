@@ -32,6 +32,12 @@ config.font_rules = {
 -- config.cursor_blink_ease_in = "Constant"
 -- config.cursor_blink_ease_out = "Constant"
 -- config.animation_fps = 1
+config.visual_bell = {
+  fade_in_duration_ms = 75,
+  fade_out_duration_ms = 75,
+  target = "CursorColor",
+}
+config.audible_bell = "SystemBeep"
 config.window_padding = {
   left = "1cell",
   right = "1cell",
@@ -48,6 +54,7 @@ config.enable_scroll_bar = true
 config.initial_cols = 140
 config.initial_rows = 70
 config.tab_bar_at_bottom = true
+config.tab_max_width = 32
 config.use_fancy_tab_bar = false -- do not use native ui
 config.window_decorations = "RESIZE"
 config.command_palette_font_size = config.font_size
@@ -151,6 +158,8 @@ add_keys(
   { "SUPER", "w", act.CloseCurrentPane({ confirm = true }) },
   -- Window
   { "SUPER|SHIFT", "n", act.SpawnWindow },
+  { "CTRL|SHIFT", "9", act.SwitchWorkspaceRelative(-1) },
+  { "CTRL|SHIFT", "0", act.SwitchWorkspaceRelative(1) },
   -- Scroll
   { "SUPER", "Home", act.ScrollToTop },
   { "SUPER", "PageDown", act.ScrollByPage(1) },
@@ -197,6 +206,7 @@ add_keys(
   { "SUPER", "F2", act.RenameTab },
   { "SUPER", "F5", act.ReloadConfiguration },
   { "SUPER", "F6", act.DumpWindow },
+  -- { "SUPER", "F7", act.DumpPane },
   { "SUPER", "F7", act.ToggleDebugKeyEvents },
   { "SUPER", "F9", act.ShowTabNavigator },
   { "SUPER", "F10", act.InputSelectorDemo },
@@ -265,10 +275,14 @@ config.key_tables["insert"] = {
 
 -- Debug events
 for _, event in ipairs({
+  "bell",
   "mux-startup",
   "gui-startup",
   "gui-attached",
   "open-uri",
+  "user-var-changed",
+  "window-resized",
+  -- "window-focus-changed",
 }) do
   wezterm.on(event, function(...)
     wezterm.log_info("EVENT", event, "args=", { ... })

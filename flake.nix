@@ -58,7 +58,7 @@
       url = "github:wfxr/forgit";
       flake = false;
     };
-    fzf-git = {
+    fzf-git-sh = {
       url = "github:junegunn/fzf-git.sh";
       flake = false;
     };

@@ -51,7 +51,7 @@ in
           "--bind='ctrl-g:jump'"
           "--bind='esc:close'"
           "--bind='f5:refresh-preview'"
-          "--bind='ctrl-\:become(${pkgs.moreutils}/bin/vipe <<< {})"
+          ''--bind='ctrl-\:become(${pkgs.moreutils}/bin/vipe <<< {})' ''
         ]
       )
     );
@@ -76,6 +76,6 @@ in
   };
 
   my.shellInitExtra = ''
-    source ${inputs.fzf-git}/share/fzf-git-sh/fzf-git.sh
+    source "${inputs.fzf-git-sh}/fzf-git.sh" || true
   '';
 }

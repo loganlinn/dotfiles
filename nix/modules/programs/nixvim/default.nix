@@ -11,12 +11,6 @@ in
     ./plugins
     ./keymaps.nix
   ];
-
-  # options = {
-  #   lib.nixivm.my = mkOption {
-  #   };
-  # };
-  #
   config = {
     programs.nixvim = {
       vimAlias = true;
@@ -59,13 +53,28 @@ in
           desc = "Resize splits when vim is resized";
         }
       ];
+
+      extraConfigLuaPre = ''
+
+      '';
+
+      extraConfigLua = ''
+
+      '';
+
+      extraConfigLuaPost = ''
+
+      '';
+
       extraConfigVim = ''
+        " Fat finger support by loganlinguiça
         cnoreabbrev Q q
         cnoreabbrev Q! q!
         cnoreabbrev W w
         cnoreabbrev W! w!
         cnoreabbrev Wq wq
         cnoreabbrev Wq! wq!
+        cnoreabbrev Sort sort
       '';
     };
   };
