@@ -13,18 +13,6 @@ M.window = require("dotfiles.util.window")
 M.delay = require("dotfiles.util.delay")
 M.debug = require("dotfiles.util.debug")
 
---- Equivalent to `dirname(1)`
----@param path string
----@return string
-function M.dirname(path)
-  if string.match(path, ".-/.-") then
-    local name = string.gsub(path, "(.*/)(.*)", "%1")
-    return name
-  else
-    return ""
-  end
-end
-
 ---@param f function
 ---@param ... any
 ---@return function

@@ -21,6 +21,26 @@ local M = setmetatable({}, {
 
 local action_callback = wezterm.action_callback
 
+M.TogglePopupPane = action_callback(function(window, pane)
+  local tab = window:active_tab()
+  if not tab:get_pane_direction("Left") then
+    tab:set_zoomed(false)
+    local right = tab:get_pane_direction("Right")
+    if right then
+      right:activate()
+    else
+      pane:split({ direction = "Right", top_level = true, size = 0.333 }):activate()
+    end
+  else
+    local pane_table = tab:panes_with_info()
+    table.sort(pane_table, function(a, b)
+      return a.index < b.index
+    end)
+    pane_table[1].pane:activate()
+    tab:set_zoomed(true)
+  end
+end)
+
 M.PromptInputLineSimple = function(description, callback)
   return wezterm.action.PromptInputLine({
     description = wezterm.format({

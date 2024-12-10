@@ -15,28 +15,23 @@
       lsp-format = {
         enable = true;
       };
-      # none-ls = {
-      #   enable = true;
-      #   sources.code_actions = {
-      #     gitrebase.enable = true;
-      #     gitsigns.enable = true;
-      #     refactoring.enable = true;
-      #     impl.enable = true;
-      #   # ts_node_action.enable = true;
-      #   };
-      #   # sources.completion = {
-      #   #   luasnip.enable = true;
-      #   #   clj_kondo.enable = true;
-      #   # };
-      #   sources.formatting = {
-      #     just.enable = true;
-      #   };
-      # };
+      none-ls = {
+        enable = true;
+        enableLspFormat = true;
+        sources.formatting = {
+          shfmt.enable = true;
+          just.enable = true;
+        };
+        settings = {
+          diagnostic_config = { };
+        };
+      };
       lsp = {
         enable = true;
         inlayHints = true;
         servers = {
           awk_ls.enable = false;
+          bashls.enable = true;
           eslint.enable = true;
           fennel_ls.enable = true;
           gopls.enable = true;
@@ -69,7 +64,9 @@
             }").currentSystem.options'';
           };
           prismals.enable = false;
-          pyright.enable = true;
+          # pyright.enable = true;
+          # pylsp.enable = true;
+          ruff.enable = true;
           sqls.enable = true;
           terraformls.enable = true;
           ts_ls.enable = true;
@@ -110,27 +107,27 @@
       };
     };
     extraConfigLua = ''
-      local _border = "rounded"
-
-      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-        vim.lsp.handlers.hover, {
-          border = _border
-        }
-      )
-
-      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-        vim.lsp.handlers.signature_help, {
-          border = _border
-        }
-      )
-
-      vim.diagnostic.config{
-        float={border=_border}
-      };
-
-      require('lspconfig.ui.windows').default_options = {
-        border = _border
-      }
+      -- local _border = "rounded"
+      --
+      -- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+      --   vim.lsp.handlers.hover, {
+      --     border = _border
+      --   }
+      -- )
+      --
+      -- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
+      --   vim.lsp.handlers.signature_help, {
+      --     border = _border
+      --   }
+      -- )
+      --
+      -- vim.diagnostic.config{
+      --   float={border=_border}
+      -- };
+      --
+      -- require('lspconfig.ui.windows').default_options = {
+      --   border = _border
+      -- }
     '';
   };
 }

@@ -15,7 +15,7 @@
       };
       diagnostic = {
         borderFollow = true;
-        diagnosticOnlyCurrent = false;
+        diagnosticOnlyCurrent = true; # Only show diagnostic virtual text on the current line
         showCodeAction = true;
       };
       symbolInWinbar = {

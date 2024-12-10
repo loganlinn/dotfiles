@@ -18,7 +18,9 @@
     ./supermaven
     ./telescope
     ./treesitter.nix
+    ./typescript-tools.nix
     ./which-key.nix
+    ./zen-mode.nix
   ];
   programs.nixvim = {
     plugins = {
@@ -35,7 +37,6 @@
       sniprun.enable = true;
       spectre.enable = true;
       trouble.enable = true;
-      typescript-tools.enable = true;
       vim-surround.enable = true;
       web-devicons.enable = true;
     };

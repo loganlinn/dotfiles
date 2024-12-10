@@ -14,12 +14,6 @@
       cmp-cmdline = {
         enable = true;
       };
-      # cmp_luasnip = {
-      #   enable = true;
-      # };
-      # copilot-cmp = {
-      #   enable = true;
-      # };
       cmp = {
         enable = true;
         autoEnableSources = false;
@@ -63,6 +57,9 @@
             "<S-CR>" = "cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })";
           };
           sources = [
+            {
+              name = "supermaven";
+            }
             {
               name = "nvim_lsp";
             }

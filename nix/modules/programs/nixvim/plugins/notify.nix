@@ -2,10 +2,11 @@
   programs.nixvim = {
     plugins.notify = {
       enable = true;
-      backgroundColour = "#000000";
-      fps = 60;
-      render = "default";
-      timeout = 500;
+      # backgroundColour = "#000000";
+      # fps = 60;
+      stages = "static";
+      render = "wrapped-compact";
+      timeout = 2500;
       topDown = true;
     };
     keymaps = [
