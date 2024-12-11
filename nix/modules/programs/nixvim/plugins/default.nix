@@ -45,6 +45,9 @@
       { plugin = vim-just; }
       { plugin = vim-lion; }
       { plugin = zoxide-vim; }
+      { plugin = nfnl; }
+      { plugin = fennel-vim; }
+      { plugin = neorepl-nvim; }
     ];
   };
 }

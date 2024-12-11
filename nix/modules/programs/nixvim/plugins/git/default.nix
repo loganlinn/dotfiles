@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   cfg = config.programs.nixvim;
   inherit (import ../../helpers.nix { inherit lib; }) mkKeymap;
@@ -92,6 +97,24 @@ in
         key = "<leader>gS";
         action = "<cmd>Gwrite<cr>";
         options.desc = "Stage file";
+      }
+      {
+        mode = "n";
+        key = "<leader>gU";
+        action = "<cmd>Git reset -- %<cr>";
+        options.desc = "Unstage file";
+      }
+      {
+        mode = "n";
+        key = "<leader>goo";
+        action = "<cmd>GBrowse<cr>";
+        options.desc = "Open file URL";
+      }
+      {
+        mode = "n";
+        key = "<leader>goy";
+        action = "<cmd>GBrowse!<cr>";
+        options.desc = "Yank file URL";
       }
       {
         mode = "n";

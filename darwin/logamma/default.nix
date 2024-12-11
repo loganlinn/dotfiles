@@ -97,6 +97,7 @@
       ../../nix/home/lazygit.nix
       ../../nix/home/pretty.nix
       ../../nix/home/tmux.nix
+      ../../nix/home/hammerspoon.nix
       ../../nix/home/wezterm
       ../../nix/home/yazi
       ../../nix/home/yt-dlp.nix
@@ -110,10 +111,11 @@
         darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
       };
     };
-
-    programs.kitty.enable = true;
+    programs.hammerspoon.enable = true;
 
     programs.wezterm.enable = true;
+
+    programs.kitty.enable = true;
 
     home.packages = with pkgs; [
       google-cloud-sdk
@@ -122,9 +124,11 @@
 
       kcat
 
-      bun
-      mkcert
       nodejs
+      bun
+
+      mkcert
+
       pls
       process-compose
     ];
