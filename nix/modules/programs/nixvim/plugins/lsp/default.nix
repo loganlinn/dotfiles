@@ -47,7 +47,7 @@ in
           janet_lsp.package = null; # opt for installing janet-lsp as jpm dependency
           java_language_server.enable = false;
           lsp_ai.enable = false;
-          lua_ls.enable = true;
+          lua_ls.enable = true; # see ./lua_ls.nix
           jsonls.enable = true;
           jqls.enable = true;
           marksman.enable = true;

@@ -1,4 +1,6 @@
 local wezterm = require("wezterm")
+local log = require("dotfiles.util.logger")("wezterm.lua")
+
 -- local start_time = wezterm.time.now()
 
 local config = wezterm.config_builder()
@@ -71,7 +73,7 @@ config.quick_select_patterns = {
   "sha512-.{44,128}", -- SHA512 hashes in Base64, used often in getting hashes for Nix packaging.
   "'nix [^']+.drv'", -- single quoted strings
   [[(?:[-._~/a-zA-Z0-9])*[/ ](?:[-._~/a-zA-Z0-9]+)]], -- unix paths
-  "(?<= | | | | | | | | | | | | | |󰢬 | | | |└──|├──)\\s?(\\S+)", -- lsd/eza output.
+  "(?<= | | | | | | | | | | | | | |󰢬 | | | |└──|├──)\\s?(\\S+)", -- HACK: lsd/eza output.
   -- alternative impl for above regex: code point ranges for glyph sets:
   -- https://github.com/ryanoasis/nerd-fonts/wiki/Glyph-Sets-and-Code-Points#overview
 }
@@ -142,17 +144,14 @@ wezterm.on("user-var-changed", user_var_changed)
 ---@param config Config
 ---@return string
 local function format_window_title(tab, pane, tabs, panes, config)
-  wezterm.log_info("format-window-title", tab, pane)
-  -- local window = wezterm.mux.get_window(tab.window_id) ---@type MuxWindow
-  -- local title = window:get_workspace()
-  -- title = title .. ": " .. tab.active_pane.title
-  -- title = title .. "[" .. window:window_id() .. ":" .. tab.tab_id .. ":" .. pane.pane_id .. "]"
-  -- if tab.active_pane.is_zoomed then
-  --   title = title .. ":Z"
-  -- end
-  -- print(title)
-  -- return title
-  return "WTF"
+  local window = wezterm.mux.get_window(tab.window_id) ---@type MuxWindow
+  local title = window:get_workspace()
+  title = title .. ": " .. tab.active_pane.title
+  title = title .. "[" .. window:window_id() .. ":" .. tab.tab_id .. ":" .. pane.pane_id .. "]"
+  if tab.active_pane.is_zoomed then
+    title = title .. ":Z"
+  end
+  return title
 end
 
 wezterm.on("format-window-title", format_window_title)
@@ -161,6 +160,14 @@ require("dotfiles.font").apply_to_config(config)
 require("dotfiles.keys").apply_to_config(config)
 require("dotfiles.tabline").apply_to_config(config)
 require("dotfiles.balance").apply_to_config(config)
+require("dotfiles.domains").apply_to_config(config, {
+  "ssh://nijusan.internal",
+  "ssh://wijusan.internal",
+  "ssh://logamma.internal",
+  "ssh://rpi4b.internal",
+  "ssh://rpi400.internal",
+  "ssh://pi@fire.walla",
+})
 
 -- wezterm.log_info("FINISH", "wezterm.lua", "elapsed: " .. require("dotfiles.util").time_diff_ms(wezterm.time.now(), start_time) .. " ms")
 

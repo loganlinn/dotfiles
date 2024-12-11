@@ -9,6 +9,7 @@
         # TODO use lazydev.nvim
         "${inputs.wezterm-types}/types"
       ];
+      runtime.pluginArgs = [ ];
     };
   };
 }

@@ -138,6 +138,10 @@ with lib;
 
         ${readFile ./initExtra.zsh}
 
+        ${readFile ./wezterm.zsh}
+
+        wezterm::init
+
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '';
 

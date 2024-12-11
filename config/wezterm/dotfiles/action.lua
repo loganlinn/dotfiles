@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local log = require("dotfiles.util.logger")("action.lua")
 
 local custom_action = {}
 
@@ -77,11 +78,15 @@ M.TogglePopupPane = action_callback(function(window, pane)
         right:activate()
       else
         pane
-          :split({
+          :split(log.info({
             direction = "Right",
             top_level = true,
             size = 0.333,
-          })
+            args = { "zsh", "-l" }, -- without this, set_environment_variables does not have effect
+            set_environment_variables = {
+              WEZTERM_USER_VAR_PANE_ROLE = "popup",
+            },
+          }))
           :activate()
       end
     end
