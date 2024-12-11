@@ -801,7 +801,7 @@ in
         "v"
       ];
       key = "<leader>bk";
-      action = "<cmd>Bwipeout<cr>"; # vim-bbye
+      action = "<cmd>Bwipeout!<cr>"; # vim-bbye
       options.desc = "Kill buffer";
     }
     {
@@ -810,7 +810,7 @@ in
         function()
           if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
             local path = vim.fn.expand("%")
-            vim.cmd("Bwipeout")
+            vim.cmd("Bwipeout!")
             local ok, err = os.remove(path)
             if ok then
               print("Deleted " .. path)

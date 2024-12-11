@@ -29,11 +29,38 @@ let
     # gaps: Gaps
     # workspace-to-monitor-force-assignment: map<string, string>
     # on-window-detected
-    options = {
+    options = with types; {
       mode = mkOption {
-        type = types.attrsOf modeModule;
+        type = attrsOf modeModule;
         default = { };
       };
+      # on-window-detected = mkOption {
+      #   type = listOf (submodule {
+      #     options = {
+      #       "if".app-id = mkOption {
+      #         type = nullOr str;
+      #         default = null;
+      #       };
+      #       "if".app-name-regex-substring = mkOption {
+      #         type = nullOr str;
+      #         default = null;
+      #       };
+      #       "if".window-title-regex-substring = mkOption {
+      #         type = nullOr str;
+      #         default = null;
+      #       };
+      #       "if".workspace = mkOption {
+      #         type = nullOr str;
+      #         default = null;
+      #       };
+      #       "if".during-aerospace-startup = mkOption {
+      #         type = nullOr bool;
+      #         default = null;
+      #       };
+      #       run = mkOption { type = either str (listOf str); };
+      #     };
+      #   });
+      # };
     };
     freeformType = toml.type;
   };

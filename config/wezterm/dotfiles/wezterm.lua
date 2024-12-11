@@ -63,11 +63,6 @@ config.hyperlink_rules = {
     highlight = 1,
     regex = "\\b([gG]-\\d+)\\b",
   },
-  {
-    regex = [[error: could not format file ([^:]+):.+starting from line (\d+).+character (\d+).+ending on line (\d+).+character (\d+)]],
-    format = [[file://$1#$2.$3:$4.$5]],
-    highlight = 1,
-  },
 }
 config.quick_select_patterns = {
   "[\\h]{7,40}", -- SHA1 hashes, usually used for Git.
@@ -80,26 +75,14 @@ config.quick_select_patterns = {
   -- alternative impl for above regex: code point ranges for glyph sets:
   -- https://github.com/ryanoasis/nerd-fonts/wiki/Glyph-Sets-and-Code-Points#overview
 }
+
 for _, pattern in ipairs(wezterm.default_hyperlink_rules()) do
   table.insert(config.quick_select_patterns, pattern.regex)
-end
-
-require("dotfiles.keys").apply_to_config(config)
-if not config.keys or #config.keys == 0 then
-  config.keys = config.keys or {}
-  wezterm.log_error("No keys configured!")
-  table.insert(config.keys, { mods = "SUPER", key = "F1", action = wezterm.action.ShowDebugOverlay })
-  table.insert(config.keys, { mods = "SUPER", key = "F5", action = wezterm.action.ReloadConfiguration })
-  table.insert(
-    config.keys,
-    { mods = "SUPER", key = "w", action = wezterm.action.CloseCurrentPane({ confirm = false }) }
-  )
 end
 
 wezterm.on("open-uri", function(window, pane, uri)
   local url = wezterm.url.parse(uri)
   wezterm.log_info("parsed url", url)
-
   if url.scheme == "file" then
     -- window:perform_action(
     --   act.SpawnCommandInNewTab({
@@ -109,7 +92,6 @@ wezterm.on("open-uri", function(window, pane, uri)
     --   }),
     --   pane
     -- )
-
     wezterm.open_with(uri, "WezTerm")
     return false
   else
@@ -117,32 +99,66 @@ wezterm.on("open-uri", function(window, pane, uri)
   end
 end)
 
--- zen-mode.nvim integration
--- https://github.com/folke/zen-mode.nvim/blob/29b292bdc58b76a6c8f294c961a8bf92c5a6ebd6/README.md#wezterm
-wezterm.on("user-var-changed", function(window, pane, name, value)
-  local overrides = window:get_config_overrides() or {}
-  if name == "ZEN_MODE" then
-    local incremental = value:find("+")
-    local number_value = tonumber(value)
-    if incremental ~= nil then
-      while number_value > 0 do
-        window:perform_action(wezterm.action.IncreaseFontSize, pane)
-        number_value = number_value - 1
+---@param window Window
+---@param pane Pane
+---@param name string
+---@param value string
+local function user_var_changed(window, pane, name, value)
+  wezterm.log_info("event:user-var-changed", name, value)
+  -- zen-mode.nvim integration
+  -- https://github.com/folke/zen-mode.nvim/blob/29b292bdc58b76a6c8f294c961a8bf92c5a6ebd6/README.md#wezterm
+  if "ZEN_MODE" == name then
+    local overrides = window:get_config_overrides() or {}
+    local n = tonumber(value)
+    if type(n) == "number" then
+      -- incremental
+      if value:find("+") ~= nil then
+        while n > 0 do
+          window:perform_action(wezterm.action.IncreaseFontSize, pane)
+          n = n - 1
+        end
+        overrides.enable_tab_bar = false
+      elseif n < 0 then
+        window:perform_action(wezterm.action.ResetFontSize, pane)
+        overrides.font_size = nil
+        overrides.enable_tab_bar = true
+      else
+        overrides.font_size = n --[[@as number]]
+        overrides.enable_tab_bar = false
       end
-      overrides.enable_tab_bar = false
-    elseif number_value < 0 then
-      window:perform_action(wezterm.action.ResetFontSize, pane)
-      overrides.font_size = nil
-      overrides.enable_tab_bar = true
     else
-      overrides.font_size = number_value
-      overrides.enable_tab_bar = false
+      wezterm.log_warn("expected number value for user-var ZEN_MODE")
     end
+    window:set_config_overrides(overrides)
   end
-  window:set_config_overrides(overrides)
-end)
+end
+
+wezterm.on("user-var-changed", user_var_changed)
+
+---@param tab TabInformation
+---@param pane PaneInformation
+---@param tabs TabInformation[]
+---@param panes PaneInformation[]
+---@param config Config
+---@return string
+local function format_window_title(tab, pane, tabs, panes, config)
+  wezterm.log_info("format-window-title", tab, pane)
+  -- local window = wezterm.mux.get_window(tab.window_id) ---@type MuxWindow
+  -- local title = window:get_workspace()
+  -- title = title .. ": " .. tab.active_pane.title
+  -- title = title .. "[" .. window:window_id() .. ":" .. tab.tab_id .. ":" .. pane.pane_id .. "]"
+  -- if tab.active_pane.is_zoomed then
+  --   title = title .. ":Z"
+  -- end
+  -- print(title)
+  -- return title
+  return "WTF"
+end
+
+wezterm.on("format-window-title", format_window_title)
 
 require("dotfiles.font").apply_to_config(config)
+require("dotfiles.keys").apply_to_config(config)
 require("dotfiles.tabline").apply_to_config(config)
 require("dotfiles.balance").apply_to_config(config)
 

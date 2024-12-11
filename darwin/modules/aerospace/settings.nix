@@ -9,6 +9,42 @@ with lib;
 let
   cfg = config.programs.aerospace;
 
+  # mkOpt =
+  #   type: default: arg:
+  #   mkOption { inherit type default; } // (if isString arg then { description = arg; } else arg);
+  # layout-type = types.enum [
+  #   "h_tiles"
+  #   "v_tiles"
+  #   "h_accordion"
+  #   "v_accordion"
+  # ];
+  # keyseq-type = types.strMatching "([a-zA-Z0-9]+)(-([a-zA-Z0-9]+))*";
+  # workspace-type =
+  #   with types;
+  #   submodule (
+  #     { name, config, ... }:
+  #     {
+  #       options = {
+  #         name = mkOpt str name { };
+  #         layout = mkOpt (nullOr layout-type) null { };
+  #         binding = mkOpt (attrsOf keyseq-type) {} { };
+  #         on.workspace-change.exec = mkOpt (nullOr (nonEmptyListOf nonEmptyStr)) null { };
+  #         on.window-detected.run = mkOpt (listOf nonEmptyStr) [ ] { };
+  #       };
+  #     }
+  #   );
+  # workspaces = {
+  #   "0:misc" = { };
+  #   "1:editor" = { };
+  #   "2:term" = { };
+  #   "3:www" = { };
+  #   "4:" = { };
+  #   "5" = { };
+  #   "6" = { };
+  #   "7" = { };
+  #   "9" = { };
+  # };
+
   focus-or-launch-app-id = pkgs.writeShellScript "focus-or-launch-app" ''
     set -e
     set -o pipefail
@@ -85,6 +121,10 @@ let
       alt-shift-equal = "resize smart +48";
       alt-ctrl-shift-minus = "resize smart -256";
       alt-ctrl-shift-equal = "resize smart +256";
+      alt-shift-left = "resize width -48";
+      alt-shift-down = "resize height +48";
+      alt-shift-up = "resize height -48";
+      alt-shift-right = "resize width +48";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
       alt-backtick = "workspace 0";

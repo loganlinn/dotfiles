@@ -4,6 +4,9 @@
   config,
   ...
 }:
+let
+  cfg = config.programs.nixvim;
+in
 {
   imports = [
     ./lspsaga.nix
@@ -25,6 +28,10 @@
         settings = {
           diagnostic_config = { };
         };
+      };
+      lspkind = {
+        enable = true;
+        cmp.enable = cfg.plugins.cmp.enable;
       };
       lsp = {
         enable = true;
