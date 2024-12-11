@@ -17,8 +17,31 @@ local function window_component(callback)
   end
 end
 
+local function active_key_table(window)
+  local scheme = tabline.get_colors().scheme
+  local key_table = window:active_key_table()
+  if key_table then
+    return wezterm.format({
+      { Background = { Color = scheme.ansi[6] } },
+      { Foreground = { Color = scheme.ansi[1] } },
+      { Attribute = { Intensity = "Bold" } },
+      { Text = " " .. key_table .. " " .. wezterm.nerdfonts.cod_layers_dot .. "  " },
+      "ResetAttributes",
+    })
+  else
+    return wezterm.format({
+      { Foreground = { Color = scheme.tab_bar.inactive_tab.fg_color } },
+      { Text = " " .. wezterm.nerdfonts.cod_layers .. "  " },
+      "ResetAttributes",
+    })
+  end
+end
+
 -- Leader key status
 function custom_components.leader()
+  -- local leader_text = " LEADER "
+  local leader_text = " " .. wezterm.nerdfonts.md_home_floor_l .. "  "
+
   -- memoizes to avoid recomputing identical style strings
   local leader_active = util.delay(function()
     local scheme = tabline.get_colors().scheme
@@ -26,18 +49,20 @@ function custom_components.leader()
       { Background = { Color = scheme.ansi[7] } },
       { Foreground = { Color = scheme.ansi[1] } },
       { Attribute = { Intensity = "Bold" } },
-      { Text = " LEADER " },
+      { Text = leader_text },
       "ResetAttributes",
     })
   end)
+
   local leader_inactive = util.delay(function()
     local scheme = tabline.get_colors().scheme
     return wezterm.format({
       { Foreground = { Color = scheme.tab_bar.inactive_tab.fg_color } },
-      { Text = " LEADER " },
+      { Text = leader_text },
       "ResetAttributes",
     })
   end)
+
   return window_component(function(window)
     if window:leader_is_active() then
       return leader_active()
@@ -56,40 +81,6 @@ custom_components.active_tab = window_component(function(window)
   return string.format(" %s ", tab_title)
 end)
 
-custom_components.active_key_table = window_component(function(window)
-  local key_table = window:active_key_table()
-  return string.format(" %s ", key_table or "MAIN")
-end)
-
--- Key table status
-function custom_components.key_table()
-  return window_component(function(window)
-    local active_key_table = window:active_key_table()
-    if active_key_table then
-      return wezterm.format({ Text = string.format(" %s ", active_key_table) })
-      -- table.insert(status, { Foreground = { AnsiColor = "Fuchsia" } })
-      -- table.insert(status, { Attribute = { Intensity = "Bold" } })
-      -- table.insert(status, { Text = string.format(" %s ", active_key_table) })
-      -- table.insert(status, { Attribute = { Intensity = "Normal" } })
-      -- table.insert(status, {
-      --   Text = string.format(
-      --     "[%s]",
-      --     table.concat(
-      --       util.tbl.map(function(_, v)
-      --         return v.key
-      --       end,
-      --       window:effective_config().key_tables[active_key_table]),
-      --       "|"
-      --     )
-      --   ),
-      -- })
-      -- table.insert(status, "ResetAttributes")
-      -- table.insert(status, { Text = " " })
-    end
-    return ""
-  end)
-end
-
 function custom_components.config_reload_count()
   local state = util.event_counter("window-config-reloaded")
   return function(_)
@@ -97,27 +88,7 @@ function custom_components.config_reload_count()
   end
 end
 
-local active_key_table_extension = {
-  "active_key_table",
-  events = {
-    show = "active_key_table.show",
-    hide = "active_key_table.hide",
-    -- delay = 3,
-    callback = function(window)
-      wezterm.log_info("Extension was shown")
-    end,
-  },
-  sections = {
-    tabline_x = {
-      custom_components.active_key_table,
-    },
-  },
-}
-
 tabline.setup({
-  extensions = {
-    active_key_table_extension,
-  },
   options = {
     icons_enabled = false,
     section_separators = {
@@ -126,12 +97,13 @@ tabline.setup({
     },
     component_separators = {
       left = nerdfonts.pl_left_soft_divider,
-      right = nerdfonts.pl_right_soft_divider,
+      right = "", -- nerdfonts.pl_right_soft_divider,
     },
     tab_separators = {
       left = nerdfonts.pl_left_hard_divider,
       right = nerdfonts.pl_right_hard_divider,
     },
+    padding = 1,
     color_overrides = {
       normal_mode = {
         b = { bg = "#6272A4", fg = "#F8F8F2" }, -- different color workspace name (prob a better place to set this)
@@ -158,9 +130,12 @@ tabline.setup({
       { "zoomed", padding = 0 },
     },
     tabline_x = {
-      -- custom_components.config_reload_count(),
+      active_key_table,
+      " ",
       custom_components.leader(),
-      -- "ram",
+      " ",
+      custom_components.config_reload_count(),
+      " ",
     },
     tabline_y = {
       custom_components.active_tab,
@@ -172,8 +147,5 @@ tabline.setup({
     },
   },
 })
-
--- wezterm.emit("active_key_table.show")
-wezterm.emit("active_key_table.hide")
 
 return tabline

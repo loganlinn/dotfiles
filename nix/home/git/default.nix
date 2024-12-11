@@ -9,6 +9,15 @@ with lib;
 
 let
   privateConfigFile = "${config.xdg.configHome}/git/config.local";
+  allowedSignersFile = "${pkgs.writeText "allowed_signers" ''
+    ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
+  ''}";
+  gpg-ssh-program = (
+    if pkgs.stdenv.isDarwin then
+      "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    else
+      "op-ssh-sign"
+  );
 in
 {
   imports = [
@@ -148,32 +157,27 @@ in
       advice.detachedHead = false;
       advice.skippedCherryPicks = false;
       advice.statusHints = false;
+      branch.autoSetupMerge = true;
       branch.autoSetupRebase = "always";
-      branch.autoSetupMerge = "always";
       branch.sort = "-committerdate";
       color.ui = true;
-      commit.verbose = true; # include diff in commit message editor
       commit.gpgsign = mkDefault true;
+      commit.verbose = true; # include diff in commit message editor
       diff.noprefix = true;
+      fetch.all = true;
+      fetch.prune = true;
       gpg.format = "ssh";
-      gpg.ssh.program = mkDefault (
-        if pkgs.stdenv.isDarwin then
-          "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-        else
-          "op-ssh-sign"
-      );
-      gpg.ssh.allowedSignersFile = mkDefault "${pkgs.writeText "allowed_signers" ''
-        ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
-      ''}";
-      user.signingkey = mkDefault config.my.pubkeys.ssh.ed25519;
+      gpg.ssh.allowedSignersFile = mkDefault allowedSignersFile;
+      gpg.ssh.program = mkDefault gpg-ssh-program;
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
       push.autoSetupRemote = true;
-      push.default = "tracking";
+      push.default = "current";
       rebase.autosquash = true;
-      stash.showPatch = true;
       stash.showIncludeUntracked = true;
+      stash.showPatch = true;
+      user.signingkey = mkDefault config.my.pubkeys.ssh.ed25519;
     };
     # hooks
     signing.key = mkDefault null; # let GnuPG decide

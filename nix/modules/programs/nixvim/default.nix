@@ -56,31 +56,23 @@ in
         }
       ];
 
-      # diagnostics = {
-      #   virtual_lines.only_current_line = true;
-      # };
+      diagnostics = {
+        virtual_lines.only_current_line = true;
+      };
 
       extraFiles."lua/util/init.lua".source = ./lua/util/init.lua;
 
       extraConfigLuaPre = ''
-        if vim.env.VSCODE then
-          vim.g.vscode = true
+        local util = require('util')
+
+        if vim.env.WEZTERM_PANEL then
+          util.set_user_var("IS_NVIM", "true")
         end
 
-        -- if vim.loader then
-        --   vim.loader.enable()
-        -- end
-
-        -- _G.dd = function(...)
-        --   require("snacks.debug").inspect(...)
-        -- end
-        -- _G.bt = function(...)
-        --   require("snacks.debug").backtrace()
-        -- end
-        -- _G.p = function(...)
-        --   require("snacks.debug").profile(...)
-        -- end
-        -- vim.print = _G.dd
+        _G.dd = function(...) require("snacks.debug").inspect(...) end
+        _G.bt = function(...) require("snacks.debug").backtrace() end
+        _G.p = function(...) require("snacks.debug").profile(...) end
+        vim.print = _G.dd
       '';
 
       extraConfigLua = ''

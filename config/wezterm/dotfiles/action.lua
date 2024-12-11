@@ -21,25 +21,103 @@ local M = setmetatable({}, {
 
 local action_callback = wezterm.action_callback
 
+---@generic T : {is_active: boolean}
+---@param infos T[]
+---@return T
+local function find_active(infos)
+  for _, info in pairs(infos) do
+    if info.is_active then
+      return info
+    end
+  end
+end
+
+---@param panes_with_info PaneInformation[]
+---@return PaneInformation?
+local function find_primary_pane(panes_with_info)
+  local max_pane_px = 0 - math.huge
+  local max_pane_info
+  for _, pane_info in pairs(panes_with_info) do
+    local px = pane_info.pixel_width * pane_info.pixel_height
+    if px > max_pane_px then
+      max_pane_info = pane_info
+      max_pane_px = px
+    end
+  end
+  return max_pane_info
+end
+
+local function find_edge_panes(panes_with_info, edge)
+  local max_pane_px = 0 - math.huge
+  local max_pane_info
+  for _, pane_info in pairs(panes_with_info) do
+    local px = pane_info.pixel_width * pane_info.pixel_height
+    if px > max_pane_px then
+      max_pane_info = pane_info
+      max_pane_px = px
+    end
+  end
+  return max_pane_info
+end
+
 M.TogglePopupPane = action_callback(function(window, pane)
   local tab = window:active_tab()
-  if not tab:get_pane_direction("Left") then
-    tab:set_zoomed(false)
-    local right = tab:get_pane_direction("Right")
-    if right then
-      right:activate()
+  local panes_with_info = tab:panes_with_info()
+  -- local primary = find_primary_pane(panes_with_info) or error()
+  local active = find_active(panes_with_info) or error()
+
+  if tab:get_pane_direction("Left") == nil then
+    if not active.is_zoomed then
+      -- "close" other panes
+      tab:set_zoomed(true)
     else
-      pane:split({ direction = "Right", top_level = true, size = 0.333 }):activate()
+      tab:set_zoomed(false)
+      local right = tab:get_pane_direction("Right")
+      if right then
+        right:activate()
+      else
+        pane
+          :split({
+            direction = "Right",
+            top_level = true,
+            size = 0.333,
+          })
+          :activate()
+      end
     end
   else
-    local pane_table = tab:panes_with_info()
-    table.sort(pane_table, function(a, b)
+    table.sort(panes_with_info, function(a, b)
       return a.index < b.index
     end)
-    pane_table[1].pane:activate()
+    panes_with_info[1].pane:activate()
     tab:set_zoomed(true)
   end
 end)
+
+wezterm.on("activate-pane", function(window, pane, data)
+  wezterm.log_info("activate-pane", window, pane, data)
+end)
+
+---@param opts Direction|number|{direction: Direction}||{index: number}
+M.activate_pane = function(opts)
+  local action
+  if type(opts) == "string" then
+    opts = { direction = opts }
+  elseif type(opts) == "number" then
+    opts = { index = opts }
+  end
+  if opts.direction then
+    action = wezterm.action.ActivatePaneDirection(opts.direction)
+  elseif opts.index then
+    action = wezterm.action.ActivatePaneByIndex(opts.index)
+  else
+    error("options requires one of: direction, index")
+  end
+  return action_callback(function(window, pane)
+    wezterm.emit("activate-pane", window, pane, opts)
+    window:perform_action(action, pane)
+  end)
+end
 
 M.PromptInputLineSimple = function(description, callback)
   return wezterm.action.PromptInputLine({

@@ -16,6 +16,11 @@
     ../modules/emacs-plus
     ../modules/sunbeam
     ../modules/xcode.nix
+    # https://github.com/dhth/kplay?ref=terminaltrove
+    {
+      homebrew.taps = [ "dhth/tap" ];
+      homebrew.brews = [ "dhth/tap/kplay" ];
+    }
     # Utility for AWS CloudWatch Logs <https://github.com/TylerBrock/saw>
     {
       homebrew.taps = [ "TylerBrock/saw" ];
@@ -89,6 +94,7 @@
       ../../nix/home/doom
       ../../nix/home/just
       ../../nix/home/kitty
+      ../../nix/home/lazygit.nix
       ../../nix/home/pretty.nix
       ../../nix/home/tmux.nix
       ../../nix/home/wezterm
@@ -110,10 +116,13 @@
     programs.wezterm.enable = true;
 
     home.packages = with pkgs; [
-      flyctl
       google-cloud-sdk
-      goose
+      flyctl
+      supabase-cli
+
       kcat
+
+      bun
       mkcert
       nodejs
       pls

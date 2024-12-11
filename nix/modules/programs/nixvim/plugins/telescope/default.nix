@@ -181,10 +181,11 @@ in
 
     keymaps = [
       (mkKeymap "nv" "<leader><space>" "Find files" {
-        __raw = ''function() require("telescope").extensions.smart_open.smart_open { cwd_only = true } end'';
+        __raw = ''function() require("telescope").extensions.smart_open.smart_open {  } end'';
       })
       (mkKeymap "nv" "<leader>fF" "Find from directory" {
-        __raw = ''function() require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") } end'';
+        # __raw = ''function() require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") } end'';
+        __raw = ''function() require("telescope").extensions.smart_open.smart_open { cwd_only = true } end'';
       })
       (mkKeymap "nv" "<leader>/" "Grep files" {
         __raw = ''function() require('telescope').extensions.live_grep_args.live_grep_args() end'';

@@ -1,7 +1,6 @@
---[[ https://github.com/folke/dot/blob/48a708fa10ff0a15a84483483c039cc2791c0e3b/nvim/lua/util/init.lua#L107 ]]
-
 local M = {}
 
+--[[ https://github.com/folke/dot/blob/48a708fa10ff0a15a84483483c039cc2791c0e3b/nvim/lua/util/init.lua#L107 ]]
 ---@param data string|boolean|number
 ---@return string
 function M.base64(data)
@@ -32,51 +31,12 @@ end
 ---@param key string
 ---@param val string|boolean|number
 function M.set_user_var(key, val)
-  if os.getenv("TMUX") then
+  if vim.env.WEZTERM_IS_TMUX then
     -- UNTESTED!
     io.write(string.format("\x1bPtmux;\x1b\x1b]1337;SetUserVar=%s=%s\b\x1b\\", key, M.base64(val)))
   else
     io.write(string.format("\027]1337;SetUserVar=%s=%s\a", key, M.base64(val)))
   end
-end
-
-function M.wezterm()
-  local nav = {
-    h = "Left",
-    j = "Down",
-    k = "Up",
-    l = "Right",
-  }
-
-  local function navigate(dir)
-    return function()
-      local win = vim.api.nvim_get_current_win()
-      vim.cmd.wincmd(dir)
-      local pane = vim.env.WEZTERM_PANE
-      if vim.system and pane and win == vim.api.nvim_get_current_win() then
-        local pane_dir = nav[dir]
-        vim.system({ "wezterm", "cli", "activate-pane-direction", pane_dir }, { text = true }, function(p)
-          if p.code ~= 0 then
-            vim.notify(
-              "Failed to move to pane " .. pane_dir .. "\n" .. p.stderr,
-              vim.log.levels.ERROR,
-              { title = "Wezterm" }
-            )
-          end
-        end)
-      end
-    end
-  end
-
-  -- Move to window using the movement keys
-  for key, dir in pairs(nav) do
-    vim.keymap.set("n", "<" .. dir .. ">", navigate(key), { desc = "Go to " .. dir .. " window" })
-    vim.keymap.set("n", "<C-" .. key .. ">", navigate(key), { desc = "Go to " .. dir .. " window" })
-  end
-end
-
-if os.getenv("WEZTERM_PANE") then
-  M.set_user_var("IS_NVIM", "true")
 end
 
 return M
