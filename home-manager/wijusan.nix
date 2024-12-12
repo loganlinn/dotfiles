@@ -13,18 +13,17 @@
     self.homeModules.common
     self.homeModules.nix-colors
     self.homeModules.secrets
+    ../nix/home/dev/lua.nix
     ../nix/home/dev/nix.nix
     ../nix/home/dev/nodejs.nix
     ../nix/home/dev/shell.nix
-    ../nix/home/dev/lua.nix
-    ../nix/home/python
     ../nix/home/emacs
     ../nix/home/home-manager.nix
+    ../nix/home/nixvim
     ../nix/home/pretty.nix
+    ../nix/home/python
     ../nix/home/yt-dlp.nix
     ../nix/modules/spellcheck.nix
-    ../nix/modules/programs/nixvim
-    inputs.nixvim.homeManagerModules.nixvim
   ];
 
   colorScheme = nix-colors.colorSchemes.doom-one; # needed?

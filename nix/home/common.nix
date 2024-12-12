@@ -17,6 +17,7 @@
     ./nix-path.nix
     ./ranger.nix
     ./readline.nix
+    ./ripgrep.nix
     ./secrets.nix
     ./security.nix
     ./shell
@@ -114,17 +115,6 @@
         ];
       };
     };
-  };
-
-  programs.ripgrep = {
-    enable = true;
-    arguments = [
-      "--type-add"
-      "clj:include:clojure,edn"
-      "--smart-case"
-      "--hyperlink-format=kitty" # note: also supported by wezterm
-      "--follow"
-    ];
   };
 
   programs.jq.enable = true;

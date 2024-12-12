@@ -87,21 +87,20 @@
     imports = [
       self.homeModules.common
       self.homeModules.nix-colors
-      inputs.nixvim.homeManagerModules.nixvim
       ../../nix/home/dev
       ../../nix/home/dev/lua.nix
       ../../nix/home/dev/nodejs.nix
       ../../nix/home/doom
+      ../../nix/home/hammerspoon.nix
       ../../nix/home/just
       ../../nix/home/kitty
       ../../nix/home/lazygit.nix
+      ../../nix/home/nixvim
       ../../nix/home/pretty.nix
       ../../nix/home/tmux.nix
-      ../../nix/home/hammerspoon.nix
       ../../nix/home/wezterm
       ../../nix/home/yazi
       ../../nix/home/yt-dlp.nix
-      ../../nix/modules/programs/nixvim
     ];
 
     programs.nixvim = {
