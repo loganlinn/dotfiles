@@ -808,16 +808,16 @@ in
       key = "<leader>fD";
       action = mkRaw ''
         function()
-          if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
-            local path = vim.fn.expand("%")
-            vim.cmd("Bwipeout!")
-            local ok, err = os.remove(path)
-            if ok then
-              print("Deleted " .. path)
-            else
-              print("Error deleting " .. path .. ": " .. err)
-            end
-          end
+        if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
+        local path = vim.fn.expand("%")
+        vim.cmd("Bwipeout!")
+        local ok, err = os.remove(path)
+        if ok then
+        print("Deleted " .. path)
+        else
+        print("Error deleting " .. path .. ": " .. err)
+        end
+        end
         end
       '';
       options.desc = "Delete current file";
@@ -827,13 +827,13 @@ in
       key = "<leader>fR";
       action = mkRaw ''
         function()
-          assert(vim.fn.exists(":Move"), "eunuch-:Move not found")
-          local prompt = "Move to: "
-          local default = vim.fn.expand("%:p:~")
-          vim.ui.input({ prompt = prompt, default = default }, function(dest)
-            if #(dest or "") == 0 then return end
-            vim.cmd(":Move " .. dest)
-          end)
+        assert(vim.fn.exists(":Move"), "eunuch-:Move not found")
+        local prompt = "Move to: "
+        local default = vim.fn.expand("%:p:~")
+        vim.ui.input({ prompt = prompt, default = default }, function(dest)
+        if #(dest or "") == 0 then return end
+        vim.cmd(":Move " .. dest)
+        end)
         end
       '';
       options.desc = "Rename current file";
@@ -842,17 +842,17 @@ in
       key = "<leader>fM";
       action = mkRaw ''
         function()
-          local file = vim.fn.expand("%")
-          local current_mode = vim.fn.trim(vim.fn.system { "stat", "--format=%A", file })
-          local prompt = string.format("chmod (%s): ", current_mode)
-          vim.ui.input({ prompt = prompt }, function(input)
-            if #(input or "") == 0 then return end
-            if vim.fn.exists(":Chmod") then
-              vim.cmd("Chmod " .. input)
-            else
-              print(vim.fn.system { "chmod", input, file })
-            end
-          end)
+        local file = vim.fn.expand("%")
+        local current_mode = vim.fn.trim(vim.fn.system { "stat", "--format=%A", file })
+        local prompt = string.format("chmod (%s): ", current_mode)
+        vim.ui.input({ prompt = prompt }, function(input)
+        if #(input or "") == 0 then return end
+        if vim.fn.exists(":Chmod") then
+        vim.cmd("Chmod " .. input)
+        else
+        print(vim.fn.system { "chmod", input, file })
+        end
+        end)
         end
       '';
       options.desc = "Change file mode";
@@ -872,16 +872,28 @@ in
       key = "<leader>oe";
       action = mkRaw ''
         function()
-          -- local line, column = TODO
-          vim.fn.system {
-            "emacsclient",
-            "--no-wait",
-            -- string.format("+%n:%n", line, column),
-            vim.fn.expand("%:p")
-          }
+        -- local line, column = TODO
+        vim.fn.system {
+          "emacsclient",
+          "--no-wait",
+          -- string.format("+%n:%n", line, column),
+          vim.fn.expand("%:p")
+        }
         end
       '';
       options.desc = "Open file in Emacs";
+    }
+    {
+      mode = [ "n" ];
+      key = "<leader>xcf";
+      action = "<cmd>%!clickhouse format --comment --multiline";
+      options.desc = "clickhouse format file";
+    }
+    {
+      mode = [ "v" ];
+      key = "<leader>xcf";
+      action = "<cmd>'<,'>!clickhouse format --comment --multiline";
+      options.desc = "clickhouse format selected text";
     }
   ];
 }

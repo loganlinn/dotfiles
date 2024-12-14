@@ -44,7 +44,7 @@ in
       {
         mode = "n";
         key = "<leader>gb";
-        action = "<cmd>Telescope git_branches<CR>";
+        action.__raw = "require('neogit').action('branch', 'checkout_recent_branch')";
         options.desc = "Git files";
       }
       {
@@ -115,6 +115,12 @@ in
         key = "<leader>goy";
         action = "<cmd>GBrowse!<cr>";
         options.desc = "Yank file URL";
+      }
+      {
+        mode = "n";
+        key = "<leader>grc";
+        action.__raw = "require('neogit').action('branch', 'open_pull_request')";
+        options.desc = "Open PR";
       }
       {
         mode = "n";

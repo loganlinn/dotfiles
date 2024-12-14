@@ -1,35 +1,53 @@
 local wezterm = require("wezterm")
 
-local M = {}
-
-M.Logger = function(prefix, separator)
-  prefix = prefix or {}
-  separator = separator or ">"
-  local logger = {
-    info = function(...)
-      wezterm.log_info(table.unpack(prefix), separator, ...)
-      return ...
-    end,
-    warn = function(...)
-      wezterm.log_warn(table.unpack(prefix), separator, ...)
-      return ...
-    end,
-    error = function(...)
-      wezterm.log_error(table.unpack(prefix), separator, ...)
-      return ...
-    end,
-  }
-  return setmetatable(logger, {
-    __call = function(...)
-      logger.info(...)
-    end,
-  })
+local bind = function(f, ...)
+  local t = { ... }
+  return function(...)
+    return f(table.unpack(t), ...)
+  end
 end
 
-setmetatable(M, {
+local function spy_with(f)
+  return function(...)
+    f(...)
+    return ...
+  end
+end
+
+local logger = {}
+
+logger.new = function(options)
+  options = type(options) == "string" and { name = options } or options or {}
+
+  local display_name = wezterm.format({
+    { Attribute = { Intensity = "Bold" } },
+    { Foreground = { AnsiColor = "Fuchsia" } },
+    { Text = tostring(options.name or "anonymous") },
+    "ResetAttributes",
+    { Text = ":" },
+  })
+
+  local log = {
+    info = spy_with(bind(wezterm.log_info, display_name)),
+    warn = spy_with(bind(wezterm.log_warn, display_name)),
+    error = spy_with(bind(wezterm.log_error, display_name)),
+  }
+
+  function log.emit(...)
+    log.info("emit->", ...)
+    local ret = wezterm.emit(...)
+    log.info("emit<-", ret)
+  end
+
+  return log
+end
+
+local default = logger.new()
+
+setmetatable(logger, {
   __call = function(_, ...)
-    return M.Logger({ ... })
+    return logger.new({ ... })
   end,
 })
 
-return M
+return logger

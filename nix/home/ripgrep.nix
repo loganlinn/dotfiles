@@ -3,7 +3,7 @@
   config = {
     assertions = [
       {
-        asesrtion = builtins.elem "$HOME/.local/bin" config.home.sessionPath;
+        assertion = builtins.elem "$HOME/.local/bin" config.home.sessionPath;
         message = "$HOME/.local/bin is not in sessionPath";
       }
     ];
@@ -19,7 +19,6 @@
       ];
     };
 
-    home.files.".local/bin/rgz".source = ../../bin/rgz;
-
+    home.file.".local/bin/rgz".source = ../../bin/rgz;
   };
 }

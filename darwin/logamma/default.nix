@@ -1,6 +1,5 @@
 {
   self,
-  inputs,
   config,
   pkgs,
   lib,
@@ -16,6 +15,7 @@
     ../modules/emacs-plus
     ../modules/sunbeam
     ../modules/xcode.nix
+    ../modules/terraform.nix
     # https://github.com/dhth/kplay?ref=terminaltrove
     {
       homebrew.taps = [ "dhth/tap" ];
@@ -57,7 +57,7 @@
   ];
 
   homebrew.brews = [
-    "grafana"
+    # "grafana"
     "nss" # used by mkcert
     # "terminal-notifier" # like notify-send
   ];

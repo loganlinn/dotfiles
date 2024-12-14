@@ -15,7 +15,6 @@ with lib.my;
     settings = {
       aliases = {
         o = ''!gh browse "$@"'';
-        fail = ''!gh pr checks "$@" | awk '$2=="fail"{ print $4 }' '';
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
         prc = "pr create --web";
         pd = "pr diff";
@@ -28,6 +27,9 @@ with lib.my;
         prz = ''
           !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
         '';
+
+        proc = ''pr checks --web'';
+        procc = ''!gh pr checks --json state,link --jq 'map(select(.state != "SUCCESS" and .state != "SKIPPED") | .link)[]' | xargs -L1 open'';
 
         land = ''
           !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch

@@ -27,6 +27,7 @@
       direnv.enable = true;
       helpview.enable = true;
       illuminate.enable = true;
+      luasnip.enable = true;
       nix.enable = true;
       noice.enable = true;
       notify.enable = true;
@@ -41,13 +42,14 @@
       web-devicons.enable = true;
     };
     extraPlugins = with pkgs.vimPlugins; [
+      { plugin = fennel-vim; }
       { plugin = lazydev-nvim; }
+      { plugin = neorepl-nvim; }
+      { plugin = nfnl; }
+      { plugin = vim-abolish; }
       { plugin = vim-just; }
       { plugin = vim-lion; }
       { plugin = zoxide-vim; }
-      { plugin = nfnl; }
-      { plugin = fennel-vim; }
-      { plugin = neorepl-nvim; }
     ];
   };
 }

@@ -38,7 +38,7 @@ local function with_domains(config, domains)
       cfg = config.ssh_domains
       domain.remote_address = domain.remote_address or some(url.host)
       domain.remote_wezterm_path = domain.remote_wezterm_path or some(url.path)
-      domain.user = domain.user or some(url.username)
+      domain.username = domain.user or some(url.username)
     elseif url.scheme == "unix" then -- unix://
       cfg = config.unix_domains
       domain.name = domain.name or some(url.host) or "unix"

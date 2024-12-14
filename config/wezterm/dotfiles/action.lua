@@ -1,53 +1,55 @@
 local wezterm = require("wezterm")
+local patterns = require("dotfiles.patterns")
 local log = require("dotfiles.util.logger")("action.lua")
 
-local custom_action = {}
+local ACTIVATE_PANE_EVENT = "activate-pane"
+local ACTIVATE_TAB_EVENT = "activate-tab"
+local PANE_ROLE_POPUP = "Popup"
+
+local actions = {}
 
 ---@class dotfiles.action : table<KeyAssignment, any>
 local M = setmetatable({}, {
   __index = function(_, k)
-    local action = custom_action[k]
+    local action = actions[k]
     if action then
       return action
     end
     return wezterm.action[k] -- will error if not found
   end,
   __newindex = function(t, k, v)
-    if custom_action[k] or wezterm.has_action(k) then
+    if actions[k] or wezterm.has_action(k) then
       error("attempt to override existing action: " .. tostring(k))
     end
-    rawset(custom_action, k, v)
+    rawset(actions, k, v)
   end,
 })
 
-local action_callback = wezterm.action_callback
-
 ---@generic T : {is_active: boolean}
 ---@param infos T[]
----@return T
+---@return number, T
 local function find_active(infos)
-  for _, info in pairs(infos) do
+  for index, info in ipairs(infos) do
     if info.is_active then
-      return info
+      return index, info
     end
   end
+  error("nothing matched is_active")
 end
 
----@param panes_with_info PaneInformation[]
----@return PaneInformation?
-local function find_primary_pane(panes_with_info)
-  local max_pane_px = 0 - math.huge
-  local max_pane_info
-  for _, pane_info in pairs(panes_with_info) do
-    local px = pane_info.pixel_width * pane_info.pixel_height
-    if px > max_pane_px then
-      max_pane_info = pane_info
-      max_pane_px = px
-    end
-  end
-  return max_pane_info
+local activate_pane = function(window, pane, from_pane)
+  assert(pane and pane.pane_id and pane.activate)
+  log.emit(ACTIVATE_PANE_EVENT, window, pane, from_pane)
+  return pane:activate()
 end
 
+local activate_tab = function(window, tab, from_pane)
+  assert(tab and tab.tab_id and tab.activate)
+  log.emit(ACTIVATE_TAB_EVENT, window, tab, from_pane)
+  return tab:activate()
+end
+
+--[[
 local function find_edge_panes(panes_with_info, edge)
   local max_pane_px = 0 - math.huge
   local max_pane_info
@@ -60,67 +62,130 @@ local function find_edge_panes(panes_with_info, edge)
   end
   return max_pane_info
 end
+]]
 
-M.TogglePopupPane = action_callback(function(window, pane)
+local with_user_var_envs = function(env_vars, user_vars)
+  env_vars = env_vars or {}
+  for name, value in pairs(user_vars) do
+    env_vars["WEZTERM_USER_VAR_" .. name] = tostring(value)
+  end
+  return env_vars
+end
+
+local POPUP_DIRECTION = "Right"
+
+---@param window Window
+---@param from_pane Pane
+---@param spawn_args? {direction: Direction, top_level: boolean, size: number, args?: string[], set_environment_variables?: {[string]: string}}
+---@return Pane popup_pane
+local spawn_popup = function(window, from_pane, spawn_args)
+  -- cannot spawn from zoomed pane
+  from_pane:tab():set_zoomed(false)
+  spawn_args = spawn_args or {
+    direction = POPUP_DIRECTION,
+    top_level = true,
+    size = 0.333,
+  }
+  spawn_args.args = spawn_args.args or { "zsh", "-l" }
+  spawn_args.set_environment_variables = with_user_var_envs(spawn_args.set_environment_variables or {}, {
+    PANE_ROLE = PANE_ROLE_POPUP,
+    PARENT_PANE_ID = tostring(from_pane:pane_id()),
+  })
+  local new_pane = from_pane:split(spawn_args)
+  activate_pane(window, new_pane, from_pane)
+  return new_pane
+end
+
+local open_popup = function(window, pane, spawn_args)
+  local popup = pane:tab():get_pane_direction(POPUP_DIRECTION)
+  if popup then
+    popup:activate()
+  else
+    spawn_popup(window, pane)
+  end
+end
+
+local is_popup_pane = function(pane)
+  return pane:get_user_vars().PANE_ROLE == PANE_ROLE_POPUP
+end
+
+local is_parent_pane = function(pane, other)
+  return pane:get_user_vars().PARENT_PANE_ID == tostring(other:pane_id())
+end
+
+local is_same_pane = function(pane, other)
+  return pane:pane_id() == other:pane_id()
+end
+
+---@param tab MuxTab
+---@return Pane[]
+local find_popups = function(tab)
+  assert(tab.panes)
+  local results = {}
+  for _, pane in pairs(tab:panes()) do
+    if is_popup_pane(pane) then
+      table.insert(results, pane)
+    end
+  end
+  return results
+end
+
+local set_zoomed = function(tab, enable)
+  -- don't zoom when there's no effect
+  if enable and next(tab:panes()) ~= nil then
+    tab:set_zoomed(true)
+  else
+    tab:set_zoomed(false)
+  end
+end
+
+local opposite_direction = function(direction)
+  if direction == "Left" then
+    return "Right"
+  elseif direction == "Right" then
+    return "Left"
+  elseif direction == "Up" then
+    return "Down"
+  elseif direction == "Down" then
+    return "Up"
+  end
+end
+
+M.TogglePopupPane = wezterm.action_callback(function(window, pane)
   local tab = window:active_tab()
   local panes_with_info = tab:panes_with_info()
   -- local primary = find_primary_pane(panes_with_info) or error()
-  local active = find_active(panes_with_info) or error()
+  local is_primary = tab:get_pane_direction(opposite_direction(POPUP_DIRECTION)) == nil
+  local _, pane_info = find_active(panes_with_info)
 
-  if tab:get_pane_direction("Left") == nil then
-    if not active.is_zoomed then
-      -- "close" other panes
-      tab:set_zoomed(true)
-    else
-      tab:set_zoomed(false)
-      local right = tab:get_pane_direction("Right")
-      if right then
-        right:activate()
-      else
-        pane
-          :split(log.info({
-            direction = "Right",
-            top_level = true,
-            size = 0.333,
-            args = { "zsh", "-l" }, -- without this, set_environment_variables does not have effect
-            set_environment_variables = {
-              WEZTERM_USER_VAR_PANE_ROLE = "popup",
-            },
-          }))
-          :activate()
-      end
-    end
+  if is_primary then
+    open_popup(window, pane)
   else
-    table.sort(panes_with_info, function(a, b)
-      return a.index < b.index
-    end)
-    panes_with_info[1].pane:activate()
-    tab:set_zoomed(true)
+    activate_pane(window, panes_with_info[1].pane, pane)
+    set_zoomed(tab, true)
   end
-end)
-
-wezterm.on("activate-pane", function(window, pane, data)
-  wezterm.log_info("activate-pane", window, pane, data)
 end)
 
 ---@param opts Direction|number|{direction: Direction}||{index: number}
-M.activate_pane = function(opts)
-  local action
-  if type(opts) == "string" then
-    opts = { direction = opts }
-  elseif type(opts) == "number" then
-    opts = { index = opts }
-  end
-  if opts.direction then
-    action = wezterm.action.ActivatePaneDirection(opts.direction)
-  elseif opts.index then
-    action = wezterm.action.ActivatePaneByIndex(opts.index)
-  else
-    error("options requires one of: direction, index")
-  end
-  return action_callback(function(window, pane)
-    wezterm.emit("activate-pane", window, pane, opts)
-    window:perform_action(action, pane)
+M.activate_direction = function(direction)
+  return wezterm.action_callback(function(window, pane)
+    local tab = pane:tab() or window:active_tab()
+
+    local next_pane = tab:get_pane_direction(direction)
+      or tab:get_pane_direction(direction == "Right" and "Next" or "Prev")
+
+    if next_pane and not is_same_pane(next_pane, pane) then
+      activate_pane(window, next_pane, pane)
+
+      log.info("is_popup", pane, is_popup_pane(pane))
+      log.info("is_parent_pane", next_pane, pane, is_parent_pane(next_pane, pane))
+      -- re-zoom if moving back from popup
+      if is_popup_pane(pane) and is_parent_pane(next_pane, pane) then
+        set_zoomed(tab, true)
+      end
+    elseif direction == POPUP_DIRECTION then
+      spawn_popup(window, pane)
+    end
   end)
 end
 
@@ -132,7 +197,7 @@ M.PromptInputLineSimple = function(description, callback)
       { Text = description },
       "ResetAttributes",
     }),
-    action = action_callback(function(window, pane, input, ...)
+    action = wezterm.action_callback(function(window, pane, input, ...)
       if input ~= nil and input ~= "" then
         callback(window, pane, input, ...)
       else
@@ -196,12 +261,12 @@ M.SwitchToNamedWorkspace = M.PromptInputLineSimple("Workspace name:", function(w
   window:perform_action(wezterm.action.SwitchToWorkspace({ name = name }), pane)
 end)
 
-M.DumpWindow = action_callback(function(window, _)
+M.DumpWindow = wezterm.action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
   m.inspect(window, m.dump_window(window), tostring(window))
 end)
 
-M.DumpPane = action_callback(function(window, pane)
+M.DumpPane = wezterm.action_callback(function(window, pane)
   local m = require("dotfiles.util.debug")
   m.inspect(window, m.dump_pane(pane), tostring(pane))
 end)
@@ -209,7 +274,7 @@ end)
 M.SplitPaneAuto = function(args)
   args = args or {}
 
-  return action_callback(function(_, pane)
+  return wezterm.action_callback(function(_, pane)
     local pane_dimensions = pane:get_dimensions()
     if 0.6 > ((pane_dimensions.pixel_height or 1) / (pane_dimensions.pixel_width or 1)) then
       args.direction = "Right"
@@ -225,7 +290,7 @@ M.SplitPaneAuto = function(args)
 end
 
 M.ToggleDockedPane = function(direction)
-  return action_callback(function(window, pane)
+  return wezterm.action_callback(function(window, pane)
     local tab = window:active_tab()
     local edge_pane = tab:get_pane_direction(direction)
 
@@ -240,7 +305,7 @@ end
 
 M.MovePaneToNewTab = function(opts)
   opts = opts or {}
-  return action_callback(function(_, pane)
+  return wezterm.action_callback(function(_, pane)
     local tab = pane:move_to_new_tab()
     if opts.activate then
       tab:activate()
@@ -252,7 +317,7 @@ end
 ---@param workspace? string
 M.MovePaneToWorkspace = function(workspace)
   if workspace then
-    action_callback(function(_, pane)
+    wezterm.action_callback(function(_, pane)
       pane:move_to_new_tab()
     end)
   else
@@ -277,11 +342,11 @@ end
 ---@param config_key?
 M.UpdateConfigOverrides = function(param)
   if type(param) == "function" then
-    return action_callback(function(window, _)
+    return wezterm.action_callback(function(window, _)
       window:set_config_overrides(param(window:get_config_overrides()))
     end)
   elseif type(param) == "table" then
-    return action_callback(function(window, _)
+    return wezterm.action_callback(function(window, _)
       local overrides = window:get_config_overrides() or {}
       for config_key, f in pairs(param) do
         overrides[config_key] = f(overrides[config_key])
@@ -293,7 +358,7 @@ M.UpdateConfigOverrides = function(param)
   end
 end
 
-M.ToggleDebugKeyEvents = action_callback(function(window, _)
+M.ToggleDebugKeyEvents = wezterm.action_callback(function(window, _)
   apply_to_config_overrides(function(overrides)
     overrides.debug_key_events = not overrides.debug_key_events
     return overrides
@@ -301,9 +366,7 @@ M.ToggleDebugKeyEvents = action_callback(function(window, _)
 end)
 
 M.QuickSelectUrl = wezterm.action.QuickSelectArgs({
-  patterns = {
-    "[a-zA-Z]+://\\S+",
-  },
+  patterns = patterns.URL,
   action = wezterm.action_callback(function(window, pane)
     local url = window:get_selection_text_for_pane(pane)
     window:perform_action(wezterm.action.ClearSelection, pane)
@@ -313,43 +376,31 @@ M.QuickSelectUrl = wezterm.action.QuickSelectArgs({
   end),
 })
 
-M.InputSelectorDemo = M.InputSelector({
-  action = wezterm.action_callback(function(window, pane, id, label)
-    if not id and not label then
-      wezterm.log_info("cancelled")
-    else
-      wezterm.log_info("you selected ", id, label)
-      pane:send_text(id)
+M.QuickEdit = wezterm.action.QuickSelectArgs({
+  patterns = patterns.FILE,
+  action = wezterm.action_callback(function(window, pane)
+    local selection = window:get_selection_text_for_pane(pane)
+    window:perform_action(wezterm.action.ClearSelection, pane)
+    if selection then
+      log.info("editing", selection)
+      local split_pane = pane:split({
+        direction = "Bottom",
+        args = {
+          "zsh",
+          "-l",
+          "-i",
+          "-c",
+          [[ exec "${EDITOR:-vim}" "$@" ]],
+          "-s",
+          selection,
+        },
+        set_environment_variables = {
+          WEZTERM_USER_VAR_PANE_ROLE = "QuickEdit",
+        },
+      })
+      split_pane:activate()
     end
   end),
-  title = "I am title",
-  choices = {
-    -- This is the first entry
-    {
-      -- Here we're using wezterm.format to color the text.
-      -- You can just use a string directly if you don't want
-      -- to control the colors
-      label = wezterm.format({
-        { Foreground = { AnsiColor = "Red" } },
-        { Text = "No" },
-        { Foreground = { AnsiColor = "Green" } },
-        { Text = " thanks" },
-      }),
-      -- This is the text that we'll send to the terminal when
-      -- this entry is selected
-      id = "Regretfully, I decline this offer.",
-    },
-    -- This is the second entry
-    {
-      label = "WTF?",
-      id = "An interesting idea, but I have some questions about it.",
-    },
-    -- This is the third entry
-    {
-      label = "LGTM",
-      id = "This sounds like the right choice",
-    },
-  },
 })
 
 return M

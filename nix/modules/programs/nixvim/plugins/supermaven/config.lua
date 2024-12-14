@@ -9,11 +9,21 @@ require("supermaven-nvim").setup({
     "envrc",
   },
 
+  keymaps = {
+    accept_suggestion = "<Tab>",
+  },
+
+  color = {
+    suggestion_color = vim.api.nvim_get_hl(0, { name = "NonText" }).fg,
+    cterm = vim.api.nvim_get_hl(0, { name = "NonText" }).cterm,
+    suggestion_group = "NonText",
+  },
+
   -- set to "off" to disable logging completely
-  log_level = "warn",
+  log_level = "error",
 
   -- disables inline completion for use with cmp
-  disable_inline_completion = false,
+  disable_inline_completion = true,
 
   -- disables built in keymaps for more manual control
   disable_keymaps = false,

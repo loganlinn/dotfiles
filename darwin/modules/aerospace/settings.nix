@@ -321,7 +321,7 @@ in
       })
       {
         "org.gnu.Emacs" = 1;
-        "com.github.wez.WezTerm" = 1;
+        # "com.github.wez.WezTerm" = 1;
         "com.linear" = 4;
         "${app-ids."Google Chrome"}" = 3;
         "${app-ids.Slack}" = 10;
@@ -336,7 +336,7 @@ in
         run = "move-node-to-workspace ${toString workspace}";
       })
       {
-        "WezTerm" = 2;
+        # "WezTerm" = 2;
         "Excalidraw" = 4;
         "SoundCloud" = 9;
       }

@@ -1,9 +1,4 @@
 { config, lib, ... }:
-
-with lib;
-let
-  inherit (config.lib.nixvim) mkRaw;
-in
 {
   _file = ./default.nix;
 
@@ -11,6 +6,7 @@ in
     ./plugins
     ./keymaps.nix
   ];
+
   config = {
     programs.nixvim = {
       vimAlias = true;
@@ -60,19 +56,22 @@ in
         virtual_lines.only_current_line = true;
       };
 
-      extraFiles."lua/util/init.lua".source = ./lua/util/init.lua;
+      # TODO proper file listing
+      extraFiles."lua/util/wezterm.lua".source = ./lua/util/wezterm.lua;
+      extraFiles."lua/util/base64.lua".source = ./lua/util/base64.lua;
+      extraFiles."lua/util/supermaven.lua".source = ./lua/util/supermaven.lua;
 
       extraConfigLuaPre = ''
-        local util = require('util')
-
         if vim.env.WEZTERM_PANEL then
-          util.set_user_var("IS_NVIM", "true")
+          local wezterm = require('util.wezterm')
+          wezterm.set_user_var("IS_NVIM", "true")
+          wezterm.set_user_var("NVIM_SERVER", serverstart())
         end
 
-        _G.dd = function(...) require("snacks.debug").inspect(...) end
-        _G.bt = function(...) require("snacks.debug").backtrace() end
-        _G.p = function(...) require("snacks.debug").profile(...) end
-        vim.print = _G.dd
+        -- _G.dd = function(...) require("snacks.debug").inspect(...) end
+        -- _G.bt = function(...) require("snacks.debug").backtrace() end
+        -- _G.p = function(...) require("snacks.debug").profile(...) end
+        -- vim.print = _G.dd
       '';
 
       extraConfigLua = ''

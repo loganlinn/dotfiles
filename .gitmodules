@@ -7,3 +7,6 @@
 [submodule "test/test_helper/bats-assert"]
 	path = test/test_helper/bats-assert
 	url = https://github.com/bats-core/bats-assert.git
+[submodule "config/hammerspoon/Spoons/ControlEscape.spoon"]
+	path = config/hammerspoon/Spoons/ControlEscape.spoon
+	url = https://github.com/jasonrudolph/ControlEscape.spoon

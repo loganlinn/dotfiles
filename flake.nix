@@ -36,6 +36,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     # flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     flake-root.url = "github:srid/flake-root";
+    globset.url = "github:pdtpartners/globset";
     nix-colors.url = "github:misterio77/nix-colors";
     # nix-index-database.url = "github:Mic92/nix-index-database";
     # nix-index-database.inputs.nixpkgs.follows = "nixpkgs";

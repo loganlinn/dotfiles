@@ -208,7 +208,7 @@ M.datafy = function(x)
 end
 
 M.inspect = function(window, data, title)
-  wezterm.log_info("dump", data)
+  wezterm.log_info("inspect", data)
 
   local json_encode = (wezterm.serde and wezterm.serde.json_encode_pretty)
     or wezterm.json_encode
