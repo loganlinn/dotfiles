@@ -56,18 +56,11 @@
         virtual_lines.only_current_line = true;
       };
 
-      # TODO proper file listing
-      extraFiles."lua/util/wezterm.lua".source = ./lua/util/wezterm.lua;
-      extraFiles."lua/util/base64.lua".source = ./lua/util/base64.lua;
-      extraFiles."lua/util/supermaven.lua".source = ./lua/util/supermaven.lua;
-
       extraConfigLuaPre = ''
-        if vim.env.WEZTERM_PANEL then
-          local wezterm = require('util.wezterm')
-          wezterm.set_user_var("IS_NVIM", "true")
-          wezterm.set_user_var("NVIM_SERVER", serverstart())
+        local ok, wezterm = pcall(require, "util.wezterm")
+        if ok then
+          wezterm.setup{}
         end
-
         -- _G.dd = function(...) require("snacks.debug").inspect(...) end
         -- _G.bt = function(...) require("snacks.debug").backtrace() end
         -- _G.p = function(...) require("snacks.debug").profile(...) end

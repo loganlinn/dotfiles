@@ -91,7 +91,8 @@ local spawn_popup = function(window, from_pane, spawn_args)
     PANE_ROLE = PANE_ROLE_POPUP,
     PARENT_PANE_ID = tostring(from_pane:pane_id()),
   })
-  local new_pane = from_pane:split(spawn_args)
+
+  local new_pane = from_pane:split(log.info(spawn_args))
   activate_pane(window, new_pane, from_pane)
   return new_pane
 end
