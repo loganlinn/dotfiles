@@ -31,13 +31,9 @@ function M.apply_to_config(config)
   end
 
   config.font_size = 14
-
   config.cell_width = 1
-
   config.line_height = 1.1
-
   config.command_palette_font_size = config.font_size
-
   config.char_select_font_size = config.font_size
 
   return config

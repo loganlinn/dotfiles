@@ -15,10 +15,9 @@ end
 
 function M.setup()
   if vim.env.WEZTERM_PANE then
-    local wezterm = require("util.wezterm")
     local servers = vim.fn.serverlist()
     local server = servers and servers[1] or vim.fn.startserver()
-    wezterm.set_user_var("NVIM_LISTEN_ADDRESS", server)
+    M.set_user_var("NVIM_LISTEN_ADDRESS", server)
   end
 end
 

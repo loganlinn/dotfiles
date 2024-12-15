@@ -1,24 +1,20 @@
 local wezterm = require("wezterm")
 
----@class Atom
-local M = {}
+---@alias atom.key string|table
+---@alias atom.watch fun(key: atom.key, self: atom, oldval: any, newval: any)
+---@class atom
+---@field watches table<atom.key, atom.watch>
+local atom = {}
 
-local MT = {
-  __index = M,
-  __newindex = function()
-    error("atom: attempt to modify a read-only table", 2)
-  end,
-}
-
-function M:deref()
+function atom:deref()
   return wezterm.GLOBAL[self.key]
 end
 
-function M:reset(newval, ...)
+function atom:reset(newval)
   local oldval = self:deref()
   for key, fn in pairs(self.watches) do
     if fn then
-      local ok, err = pcall(fn, key, self, oldval, newval, ...)
+      local ok, err = pcall(fn, key, self, oldval, newval)
       if not ok then
         wezterm.log_error("atom", self.key, "watch", key, "error", err)
         return self
@@ -29,31 +25,32 @@ function M:reset(newval, ...)
   return self
 end
 
-function M:swap(update, ...)
+function atom:swap(update, ...)
   return self:reset(update(self:deref(), ...), ...)
 end
 
-function M:add_watch(key, fn)
+function atom:add_watch(key, fn)
   assert(self.watches[key] == nil)
   self.watches[key] = fn
   return self
 end
 
-function M:remove_watch(key)
+function atom:remove_watch(key)
   self.watches[key] = nil
   return self
 end
 
----@param key string|table
----@return Atom
-function M:new(key)
-  assert(key ~= nil)
+---@param key atom.key
+---@return atom
+function atom:new(key)
   return setmetatable({
-    key = key,
+    key = assert(key),
     watches = {},
-  }, MT)
+  }, {
+    __index = self,
+  })
 end
 
-setmetatable(M, { __call = M.new })
+setmetatable(atom, { __call = atom.new, __newindex = error })
 
-return M
+return atom

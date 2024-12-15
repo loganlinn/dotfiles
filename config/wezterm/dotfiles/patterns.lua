@@ -1,43 +1,36 @@
 local wezterm = require("wezterm")
 
----@class patterns.registry
-local registry = {
-  EMAIL = {
-    "[%w.+-]@[%w.+-]%.%w+",
-  },
-  FILE = {
-    [[(?:[-._~/a-zA-Z0-9])*[/ ](?:[-._~/a-zA-Z0-9]+)]], -- unix paths
-    "(?<= | | | | | | | | | | | | | |󰢬 | | | |└──|├──)\\s?(\\S+)", -- HACK: lsd/eza output.
-  },
-  GIT = {
-    "[\\h]{7,40}", -- SHA1 hashes, usually used for Git.
-  },
-  NIX = {
-    "sha256-.{44,128}", -- SHA256 hashes in Base64, used often in getting hashes for Nix packaging.
-    "sha512-.{44,128}", -- SHA512 hashes in Base64, used often in getting hashes for Nix packaging.
-  },
-  URL = {},
+---@type table<string, string[]>
+local patterns = setmetatable({}, { __index = error })
+patterns.EMAIL = {
+  "[%w.+-]@[%w.+-]%.%w+",
 }
-
-setmetatable(registry, { __index = error })
-
+patterns.FILE = {
+  [[(?:[-._~/a-zA-Z0-9])*[/ ](?:[-._~/a-zA-Z0-9]+)]], -- unix paths
+  "(?<= | | | | | | | | | | | | | |󰢬 | | | |└──|├──)\\s?(\\S+)", -- HACK: lsd/eza output.
+}
+patterns.GIT = {
+  "[\\h]{7,40}", -- SHA1 hashes, usually used for Git.
+}
+patterns.NIX = {
+  "sha256-.{44,128}", -- SHA256 hashes in Base64, used often in getting hashes for Nix packaging.
+  "sha512-.{44,128}", -- SHA512 hashes in Base64, used often in getting hashes for Nix packaging.
+}
+patterns.URL = {}
 for _, rule in ipairs(wezterm.default_hyperlink_rules()) do
-  table.insert(registry.URL, rule.regex)
+  table.insert(patterns.URL, rule.regex)
 end
 
-local M = {}
-
----@return string[]
-M.all = function()
-  local result = {}
-  for _, group in pairs(registry) do
-    for _, pattern in ipairs(group) do
-      table.insert(result, pattern)
+local function apply_to_config(config)
+  config.quick_select_patterns = config.quick_select_patterns or {}
+  for _, pattern in pairs(patterns) do
+    for _, regex in ipairs(pattern) do
+      table.insert(config.quick_select_patterns, regex)
     end
   end
-  return result
+  return config
 end
 
-setmetatable(M, { __index = registry })
-
-return M
+return {
+  apply_to_config = apply_to_config,
+}
