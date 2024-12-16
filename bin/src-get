@@ -94,6 +94,7 @@ src-dir() {
 #        src-get <owner>/<repo>
 #
 src-get() {
+  local debug_flag=${DEBUG+true}
   case $1 in
   -h | --help | help)
     echo "Usage: src-get <repository>"
@@ -101,8 +102,8 @@ src-get() {
     return 0
     ;;
   --debug)
+    debug_flag=$1
     shift
-    set -x
     ;;
   --)
     shift
@@ -113,6 +114,10 @@ src-get() {
     return 1
     ;;
   esac
+
+  if [[ -n $debug_flag ]]; then
+    set -x
+  fi
 
   if [[ -z $1 ]]; then
     echo "src-get: missing operand" >&2
@@ -126,10 +131,9 @@ src-get() {
       dir=$(src-dir "$repo")
 
       if [[ ! -d $dir ]]; then
-        local gitcmd
-        gitcmd=$(printf 'git clone --depth=1 --progress -- %q %q' "$repo" "$dir")
-        if $gitcmd; then
-          echo >&2 "src-get: ✅ $gitcmd"
+        local git_clone_cmd=("${SRC_GIT:-git}" clone --depth=1 --progress -- "$repo" "$dir")
+        if command "${git_clone_cmd[@]}"; then
+          echo >&2 "src-get: ✅ ${git_clone_cmd[*]}"
         else
           return $?
         fi
