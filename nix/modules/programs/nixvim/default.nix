@@ -1,5 +1,6 @@
 {
   imports = [
+    ./colorschemes.nix
     ./plugins
     ./keymaps.nix
   ];
@@ -7,7 +8,7 @@
   config = {
     programs.nixvim = {
       vimAlias = true;
-      colorschemes.dracula.enable = true;
+
       opts = {
         ignorecase = true;
         smartcase = true;
@@ -65,11 +66,16 @@
       '';
 
       extraConfigLua = ''
-
+        -- require('kanagawa')
       '';
 
       extraConfigLuaPost = ''
-
+        vim.diagnostic.config({
+          virtual_text = false,
+          underline = true,
+          signs = true,
+          severity_sort = true,
+        })
       '';
 
       extraConfigVim = ''

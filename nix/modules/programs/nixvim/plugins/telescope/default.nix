@@ -1,11 +1,14 @@
 {
+  config,
   pkgs,
   lib,
   ...
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  inherit (config.lib.nixvim) toLuaObject;
   inherit (import ../../helpers.nix { inherit lib; }) mkKeymap;
+  cfg = config.programs.nixvim.plugins.telescope;
 in
 {
   programs.nixvim = {
@@ -21,29 +24,71 @@ in
     ];
     plugins.telescope = {
       enable = true;
-      settings.defaults = {
-        file_ignore_patterns = [
-          "^.direnv/"
-          "^.git/"
-          "^__pycache__/"
-          "^node_packages/"
-          "^output/"
-          "^target/"
-        ];
-        # keybindings _within_ telescope
-        mappings = {
-          i = {
-            "<C-a>" = "which_key";
-            "<C-h>" = "which_key";
-            "<C-g>" = "close";
-            "<C-u>" = {
-              __raw = "false";
-            }; # clear prompt
-            "<C-j>" = "move_selection_next";
-            "<C-k>" = "move_selection_previous";
-          };
-        };
+      settings = {
+        # defaults = {
+        #   file_ignore_patterns = [
+        #     "^.direnv/"
+        #     "^.git/"
+        #     "^__pycache__/"
+        #     "^node_packages/"
+        #     "^output/"
+        #     "^target/"
+        #   ];
+        #   # keybindings _within_ telescope
+        #   mappings = {
+        #     i = {
+        #       "<C-a>" = "which_key";
+        #       "<C-h>" = "which_key";
+        #       "<C-g>" = "close";
+        #       "<C-u>" = {
+        #         __raw = "false";
+        #       }; # clear prompt
+        #       "<C-j>" = "move_selection_next";
+        #       "<C-k>" = "move_selection_previous";
+        #     };
+        #   };
+        # };
+        defaults.__raw = ''
+          vim.tbl_extend("force", require('telescope.themes').get_ivy(), {
+            file_ignore_patterns = {
+              "^.direnv/",
+              "^.git/",
+              "^__pycache__/",
+              "^node_packages/",
+              "^output/",
+              "^target/" 
+            },
+            mappings = {
+                i = {
+                    ["<C-a>"] = "which_key",
+                    ["<C-g>"] = "close",
+                    ["<C-h>"] = "which_key",
+                    ["<C-j>"] = "move_selection_next",
+                    ["<C-k>"] = "move_selection_previous",
+                    ["<C-u>"] = false,
+                },
+            },
+          })
+        '';
       };
+
+      enabledExtensions = [ "gh" ];
+
+      luaConfig.pre = # lua
+        '''';
+
+      # luaConfig.content = lib.mkOverride #lua
+      #   ''
+      #   local __telescopeTheme = require('telescope.themes').get_ivy()
+      #   local __telescopeSettings =
+      #   require('telescope').setup(${toLuaObject cfg.settings})
+      #
+      #   local __telescopeExtensions = ${toLuaObject cfg.enabledExtensions}
+      #   for i, extension in ipairs(__telescopeExtensions) do
+      #     require('telescope').load_extension(extension)
+      #   end
+      # '';
+
       # https://github.com/nix-community/nixvim/tree/main/plugins/by-name/telescope/extensions
       extensions.file-browser = {
         enable = true;
@@ -99,7 +144,7 @@ in
         "<leader><" = "buffers"; # doom: all buffers
         "<leader>bs" = "current_buffer_fuzzy_find";
         "<leader>bt" = "current_buffer_tags";
-        "<leader>ff" = "file_browser";
+        # "<leader>ff" = "file_browser";
         "<leader>fg" = "diagnostics";
         "<leader>cd" = "lsp_definitions";
         "<leader>ct" = "lsp_type_definitions";
@@ -172,10 +217,6 @@ in
           };
         };
       };
-      luaConfig.post = # lua
-        ''
-          require('telescope').load_extension('gh')
-        '';
     };
 
     keymaps = [
@@ -185,8 +226,18 @@ in
         key = "<leader>T";
         action = "<cmd>Telescope<CR>";
       }
-      (mkKeymap "nv" "<leader><space>" "Find files" {
-        __raw = ''function() require("telescope").extensions.smart_open.smart_open {  } end'';
+      (mkKeymap "nv" "<leader><space>" "Open file" {
+        __raw = ''
+          function()
+            require("telescope").extensions.smart_open.smart_open {
+              -- prompt_title = require("custom.path_utils").normalize_to_home(vim.fn.getcwd()),
+              cwd = vim.fn.getcwd(),
+              cwd_only = true,
+            }
+          end'';
+      })
+      (mkKeymap "nv" "<leader>ff" "Browse files" {
+        __raw = ''function() require("telescope").extensions.file_browser.file_browser {  } end'';
       })
       (mkKeymap "nv" "<leader>fF" "Find from directory" {
         # __raw = ''function() require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") } end'';

@@ -43,7 +43,7 @@
 
       modules.icons = { };
 
-      modules.indentscope = { };
+      # modules.indentscope = { };
 
       modules.hipatterns = { };
 

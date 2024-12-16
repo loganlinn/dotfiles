@@ -97,6 +97,10 @@ with lib;
         name = "colored-man-pages";
         src = ./plugins/colored-man-pages;
       }
+      {
+        name = "nvim-appname";
+        src = ./plugins/nvim-appname;
+      }
     ];
     envExtra = ''
       [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local

@@ -9,5 +9,6 @@ in
   ];
   xdg.configFile = {
     "nvim/lua".source = mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/nvim/lua";
+    "nvim_dotfiles".source = mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/nvim";
   };
 }
