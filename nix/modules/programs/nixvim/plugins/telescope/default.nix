@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   ...
@@ -180,6 +179,12 @@ in
     };
 
     keymaps = [
+      (mkKeymap "nv" "<leader>T" "Telescope" "<cmd>Telescope<cr>")
+      {
+        mode = "n";
+        key = "<leader>T";
+        action = "<cmd>Telescope<CR>";
+      }
       (mkKeymap "nv" "<leader><space>" "Find files" {
         __raw = ''function() require("telescope").extensions.smart_open.smart_open {  } end'';
       })
@@ -190,28 +195,18 @@ in
       (mkKeymap "nv" "<leader>/" "Grep files" {
         __raw = ''function() require('telescope').extensions.live_grep_args.live_grep_args() end'';
       })
-      (mkKeymap "n" "<leader>sb" "Grep word in buffer" {
-        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer() end'';
-      })
-      (mkKeymap "v" "<leader>sb" "Grep selection in buffer" {
-        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer() end'';
-      })
       (mkKeymap "n" "<leader>*" "Grep word under cursor" {
         __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor() end'';
       })
       (mkKeymap "v" "<leader>*" "Grep selection in buffer" {
         __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection() end'';
       })
-      (mkKeymap "nv" "<leader>cf" "Format buffer" {
-        __raw = ''
-          function()
-            vim.lsp.buf.format({
-              async = true,
-              filter = function(client) return client.name ~= "ts_ls" end,
-            })
-          end'';
+      (mkKeymap "n" "<leader>sb" "Grep word in buffer" {
+        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer() end'';
       })
-      (mkKeymap "v" "<leader>ce" "LSP format expr" { __raw = ''function() vim.lsp.formatexpr() end''; })
+      (mkKeymap "v" "<leader>sb" "Grep selection in buffer" {
+        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer() end'';
+      })
       (mkKeymap "nv" "<leader>sd" "Search current directory" {
         __raw = ''
           function()
@@ -281,13 +276,13 @@ in
       {
         mode = "n";
         key = "<leader>hk";
-        action = ''<cmd>Telescope keymap<CR>'';
+        action = ''<cmd>Telescope keymaps<CR>'';
         options.desc = "keymaps";
       }
       {
         mode = "n";
         key = "<leader>ht";
-        action = "<cmd>lua require('telescope.builtin').help_tags()<CR>";
+        action = "<cmd>Telescope help_tags<CR>";
         options.desc = "help_tags";
       }
       {

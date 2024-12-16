@@ -1,7 +1,4 @@
-{ config, lib, ... }:
 {
-  _file = ./default.nix;
-
   imports = [
     ./plugins
     ./keymaps.nix
@@ -76,7 +73,7 @@
       '';
 
       extraConfigVim = ''
-        " Fat finger support by loganlinguiça
+        " Fat finger support for loganlinguiça
         cnoreabbrev Q q
         cnoreabbrev Q! q!
         cnoreabbrev W w

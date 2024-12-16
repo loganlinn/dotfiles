@@ -1,4 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
+let
+  cfg = config.programs.nixvim;
+in
 {
   imports = [
     ./bufferline.nix
@@ -26,7 +29,6 @@
     plugins = {
       direnv.enable = true;
       helpview.enable = true;
-      illuminate.enable = true;
       luasnip.enable = true;
       nix.enable = true;
       noice.enable = true;
@@ -38,7 +40,7 @@
       sniprun.enable = true;
       spectre.enable = true;
       trouble.enable = true;
-      vim-surround.enable = true;
+      vim-surround.enable = cfg.plugins.mini.modules.surround or null == null;
       web-devicons.enable = true;
     };
     extraPlugins = with pkgs.vimPlugins; [

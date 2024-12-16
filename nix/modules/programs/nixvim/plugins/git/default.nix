@@ -10,7 +10,7 @@ let
 in
 {
   programs.nixvim = {
-    plugins.fugitive.enable = true;
+    plugins.fugitive.enable = cfg.plugins.mini.modules.git or null == null;
     plugins.gitlinker.enable = true;
     plugins.lazygit.enable = true;
     plugins.diffview = {
