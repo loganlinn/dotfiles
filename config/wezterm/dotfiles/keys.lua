@@ -138,10 +138,11 @@ local function apply_to_config(config)
     --[[ Output ]]
     { mod, "c", act.CopyTo("Clipboard") },
     { mod, "v", act.PasteFrom("Clipboard") },
+    { leader, "v", act.ActivateCopyMode },
 
     { super, "f", act.Search({ CaseSensitiveString = "" }) },
     { mod, "F", act.QuickSelect },
-    { mod, "E", act.QuickSelectUrl }, -- https://loganlinn.com
+    { mod, "E", act.quick_open }, -- https://loganlinn.com
     { mod, "o", act.ActivateKeyTable({ name = "Open" }) }, -- https://loganlinn.com
 
     { mod, "Home", act.ScrollToTop },
@@ -202,8 +203,6 @@ local function apply_to_config(config)
     { "SHIFT", "K", act.SplitPane({ direction = "Left" }) },
     { "SHIFT", "L", act.SplitPane({ direction = "Down" }) }
   )
-
-  assign(config, "Open", { nil, "e", act.QuickEdit }, { nil, "u", act.QuickSelectUrl })
 
   -- Mouse bindings
   config.mouse_bindings = config.mouse_bindings or {}

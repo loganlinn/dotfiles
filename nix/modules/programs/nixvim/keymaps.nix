@@ -946,23 +946,5 @@ in
       action = "<cmd>'<,'>!clickhouse format --comment --multiline<cr>";
       options.desc = "clickhouse format selected text";
     }
-    {
-      mode = "v";
-      key = "<leader>ot";
-      action.__raw = ''
-        function()
-          local wezterm_exe = vim.env.WEZTERM_EXECUTABLE or vim.fn.exepath("wezterm")
-          local cwd = vim.fn.expand("%:p:h")
-          if wezterm_exe then
-            vim.fn.system { weztgerm_exe, "cli", "split-pane", "--bottom",  "--cwd", cwd }
-          else
-            local ok, mod = pcall(require, 'lspsaga.floaterm')
-            if ok then mod:open_float_terminal(os.getenv('SHELL'), cwd) end
-          end
-          print("your basic ass nvim skills are showing")
-        end
-      '';
-      options.desc = "Terminal";
-    }
   ];
 }

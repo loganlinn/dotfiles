@@ -366,40 +366,27 @@ M.ToggleDebugKeyEvents = wezterm.action_callback(function(window, _)
   end, window)
 end)
 
-M.QuickSelectUrl = wezterm.action.QuickSelectArgs({
-  patterns = patterns.URL,
-  action = wezterm.action_callback(function(window, pane)
-    local url = window:get_selection_text_for_pane(pane)
-    window:perform_action(wezterm.action.ClearSelection, pane)
-    if url then
-      wezterm.open_with(url)
-    end
-  end),
-})
-
-M.QuickEdit = wezterm.action.QuickSelectArgs({
-  patterns = patterns.FILE,
+-- Open either URLs or paths
+M.quick_open = wezterm.action.QuickSelectArgs({
+  patterns = patterns.union(patterns.FILE, patterns.URL),
   action = wezterm.action_callback(function(window, pane)
     local selection = window:get_selection_text_for_pane(pane)
     window:perform_action(wezterm.action.ClearSelection, pane)
     if selection then
-      log.info("editing", selection)
-      local split_pane = pane:split({
-        direction = "Bottom",
-        args = {
-          "zsh",
-          "-l",
-          "-i",
-          "-c",
-          [[ exec "${EDITOR:-vim}" "$@" ]],
-          "-s",
-          selection,
-        },
-        set_environment_variables = {
-          WEZTERM_USER_VAR_PANE_ROLE = "QuickEdit",
-        },
-      })
-      split_pane:activate()
+      log.info("quick_open:", selection)
+      local uri
+      if pcall(wezterm.url.parse, selection) then
+        uri = selection
+      else
+        if string.match(selection, "^/") then
+          uri = "file://" .. selection
+        else
+          uri = "file://" .. pane:get_current_working_dir().file_path .. selection
+        end
+      end
+      log.info("opening", uri)
+      wezterm.emit("open-uri", window, pane, uri)
+      -- wezterm.open_with(uri)
     end
   end),
 })

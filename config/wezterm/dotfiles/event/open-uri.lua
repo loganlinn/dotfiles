@@ -11,8 +11,8 @@ local function pane_nvim_server(pane)
 end
 
 ---@param tab MuxTab
----@return string[]
-local function tab_nvim_servers(tab)
+---@return Pane[]
+local function get_nvim_panes(tab)
   local panes_info = tab:panes_with_info()
   table.sort(panes_info, function(a, b)
     return (a.width * a.height) > (b.width * b.height)
@@ -20,9 +20,9 @@ local function tab_nvim_servers(tab)
 
   local results = {}
   for _, pane_info in ipairs(panes_info) do
-    local server = pane_nvim_server(pane_info.pane)
-    if server then
-      table.insert(results, server)
+    local pane = pane_info.pane
+    if pane_nvim_server(pane) then
+      table.insert(results, pane)
     end
   end
   return results
@@ -53,10 +53,18 @@ local function open_with_nvim(window, pane, url)
     return false
   end
   -- open in new window when no nvim
-  if (window:keyboard_modifiers() or "NONE") == "NONE" then
-    for _, server_addr in ipairs(tab_nvim_servers(window:active_tab())) do
-      if open_with_nvim_server(server_addr, url.file_path) then
-        return true
+  if (window:keyboard_modifiers() or "NONE") ~= "SUPER" then
+    local panes_info = (pane and pane:tab() or window:active_tab()):panes_with_info()
+    table.sort(panes_info, function(a, b)
+      return (a.width * a.height) > (b.width * b.height)
+    end)
+    for _, pane_info in ipairs(panes_info) do
+      local pane = pane_info.pane
+      local nvim = pane_nvim_server(pane)
+      log.info("opening", url, "with nvim server", nvim)
+      if nvim and open_with_nvim_server(nvim, url.file_path) then
+        pane:activate()
+        return false
       end
     end
   end
@@ -66,6 +74,7 @@ local function open_with_nvim(window, pane, url)
     }),
     pane
   )
+  return false
 end
 
 return function(window, pane, uri)

@@ -1,13 +1,13 @@
 local wezterm = require("wezterm")
 
----@type table<string, string[]>
 local patterns = setmetatable({}, { __index = error })
+
 patterns.EMAIL = {
   "[%w.+-]@[%w.+-]%.%w+",
 }
 patterns.FILE = {
   [[(?:[-._~/a-zA-Z0-9])*[/ ](?:[-._~/a-zA-Z0-9]+)]], -- unix paths
-  "(?<= | | | | | | | | | | | | | |󰢬 | | | |└──|├──)\\s?(\\S+)", -- HACK: lsd/eza output.
+  "(?<= | | | | | | | | | | | | | |󰢬 | | | | |󱁢|||└──|├──)\\s?(\\S+)", -- HACK: lsd/eza output.
 }
 patterns.GIT = {
   "[\\h]{7,40}", -- SHA1 hashes, usually used for Git.
@@ -31,6 +31,24 @@ local function apply_to_config(config)
   return config
 end
 
-return {
+local function union(a, b)
+  local out, seen = {}, {}
+  for _, e in pairs(a) do
+    if not seen[e] then
+      table.insert(out, e)
+      seen[e] = true
+    end
+  end
+  for _, e in pairs(b) do
+    if not seen[e] then
+      table.insert(out, e)
+      seen[e] = true
+    end
+  end
+  return out
+end
+
+return setmetatable({
+  union = union,
   apply_to_config = apply_to_config,
-}
+}, { __index = patterns })

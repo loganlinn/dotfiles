@@ -35,18 +35,31 @@ in
       #   end
       # '';
     };
+    autoCmds = [
+      {
+        # https://github.com/nvim-tree/nvim-tree.lua/issues/1992#issuecomment-1467085424
+        event = [ "FileType" ];
+        pattern = [ "NvimTree" ];
+        callback.__raw = ''
+          function(args)
+            vim.api.nvim_buf_delete(args.buf, { force = true })
+            return true
+          end
+        '';
+      }
+    ];
 
     keymaps = [
       {
         mode = "n";
         key = "<leader>op";
-        action = "<cmd>lua require('nvim-tree.api').tree.toggle({ find_file = false })<CR>";
+        action.__raw = ''function() require('nvim-tree.api').tree.toggle{ find_file = false } end'';
         options.desc = "Project tree";
       }
       {
         mode = "n";
         key = "<leader>oP";
-        action = "<cmd>lua require('nvim-tree.api').tree.toggle({ find_file = true })<CR>";
+        action.__raw = ''function() require('nvim-tree.api').tree.toggle{ find_file = true } end'';
         options.desc = "File tree";
       }
     ];
@@ -62,7 +75,7 @@ in
     #
     #     -- If the current node is a directory get children status
     #     if gs == nil then
-    #       gs = (node.git_status.dir.direct ~= nil and node.git_status.dir.direct[1]) 
+    #       gs = (node.git_status.dir.direct ~= nil and node.git_status.dir.direct[1])
     #            or (node.git_status.dir.indirect ~= nil and node.git_status.dir.indirect[1])
     #     end
     #

@@ -34,9 +34,8 @@ logger.new = function(options)
   }
 
   function log.emit(...)
-    log.info("emit->", ...)
-    local ret = wezterm.emit(...)
-    log.info("emit<-", ret)
+    log.info("[emit]", ...)
+    return wezterm.emit(...)
   end
 
   return log
