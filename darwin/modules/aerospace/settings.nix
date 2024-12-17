@@ -110,6 +110,11 @@ let
       alt-cmd-k = "focus-monitor up";
       alt-cmd-l = "focus-monitor right";
 
+      alt-shift-cmd-h = "move-node-to-monitor --wrap-around --focus-follows-window left";
+      alt-shift-cmd-j = "move-node-to-monitor --wrap-around --focus-follows-window down";
+      alt-shift-cmd-k = "move-node-to-monitor --wrap-around --focus-follows-window up";
+      alt-shift-cmd-l = "move-node-to-monitor --wrap-around --focus-follows-window right";
+
       # See: https://nikitabobko.github.io/AeroSpace/commands#move
       alt-shift-h = "move left";
       alt-shift-j = "move down";
@@ -176,33 +181,36 @@ let
       alt-shift-semicolon = "mode service";
       # alt-shift-slash = "mode query";
     };
+
+    # https://nikitabobko.github.io/AeroSpace/commands#move-node-to-monitor
+    # https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
     monitor.binding = prefix-mode-binding // {
-      # https://nikitabobko.github.io/AeroSpace/commands#move-node-to-monitor
-      shift-h = [
-        "move-node-to-monitor --focus-follows-window right"
+      h = [
+        "move-node-to-monitor --wrap-around --focus-follows-window right"
         "mode main"
       ];
-      shift-j = [
-        "move-node-to-monitor --focus-follows-window down"
+      j = [
+        "move-node-to-monitor --wrap-around --focus-follows-window down"
         "mode main"
       ];
-      shift-k = [
-        "move-node-to-monitor --focus-follows-window up"
+      k = [
+        "move-node-to-monitor --wrap-around --focus-follows-window up"
         "mode main"
       ];
-      shift-l = [
-        "move-node-to-monitor --focus-follows-window left"
+      l = [
+        "move-node-to-monitor --wrap-around --focus-follows-window left"
         "mode main"
       ];
-      shift-period = [
-        "move-workspace-to-monitor next"
+      n = [
+        "move-workspace-to-monitor --wrap-around next"
         "mode main"
       ];
-      shift-comma = [
-        "move-workspace-to-monitor prev"
+      p = [
+        "move-workspace-to-monitor --wrap-around prev"
         "mode main"
       ];
     };
+
     apps.binding = prefix-mode-binding // {
       d = "exec-and-forget open -b ${app-ids.Docker}";
       l = "exec-and-forget open -b ${app-ids.Dictionary}";

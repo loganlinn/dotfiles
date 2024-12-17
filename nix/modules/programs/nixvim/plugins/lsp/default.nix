@@ -113,16 +113,6 @@ in
           };
         };
         extra = [
-          (mkKeymap "nv" "<leader>cf" "Format buffer" {
-            __raw = ''
-              function()
-              vim.lsp.buf.format({
-                async = true,
-                filter = function(client) return client.name ~= "ts_ls" end,
-              })
-              end'';
-          })
-          (mkKeymap "v" "<leader>ce" "LSP format expr" { __raw = ''function() vim.lsp.formatexpr() end''; })
           {
             action = "<CMD>LspStop<CR>";
             key = "<leader>Lq";
@@ -147,16 +137,12 @@ in
             action = "<CMD>LspInfo<CR>";
             key = "<leader>hL";
           }
-          {
-            action = {
-              __raw = "require('telescope.builtin').lsp_definitions";
-            };
-            key = "gd";
-          }
-          (mkKeymap "n" "<leader>cf" "LSP: Format buffer" {
+          (mkKeymap "n" "<leader>cf" "Format buffer" {
             __raw = ''function() vim.lsp.buf.format() end'';
           })
-          (mkKeymap "v" "<leader>cf" "LSP: Format expr" { __raw = ''function() vim.lsp.formatexpr() end''; })
+          (mkKeymap "v" "<leader>cf" "Format expr" {
+            __raw = ''function() vim.lsp.formatexpr() end'';
+          })
         ];
       };
     };

@@ -47,7 +47,7 @@
 
       modules.hipatterns = { };
 
-      modules.sessions = { };
+      # modules.sessions = { };
 
       modules.splitjoin = { };
 

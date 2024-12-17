@@ -1,6 +1,19 @@
 { config, pkgs, ... }:
 let
   inherit (config.lib.nixvim) mkRaw;
+  mode = {
+    n = [ "n" ];
+    nv = [
+      "n"
+      "v"
+    ];
+    ni = [
+      "n"
+      "i"
+    ];
+    i = [ "i" ];
+    v = [ "v" ];
+  };
 in
 {
   # dependencies of keymap below
@@ -12,10 +25,7 @@ in
   programs.nixvim.keymaps = [
     # Disable arrow keys
     {
-      mode = [
-        "n"
-        "i"
-      ];
+      mode = mode.ni;
       key = "<Up>";
       action = "<Nop>";
       options = {
@@ -223,33 +233,25 @@ in
       mode = "n";
       key = "<leader>w+";
       action = "<cmd>resize +2<cr>";
-      options = {
-        desc = "Increase height";
-      };
+      options.desc = "Increase height";
     }
     {
       mode = "n";
       key = "<leader>w-";
       action = "<cmd>resize -2<cr>";
-      options = {
-        desc = "Decrease height";
-      };
+      options.desc = "Decrease height";
     }
     {
       mode = "n";
       key = "<leader>w<";
       action = "<cmd>vertical resize -2<cr>";
-      options = {
-        desc = "Decrease width";
-      };
+      options.desc = "Decrease width";
     }
     {
       mode = "n";
       key = "<leader>w>";
       action = "<cmd>vertical resize +2<cr>";
-      options = {
-        desc = "Increase width";
-      };
+      options.desc = "Increase width";
     }
     {
       mode = "n";
@@ -400,9 +402,7 @@ in
       mode = "n";
       key = "<C-u>";
       action = "<C-u>zz";
-      options = {
-        desc = "Allow C-d and C-u to keep the cursor in the middle";
-      };
+      options.desc = "Allow C-d and C-u to keep the cursor in the middle";
     }
     #
     # Remap for dealing with word wrap and adding jumps to the jumplist.
@@ -429,17 +429,13 @@ in
       mode = "n";
       key = "n";
       action = "nzzzv";
-      options = {
-        desc = "Allow search terms to stay in the middle";
-      };
+      options.desc = "Allow search terms to stay in the middle";
     }
     {
       mode = "n";
       key = "N";
       action = "Nzzzv";
-      options = {
-        desc = "Allow search terms to stay in the middle";
-      };
+      options.desc = "Allow search terms to stay in the middle";
     }
 
     # Paste stuff without saving the deleted word into the buffer
@@ -447,9 +443,7 @@ in
       mode = "x";
       key = "<leader>p";
       action = "\"_dP";
-      options = {
-        desc = "Deletes to void register and paste over";
-      };
+      options.desc = "Deletes to void register and paste over";
     }
 
     # Copy stuff to system clipboard with <leader> + y or just y to have it just in vim
@@ -460,9 +454,7 @@ in
       ];
       key = "<leader>y";
       action = "\"+y";
-      options = {
-        desc = "Copy to system clipboard";
-      };
+      options.desc = "Copy to system clipboard";
     }
 
     {
@@ -472,9 +464,7 @@ in
       ];
       key = "<leader>Y";
       action = "\"+Y";
-      options = {
-        desc = "Copy to system clipboard";
-      };
+      options.desc = "Copy to system clipboard";
     }
 
     # Delete to void register
@@ -485,9 +475,7 @@ in
       ];
       key = "<leader>D";
       action = "\"_d";
-      options = {
-        desc = "Delete to void register";
-      };
+      options.desc = "Delete to void register";
     }
 
     # <C-c> instead of pressing esc just because
@@ -669,105 +657,79 @@ in
       mode = "n";
       key = "<leader>cd";
       action = "vim.diagnostic.open_float";
-      options = {
-        desc = "Line Diagnostics";
-      };
+      options.desc = "Line Diagnostics";
     }
     {
       mode = "n";
       key = "]d";
       action = "diagnostic_goto(true)";
-      options = {
-        desc = "Next Diagnostic";
-      };
+      options.desc = "Next Diagnostic";
     }
     {
       mode = "n";
       key = "[d";
       action = "diagnostic_goto(false)";
-      options = {
-        desc = "Prev Diagnostic";
-      };
+      options.desc = "Prev Diagnostic";
     }
     {
       mode = "n";
       key = "]e";
       action = "diagnostic_goto(true 'ERROR')";
-      options = {
-        desc = "Next Error";
-      };
+      options.desc = "Next Error";
     }
     {
       mode = "n";
       key = "[e";
       action = "diagnostic_goto(false 'ERROR')";
-      options = {
-        desc = "Prev Error";
-      };
+      options.desc = "Prev Error";
     }
     {
       mode = "n";
       key = "]w";
       action = "diagnostic_goto(true 'WARN')";
-      options = {
-        desc = "Next Warning";
-      };
+      options.desc = "Next Warning";
     }
     {
       mode = "n";
       key = "[w";
       action = "diagnostic_goto(false 'WARN')";
-      options = {
-        desc = "Prev Warning";
-      };
+      options.desc = "Prev Warning";
+    }
+    {
+      mode = "n";
+      key = "<leader>he";
+      action = ''<cmd>200messages<cr>'';
+      options.desc = "Messages";
     }
     {
       mode = "n";
       key = "<leader>hp";
       action = "vim.show_pos";
-      options = {
-        desc = "Inspect Pos";
-      };
+      options.desc = "Inspect Pos";
     }
     {
       mode = "n";
       key = "<leader><tab>n";
       action = "<cmd>tabnew<cr>";
-      options = {
-        desc = "New Tab";
-      };
+      options.desc = "New Tab";
     }
     {
       mode = "n";
       key = "<leader><tab>]";
       action = "<cmd>tabnext<cr>";
-      options = {
-        desc = "Next Tab";
-      };
+      options.desc = "Next Tab";
     }
     {
       mode = "n";
       key = "<leader><tab>d";
       action = "<cmd>tabclose<cr>";
-      options = {
-        desc = "Close Tab";
-      };
+      options.desc = "Close Tab";
     }
     {
       mode = "n";
       key = "<leader><tab>[";
       action = "<cmd>tabprevious<cr>";
-      options = {
-        desc = "Previous Tab";
-      };
-    }
-    {
-      mode = "n";
-      key = "<leader>b[";
-      action = "<cmd>bprevious<cr>";
-      options = {
-        desc = "Previous Buffer";
-      };
+      options.desc = "Previous Tab";
     }
     {
       mode = "n";
@@ -780,44 +742,133 @@ in
     }
     {
       mode = "n";
-      key = "<leader>b]";
-      action = "<cmd>bnext<cr>";
-      options = {
-        desc = "Next Buffer";
-      };
+      key = "<leader>b1";
+      action = "<cmd>buffer 1<cr>";
+      options.desc = "Buffer 1";
     }
     {
       mode = "n";
-      key = "<leader>gS";
-      action = "<cmd>Gwrite<cr>";
-      options = {
-        desc = "Stage file";
-      };
+      key = "<leader>b2";
+      action = "<cmd>buffer 2<cr>";
+      options.desc = "Buffer 2";
+    }
+    {
+      mode = "n";
+      key = "<leader>b3";
+      action = "<cmd>buffer 3<cr>";
+      options.desc = "Buffer 3";
+    }
+    {
+      mode = "n";
+      key = "<leader>b4";
+      action = "<cmd>buffer 4<cr>";
+      options.desc = "Buffer 4";
+    }
+    {
+      mode = "n";
+      key = "<leader>b5";
+      action = "<cmd>buffer 5<cr>";
+      options.desc = "Buffer 5";
+    }
+    {
+      mode = "n";
+      key = "<leader>b6";
+      action = "<cmd>buffer 6<cr>";
+      options.desc = "Buffer 6";
+    }
+    {
+      mode = "n";
+      key = "<leader>b7";
+      action = "<cmd>buffer 7<cr>";
+      options.desc = "Buffer 7";
+    }
+    {
+      mode = "n";
+      key = "<leader>b8";
+      action = "<cmd>buffer 8<cr>";
+      options.desc = "Buffer 8";
+    }
+    {
+      mode = "n";
+      key = "<leader>b9";
+      action = "<cmd>buffer 9<cr>";
+      options.desc = "Buffer 9";
     }
 
     {
-      mode = [
-        "n"
-        "v"
-      ];
+      mode = "n";
+      key = "<leader>bt";
+      action = "<cmd>bnext<cr>";
+      options.desc = "Next Buffer";
+    }
+    {
+      mode = "n";
+      key = "<leader>bT";
+      action = "<cmd>bprevious<cr>";
+      options.desc = "Prev Buffer";
+    }
+
+    {
+      mode = "n";
+      key = "<leader>b)";
+      action = "<cmd>bnext<cr>";
+      options.desc = "Next Buffer";
+    }
+    {
+      mode = "n";
+      key = "<leader>b(";
+      action = "<cmd>bprevious<cr>";
+      options.desc = "Previous Buffer";
+    }
+
+    {
+      mode = "n";
+      key = "<leader>bm";
+      action = "<cmd>bmodified<cr>";
+      options.desc = "Next Modified Buffer";
+    }
+
+    {
+      mode = "n";
+      key = "<leader>b<home>";
+      action = "<cmd>bfirst<cr>";
+      options.desc = "First buffer";
+    }
+    {
+      mode = "n";
+      key = "<leader>b<end>";
+      action = "<cmd>blast<cr>";
+      options.desc = "Last buffer";
+    }
+
+    {
+      mode = mode.nv;
       key = "<leader>bk";
       action = "<cmd>Bwipeout!<cr>"; # vim-bbye
-      options.desc = "Kill buffer";
+      options.desc = "Kill current buffer";
     }
+    {
+      mode = mode.nv;
+      key = "<leader>bK";
+      action = ''<cmd>%bdelete<bar>edit #<bar>normal `"<cr>'';
+      options.desc = "Kill all other buffers";
+    }
+
+    # FILES
     {
       key = "<leader>fD";
       action = mkRaw ''
         function()
-        if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
-        local path = vim.fn.expand("%")
-        vim.cmd("Bwipeout!")
-        local ok, err = os.remove(path)
-        if ok then
-        print("Deleted " .. path)
-        else
-        print("Error deleting " .. path .. ": " .. err)
-        end
-        end
+          if 1 == vim.fn.confirm("Delete buffer and file?", "&Yes\n&No", 2) then
+            local path = vim.fn.expand("%")
+            vim.cmd("Bwipeout!")
+            local ok, err = os.remove(path)
+            if ok then
+              print("Deleted " .. path)
+            else
+              print("Error deleting " .. path .. ": " .. err)
+            end
+          end
         end
       '';
       options.desc = "Delete current file";
@@ -827,13 +878,13 @@ in
       key = "<leader>fR";
       action = mkRaw ''
         function()
-        assert(vim.fn.exists(":Move"), "eunuch-:Move not found")
-        local prompt = "Move to: "
-        local default = vim.fn.expand("%:p:~")
-        vim.ui.input({ prompt = prompt, default = default }, function(dest)
-        if #(dest or "") == 0 then return end
-        vim.cmd(":Move " .. dest)
-        end)
+          assert(vim.fn.exists(":Move"), "eunuch-:Move not found")
+          local prompt = "Move to: "
+          local default = vim.fn.expand("%:p:~")
+          vim.ui.input({ prompt = prompt, default = default }, function(dest)
+            if #(dest or "") == 0 then return end
+            vim.cmd(":Move " .. dest)
+          end)
         end
       '';
       options.desc = "Rename current file";
@@ -842,17 +893,17 @@ in
       key = "<leader>fM";
       action = mkRaw ''
         function()
-        local file = vim.fn.expand("%")
-        local current_mode = vim.fn.trim(vim.fn.system { "stat", "--format=%A", file })
-        local prompt = string.format("chmod (%s): ", current_mode)
-        vim.ui.input({ prompt = prompt }, function(input)
-        if #(input or "") == 0 then return end
-        if vim.fn.exists(":Chmod") then
-        vim.cmd("Chmod " .. input)
-        else
-        print(vim.fn.system { "chmod", input, file })
-        end
-        end)
+          local file = vim.fn.expand("%")
+          local current_mode = vim.fn.trim(vim.fn.system { "stat", "--format=%A", file })
+          local prompt = string.format("chmod (%s): ", current_mode)
+          vim.ui.input({ prompt = prompt }, function(input)
+            if #(input or "") == 0 then return end
+            if vim.fn.exists(":Chmod") then
+              vim.cmd("Chmod " .. input)
+            else
+              print(vim.fn.system { "chmod", input, file })
+            end
+          end)
         end
       '';
       options.desc = "Change file mode";
@@ -884,16 +935,34 @@ in
       options.desc = "Open file in Emacs";
     }
     {
-      mode = [ "n" ];
+      mode = "n";
       key = "<leader>xcf";
-      action = "<cmd>%!clickhouse format --comment --multiline";
+      action = "<cmd>%!clickhouse format --comment --multiline<cr>";
       options.desc = "clickhouse format file";
     }
     {
-      mode = [ "v" ];
+      mode = "v";
       key = "<leader>xcf";
-      action = "<cmd>'<,'>!clickhouse format --comment --multiline";
+      action = "<cmd>'<,'>!clickhouse format --comment --multiline<cr>";
       options.desc = "clickhouse format selected text";
+    }
+    {
+      mode = "v";
+      key = "<leader>ot";
+      action.__raw = ''
+        function()
+          local wezterm_exe = vim.env.WEZTERM_EXECUTABLE or vim.fn.exepath("wezterm")
+          local cwd = vim.fn.expand("%:p:h")
+          if wezterm_exe then
+            vim.fn.system { weztgerm_exe, "cli", "split-pane", "--bottom",  "--cwd", cwd }
+          else
+            local ok, mod = pcall(require, 'lspsaga.floaterm')
+            if ok then mod:open_float_terminal(os.getenv('SHELL'), cwd) end
+          end
+          print("your basic ass nvim skills are showing")
+        end
+      '';
+      options.desc = "Terminal";
     }
   ];
 }

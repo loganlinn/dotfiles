@@ -4,6 +4,7 @@ let
 in
 {
   imports = [
+    ./auto-session.nix
     ./bufferline.nix
     ./cmp.nix
     ./comment.nix
@@ -14,6 +15,7 @@ in
     ./lsp
     ./lualine.nix
     ./mini.nix
+    ./neorepl.nix
     ./notify.nix
     ./nvim-tree.nix
     ./oil.nix
@@ -40,13 +42,12 @@ in
       sniprun.enable = true;
       spectre.enable = true;
       trouble.enable = true;
-      vim-surround.enable = cfg.plugins.mini.modules.surround or null == null;
+      vim-surround.enable = true;
       web-devicons.enable = true;
     };
     extraPlugins = with pkgs.vimPlugins; [
       { plugin = fennel-vim; }
       { plugin = lazydev-nvim; }
-      { plugin = neorepl-nvim; }
       { plugin = nfnl; }
       { plugin = vim-abolish; }
       { plugin = vim-just; }

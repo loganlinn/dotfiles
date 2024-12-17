@@ -6,16 +6,23 @@
 }:
 let
   cfg = config.programs.nixvim;
-  inherit (import ../../helpers.nix { inherit lib; }) mkKeymap;
 in
 {
   programs.nixvim = {
-    plugins.fugitive.enable = cfg.plugins.mini.modules.git or null == null;
+    extraPlugins = with pkgs.vimPlugins; [
+      vim-rhubarb # Needed for fugitive :GBrowse
+    ];
+
+    plugins.fugitive.enable = true;
+
     plugins.gitlinker.enable = true;
+
     plugins.lazygit.enable = true;
+
     plugins.diffview = {
       enable = true;
     };
+
     plugins.neogit = {
       enable = true;
       settings = {
@@ -39,8 +46,15 @@ in
         # mappings.status."<c-g>" = "Abort";
       };
     };
-    extraPlugins = with pkgs.vimPlugins; [ vim-rhubarb ]; # Enables :GBrowse from fugitive.vim to open GitHub URLs.
     keymaps = [
+      {
+        mode = "n";
+        key = "<leader>gS";
+        action = "<cmd>Gwrite<cr>";
+        options = {
+          desc = "Stage file";
+        };
+      }
       {
         mode = "n";
         key = "<leader>gb";

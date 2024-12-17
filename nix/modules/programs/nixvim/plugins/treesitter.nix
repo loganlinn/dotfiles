@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   programs.nixvim = {
-    # highlighting languages contained in strings of home-manager config using treesitter. how niche.
+    # highlighting embedded languages contained in strings of home-manager config using treesitter. how niche.
     plugins.hmts.enable = true;
 
     plugins.treesitter = {
@@ -16,6 +16,7 @@
         markdown
         nix
         regex
+        sql
         toml
         vim
         vimdoc
@@ -51,5 +52,13 @@
     plugins.treesitter-context.enable = true;
     plugins.treesitter-context.settings.max_lines = 2;
     plugins.rainbow-delimiters.enable = true;
+
+    extraFiles."queries/typescript/injections.scm".text = ''
+      ((comment) @injection.language
+        .
+        (_ (string_fragment) @injection.content)
+        (#gsub! @injection.language "[/*#%s]" "")
+        (#set! injection.combined))
+    '';
   };
 }

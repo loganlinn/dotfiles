@@ -35,7 +35,6 @@
         borderFollow = true;
         diagnosticOnlyCurrent = true;
         showCodeAction = true;
-        keys = { };
       };
 
       symbolInWinbar = {
@@ -48,7 +47,7 @@
         onlyInCursor = true;
         numShortcut = true;
         keys = {
-          exec = "<CR>";
+          exec = "<cr>";
           quit = [
             "<Esc>"
             "q"
@@ -73,7 +72,7 @@
         projectMaxWidth = 0.6; # Width for the `project_replace` float window.
         projectMaxHeight = 0.4; # Height for the `project_replace` float window.
         keys = {
-          exec = "<CR>";
+          exec = "<cr>";
           quit = [
             "<C-k>"
             "<Esc>"
@@ -110,7 +109,7 @@
       {
         mode = "n";
         key = "gd";
-        action = "<cmd>Lspsaga finder def<CR>";
+        action = "<cmd>Lspsaga finder def<cr>";
         options = {
           desc = "Goto Definition";
           silent = true;
@@ -119,7 +118,7 @@
       {
         mode = "n";
         key = "gr";
-        action = "<cmd>Lspsaga finder ref<CR>";
+        action = "<cmd>Lspsaga finder ref<cr>";
         options = {
           desc = "Goto References";
           silent = true;
@@ -128,7 +127,7 @@
       # {
       #   mode = "n";
       #   key = "gD";
-      #   action = "<cmd>Lspsaga show_line_diagnostics<CR>";
+      #   action = "<cmd>Lspsaga show_line_diagnostics<cr>";
       #   options = {
       #     desc = "Goto Declaration";
       #     silent = true;
@@ -137,7 +136,7 @@
       {
         mode = "n";
         key = "gI";
-        action = "<cmd>Lspsaga finder imp<CR>";
+        action = "<cmd>Lspsaga finder imp<cr>";
         options = {
           desc = "Goto Implementation";
           silent = true;
@@ -146,7 +145,7 @@
       {
         mode = "n";
         key = "<leader>c*";
-        action = "<cmd>Lspsaga finder ref<CR>";
+        action = "<cmd>Lspsaga finder ref<cr>";
         options = {
           desc = "Goto References";
           silent = true;
@@ -155,7 +154,7 @@
       {
         mode = "n";
         key = "<leader>cI";
-        action = "<cmd>Lspsaga finder imp<CR>";
+        action = "<cmd>Lspsaga finder imp<cr>";
         options = {
           desc = "Goto Implementation";
           silent = true;
@@ -164,7 +163,7 @@
       # {
       #   mode = "n";
       #   key = "gT";
-      #   action = "<cmd>Lspsaga peek_type_definition<CR>";
+      #   action = "<cmd>Lspsaga peek_type_definition<cr>";
       #   options = {
       #     desc = "Type Definition";
       #     silent = true;
@@ -173,7 +172,7 @@
       {
         mode = "n";
         key = "K";
-        action = "<cmd>Lspsaga hover_doc<CR>";
+        action = "<cmd>Lspsaga hover_doc<cr>";
         options = {
           desc = "Hover";
           silent = true;
@@ -182,7 +181,7 @@
       {
         mode = "n";
         key = "<leader>oc";
-        action = "<cmd>Lspsaga outline<CR>";
+        action = "<cmd>Lspsaga outline<cr>";
         options = {
           desc = "Outline";
           silent = true;
@@ -191,7 +190,7 @@
       {
         mode = "n";
         key = "<leader>co";
-        action = "<cmd>Lspsaga outline<CR>";
+        action = "<cmd>Lspsaga outline<cr>";
         options = {
           desc = "Outline";
           silent = true;
@@ -200,7 +199,7 @@
       {
         mode = "n";
         key = "<leader>pr";
-        action = "<cmd>Lspsaga project_replace<CR>";
+        action = "<cmd>Lspsaga project_replace<cr>";
         options = {
           desc = "Replace in project";
           silent = true;
@@ -209,7 +208,7 @@
       {
         mode = "n";
         key = "<leader>cr";
-        action = "<cmd>Lspsaga rename<CR>";
+        action = "<cmd>Lspsaga rename<cr>";
         options = {
           desc = "Rename";
           silent = true;
@@ -218,7 +217,7 @@
       {
         mode = "n";
         key = "<leader>ca";
-        action = "<cmd>Lspsaga code_action<CR>";
+        action = "<cmd>Lspsaga code_action<cr>";
         options = {
           desc = "Code Action";
           silent = true;
@@ -227,7 +226,7 @@
       {
         mode = "n";
         key = "<leader>cd";
-        action = "<cmd>Lspsaga show_cursor_diagnostics<CR>";
+        action = "<cmd>Lspsaga show_cursor_diagnostics<cr>";
         options = {
           desc = "Line Diagnostics";
           silent = true;
@@ -236,7 +235,7 @@
       {
         mode = "n";
         key = "<leader>cD";
-        action = "<cmd>Lspsaga show_line_diagnostics<CR>";
+        action = "<cmd>Lspsaga show_line_diagnostics<cr>";
         options = {
           desc = "Line Diagnostics";
           silent = true;
@@ -244,8 +243,8 @@
       }
       {
         mode = "n";
-        key = "[e";
-        action = "<cmd>Lspsaga diagnostic_jump_next<CR>";
+        key = "]e";
+        action = "<cmd>Lspsaga diagnostic_jump_next<cr>";
         options = {
           desc = "Next Diagnostic";
           silent = true;
@@ -253,21 +252,10 @@
       }
       {
         mode = "n";
-        key = "]e";
-        action = "<cmd>Lspsaga diagnostic_jump_prev<CR>";
+        key = "[e";
+        action = "<cmd>Lspsaga diagnostic_jump_prev<cr>";
         options = {
           desc = "Previous Diagnostic";
-          silent = true;
-        };
-      }
-      {
-        mode = "n";
-        key = "[E";
-        action.__raw = ''
-          require("lspsaga.diagnostic"):goto_prev({ severity = vim.diagnostic.severity.ERROR })
-        '';
-        options = {
-          desc = "Next Diagnostic";
           silent = true;
         };
       }
@@ -275,12 +263,39 @@
         mode = "n";
         key = "]E";
         action.__raw = ''
-          require("lspsaga.diagnostic"):goto_next({ severity = vim.diagnostic.severity.ERROR })
+          function() require("lspsaga.diagnostic"):goto_prev({ severity = vim.diagnostic.severity.ERROR }) end
+        '';
+        options = {
+          desc = "Next Diagnostic";
+          silent = true;
+        };
+      }
+      {
+        mode = "n";
+        key = "[E";
+        action.__raw = ''
+          function() require("lspsaga.diagnostic"):goto_next({ severity = vim.diagnostic.severity.ERROR }) end
         '';
         options = {
           desc = "Previous Diagnostic";
           silent = true;
         };
+      }
+      {
+        mode = "v";
+        key = "<leader>ot";
+        action.__raw = ''
+          function()
+            local cwd = vim.fn.expand("%:p:h")
+            if vim.env.WEZTERM_PANE then
+              local wezterm_exe = vim.env.WEZTERM_EXECUTABLE or vim.fn.exepath("wezterm")
+              vim.fn.system { weztgerm_exe, "cli", "split-pane", "--bottom",  "--cwd", cwd }
+            else
+              require('lspsaga.floaterm'):open_float_terminal(os.getenv('SHELL'), cwd)
+            end
+          end
+        '';
+        options.desc = "Terminal";
       }
     ];
   };

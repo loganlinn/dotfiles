@@ -76,14 +76,14 @@
         };
       }
 
-      {
-        mode = "n";
-        key = "<leader>bp";
-        action = "<cmd>BufferLineTogglePin<cr>";
-        options = {
-          desc = "Toggle pin";
-        };
-      }
+      # {
+      #   mode = "n";
+      #   key = "<leader>bm";
+      #   action = "<cmd>BufferLineTogglePin<cr>";
+      #   options = {
+      #     desc = "Toggle pin";
+      #   };
+      # }
 
       {
         mode = "n";

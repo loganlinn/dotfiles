@@ -61,10 +61,10 @@ local function apply_to_config(config)
     { mod, "K", act.activate_direction("Up") },
     { mod, "L", act.activate_direction("Right") },
 
-    { mod, "DownArrow", act.AdjustPaneSize({ "Down", 10 }) },
-    { mod, "LeftArrow", act.AdjustPaneSize({ "Left", 10 }) },
-    { mod, "RightArrow", act.AdjustPaneSize({ "Right", 10 }) },
-    { mod, "UpArrow", act.AdjustPaneSize({ "Up", 10 }) },
+    { mod, "DownArrow", act.AdjustPaneSize({ "Down", 15 }) },
+    { mod, "LeftArrow", act.AdjustPaneSize({ "Left", 15 }) },
+    { mod, "RightArrow", act.AdjustPaneSize({ "Right", 15 }) },
+    { mod, "UpArrow", act.AdjustPaneSize({ "Up", 15 }) },
 
     { mod, "W", act.CloseCurrentPane({ confirm = true }) },
     { super, "w", act.CloseCurrentPane({ confirm = false }) },
@@ -78,6 +78,16 @@ local function apply_to_config(config)
 
     { leader .. "|SHIFT", "T", act.MovePaneToNewTab({ activate = true }) },
     { mod, "B", act.PaneSelect({ mode = "MoveToNewWindow" }) },
+
+    -- { mod, "1", act.resize_pane(0) },
+    -- { mod, "2", act.resize_pane(1) },
+    -- { mod, "3", act.resize_pane(2) },
+    -- { mod, "4", act.resize_pane(3) },
+    -- { mod, "5", act.resize_pane(4) },
+    -- { mod, "6", act.resize_pane(5) },
+    -- { mod, "7", act.resize_pane(6) },
+    -- { mod, "8", act.resize_pane(7) },
+    -- { mod, "9", act.resize_pane(8) },
 
     --[[ Tab ]]
     { super, "1", act.ActivateTab(0) },
@@ -134,9 +144,17 @@ local function apply_to_config(config)
     { mod, "E", act.QuickSelectUrl }, -- https://loganlinn.com
     { mod, "o", act.ActivateKeyTable({ name = "Open" }) }, -- https://loganlinn.com
 
+    { mod, "Home", act.ScrollToTop },
+    { mod, "PageDown", act.ScrollToPrompt(1) },
+    { mod, "PageUp", act.ScrollToPrompt(-1) },
+    { mod, "End", act.ScrollToBottom },
+
     { super, "0", wezterm.action.ResetFontSize },
     { super, "-", wezterm.action.DecreaseFontSize },
     { super, "=", wezterm.action.IncreaseFontSize },
+
+    { super, "DownArrow", act.AdjustPaneSize({ "Down", 15 }) },
+    { super, "UpArrow", act.AdjustPaneSize({ "Up", 15 }) },
 
     { super, "Home", act.ScrollToTop },
     { super, "PageDown", act.ScrollByPage(1) },
@@ -186,6 +204,19 @@ local function apply_to_config(config)
   )
 
   assign(config, "Open", { nil, "e", act.QuickEdit }, { nil, "u", act.QuickSelectUrl })
+
+  -- Mouse bindings
+  config.mouse_bindings = config.mouse_bindings or {}
+  table.insert(config.mouse_bindings, {
+    event = { Up = { streak = 1, button = "Left" } },
+    mods = "SUPER",
+    action = act.OpenLinkAtMouseCursor,
+  })
+  table.insert(config.mouse_bindings, {
+    event = { Up = { streak = 1, button = "Middle" } },
+    mods = "NONE",
+    action = act.OpenLinkAtMouseCursor,
+  })
 
   return config
 end

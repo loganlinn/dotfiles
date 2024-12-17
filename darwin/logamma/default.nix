@@ -103,6 +103,8 @@
       ../../nix/home/yt-dlp.nix
     ];
 
+    programs.zsh.dirHashes.gamma = "~src/github.com/gamma-app/gamma";
+
     programs.nixvim = {
       enable = true;
       defaultEditor = true;
@@ -110,6 +112,7 @@
         darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
       };
     };
+
     programs.hammerspoon.enable = true;
 
     programs.wezterm.enable = true;
