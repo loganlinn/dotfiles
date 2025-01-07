@@ -282,6 +282,25 @@
         };
       }
       {
+        mode = "n";
+        key = "F2";
+        action = "<cmd>Lspsaga diagnostic_jump_next<cr>";
+        options = {
+          desc = "Next Diagnostic";
+          silent = true;
+        };
+      }
+      {
+        mode = "n";
+        key = "S-F2";
+        action = "<cmd>Lspsaga diagnostic_jump_prev<cr>";
+        options = {
+          desc = "Previous Diagnostic";
+          silent = true;
+        };
+      }
+
+      {
         mode = "v";
         key = "<leader>ot";
         action.__raw = ''

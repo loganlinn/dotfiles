@@ -35,7 +35,7 @@ in
       #   end
       # '';
     };
-    autoCmds = [
+    autoCmd = [
       {
         # https://github.com/nvim-tree/nvim-tree.lua/issues/1992#issuecomment-1467085424
         event = [ "FileType" ];

@@ -77,7 +77,7 @@ in
         # pylsp.enable = true;
         ruff.enable = true;
         sqls.enable = true;
-        terraformls.enable = true;
+        terraform_lsp.enable = true;
         ts_ls.enable = true;
         yamlls.enable = true;
       };

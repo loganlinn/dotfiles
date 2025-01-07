@@ -23,6 +23,16 @@ in
   ];
 
   programs.nixvim.keymaps = [
+    {
+      mode = mode.i;
+      key = "jj";
+      action = "<Esc>";
+      options = {
+        silent = true;
+        noremap = true;
+        desc = "Disable Up arrow key";
+      };
+    }
     # Disable arrow keys
     {
       mode = mode.ni;

@@ -16,6 +16,7 @@ in
     ./lualine.nix
     ./mini.nix
     ./neorepl.nix
+    ./neotest.nix
     ./notify.nix
     ./nvim-tree.nix
     ./oil.nix

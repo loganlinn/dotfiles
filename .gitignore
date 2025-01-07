@@ -38,6 +38,7 @@ TAGS
 .rebl
 .settings
 .socket-repl-port
+.terraform/
 .venv
 antigen-shapshot
 classes/

@@ -1,4 +1,5 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
@@ -27,32 +28,29 @@ in
     ./lazygit.nix
   ];
 
-  home.shellAliases = {
+  home.packages = with pkgs; [
+    delta
+    git-absorb
+  ];
+
+  # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
+  home.shellAliases = rec {
     gc = "git commit -v";
     gca = "git commit -v -a";
     gcm = ''git switch "$(git default-branch || echo main)"'';
     gcob = "git switch -c";
     gcop = "git checkout -p";
     gd = "git diff --color";
-    gdc = "git diff --color --cached";
-    gfo = "git fetch origin";
-    gl = "git log --oneline --decorate";
-    glrp = "glr && gp";
-    gp = "git push -u";
-    gpa = "git push all --all";
+    gdc = "gd --cached";
+    gfo = "git fetch --all";
+    glg = "git log --oneline --decorate";
+    gl = "git pull";
+    glr = "git pull --rebase";
+    gp = "git push --set-upstream";
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
     gs = "git status -sb";
     gw = "git show";
   };
-
-  programs.zsh.initExtra = ''
-    bindkey -s '^G^g' ' git status^M'
-    bindkey -s '^G^f' ' git fetch^M'
-    bindkey -s '^G^s' ' git snapshot^M'
-    bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
-    bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
-    bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
-  '';
 
   programs.git = {
     enable = true;
@@ -141,8 +139,7 @@ in
           gh api /repos/{owner}/{repo} --jq '.default_branch'
         }; f'';
     };
-
-    lfs.enable = true;
+    # lfs.enable = true;
     delta = {
       enable = true;
       options = {
@@ -185,10 +182,24 @@ in
     userName = mkDefault "Logan Linn";
   };
 
-  home.packages = with pkgs; [
-    delta
-    git-absorb
-  ];
+  programs.zsh = {
+    plugins = [
+      {
+        name = "forgit";
+        src = inputs.forgit;
+      }
+    ];
+    initExtra = ''
+      export PATH="$PATH:${inputs.forgit}/bin"
+
+      bindkey -s '^G^g' ' git status^M'
+      bindkey -s '^G^f' ' git fetch^M'
+      bindkey -s '^G^s' ' git snapshot^M'
+      bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
+      bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
+      bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+    '';
+  };
 
   programs.gpg.publicKeys = [
     {

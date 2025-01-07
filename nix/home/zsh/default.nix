@@ -83,10 +83,6 @@ with lib;
 
     plugins = [
       {
-        name = "forgit";
-        src = inputs.forgit;
-      }
-      {
         name = "fzf-tab";
         src = inputs.fzf-tab;
       }
