@@ -35,13 +35,10 @@
     # hey              # http load generator
     # hyperfine        # cli benchmarking tool
     # process-compose  # process manager a la docker-compose
-    diskus
-    du-dust
+    diskus # fast `du -sh`
+    du-dust # du replacement
     entr # similar to watchexec
     gum
-    hexyl
-    libossp_uuid # i.e. uuid(1)
-    pastel
     sops
     tree
     unzip

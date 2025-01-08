@@ -23,8 +23,8 @@ in
 {
   imports = [
     ./gh.nix
-    ./git-stack.nix
-    ./git-town.nix
+    # ./git-stack.nix
+    # ./git-town.nix
     ./lazygit.nix
   ];
 
@@ -47,6 +47,7 @@ in
     gl = "git pull";
     glr = "git pull --rebase";
     gp = "git push --set-upstream";
+    gtl = ''git rev-parse --show-toplevel'';
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
     gs = "git status -sb";
     gw = "git show";

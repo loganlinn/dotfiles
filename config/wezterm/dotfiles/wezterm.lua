@@ -13,6 +13,7 @@ require("dotfiles.domains").apply_to_config(config, {
   "ssh://rpi4b.internal",
   "ssh://rpi400.internal",
   "ssh://pi@fire.walla",
+  "ssh://ec2-user@34.220.129.140",
 })
 require("dotfiles.tabline").apply_to_config(config)
 require("dotfiles.balance").apply_to_config(config)

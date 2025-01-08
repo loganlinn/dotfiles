@@ -1,32 +1,6 @@
 local wezterm = require("wezterm")
+local util = require("dotfiles.util")
 local log = require("dotfiles.util.logger").new("open-uri.lua")
-
----@param pane Pane
----@return string|nil
-local function pane_nvim_server(pane)
-  local user_vars = pane:get_user_vars()
-  if user_vars then
-    return user_vars.NVIM or user_vars.NVIM_LISTEN_ADDRESS
-  end
-end
-
----@param tab MuxTab
----@return Pane[]
-local function get_nvim_panes(tab)
-  local panes_info = tab:panes_with_info()
-  table.sort(panes_info, function(a, b)
-    return (a.width * a.height) > (b.width * b.height)
-  end)
-
-  local results = {}
-  for _, pane_info in ipairs(panes_info) do
-    local pane = pane_info.pane
-    if pane_nvim_server(pane) then
-      table.insert(results, pane)
-    end
-  end
-  return results
-end
 
 ---@param ... string
 ---@return string[]
@@ -39,56 +13,69 @@ local function nvim_args(...)
   end
 end
 
----@param server_address string
----@param file_path string
+---@param window Window
+---@param pane Pane
+---@param url Url
 ---@return boolean success
----@return string|nil stdout
----@return string|nil stderr
-local function open_with_nvim_server(server_address, file_path)
-  return wezterm.run_child_process(nvim_args("--server", server_address, "--remote-silent", file_path))
-end
-
-local function open_with_nvim(window, pane, url)
-  if url.scheme ~= "file" then
+local function open_with_nvim_remote(window, pane, url)
+  -- skip quick open when super held
+  if string.find(window:keyboard_modifiers() or "NONE", "SUPER") then
     return false
   end
-  -- open in new window when no nvim
-  if (window:keyboard_modifiers() or "NONE") ~= "SUPER" then
-    local panes_info = (pane and pane:tab() or window:active_tab()):panes_with_info()
-    table.sort(panes_info, function(a, b)
-      return (a.width * a.height) > (b.width * b.height)
-    end)
-    for _, pane_info in ipairs(panes_info) do
-      local pane = pane_info.pane
-      local nvim = pane_nvim_server(pane)
-      log.info("opening", url, "with nvim server", nvim)
-      if nvim and open_with_nvim_server(nvim, url.file_path) then
-        pane:activate()
-        return false
+
+  local panes_info = (pane and pane:tab() or window:active_tab()):panes_with_info()
+  table.sort(panes_info, function(a, b)
+    return (a.width * a.height) > (b.width * b.height)
+  end)
+  for _, pane_info in ipairs(panes_info) do
+    local pane = pane_info.pane
+    local user_vars = pane:get_user_vars()
+    local server = user_vars and user_vars.NVIM or user_vars.NVIM_LISTEN_ADDRESS
+    if server then
+      log.info("pane has nvim server user var", server)
+      if not util.is_readable(server) then
+        log.info("ignoring", server, "from pane", pane)
+      else
+        local args = nvim_args("--server", server, "--remote", url.file_path)
+        log.info("running child process", args)
+        local success, stdout, stderr = wezterm.run_child_process(args)
+        log.info(success, stdout, stderr)
+        if success then
+          pane:activate()
+          return true
+        end
       end
     end
   end
-  window:perform_action(
-    wezterm.action.SpawnCommandInNewWindow({
-      args = log.info(nvim_args("--", url.file_path)),
-    }),
-    pane
-  )
   return false
 end
 
-return function(window, pane, uri)
-  log.info("current event", window:current_event())
-  local url = wezterm.url.parse(uri)
-  log.info("parsed url", url)
+local function open_with_nvim_tab(window, pane, url)
+  return true
+end
 
-  if url.scheme == "file" then
-    if open_with_nvim(window, pane, url) then
-      return false -- end propagation
-    end
+---@param window Window
+---@param pane Pane
+---@param uri string
+---@return boolean success
+local function open_with_nvim(window, pane, uri)
+  local url = wezterm.url.parse(uri)
+
+  if url.scheme ~= "file" then
+    return false
   end
 
-  -- fallback
-  wezterm.open_with(uri)
-  return false
+  if not open_with_nvim_remote(window, pane, url) then
+    local args = nvim_args("--", url.file_path)
+    log.info("spawning command", args)
+    log.info(window:perform_action(wezterm.action.SpawnCommandInNewTab({ args = args }), pane))
+  end
+
+  return true
+end
+
+return function(window, pane, uri)
+  if open_with_nvim(window, pane, uri) then
+    return false -- cancel propagation
+  end
 end

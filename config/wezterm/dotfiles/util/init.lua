@@ -128,6 +128,16 @@ function M.match_platform(t)
   return t.default or error("no platform matched")
 end
 
+function M.is_readable(path)
+  local file = io.open(path, "r")
+  wezterm.log_info("is_readable", path, file ~= nil)
+  if file then
+    io.close(file)
+    return true
+  end
+  return false
+end
+
 ---Returns a UNIX timestamp
 ---@param time? wezterm.Time Specific time to use, defaults to current time.
 ---@return number The number of milliseconds since 1970-01-01 00:00 UTC.

@@ -4,19 +4,17 @@ let
 
 in
 {
-  home.packages = with pkgs;[
+  home.packages = with pkgs; [
     ranger
-
     # ranger-archive
     zip
     unzip
     gzip
     gnutar
     p7zip
-    pbzip2 # parallel zip
-    pigz   # parallel gzip
-    pixz   # parallel xz
-
+    # pbzip2 # parallel zip
+    pigz # parallel gzip
+    pixz # parallel xz
   ];
 
   # TODO check out https://github.com/maximtrp/ranger-archives
