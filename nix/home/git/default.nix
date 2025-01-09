@@ -25,6 +25,7 @@ in
     ./gh.nix
     # ./git-stack.nix
     # ./git-town.nix
+    ./git-spice.nix
     ./lazygit.nix
   ];
 
@@ -46,10 +47,10 @@ in
     glg = "git log --oneline --decorate";
     gl = "git pull";
     glr = "git pull --rebase";
-    gp = "git push --set-upstream";
+    gp = "git push";
     gtl = ''git rev-parse --show-toplevel'';
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
-    gs = "git status -sb";
+    gg = "git status";
     gw = "git show";
   };
 
@@ -155,10 +156,9 @@ in
       advice.detachedHead = false;
       advice.skippedCherryPicks = false;
       advice.statusHints = false;
-      branch.autoSetupMerge = true;
       branch.autoSetupRebase = "always";
       branch.sort = "-committerdate";
-      color.ui = true;
+      checkout.defaultRemote = "origin";
       commit.gpgsign = mkDefault true;
       commit.verbose = true; # include diff in commit message editor
       diff.noprefix = true;
@@ -170,11 +170,16 @@ in
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
-      # push.autoSetupRemote = true;
+      push.autoSetupRemote = true;
       push.default = "current";
       rebase.autosquash = true;
       stash.showIncludeUntracked = true;
       stash.showPatch = true;
+      status.branch = true;
+      status.displayCommentPrefix = false;
+      status.short = true;
+      status.showStash = true;
+      status.showUntrackedFiles = "all"; # show untracked files in untracked directory
       user.signingkey = mkDefault config.my.pubkeys.ssh.ed25519;
     };
     # hooks
@@ -194,6 +199,7 @@ in
       export PATH="$PATH:${inputs.forgit}/bin"
 
       bindkey -s '^G^g' ' git status^M'
+      bindkey -s '^G^c' ' gh pr checks^M'
       bindkey -s '^G^f' ' git fetch^M'
       bindkey -s '^G^s' ' git snapshot^M'
       bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
