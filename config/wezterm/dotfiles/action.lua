@@ -1,5 +1,6 @@
 local wezterm = require("wezterm")
 local patterns = require("dotfiles.patterns")
+local util = require("dotfiles.util")
 local log = require("dotfiles.util.logger")("action.lua")
 
 local M = {}
@@ -324,5 +325,50 @@ M.quick_open = wezterm.action.QuickSelectArgs({
     end
   end),
 })
+
+M.switch_workspace = wezterm.action_callback(function(window, pane)
+  -- TODO generate, cache complete list
+  local workspaces = {
+    {
+      id = wezterm.home_dir .. "/.dotfiles",
+      label = "loganlinn/dotfiles",
+    },
+    {
+      id = wezterm.home_dir .. "/src/github.com/gamma-app/gamma",
+      label = "gamma-app/gamma",
+    },
+  }
+
+  window:perform_action(
+    wezterm.action.InputSelector({
+      title = "Switch to workspace",
+      choices = workspaces,
+      fuzzy = true,
+      action = wezterm.action_callback(function(inner_window, inner_pane, choice_id, choice_label)
+        if not choice_id and not choice_label then
+          log.info("input selector cancelled")
+          return
+        end
+        inner_window:perform_action(wezterm.action.SwitchToWorkspace({
+          name = choice_label,
+          spawn = {
+            label = "Workspace: " .. choice_label,
+            cwd = choice_id,
+          },
+        }, inner_pane))
+      end),
+    }),
+    pane
+  )
+end)
+
+M.browse_current_working_dir = wezterm.action_callback(function(window, pane)
+  local application = nil
+  if util.is_darwin() then
+    application = "Finder"
+  end
+  log.info("opening ", pane:get_current_working_dir())
+  wezterm.open_with(tostring(pane:get_current_working_dir() or wezterm.home_dir), application)
+end)
 
 return M
