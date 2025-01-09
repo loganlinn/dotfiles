@@ -19,6 +19,12 @@
             options.silent = true;
           }
         ];
+
+        pre_save_cmds.__raw = ''
+          {
+            require("nvim-tree.api").tree.close
+          }
+        '';
       };
     };
   };

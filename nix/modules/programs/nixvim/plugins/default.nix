@@ -9,6 +9,7 @@ in
     ./cmp.nix
     ./comment.nix
     ./conform.nix
+    ./early-retirement.nix
     ./git
     ./harpoon.nix
     ./lazy.nix

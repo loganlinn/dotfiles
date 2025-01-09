@@ -16,6 +16,11 @@
     ../modules/sunbeam
     ../modules/xcode.nix
     ../modules/terraform.nix
+    # https://book.git-ps.sh/
+    {
+      homebrew.taps = [ "drewdeponte/oss" ];
+      homebrew.brews = [ "drewdeponte/oss/git-ps-rs" ];
+    }
     # https://github.com/dhth/kplay?ref=terminaltrove
     {
       homebrew.taps = [ "dhth/tap" ];

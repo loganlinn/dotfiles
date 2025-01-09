@@ -15,7 +15,7 @@
     ./git
     ./gpg.nix
     ./nix-path.nix
-    ./ranger.nix
+    # ./ranger.nix
     ./readline.nix
     ./ripgrep.nix
     ./secrets.nix

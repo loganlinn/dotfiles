@@ -170,7 +170,7 @@ in
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
       pull.rebase = true;
-      push.autoSetupRemote = true;
+      # push.autoSetupRemote = true;
       push.default = "current";
       rebase.autosquash = true;
       stash.showIncludeUntracked = true;
