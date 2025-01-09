@@ -38,7 +38,7 @@ in
       noice.enable = true;
       notify.enable = true;
       nvim-autopairs.enable = true;
-      nvim-colorizer.enable = true;
+      colorizer.enable = true;
       qmk.enable = false;
       snacks.enable = true;
       sniprun.enable = true;

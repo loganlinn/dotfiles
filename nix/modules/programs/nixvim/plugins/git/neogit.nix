@@ -6,7 +6,6 @@
 }:
 let
   cfg = config.programs.nixvim;
-  inherit (import ../../helpers.nix { inherit lib; }) mkKeymap;
 in
 {
   programs.nixvim = {

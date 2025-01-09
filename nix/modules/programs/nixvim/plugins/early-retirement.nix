@@ -1,22 +1,17 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 let
-  src = pkgs.fetchFromGitHub {
-    owner = "chrisgrieser";
-    repo = "nvim-early-retirement";
-    rev = "9ae6fcc933fc865ddf2728460194b67985e06e27";
-    hash = "sha256-ZjXG+POJFRsc79i1BuAJB9K6UBUfHT05oYvZaUr+RqA=";
-  };
+  inherit (import ../helpers.nix { inherit lib; }) buildVimPlugin;
 in
 {
   programs.nixvim = {
     extraPlugins = [
       {
-        plugin = pkgs.vimUtils.buildVimPlugin {
-          pname = src.repo;
-          version = src.rev;
-          inherit src;
-          meta.homepage = "https://github.com/${src.owner}/${src.repo}/";
+        plugin = buildVimPlugin pkgs {
+          owner = "chrisgrieser";
+          repo = "nvim-early-retirement";
+          rev = "9ae6fcc933fc865ddf2728460194b67985e06e27";
+          hash = "sha256-ZjXG+POJFRsc79i1BuAJB9K6UBUfHT05oYvZaUr+RqA=";
         };
       }
     ];

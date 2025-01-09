@@ -49,6 +49,14 @@ in
     keymaps = [
       {
         mode = "n";
+        key = "<leader>gw";
+        action = "<cmd>Gwrite<cr>";
+        options = {
+          desc = "Stage file";
+        };
+      }
+      {
+        mode = "n";
         key = "<leader>gS";
         action = "<cmd>Gwrite<cr>";
         options = {
@@ -57,27 +65,33 @@ in
       }
       {
         mode = "n";
+        key = "<leader>gd";
+        action = "<cmd>Neogit diff<cr>";
+        options.desc = "Neogit diff";
+      }
+      {
+        mode = "n";
         key = "<leader>gb";
+        action = "<cmd>Neogit branch<cr>";
+        options.desc = "Neogit branch";
+      }
+      {
+        mode = "n";
+        key = "<leader>gB";
         action.__raw = "require('neogit').action('branch', 'checkout_recent_branch')";
-        options.desc = "Git files";
+        options.desc = "Checkout recent branch";
       }
       {
         mode = "n";
         key = "<leader>gg";
-        action = "<cmd>Neogit<CR>";
+        action = "<cmd>Neogit<cr>";
         options.desc = "Neogit";
       }
       {
         mode = "n";
         key = "<leader>gG";
-        action = "<cmd>File status<CR>";
-        options.desc = "Neogit";
-      }
-      {
-        mode = "n";
-        key = "<leader>gL";
-        action = "<cmd>DiffviewFileHistory %<CR>";
-        options.desc = "File history";
+        action = "<cmd>Telescope git_status<cr>";
+        options.desc = "Status";
       }
       {
         mode = "v";
@@ -88,14 +102,14 @@ in
       {
         mode = "n";
         key = "<leader>gt";
-        action = "<cmd>Telescope git_stash<CR>";
-        options.desc = "Git stash";
+        action = "<cmd>Neogit stash<CR>";
+        options.desc = "Stash";
       }
       {
         mode = "n";
         key = "<leader>gc";
         action = "<cmd>Neogit commit<CR>";
-        options.desc = "Git commits";
+        options.desc = "Commit";
       }
       {
         mode = [

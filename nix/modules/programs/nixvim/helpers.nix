@@ -14,4 +14,18 @@
       else
         options;
   };
+
+  buildVimPlugin =
+    pkgs: args:
+    let
+      src = args.src or pkgs.fetchFromGitHub args;
+    in
+    pkgs.vimUtils.buildVimPlugin {
+      pname = args.pname or src.repo;
+      version = args.version or src.rev;
+      inherit src;
+      meta = {
+        homepage = "https://github.com/${src.owner}/${src.repo}/";
+      } // (args.meta or { });
+    };
 }
