@@ -164,6 +164,8 @@ function M.apply_to_config(config)
     { MOD, [[|]], wezterm.action.ActivateKeyTable({ name = "Split" }) },
     { LEADER, "i", wezterm.action.ActivateKeyTable({ name = "Insert" }) },
 
+    { LEADER, "r", require("dotfiles.action.yarn-run").input_selector },
+
     Insert = {
       { NONE, "u", wezterm.action.CharSelect },
       { NONE, "p", wezterm.action.PasteFrom("Clipboard") },
