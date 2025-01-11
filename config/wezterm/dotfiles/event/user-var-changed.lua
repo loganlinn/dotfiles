@@ -1,11 +1,12 @@
 local wezterm = require("wezterm")
+local log = require("dotfiles.util.logger").new("dotfiles.event.user-var-changed")
 
 ---@param window Window
 ---@param pane Pane
 ---@param name string
 ---@param value string
-return function(window, pane, name, value)
-  wezterm.log_info("event:user-var-changed", name, value)
+wezterm.on("user-var-changed", function(window, pane, name, value)
+  log.info("handling", name, value)
   -- zen-mode.nvim integration
   -- https://github.com/folke/zen-mode.nvim/blob/29b292bdc58b76a6c8f294c961a8bf92c5a6ebd6/README.md#wezterm
   if "ZEN_MODE" == name then
@@ -32,4 +33,4 @@ return function(window, pane, name, value)
     end
     window:set_config_overrides(overrides)
   end
-end
+end)

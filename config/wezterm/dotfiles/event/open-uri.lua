@@ -1,6 +1,6 @@
 local wezterm = require("wezterm")
 local util = require("dotfiles.util")
-local log = require("dotfiles.util.logger").new("open-uri.lua")
+local log = require("dotfiles.util.logger").new("dotfiles.event.open-uri")
 
 ---@param ... string
 ---@return string[]
@@ -75,8 +75,8 @@ local function open_with_nvim(window, pane, uri)
   return true
 end
 
-return function(window, pane, uri)
+wezterm.on("open-uri", function(window, pane, uri)
   if open_with_nvim(window, pane, uri) then
     return false -- cancel propagation
   end
-end
+end)

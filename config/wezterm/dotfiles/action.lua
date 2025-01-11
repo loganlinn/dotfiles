@@ -137,31 +137,39 @@ M.activate_direction = function(direction)
   end)
 end
 
-M.prompt_input_callback = function(description, callback)
-  return wezterm.action.PromptInputLine({
-    description = wezterm.format({
-      { Attribute = { Intensity = "Bold" } },
-      { Foreground = { AnsiColor = "Fuchsia" } },
-      { Text = description },
-      "ResetAttributes",
-    }),
-    action = wezterm.action_callback(function(window, pane, input, ...)
-      if input ~= nil and input ~= "" then
-        callback(window, pane, input, ...)
-      else
-        wezterm.log_info("Skipping action because input is empty")
-      end
-    end),
+local format_prompt_description = function(description)
+  return wezterm.format({
+    { Attribute = { Intensity = "Bold" } },
+    { Foreground = { AnsiColor = "Fuchsia" } },
+    { Text = description },
+    "ResetAttributes",
   })
 end
 
-M.RenameTab = M.prompt_input_callback("Tab title:", function(window, _, title)
-  window:active_tab():set_title(title)
+M.rename_tab = wezterm.action_callback(function(window, pane)
+  window:perform_action(
+    wezterm.action.PromptInputLine({
+      description = format_prompt_description("Rename tab:"),
+      initial_value = window:active_tab():get_title(),
+      action = wezterm.action_callback(function(window, _, input)
+        if input and input ~= "" then
+          window:active_tab():set_title(input)
+        end
+      end),
+    }),
+    pane
+  )
 end)
 
-M.RenameWorkspace = M.prompt_input_callback("Workspace name:", function(_, _, name)
-  wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), name)
-end)
+M.rename_workspace = wezterm.action.PromptInputLine({
+  description = format_prompt_description("Rename workspace:"),
+  initial_value = wezterm.mux.get_active_workspace(),
+  action = wezterm.action_callback(function(_, _, input)
+    if input and input ~= "" then
+      wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
+    end
+  end),
+})
 
 -- M.WorkspaceSelector = function(opts)
 --   return M.fn(function(window, pane)

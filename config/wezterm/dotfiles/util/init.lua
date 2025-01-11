@@ -9,7 +9,6 @@ local M = setmetatable({}, {
 M.is = require("dotfiles.util.is")
 M.safe = require("dotfiles.util.safe")
 M.tbl = require("dotfiles.util.tbl")
-M.window = require("dotfiles.util.window")
 M.delay = require("dotfiles.util.delay")
 M.debug = require("dotfiles.util.debug")
 
