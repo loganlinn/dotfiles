@@ -1,3 +1,7 @@
+{ config, lib, ... }:
+let
+  cfg = config.programs.nixvim;
+in
 {
   programs.nixvim = {
     plugins.auto-session = {
@@ -27,5 +31,20 @@
         '';
       };
     };
+
+    # https://github.com/nvim-tree/nvim-tree.lua/wiki/Recipes#workaround-when-using-rmagattiauto-session
+    autoCmd = (
+      lib.optional cfg.plugins.nvim-tree.enable {
+        event = "BufEnter";
+        pattern = "NvimTree*";
+        callback.__raw = ''
+          function()
+            if not require("nvim-tree.view").is_visible() then
+              require("nvim-tree.api").tree.open()
+            end
+          end
+        '';
+      }
+    );
   };
 }
