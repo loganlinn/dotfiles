@@ -17,6 +17,7 @@
         nix
         regex
         sql
+        terraform
         toml
         vim
         vimdoc
