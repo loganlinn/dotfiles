@@ -3,6 +3,7 @@
     ./colorschemes.nix
     ./plugins
     ./keymaps.nix
+    ./neovide.nix
   ];
 
   config = {

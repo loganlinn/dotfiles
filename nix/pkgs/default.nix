@@ -1,4 +1,7 @@
-{ pkgs ? import <nixpkgs> { }, ... }:
+{
+  pkgs ? import <nixpkgs> { },
+  ...
+}:
 
 let
 
@@ -11,14 +14,21 @@ let
     ./jib.nix
     ./kubefwd
     ./notify-send-py.nix
+    ./age-op
   ];
 
   packages = lib.pipe paths [
     (map (f: pkgs.callPackage f { }))
-    (lib.filter (p:
-      lib.any (system:
-        let platform = lib.systems.elaborate { inherit system; };
-        in pkgs.stdenv.buildPlatform.canExecute platform) p.meta.platforms))
+    (lib.filter (
+      p:
+      lib.any (
+        system:
+        let
+          platform = lib.systems.elaborate { inherit system; };
+        in
+        pkgs.stdenv.buildPlatform.canExecute platform
+      ) p.meta.platforms
+    ))
     (map (p: {
       name = p.pname or p.name;
       value = p;
@@ -26,4 +36,5 @@ let
     builtins.listToAttrs
   ];
 
-in packages
+in
+packages

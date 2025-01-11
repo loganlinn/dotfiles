@@ -65,6 +65,19 @@ function M.get_key_table(config, name)
   return config.key_tables[name]
 end
 
+function M.configure_keys(config, opts)
+  for k, v in pairs(opts) do
+    if type(k) == "string" then
+      local keys = M.get_key_table(config, k)
+      for _, vv in pairs(v) do
+        table.insert(keys, M.tokey(vv))
+      end
+    else
+      table.insert(config.keys, M.tokey(v))
+    end
+  end
+end
+
 ---@param config Config
 ---@return Config
 function M.apply_to_config(config)
@@ -75,20 +88,7 @@ function M.apply_to_config(config)
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
 
-  local function configure_keys(opts)
-    for k, v in pairs(opts) do
-      if type(k) == "string" then
-        local keys = M.get_key_table(config, k)
-        for _, vv in pairs(v) do
-          table.insert(keys, M.tokey(vv))
-        end
-      else
-        table.insert(config.keys, M.tokey(v))
-      end
-    end
-  end
-
-  configure_keys({
+  M.configure_keys(config, {
     { MOD, "H", A.activate_direction("Left") },
     { MOD, "J", A.activate_direction("Down") },
     { MOD, "K", A.activate_direction("Up") },

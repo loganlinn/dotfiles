@@ -40,8 +40,8 @@ in
         spice.log.all = mkDefault true;
       };
     };
-    programs.zsh.initExtraBeforeCompInit = ''
-      eval "$(${cfg.package}/bin/gs shell completion zsh)"
-    '';
+    # programs.zsh.initExtraBeforeCompInit = ''
+    #   eval "$(${cfg.package}/bin/gs shell completion zsh)"
+    # '';
   };
 }

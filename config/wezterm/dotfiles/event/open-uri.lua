@@ -66,9 +66,10 @@ local function open_with_nvim(window, pane, uri)
   end
 
   if not open_with_nvim_remote(window, pane, url) then
-    local args = nvim_args("--", url.file_path)
-    log.info("spawning command", args)
-    log.info(window:perform_action(wezterm.action.SpawnCommandInNewTab({ args = args }), pane))
+    local command = { args = nvim_args("--", url.file_path) }
+    local action = wezterm.action.SplitPane({ top_level = false, direction = "Right", command = command })
+    log.info("performing action", action)
+    window:perform_action(action, pane)
   end
 
   return true

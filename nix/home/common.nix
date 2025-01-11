@@ -8,6 +8,7 @@
 
 {
   imports = [
+    ./age-op.nix
     ./accounts.nix
     ./common-linux.nix
     ./common-darwin.nix

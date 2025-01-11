@@ -54,63 +54,6 @@ local function with_user_var_envs(env_vars, user_vars)
   return env_vars
 end
 
----@param window Window
----@param from_pane Pane
----@param spawn_args? {direction: Direction, top_level: boolean, size: number, args?: string[], set_environment_variables?: {[string]: string}}
----@return Pane popup_pane
-local function spawn_popup(window, from_pane, spawn_args)
-  -- cannot spawn from zoomed pane
-  from_pane:tab():set_zoomed(false)
-  spawn_args = spawn_args or {
-    direction = POPUP_DIRECTION,
-    top_level = true,
-    size = 0.333,
-  }
-  spawn_args.args = spawn_args.args or { "zsh", "-l" }
-  spawn_args.set_environment_variables = with_user_var_envs(spawn_args.set_environment_variables or {}, {
-    PANE_ROLE = PANE_ROLE_POPUP,
-    PANE_ID_ORIGIN = tostring(from_pane:pane_id()),
-  })
-
-  local new_pane = from_pane:split(log.info(spawn_args))
-  activate_pane(window, new_pane, from_pane)
-  return new_pane
-end
-
-local function open_popup(window, pane, spawn_args)
-  local popup = pane:tab():get_pane_direction(POPUP_DIRECTION)
-  if popup then
-    popup:activate()
-  else
-    spawn_popup(window, pane)
-  end
-end
-
-local function is_popup_pane(pane)
-  return pane:get_user_vars().PANE_ROLE == PANE_ROLE_POPUP
-end
-
-local function is_origin_pane(pane, other)
-  return pane:get_user_vars().PANE_ID_ORIGIN == tostring(other:pane_id())
-end
-
-local function is_same_pane(pane, other)
-  return pane:pane_id() == other:pane_id()
-end
-
----@param tab MuxTab
----@return Pane[]
-local function find_popups(tab)
-  assert(tab.panes)
-  local results = {}
-  for _, pane in pairs(tab:panes()) do
-    if is_popup_pane(pane) then
-      table.insert(results, pane)
-    end
-  end
-  return results
-end
-
 local function set_zoomed(tab, enable)
   -- don't zoom when there's no effect
   if enable and next(tab:panes()) ~= nil then
@@ -120,15 +63,53 @@ local function set_zoomed(tab, enable)
   end
 end
 
+---@param window Window
+---@param pane Pane
+---@param spawn_args? {direction: Direction, top_level: boolean, size: number, args?: string[], set_environment_variables?: {[string]: string}}
+---@return Pane popup_pane
+local function spawn_popup(window, pane, spawn_args)
+  pane = pane or window:active_tab():active_pane()
+  spawn_args = spawn_args or {}
+  spawn_args.direction = spawn_args.direction or POPUP_DIRECTION
+  spawn_args.top_level = spawn_args.top_level or true
+  spawn_args.size = spawn_args.size or 0.333
+  spawn_args.args = spawn_args.args or { "/usr/bin/env", "zsh", "-l" }
+  spawn_args.set_environment_variables = with_user_var_envs(spawn_args.set_environment_variables or {}, {
+    PANE_ROLE = PANE_ROLE_POPUP,
+    PANE_ID_ORIGIN = tostring(pane:pane_id()),
+  })
+
+  -- cannot spawn from zoomed pane
+  set_zoomed(pane:tab(), false)
+
+  log.info("splitting", pane, spawn_args)
+  local new_pane = pane:split(spawn_args)
+
+  activate_pane(window, new_pane, pane)
+  return new_pane
+end
+
+local function open_popup(window, pane, spawn_args)
+  local popup = pane:tab():get_pane_direction(spawn_args.direction or POPUP_DIRECTION)
+  if popup then
+    popup:activate()
+  else
+    spawn_popup(window, pane, spawn_args)
+  end
+end
+
+local function is_same_pane(pane, other)
+  return pane:pane_id() == other:pane_id()
+end
+
 M.toggle_popup_pane = wezterm.action_callback(function(window, pane)
+  local direction = POPUP_DIRECTION
   local tab = window:active_tab()
   local panes_with_info = tab:panes_with_info()
-  -- local primary = find_primary_pane(panes_with_info) or error()
-  local is_primary = tab:get_pane_direction(OPPOSITE_DIRECTION[POPUP_DIRECTION]) == nil
-  -- local _, pane_info = find_active(panes_with_info)
+  local is_primary = tab:get_pane_direction(OPPOSITE_DIRECTION[direction]) == nil
 
   if is_primary then
-    open_popup(window, pane)
+    open_popup(window, pane, { direction = direction })
   else
     activate_pane(window, panes_with_info[1].pane, pane)
     set_zoomed(tab, true)
@@ -140,11 +121,11 @@ M.activate_direction = function(direction)
   return wezterm.action_callback(function(window, pane)
     local tab = pane:tab() or window:active_tab()
     local panes = tab:panes()
-    local direction_pane = tab:get_pane_direction(direction)
-    if direction_pane then
-      activate_pane(window, direction_pane, pane)
+    local target_pane = tab:get_pane_direction(direction)
+    if target_pane then
+      activate_pane(window, target_pane, pane)
     elseif is_same_pane(pane, panes[1]) then
-      if direction == "Right" or #panes == 1 then
+      if direction == POPUP_DIRECTION or #panes == 1 then
         spawn_popup(window, pane)
       elseif direction == "Left" then
         activate_pane(window, tab:get_pane_direction("Prev"), pane)

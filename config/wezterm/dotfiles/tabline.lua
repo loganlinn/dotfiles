@@ -1,8 +1,22 @@
 local wezterm = require("wezterm")
-local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
-local info, warn = wezterm.log_info, wezterm.log_warn
 local nerdfonts = wezterm.nerdfonts ---@cast table<string, string>
+local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
+
 local util = require("dotfiles.util")
+local basename = util.basename
+local dirname = util.dirname
+
+local lpad = function(txt, s)
+  s = s or " "
+  return s .. txt
+end
+local rpad = function(txt, s)
+  s = s or " "
+  return txt .. s
+end
+local pad = function(txt, l, r)
+  return lpad(rpad(txt, r), l)
+end
 
 local function active_key_table()
   return function(window)
@@ -13,7 +27,7 @@ local function active_key_table()
         { Background = { Color = scheme.ansi[6] } },
         { Foreground = { Color = scheme.ansi[1] } },
         { Attribute = { Intensity = "Bold" } },
-        { Text = " " .. key_table .. " " .. wezterm.nerdfonts.cod_layers_dot .. "  " },
+        { Text = pad(key_table .. " " .. wezterm.nerdfonts.cod_layers_dot) },
         "ResetAttributes",
       })
     else
@@ -27,7 +41,7 @@ local function active_key_table()
 end
 
 local function leader_key()
-  local leader_text = " " .. wezterm.nerdfonts.md_home_floor_l .. " "
+  local leader_text = pad(wezterm.nerdfonts.md_home_floor_l)
 
   -- cache static text formats
   local leader_active = util.delay(function()
@@ -59,15 +73,37 @@ local function leader_key()
   end
 end
 
-local function active_tab()
-  return function(window)
-    local tab = window:active_tab()
-    local tab_title = tab:get_title()
-    if not tab_title or #tab_title == 0 then
-      tab_title = "#" .. tostring(tab:tab_id())
-    end
-    return string.format(" %s ", tab_title)
+local tab_label = function(tab)
+  local fmt = {
+    "ResetAttributes",
+    { Text = pad(tostring(tab.tab_index + 1)) },
+  }
+
+  local title = tab.tab_title
+  if title ~= "" and title ~= "default" and title ~= tab.active_pane.foreground_process_name then
+    table.insert(fmt, { Foreground = { AnsiColor = "Yellow" } })
+    table.insert(fmt, { Text = pad(title) })
   end
+
+  if tab.active_pane.current_working_dir then
+    local cwd = tab.active_pane.current_working_dir.file_path
+    local label = basename(cwd)
+    local parent = basename(dirname(cwd))
+    table.insert(fmt, { Text = " " })
+    if parent ~= "." and parent ~= "/" then
+      table.insert(fmt, { Foreground = { Color = "#909090" } })
+      table.insert(fmt, { Text = parent })
+      table.insert(fmt, { Foreground = { AnsiColor = "Grey" } })
+      table.insert(fmt, { Text = "/" })
+      table.insert(fmt, "ResetAttributes")
+    end
+    table.insert(fmt, { Foreground = { AnsiColor = "White" } })
+    table.insert(fmt, { Text = label })
+    table.insert(fmt, { Text = "  " })
+  end
+
+  table.insert(fmt, "ResetAttributes")
+  return pad(wezterm.format(fmt))
 end
 
 local function config_reload_count()
@@ -129,20 +165,23 @@ tabline.setup({
       -- { "index", padding = { left = 3, right = 0 } },
       -- { "cwd", padding = { left = 1, right = 1 } },
       -- { "process", padding = { left = 1, right = 3 }, icons_enabled = true, icons_only = true },
-      { "index", padding = { left = 4 } },
+      -- { "index", padding = { left = 4, right = 1 } },
+      -- { Attribute = { Intensity = "Bold" } },
+      -- "cwd",
       { Attribute = { Intensity = "Bold" } },
-      "cwd",
+      tab_label,
       { "zoomed", icons_enabled = true, icons_only = true, padding = 0 },
-      "   ",
+      -- "   ",
     },
     tab_inactive = {
+      { Attribute = { Intensity = "Half" } },
       -- { "cwd", padding = { left = 0, right = 1 } },
       -- { "process", padding = 1, icons_enabled = true, icons_only = true },
-      { "index", padding = { left = 4 } },
-      { Attribute = { Intensity = "Half" } },
-      "cwd",
+      -- { "index", padding = { left = 4, right = 1 } },
+      -- "cwd",
+      tab_label,
       { "zoomed", icons_enabled = true, icons_only = true, padding = 0 },
-      "   ",
+      -- "   ",
     },
     tabline_x = {
       config_reload_count(),
@@ -151,7 +190,6 @@ tabline.setup({
       " ",
     },
     tabline_y = {
-      -- active_tab(),
       { "window", padding = 2 },
     },
     tabline_z = {

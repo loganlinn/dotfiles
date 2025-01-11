@@ -13,6 +13,63 @@ M.window = require("dotfiles.util.window")
 M.delay = require("dotfiles.util.delay")
 M.debug = require("dotfiles.util.debug")
 
+---executes cmd and passes input to stdin
+---@param command_string string command to be run
+---@param input string input to stdin
+---@return boolean
+---@return string
+---@credit https://github.com/MLFlexer/resurrect.wezterm/blob/c81eb4b02d15a6ae5060f6c1b34a4450990ccc02/plugin/init.lua
+function M.exec_with_stdin(command_string, input)
+  local is_windows = M.is_windows()
+
+  if is_windows and #input < 32000 then -- Check if input is larger than max cmd length on Windows
+    command_string =
+      string.format("%s | %s", wezterm.shell_join_args({ "Write-Output", "-NoEnumerate", input }), command_string)
+    local process_args = { "pwsh.exe", "-NoProfile", "-Command", command_string }
+
+    local success, stdout, stderr = wezterm.run_child_process(process_args)
+    if success then
+      return success, stdout
+    else
+      return success, stderr
+    end
+  elseif #input < 150000 and not is_windows then -- Check if input is larger than common max on MacOS and Linux
+    command_string = string.format("%s | %s", wezterm.shell_join_args({ "echo", "-E", "-n", input }), command_string)
+    local process_args = { os.getenv("SHELL") or "bash", "-c", command_string }
+
+    local success, stdout, stderr = wezterm.run_child_process(process_args)
+    if success then
+      return success, stdout
+    else
+      return success, stderr
+    end
+  else
+    -- redirect stderr to stdout to test if cmd will execute
+    -- can't check on Windows because it doesn't support /dev/stdin
+    if not is_windows then
+      local stdout = io.popen(command_string .. " 2>&1", "r")
+      if not stdout then
+        return false, "Failed to execute: " .. command_string
+      end
+      local stderr = stdout:read("*all")
+      stdout:close()
+      if stderr ~= "" then
+        wezterm.log_error(stderr)
+        return false, stderr
+      end
+    end
+    -- if no errors, execute cmd using stdin with input
+    local stdin = io.popen(command_string, "w")
+    if not stdin then
+      return false, "Failed to execute: " .. command_string
+    end
+    stdin:write(input)
+    stdin:flush()
+    stdin:close()
+    return true, '"' .. command_string .. '" <input> ran successfully.'
+  end
+end
+
 ---@param f function
 ---@param ... any
 ---@return function
@@ -58,9 +115,13 @@ M.spy = function(...)
   return spy_log("VAL", ...)
 end
 
-M.fspy = function(f)
+---@param f function
+---@param label? string
+---@return function
+M.fspy = function(f, label)
+  label = label or ""
   return function(...)
-    return spy_log("RET", f(spy_log("ARG", ...)))
+    return spy_log(label .. "-->", f(spy_log(label .. "<--", ...)))
   end
 end
 
@@ -100,6 +161,78 @@ end
 ---@return boolean
 M.endswith = function(s, suffix)
   return suffix == "" or string.sub(s, -#suffix) == suffix
+end
+
+function M.basename(pathname)
+  if pathname == nil then
+    return "."
+  elseif type(pathname) ~= "string" then
+    error("pathname must be string", 2)
+  end
+
+  -- remove trailing-slashes
+  local head = string.find(pathname, "/+$", 2)
+  if head then
+    pathname = string.sub(pathname, 1, head - 1)
+  end
+
+  -- extract last-segment
+  head = string.find(pathname, "[^/]+$")
+  if head then
+    pathname = string.sub(pathname, head)
+  end
+
+  -- empty
+  if pathname == "" then
+    return "."
+  end
+
+  return pathname
+end
+
+---@param str string
+---@param min_width number
+---@return string
+function M.pad(str, min_width)
+  return wezterm.pad_left(wezterm.pad_right(str, min_width), min_width)
+end
+
+---@param pathname string
+---@return string
+M.dirname = function(pathname)
+  if pathname == nil then
+    return "."
+  elseif type(pathname) ~= "string" then
+    error("pathname must be string", 2)
+  end
+
+  -- remove trailing-slashes
+  local head = string.find(pathname, "/+$", 2)
+  if head then
+    pathname = string.sub(pathname, 1, head - 1)
+  end
+
+  -- remove last-segment
+  head = string.find(pathname, "[^/]+$")
+  if head then
+    pathname = string.sub(pathname, 1, head - 1)
+  end
+
+  -- remove trailing-slashes
+  head = string.find(pathname, "/+$")
+  if head then
+    if head == 1 then
+      return "/"
+    end
+    pathname = string.sub(pathname, 1, head - 1)
+  end
+
+  -- empty or dotted string
+  if string.find(pathname, "^%s*$") or string.find(pathname, "^%.+$") then
+    return "."
+  end
+
+  return pathname
 end
 
 M.is_darwin = M.delay(function()

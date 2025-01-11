@@ -49,6 +49,7 @@
           tfsec
           tf-summarize
           iam-policy-json-to-terraform
+          uv
         ];
       };
     }
@@ -101,6 +102,7 @@
       ../../nix/home/kitty
       ../../nix/home/lazygit.nix
       ../../nix/home/nixvim
+      ../../nix/home/neovide.nix
       ../../nix/home/pretty.nix
       ../../nix/home/tmux.nix
       ../../nix/home/wezterm
@@ -123,6 +125,8 @@
     programs.wezterm.enable = true;
 
     programs.kitty.enable = true;
+
+    programs.age-op.enable = true;
 
     home.packages = with pkgs; [
       google-cloud-sdk

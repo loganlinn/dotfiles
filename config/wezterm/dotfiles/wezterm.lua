@@ -6,6 +6,7 @@ require("dotfiles.event").apply_to_config(config)
 require("dotfiles.patterns").apply_to_config(config)
 require("dotfiles.font").apply_to_config(config)
 require("dotfiles.keys").apply_to_config(config)
+require("dotfiles.ressurect").apply_to_config(config)
 require("dotfiles.domains").apply_to_config(config, {
   "ssh://nijusan.internal",
   "ssh://wijusan.internal",
