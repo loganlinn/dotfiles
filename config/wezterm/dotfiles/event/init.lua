@@ -11,7 +11,7 @@ M.apply_to_config = function(config)
     "open-uri",
   }) do
     local mod_name = "dotfiles.event." .. event
-    wezterm.log_info("loading:", mod_name)
+    -- wezterm.log_info("loading:", mod_name)
     local mod = require(mod_name)
     if type(mod) == "table" and mod.apply_to_config then
       mod.apply_to_config(config)

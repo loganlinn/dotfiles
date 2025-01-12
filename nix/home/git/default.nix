@@ -71,6 +71,8 @@ in
       fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
       rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
 
+      commit-empty = "commit --allow-empty-message -m ''";
+
       stash-search = ''
         !f() {
           if ! (( $# )); then

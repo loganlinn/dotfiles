@@ -6,15 +6,15 @@
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  inherit (config.lib.nixvim) toLuaObject;
-  inherit (import ../../helpers.nix { inherit lib; }) mkKeymap;
+  inherit (import ../helpers.nix { inherit lib; }) mkKeymap;
   cfg = config.programs.nixvim.plugins.telescope;
 in
 {
   programs.nixvim = {
+
     # used by smart-open
     globals.sqlite_clib_path = "${pkgs.sqlite.out}/lib/libsqlite3.${
-      if isDarwin then "dylib" else "so"
+      if isDarwin then "dylib" else "so" # iirc there's a function in nixpkgs for this
     }";
 
     extraPlugins = [

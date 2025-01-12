@@ -17,7 +17,6 @@ in
     ./early-retirement.nix
     ./git
     ./harpoon.nix
-    ./lazy.nix
     ./lsp
     ./lualine.nix
     ./mini.nix
@@ -28,7 +27,7 @@ in
     ./oil.nix
     ./project.nix
     ./supermaven
-    ./telescope
+    ./telescope.nix
     ./treesitter.nix
     ./typescript-tools.nix
     ./which-key.nix
@@ -44,10 +43,10 @@ in
       notify.enable = true;
       nvim-autopairs.enable = true;
       colorizer.enable = true;
-      qmk.enable = false;
+      # qmk.enable = false;
       snacks.enable = true;
-      sniprun.enable = true;
-      spectre.enable = true;
+      # sniprun.enable = true;
+      # spectre.enable = true;
       trouble.enable = true;
       vim-surround.enable = true;
       web-devicons.enable = true;

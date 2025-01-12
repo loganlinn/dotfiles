@@ -91,9 +91,8 @@ let
       alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
       alt-a = "exec-and-forget ${cfg.editor.exec}";
       alt-period = "exec-and-forget open -b ${app-ids.Finder}";
-      alt-s = "exec-and-forget open -b ${app-ids.Slack}";
-      alt-m = "exec-and-forget open -b ${app-ids.Messages}";
-      alt-o = "mode apps";
+      # alt-s = "exec-and-forget open -b ${app-ids.Slack}";
+      # alt-m = "exec-and-forget open -b ${app-ids.Messages}";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#layout
       alt-slash = "layout tiles horizontal vertical";
@@ -131,6 +130,11 @@ let
       alt-shift-up = "resize height -48";
       alt-shift-right = "resize width +48";
 
+      alt-leftSquareBracket = "workspace --wrap-around prev";
+      alt-rightSquareBracket = "workspace --wrap-around next";
+      alt-shift-leftSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around next";
+      alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev";
+
       # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
       alt-backtick = "workspace 0";
       alt-1 = "workspace 1";
@@ -143,10 +147,9 @@ let
       alt-8 = "workspace 8";
       alt-9 = "workspace 9";
       alt-0 = "workspace 10";
-      alt-leftSquareBracket = "workspace --wrap-around prev";
-      alt-rightSquareBracket = "workspace --wrap-around next";
-      alt-shift-leftSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around next";
-      alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev";
+      alt-s = "workspace s";
+      alt-m = "workspace m";
+      alt-p = "workspace p";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
       alt-shift-1 = "move-node-to-workspace --focus-follows-window  1";
@@ -159,6 +162,9 @@ let
       alt-shift-8 = "move-node-to-workspace --focus-follows-window  8";
       alt-shift-9 = "move-node-to-workspace --focus-follows-window  9";
       alt-shift-0 = "move-node-to-workspace --focus-follows-window 10";
+      alt-shift-s = "move-node-to-workspace --focus-follows-window s";
+      alt-shift-m = "move-node-to-workspace --focus-follows-window m";
+      alt-shift-p = "move-node-to-workspace --focus-follows-window p";
 
       # https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
       # alt-ctrl-shift-pageDown = "move-workspace-to-monitor --wrap-around next";
@@ -177,7 +183,7 @@ let
       alt-shift-x = "enable toggle";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#mode
-      alt-shift-m = "mode monitor";
+      # alt-shift-m = "mode monitor";
       alt-shift-semicolon = "mode service";
       # alt-shift-slash = "mode query";
     };
@@ -211,18 +217,6 @@ let
       ];
     };
 
-    apps.binding = prefix-mode-binding // {
-      d = "exec-and-forget open -b ${app-ids.Docker}";
-      l = "exec-and-forget open -b ${app-ids.Dictionary}";
-      m = "exec-and-forget open -b ${app-ids.Messages}";
-      n = "exec-and-forget open -b ${app-ids.Notes}";
-      r = "exec-and-forget open -b ${app-ids.Reminders}";
-      s = "exec-and-forget open -b ${app-ids.Slack}";
-      comma = "exec-and-forget open -b ${app-ids."System Settings"}";
-      backtick = "exec-and-forget open -b ${app-ids."Activity Monitor"}";
-      esc = "mode main";
-      ctrl-c = "mode main";
-    };
     # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
     service.binding = prefix-mode-binding // {
       r = [
@@ -332,7 +326,8 @@ in
         # "com.github.wez.WezTerm" = 1;
         "com.linear" = 4;
         "${app-ids."Google Chrome"}" = 3;
-        "${app-ids.Slack}" = 10;
+        "${app-ids.Slack}" = "s";
+        "${app-ids.Messages}" = "m";
       }
     )
     # by app-name
