@@ -8,6 +8,7 @@ with lib;
 
 let
   cfg = config.programs.aerospace;
+  app-ids = import ./app-ids.nix;
 
   # mkOpt =
   #   type: default: arg:
@@ -256,9 +257,6 @@ let
     ctrl-c = "mode main";
   };
 
-  # constants
-  app-ids = import ./app-ids.nix;
-
   # utils
   aerospace-summon-app = pkgs.writeShellScriptBin "aerospace-summon-app" (
     builtin.readFile ./bin/aerospace-summon-app.sh
@@ -346,37 +344,39 @@ in
     )
 
     ## floating layout
-    # by app-id
     (forEach
       [
-        "com.1password.1password"
-        "com.anthropic.claudefordesktop"
-        "com.apple.AddressBook"
-        "com.apple.AppStore"
-        "com.apple.Dictionary"
-        "com.apple.Notes"
-        "com.apple.Preview"
-        "com.apple.calculator"
-        "com.apple.finder"
-        "us.zoom.xos"
+        "1Password"
+        "Activity Monitor"
+        "App Store"
+        "Calculator"
+        "Clock"
+        "Console"
+        "Contacts"
+        "Dictionary"
+        "FaceTime"
+        "Finder"
+        "Keychain Access"
+        "Messages"
+        "Notes"
+        "Preview"
+        "Reminders"
+        "Zoom"
+        "System Settings"
+        {
+          window-title-regex-substring = "Hammerspoon";
+        }
+        {
+          window-title-regex-substring = "wezterm Configuration Error";
+        }
       ]
-      (app-id: {
-        "if" = {
-          inherit app-id;
-        };
-        run = "layout floating";
-      })
-    )
-    # by window title
-    (forEach
-      [
-        "Hammerspoon"
-        "wezterm Configuration Error"
-      ]
-      (window-title-regex-substring: {
-        "if" = {
-          inherit window-title-regex-substring;
-        };
+      (app: {
+        "if" =
+          if isString app then
+            { app-id = app-ids.${app}; }
+          else
+            assert isAttrs app;
+            app;
         run = "layout floating";
       })
     )

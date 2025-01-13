@@ -120,6 +120,7 @@
             inherit (inputs'.home-manager.packages) home-manager;
             inherit (inputs'.emacs.packages) emacs-unstable;
             inherit (inputs'.agenix.packages) agenix;
+            wezterm = inputs'.wezterm.packages.default;
             flake-root = config.flake-root.package;
             fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
               version = inputs.fzf-git-sh.shortRev;

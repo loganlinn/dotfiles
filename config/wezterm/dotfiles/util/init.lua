@@ -90,38 +90,19 @@ M.fnil = function(f)
   end
 end
 
----@param number
----@return number
 M.inc = function(n)
   return n + 1
 end
-
----@param number
----@return number
 M.dec = function(n)
   return n - 1
-end
-
-local spy_log = function(label, ...)
-  wezterm.log_info("spy", label, ...)
-  return ...
 end
 
 ---@generic T
 ---@param ... T
 ---@return T
 M.spy = function(...)
-  return spy_log("VAL", ...)
-end
-
----@param f function
----@param label? string
----@return function
-M.fspy = function(f, label)
-  label = label or ""
-  return function(...)
-    return spy_log(label .. "-->", f(spy_log(label .. "<--", ...)))
-  end
+  wezterm.log_info(...)
+  return ...
 end
 
 ---@generic T

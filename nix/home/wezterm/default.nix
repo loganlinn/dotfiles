@@ -1,5 +1,4 @@
 {
-  inputs,
   config,
   lib,
   pkgs,
@@ -58,7 +57,8 @@ in
     };
 
     xdg.configFile = {
-      "wezterm/dotfiles".source = mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/wezterm/dotfiles";
+      "wezterm/dotfiles".source =
+        mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/config/wezterm/dotfiles";
       "wezterm/colors/dracula".source = dracula;
       "wezterm/lib/30log.lua".source = "${_30log}/30log.lua";
       "wezterm/lib/30log-global.lua".source = "${_30log}/30log-global.lua";

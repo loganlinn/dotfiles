@@ -85,4 +85,5 @@
   "iMovie" = "com.apple.iMovieApp";
   "iTerm2" = "com.googlecode.iterm2";
   "kdenlive" = "org.kde.Kdenlive";
+  "Zoom" = "us.zoom.xos";
 }

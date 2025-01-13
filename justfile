@@ -4,35 +4,19 @@
 # mod windows
 # mod firewalla
 
-default: help
+set shell := ["bash", "-e", "-u", "-o", "pipefail", "-c"]
+set unstable := true
 
-help:
-    @just --list --unsorted
-
-@link-flake:
-    just link-system-flake
-    just link flake.nix ~/.config/home-manager/flake.nix
-
-[macos]
-@link-system-flake:
-    just link flake.nix /etc/nix-darwin/flake.nix
-
-[linux]
-@link-system-flake:
-    just link flake.nix /etc/nixos/flake.nix
-
-[macos]
-bootstrap:
-    nix run nix-darwin -- switch --flake {{ source_dir() }}
-    just link-flake
-
-[macos]
-rebuild *args:
-    darwin-rebuild {{ args }}
-
-[linux]
-rebuild *args:
-    nixos-rebuild {{ args }}
+[private]
+[script]
+default:
+    while true; do
+      if ! just --choose --unsorted; then
+        echo $?
+        echo "Exiting..."
+        exit 0
+      fi
+    done
 
 [macos]
 switch *args:
@@ -42,6 +26,14 @@ switch *args:
 switch *args:
     nixos-rebuild switch --flake {{ source_dir() }} {{ args }}
 
+[macos]
+rebuild *args:
+    darwin-rebuild {{ args }}
+
+[linux]
+rebuild *args:
+    nixos-rebuild {{ args }}
+
 # update flake inputs
 update *inputs:
     nix flake update {{ inputs }}
@@ -49,13 +41,40 @@ update *inputs:
 repl dir='.' file='repl.nix' args="":
     nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
 
+[private]
+link-flake:
+    just link-system-flake
+    just link flake.nix ~/.config/home-manager/flake.nix
+
+[macos]
+[private]
+link-system-flake:
+    just link flake.nix /etc/nix-darwin/flake.nix
+
+[linux]
+[private]
+link-system-flake:
+    just link flake.nix /etc/nixos/flake.nix
+
+[macos]
+[private]
+bootstrap:
+    nix run nix-darwin -- switch --flake {{ source_dir() }}
+    just link-flake
+
 run app *args:
     nix run .#{{ app }} {{ args }}
 
-netrc:
+@netrc:
     op inject -i netrc.tpl -o ~/.netrc
 
-flake-checker:
+check: just-check flake-check
+
+[private]
+just-check:
+    just --check
+
+flake-check:
     env FLAKE_CHECKER_NO_TELEMETRY=true nix run github:DeterminateSystems/flake-checker
 
 [linux]
@@ -64,8 +83,8 @@ fix-eol:
     rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
 
 [private]
-@link path link context=source_dir():
-    #!/usr/bin/env bash
+[script]
+link path link context=source_dir():
     target="{{ clean(join(context, path)) }}"
     link="{{ clean(link) }}"
     if [ ! -d "$(dirname "$link")" ]; then
@@ -77,9 +96,41 @@ fix-eol:
       echo "{{ BOLD }}{{ GREEN }} created:{{ RESET }} {{ BLUE }}$link{{ RESET }} -> {{ BLUE }}$target{{ RESET }}";
     fi;
 
-fmt:
+fmt: just-fmt nix-fmt
+
+[private]
+just-fmt:
+    just --fmt
+
+[private]
+nix-fmt:
     nix fmt
-    just --fmt --unstable
+
+shell:
+    @exec zsh
+
+nix-develop *args:
+    nix develop --command zsh {{ args }}
+
+nix-shell *args:
+    nix shell --command zsh {{ args }}
+
+git *args:
+    git {{ args }}
+
+neogit:
+    nvim --cmd "let g:auto_session_enabled = v:false" +Neogit
+
+[script]
+just *args:
+    if ! args=$(gum input --prompt="just " --value="{{ args }}" --placeholder="" --header="$(just --list)\n\n"); then
+      exit $?
+    fi
+    echo -e "{{ BOLD }}just $args{{ RESET }}"
+    exec just $args
+
+help:
+    @just --list --unsorted
 
 BOLD := "$(tput bold)"
 RESET := "$(tput sgr0)"
