@@ -18,25 +18,26 @@ local pad = function(txt, l, r)
   return lpad(rpad(txt, r), l)
 end
 
-local function active_key_table()
-  return function(window)
-    local scheme = tabline.get_colors().scheme
-    local key_table = window:active_key_table()
-    if key_table then
-      return wezterm.format({
-        { Background = { Color = scheme.ansi[6] } },
-        { Foreground = { Color = scheme.ansi[1] } },
-        { Attribute = { Intensity = "Bold" } },
-        { Text = pad(key_table .. " " .. wezterm.nerdfonts.cod_layers_dot) },
-        "ResetAttributes",
-      })
-    else
-      return wezterm.format({
-        { Foreground = { Color = scheme.tab_bar.inactive_tab.fg_color } },
-        { Text = " " .. wezterm.nerdfonts.cod_layers .. "  " },
-        "ResetAttributes",
-      })
-    end
+local function active_key_table(window)
+  local key_table = window:active_key_table()
+  local colors = tabline.get_colors()
+  local scheme = colors and colors.scheme
+  local ansi = scheme and scheme.ansi or {}
+  local inactive_fg_color = scheme and scheme.tab_bar.inactive_tab.fg_color or "#111111"
+  if key_table then
+    return wezterm.format({
+      { Background = { Color = ansi[6] } },
+      { Foreground = { Color = ansi[1] } },
+      { Attribute = { Intensity = "Bold" } },
+      { Text = pad(key_table .. " " .. wezterm.nerdfonts.cod_layers_dot) },
+      "ResetAttributes",
+    })
+  else
+    return wezterm.format({
+      { Foreground = { Color = inactive_fg_color } },
+      { Text = " " .. wezterm.nerdfonts.cod_layers .. "  " },
+      "ResetAttributes",
+    })
   end
 end
 
@@ -112,7 +113,7 @@ local function config_reload_count()
     local scheme = tabline.get_colors().scheme
     return wezterm.format({
       { Foreground = { Color = scheme.ansi[#scheme.ansi] } },
-      { Text = string.format(" v%d ", state:deref()) },
+      { Text = " v " .. tostring(state:deref()) },
       "ResetAttributes",
     })
   end
@@ -155,7 +156,6 @@ tabline.setup({
       { "mode", padding = 2 },
     },
     tabline_b = {
-      -- { Attribute = { Intensity = "Bold" } },
       { "workspace", padding = 2 },
     },
     tabline_c = {
@@ -175,27 +175,52 @@ tabline.setup({
     },
     tab_inactive = {
       { Attribute = { Intensity = "Half" } },
-      -- { "cwd", padding = { left = 0, right = 1 } },
-      -- { "process", padding = 1, icons_enabled = true, icons_only = true },
-      -- { "index", padding = { left = 4, right = 1 } },
-      -- "cwd",
       tab_label,
       { "zoomed", icons_enabled = true, icons_only = true, padding = 0 },
-      -- "   ",
     },
     tabline_x = {
-      config_reload_count(),
-      active_key_table(),
-      leader_key(),
+      -- config_reload_count(),
+      -- active_key_table,
+      -- leader_key(),
       " ",
     },
-    tabline_y = {
-      { "window", padding = 2 },
-    },
-    tabline_z = {
-      { "datetime", padding = 2 },
-      -- "hostname",
-    },
+    --   tabline_y = {
+    --     { "window", padding = 2 },
+    --   },
+    --   tabline_z = {
+    --     -- {
+    --     --   "datetime",
+    --     --   padding = 2,
+    --     --   style = "%Y-%m-%d %H:%M",
+    --     --   -- hour_to_icon = {
+    --     --   --   ["00"] = wezterm.nerdfonts.md_clock_time_twelve_outline,
+    --     --   --   ["01"] = wezterm.nerdfonts.md_clock_time_one_outline,
+    --     --   --   ["02"] = wezterm.nerdfonts.md_clock_time_two_outline,
+    --     --   --   ["03"] = wezterm.nerdfonts.md_clock_time_three_outline,
+    --     --   --   ["04"] = wezterm.nerdfonts.md_clock_time_four_outline,
+    --     --   --   ["05"] = wezterm.nerdfonts.md_clock_time_five_outline,
+    --     --   --   ["06"] = wezterm.nerdfonts.md_clock_time_six_outline,
+    --     --   --   ["07"] = wezterm.nerdfonts.md_clock_time_seven_outline,
+    --     --   --   ["08"] = wezterm.nerdfonts.md_clock_time_eight_outline,
+    --     --   --   ["09"] = wezterm.nerdfonts.md_clock_time_nine_outline,
+    --     --   --   ["10"] = wezterm.nerdfonts.md_clock_time_ten_outline,
+    --     --   --   ["11"] = wezterm.nerdfonts.md_clock_time_eleven_outline,
+    --     --   --   ["12"] = wezterm.nerdfonts.md_clock_time_twelve_outline,
+    --     --   --   ["13"] = wezterm.nerdfonts.md_clock_time_one_outline,
+    --     --   --   ["14"] = wezterm.nerdfonts.md_clock_time_two_outline,
+    --     --   --   ["15"] = wezterm.nerdfonts.md_clock_time_three_outline,
+    --     --   --   ["16"] = wezterm.nerdfonts.md_clock_time_four_outline,
+    --     --   --   ["17"] = wezterm.nerdfonts.md_clock_time_five_outline,
+    --     --   --   ["18"] = wezterm.nerdfonts.md_clock_time_six_outline,
+    --     --   --   ["19"] = wezterm.nerdfonts.md_clock_time_seven_outline,
+    --     --   --   ["20"] = wezterm.nerdfonts.md_clock_time_eight_outline,
+    --     --   --   ["21"] = wezterm.nerdfonts.md_clock_time_nine_outline,
+    --     --   --   ["22"] = wezterm.nerdfonts.md_clock_time_ten_outline,
+    --     --   --   ["23"] = wezterm.nerdfonts.md_clock_time_eleven_outline,
+    --     --   -- },
+    --     -- },
+    --     -- "hostname",
+    --   },
   },
 })
 

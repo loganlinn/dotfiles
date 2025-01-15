@@ -49,7 +49,6 @@
           tfsec
           tf-summarize
           iam-policy-json-to-terraform
-          uv
         ];
       };
     }
@@ -129,19 +128,17 @@
     programs.age-op.enable = true;
 
     home.packages = with pkgs; [
-      google-cloud-sdk
-      flyctl
-      supabase-cli
-
-      kcat
-
-      nodejs
+      asciinema
       bun
-
+      flyctl
+      google-cloud-sdk
+      kcat
       mkcert
-
+      nodejs
       pls
       process-compose
+      supabase-cli
+      uv
     ];
 
     xdg.enable = true;

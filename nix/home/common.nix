@@ -51,6 +51,7 @@
       gzip
       lsof
       moreutils
+      pik # pkill, interactively
       procs # ps alternative
       pstree
       repgrep

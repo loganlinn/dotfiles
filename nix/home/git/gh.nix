@@ -18,18 +18,19 @@ with lib.my;
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
         prc = "pr create --web";
         pd = "pr diff";
-        pl = "pr list";
+        pr = "pr list";
         pm = "pr merge";
         prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
         pro = "pr view --web";
-        prs = "pr list --web";
-        ps = "pr status";
+        prs = "pr list --author @me";
+        pss = "pr status";
         prz = ''
           !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
         '';
 
-        proc = ''pr checks --web'';
-        procc = ''!gh pr checks --json state,link --jq 'map(select(.state != "SUCCESS" and .state != "SKIPPED") | .link)[]' | xargs -L1 open'';
+        checks = "pr checks";
+        # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';
+        # procc = ''!gh failed | | .link)[]' | xargs -L1 open'';
 
         land = ''
           !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch

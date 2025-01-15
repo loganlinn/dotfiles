@@ -207,6 +207,14 @@ in
       bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
       bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
       bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+
+      function gs() {
+        if (( $# )); then
+          command gs "$@"
+        else
+          git status
+        fi
+      }
     '';
   };
 

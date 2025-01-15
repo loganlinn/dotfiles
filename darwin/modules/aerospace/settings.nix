@@ -89,11 +89,9 @@ let
     main.binding = {
       alt-enter = "exec-and-forget ${focus-or-launch-app-id} ${cfg.terminal.id}";
       alt-shift-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Default";
-      alt-shift-ctrl-enter = "exec-and-forget /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --profile-directory=Profile\ 1";
+      alt-shift-ctrl-enter = "exec-and-forget Firefox";
       alt-a = "exec-and-forget ${cfg.editor.exec}";
       alt-period = "exec-and-forget open -b ${app-ids.Finder}";
-      # alt-s = "exec-and-forget open -b ${app-ids.Slack}";
-      # alt-m = "exec-and-forget open -b ${app-ids.Messages}";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#layout
       alt-slash = "layout tiles horizontal vertical";
@@ -105,15 +103,10 @@ let
       alt-k = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace up";
       alt-l = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace right";
 
-      alt-cmd-h = "focus-monitor left";
-      alt-cmd-j = "focus-monitor down";
-      alt-cmd-k = "focus-monitor up";
-      alt-cmd-l = "focus-monitor right";
-
-      alt-shift-cmd-h = "move-node-to-monitor --wrap-around --focus-follows-window left";
-      alt-shift-cmd-j = "move-node-to-monitor --wrap-around --focus-follows-window down";
-      alt-shift-cmd-k = "move-node-to-monitor --wrap-around --focus-follows-window up";
-      alt-shift-cmd-l = "move-node-to-monitor --wrap-around --focus-follows-window right";
+      alt-cmd-h = "move-node-to-monitor --wrap-around --focus-follows-window left";
+      alt-cmd-j = "move-node-to-monitor --wrap-around --focus-follows-window down";
+      alt-cmd-k = "move-node-to-monitor --wrap-around --focus-follows-window up";
+      alt-cmd-l = "move-node-to-monitor --wrap-around --focus-follows-window right";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#move
       alt-shift-h = "move left";
