@@ -1,0 +1,26 @@
+<config>
+    <connections_credentials>
+      <connection>
+          <name>staging</name>
+          <hostname>{{ op://gamma-staging/clickhouse/server }}</hostname>
+          <port>{{ op://gamma-staging/clickhouse/port }}</port>
+          <secure>1</secure>
+          <user>{{ op://gamma-staging/clickhouse/username }}</user>
+          <password>{{ op://gamma-staging/clickhouse/password }}</password>
+          <database>{{ op://gamma-staging/clickhouse/database }}</database>
+      </connection>
+      <connection>
+          <name>production</name>
+          <hostname>{{ op://gamma-prod/clickhouse/server }}</hostname>
+          <port>{{ op://gamma-prod/clickhouse/port }}</port>
+          <secure>1</secure>
+          <user>{{ op://gamma-prod/clickhouse/username }}</user>
+          <password>{{ op://gamma-prod/clickhouse/password }}</password>
+          <database>{{ op://gamma-staging/clickhouse/database }}</database>
+        </connection>
+    </connections_credentials>
+    <prompt_by_server_display_name>
+      <default>\n\e[1;31m  {display_name}\e[0m \e[1;33m(clickhouse://{user}@{host}:{port})\e[0m\n\e[1;32m󰄾\e[0m </default>
+      <clickhouse-cloud>\n\e[1;35m  {display_name}\e[0m \e[1;33m(clickhouse://{user}@{host}:{port})\e[0m\n\e[1;35m󰄾\e[0m </clickhouse-cloud>
+    </prompt_by_server_display_name>
+</config>

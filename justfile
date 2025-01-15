@@ -1,4 +1,7 @@
 #! /usr/bin/env nix
+
+import? 'justfile.local'
+
 #! nix shell nixpkgs#just nixpkgs#gum --command just --justfile
 # mod nixos
 # mod windows
@@ -120,6 +123,10 @@ git *args:
 
 neogit:
     nvim --cmd "let g:auto_session_enabled = v:false" +Neogit
+
+clickhouse-client-config output=(home_dir() / ".clickhouse-client" / "config.xml"):
+    @mkdir -p {{ parent_dir(output) }}
+    op inject -i config/clickhouse-client/config.xml -o {{ output }}
 
 [script]
 just *args:
