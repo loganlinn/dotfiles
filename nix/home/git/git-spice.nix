@@ -40,8 +40,17 @@ in
         spice.log.all = mkDefault true;
       };
     };
-    # programs.zsh.initExtraBeforeCompInit = ''
-    #   eval "$(${cfg.package}/bin/gs shell completion zsh)"
-    # '';
+    programs.zsh = {
+      initExtra = ''
+        function gs() {
+          if (( $# )); then
+            # Remember that time you created PR as your coworker?
+            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
+          else
+            git status
+          fi
+        }
+      '';
+    };
   };
 }
