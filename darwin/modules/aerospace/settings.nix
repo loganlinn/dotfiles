@@ -130,20 +130,20 @@ let
       alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
-      alt-backtick = "workspace 0";
-      alt-1 = "workspace 1";
-      alt-2 = "workspace 2";
-      alt-3 = "workspace 3";
-      alt-4 = "workspace 4";
-      alt-5 = "workspace 5";
-      alt-6 = "workspace 6";
-      alt-7 = "workspace 7";
-      alt-8 = "workspace 8";
-      alt-9 = "workspace 9";
-      alt-0 = "workspace 10";
-      alt-s = "workspace s";
-      alt-m = "workspace m";
-      alt-p = "workspace p";
+      alt-backtick = "workspace --auto-back-and-forth 0";
+      alt-1 = "workspace --auto-back-and-forth 1";
+      alt-2 = "workspace --auto-back-and-forth 2";
+      alt-3 = "workspace --auto-back-and-forth 3";
+      alt-4 = "workspace --auto-back-and-forth 4";
+      alt-5 = "workspace --auto-back-and-forth 5";
+      alt-6 = "workspace --auto-back-and-forth 6";
+      alt-7 = "workspace --auto-back-and-forth 7";
+      alt-8 = "workspace --auto-back-and-forth 8";
+      alt-9 = "workspace --auto-back-and-forth 9";
+      alt-0 = "workspace --auto-back-and-forth 10";
+      alt-s = "workspace --auto-back-and-forth s";
+      alt-m = "workspace --auto-back-and-forth m";
+      alt-p = "workspace --auto-back-and-forth p";
 
       # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
       alt-shift-1 = "move-node-to-workspace --focus-follows-window  1";
