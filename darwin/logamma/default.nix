@@ -1,6 +1,5 @@
 {
   self,
-  config,
   pkgs,
   lib,
   ...
@@ -62,7 +61,6 @@
   ];
 
   homebrew.brews = [
-    # "grafana"
     "nss" # used by mkcert
     # "terminal-notifier" # like notify-send
   ];
@@ -73,6 +71,7 @@
     # "clickhouse" # newer version than from nixpkgs
     "discord"
     "obs"
+    # "obsidian" # currently installed manually
     "tailscale"
   ];
 
@@ -88,63 +87,76 @@
 
   programs.emacs-plus.enable = true;
 
-  home-manager.users.logan = {
-    imports = [
-      self.homeModules.common
-      self.homeModules.nix-colors
-      ../../nix/home/dev
-      ../../nix/home/dev/lua.nix
-      ../../nix/home/dev/nodejs.nix
-      ../../nix/home/doom
-      ../../nix/home/hammerspoon.nix
-      ../../nix/home/just
-      ../../nix/home/kitty
-      ../../nix/home/lazygit.nix
-      ../../nix/home/nixvim
-      ../../nix/home/neovide.nix
-      ../../nix/home/pretty.nix
-      ../../nix/home/tmux.nix
-      ../../nix/home/wezterm
-      ../../nix/home/yazi
-      ../../nix/home/yt-dlp.nix
-    ];
+  home-manager.users.logan =
+    {
+      config,
+      pkgs,
+      ...
+    }:
+    {
+      imports = [
+        self.homeModules.common
+        self.homeModules.nix-colors
+        ../../nix/home/dev
+        ../../nix/home/dev/lua.nix
+        ../../nix/home/dev/nodejs.nix
+        ../../nix/home/doom
+        ../../nix/home/hammerspoon.nix
+        ../../nix/home/just
+        ../../nix/home/kitty
+        ../../nix/home/lazygit.nix
+        ../../nix/home/nixvim
+        ../../nix/home/neovide.nix
+        ../../nix/home/pretty.nix
+        ../../nix/home/tmux.nix
+        ../../nix/home/wezterm
+        ../../nix/home/yazi
+        ../../nix/home/yt-dlp.nix
+      ];
 
-    programs.zsh.dirHashes.gamma = "~src/github.com/gamma-app/gamma";
+      programs.zsh.dirHashes.gamma = "~src/github.com/gamma-app/gamma";
+      programs.zsh.dirHashes.notes = "$HOME/Notes";
 
-    programs.nixvim = {
-      enable = true;
-      defaultEditor = true;
-      plugins.lsp.servers.nixd.settings.options = {
-        darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
+      programs.nixvim = {
+        enable = true;
+        defaultEditor = true;
+        plugins.lsp.servers.nixd.settings.options = {
+          darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
+        };
+        plugins.obsidian.settings.workspaces = [
+          {
+            name = "Primary";
+            path = "~/Notes";
+          }
+        ];
       };
+
+      programs.hammerspoon.enable = true;
+
+      programs.wezterm.enable = true;
+
+      programs.kitty.enable = true;
+
+      programs.age-op.enable = true;
+
+      home.packages = with pkgs; [
+        asciinema
+        bun
+        flyctl
+        google-cloud-sdk
+        kcat
+        mkcert
+        nodejs
+        pls
+        process-compose
+        supabase-cli
+        uv
+      ];
+
+      xdg.enable = true;
+
+      home.stateVersion = "22.11";
     };
-
-    programs.hammerspoon.enable = true;
-
-    programs.wezterm.enable = true;
-
-    programs.kitty.enable = true;
-
-    programs.age-op.enable = true;
-
-    home.packages = with pkgs; [
-      asciinema
-      bun
-      flyctl
-      google-cloud-sdk
-      kcat
-      mkcert
-      nodejs
-      pls
-      process-compose
-      supabase-cli
-      uv
-    ];
-
-    xdg.enable = true;
-
-    home.stateVersion = "22.11";
-  };
 
   system.stateVersion = 4;
 }

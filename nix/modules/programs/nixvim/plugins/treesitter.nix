@@ -14,6 +14,7 @@
         lua
         make
         markdown
+        mermaid
         nix
         regex
         sql

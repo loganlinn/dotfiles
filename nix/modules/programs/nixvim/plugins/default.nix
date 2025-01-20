@@ -14,9 +14,11 @@ in
     ./cmp.nix
     ./comment.nix
     ./conform.nix
+    ./dadbod.nix
     ./early-retirement.nix
     ./git
     ./harpoon.nix
+    ./lazydev.nix
     ./lsp
     ./lualine.nix
     ./mini.nix
@@ -24,6 +26,7 @@ in
     ./neotest.nix
     ./notify.nix
     ./nvim-tree.nix
+    ./obsidian.nix
     ./oil.nix
     ./project.nix
     ./supermaven
@@ -35,30 +38,41 @@ in
   ];
   programs.nixvim = {
     plugins = {
+      # qmk.enable = false;
+      # sniprun.enable = true;
+      # spectre.enable = true;
+      colorizer.enable = true;
       direnv.enable = true;
       helpview.enable = true;
+      lazydev.enable = true;
       luasnip.enable = true;
       nix.enable = true;
       noice.enable = true;
       notify.enable = true;
       nvim-autopairs.enable = true;
-      colorizer.enable = true;
-      # qmk.enable = false;
       snacks.enable = true;
-      # sniprun.enable = true;
-      # spectre.enable = true;
       trouble.enable = true;
+      vim-dadbod-completion.enable = true;
+      vim-dadbod-ui.enable = true;
+      vim-dadbod.enable = true;
       vim-surround.enable = true;
       web-devicons.enable = true;
+      wezterm.enable = true;
     };
     extraPlugins = with pkgs.vimPlugins; [
       { plugin = fennel-vim; }
-      { plugin = lazydev-nvim; }
       { plugin = nfnl; }
       { plugin = vim-abolish; }
       { plugin = vim-just; }
       { plugin = vim-lion; }
       { plugin = zoxide-vim; }
+    ];
+    keymaps = [
+      {
+        mode = "n";
+        key = "<leader>od";
+        action = "<cmd>DBUIToggle<cr>";
+      }
     ];
   };
 }

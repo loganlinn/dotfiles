@@ -38,6 +38,12 @@ in
         spice.submit.publish = mkDefault false;
         spice.submit.web = mkDefault true;
         spice.log.all = mkDefault true;
+        spice.shorthand.l = "log long";
+        spice.shorthand.sync = "repo sync";
+        spice.shorthand.continue = "rebase continue";
+        spice.shorthand.abort = "rebase abort";
+        spice.shorthand.rename = "branch rename";
+        spice.shorthand.checkout = "branch checkout";
       };
     };
     programs.zsh = {

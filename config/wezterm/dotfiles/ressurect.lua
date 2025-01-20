@@ -43,7 +43,7 @@ M.apply_to_config = function(config)
     end,
   })
 
-  require("dotfiles.keys").configure_keys(config, {
+  require("dotfiles.keys").with_keys(config, {
     {
       "LEADER",
       "w",

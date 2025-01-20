@@ -54,18 +54,6 @@ in
     environment.systemPackages = with pkgs; [
       bashInteractive
       pinentry_mac
-      (writeShellScriptBin "bundle-id" ''
-        ${pkgs.fd}/bin/fd \
-          --search-path=/System/Applications \
-          --search-path=/Applications \
-          --search-path=$HOME/Applications \
-          --follow \
-          --type=directory \
-          --extension=app \
-          --max-depth=2 \
-          "''${1?APP}" \
-          --exec /usr/bin/mdls -name kMDItemCFBundleIdentifier -r
-      '')
     ];
 
     programs.bash = {

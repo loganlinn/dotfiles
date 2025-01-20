@@ -1,5 +1,4 @@
 local wezterm = require("wezterm")
-local util = require("dotfiles.util")
 local log = require("dotfiles.util.logger").new("dotfiles.event.gui-startup")
 
 local set_active_workspace = wezterm.mux.set_active_workspace

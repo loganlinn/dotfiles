@@ -143,7 +143,7 @@ in
           gh api /repos/{owner}/{repo} --jq '.default_branch'
         }; f'';
     };
-    # lfs.enable = true;
+    lfs.enable = true;
     delta = {
       enable = true;
       options = {
@@ -208,13 +208,7 @@ in
       bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
       bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
 
-      function gs() {
-        if (( $# )); then
-          command gs "$@"
-        else
-          git status
-        fi
-      }
+      source "${inputs.fzf-git-sh}/fzf-git.sh" || true
     '';
   };
 

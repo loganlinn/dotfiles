@@ -74,8 +74,4 @@ in
       "--bind='ctrl-y:execute-silent(echo -n {2..} | ${termcopy})+abort'"
     ];
   };
-
-  my.shellInitExtra = ''
-    source "${inputs.fzf-git-sh}/fzf-git.sh" || true
-  '';
 }

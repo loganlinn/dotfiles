@@ -76,7 +76,7 @@ in
         # pyright.enable = true;
         # pylsp.enable = true;
         ruff.enable = true;
-        sqls.enable = true;
+        sqls.enable = false;
         terraform_lsp.enable = true;
         ts_ls.enable = true;
         yamlls.enable = true;

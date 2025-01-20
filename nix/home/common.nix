@@ -63,6 +63,7 @@
       unzip
       wget
       xh # httpie alternative
+      zf
       zip
     ]
     ++ (lib.catAttrs "package" (lib.attrValues config.my.shellScripts));

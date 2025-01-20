@@ -5,6 +5,39 @@ local log = require("dotfiles.util.logger")("action.lua")
 
 local M = {}
 
+local SHELL = os.getenv("SHELL") or "zsh"
+
+---@return string[]
+local function shell_args(command, options)
+  local args = { options.shell or SHELL }
+  if options.login ~= false then
+    table.insert(args, "-l")
+  end
+  if options.interactive then
+    table.insert(args, "-i")
+  end
+  if command ~= nil then
+    if type(command) ~= "string" then
+      command = wezterm.shell_join_args(command)
+    end
+    table.insert(args, "-c")
+    table.insert(args, command)
+    table.insert(args, SHELL)
+    for _, arg in ipairs(options.args or {}) do
+      if type(arg) == "string" then
+        table.insert(args, arg)
+      elseif type(arg) == "table" then
+        for _, v in ipairs(arg) do
+          table.insert(args, tostring(v))
+        end
+      elseif arg ~= nil then
+        error("expected string or table, got: " .. type(arg))
+      end
+    end
+  end
+  return args
+end
+
 setmetatable(M, {
   __index = function(t, k)
     return rawget(t, k) or wezterm.action[k] -- will error if not found
@@ -40,12 +73,6 @@ local function activate_pane(window, pane, from_pane)
   return pane:activate()
 end
 
-local function activate_tab(window, tab, from_pane)
-  assert(tab and tab.tab_id and tab.activate)
-  wezterm.emit(ACTIVATE_TAB_EVENT, window, tab, from_pane)
-  return tab:activate()
-end
-
 local function with_user_var_envs(env_vars, user_vars)
   env_vars = env_vars or {}
   for name, value in pairs(user_vars) do
@@ -73,7 +100,7 @@ local function spawn_popup(window, pane, spawn_args)
   spawn_args.direction = spawn_args.direction or POPUP_DIRECTION
   spawn_args.top_level = spawn_args.top_level or true
   spawn_args.size = spawn_args.size or 0.333
-  spawn_args.args = spawn_args.args or { "/usr/bin/env", "zsh", "-l" }
+  spawn_args.args = spawn_args.args or { SHELL, "-l" }
   spawn_args.set_environment_variables = with_user_var_envs(spawn_args.set_environment_variables or {}, {
     PANE_ROLE = PANE_ROLE_POPUP,
     PANE_ID_ORIGIN = tostring(pane:pane_id()),
@@ -171,48 +198,6 @@ M.rename_workspace = wezterm.action.PromptInputLine({
   end),
 })
 
--- M.WorkspaceSelector = function(opts)
---   return M.fn(function(window, pane)
---     -- Here you can dynamically construct a longer list if needed
---
---     local home = wezterm.home_dir
---     local workspaces = {
---       { id = home, label = "Home" },
---       { id = home .. "/work", label = "Work" },
---       { id = home .. "/personal", label = "Personal" },
---       { id = home .. "/.config", label = "Config" },
---     }
---
---     window:perform_action(
---       wezterm.action.InputSelector({
---         action = wezterm.action_callback(function(inner_window, inner_pane, id, label)
---           if not id and not label then
---             wezterm.log_info("cancelled")
---           else
---             wezterm.log_info("id = " .. id)
---             wezterm.log_info("label = " .. label)
---             inner_window:perform_action(
---               wezterm.action.SwitchToWorkspace({
---                 name = label,
---                 spawn = {
---                   label = "Workspace: " .. label,
---                   cwd = id,
---                 },
---               }),
---               inner_pane
---             )
---           end
---         end),
---         title = "Choose Workspace",
---         choices = workspaces,
---         fuzzy = true,
---         fuzzy_description = "Fuzzy find and/or make a workspace",
---       }),
---       pane
---     )
---   end)
--- end
-
 M.debug_window = wezterm.action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
   m.inspect(window, m.dump_window(window), tostring(window))
@@ -221,6 +206,11 @@ end)
 M.debug_pane = wezterm.action_callback(function(window, pane)
   local m = require("dotfiles.util.debug")
   m.inspect(window, m.dump_pane(pane), tostring(pane))
+end)
+
+M.show_config = wezterm.action_callback(function(window, _)
+  local m = require("dotfiles.util.debug")
+  m.inspect(window, window:effective_config(), tostring(window) .. ".effective_config")
 end)
 
 M.split_pane = function(args)
@@ -359,5 +349,68 @@ M.browse_current_working_dir = wezterm.action_callback(function(window, pane)
   log.info("opening ", pane:get_current_working_dir())
   wezterm.open_with(tostring(pane:get_current_working_dir() or wezterm.home_dir), application)
 end)
+
+M.quit_input_selector = wezterm.action.InputSelector({
+  fuzzy = true,
+  title = wezterm.format({
+    { Foreground = { AnsiColor = "Red" } },
+    { Text = "Danger Zone" },
+  }),
+  choices = {
+    {
+      id = "CloseCurrentTab",
+      label = wezterm.format({
+        { Text = "TAB" },
+      }),
+    },
+    {
+      id = "QuitApplication",
+      label = wezterm.format({
+        { Text = "APPLICATION" },
+      }),
+    },
+  },
+  action = wezterm.action_callback(function(window, pane, id, label)
+    local action
+    if id == "CloseCurrentPane" then
+      action = wezterm.action.CloseCurrentPane({ confirm = false })
+    elseif id == "CloseCurrentTab" then
+      action = wezterm.action.CloseCurrentTab({ confirm = false })
+    elseif id == "QuitApplication" then
+      action = wezterm.action.QuitApplication
+    end
+    if action then
+      log.info("Performing action for selected input", id, label, action)
+      window:perform_action(action, pane)
+    else
+      log.debug("No action found for selected input")
+    end
+  end),
+})
+
+M.just = function(options)
+  local direction = options.direction or "Bottom"
+  local size = options.size or 0.3
+  local cwd = options.cwd
+  local args = shell_args(
+    [[
+      echo "just $*"
+      read -s -k '?Press any key to continue.'
+      if ! just "$@"; then
+        echo Exited with "$?" status
+        read -s -k '?Press any key to continue.'
+      fi
+    ]],
+    { interactive = true, args = options.args }
+  )
+  return wezterm.action_callback(function(window, pane)
+    pane:split(log.info({
+      direction = direction,
+      cwd = cwd,
+      args = args,
+      size = size,
+    }))
+  end)
+end
 
 return M

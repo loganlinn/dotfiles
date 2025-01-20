@@ -46,10 +46,6 @@
     # sops-nix.url = "github:Mic92/sops-nix";
     # sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     wezterm.url = "github:wez/wezterm?dir=nix";
-    wezterm-types = {
-      url = "github:justinsgithub/wezterm-types";
-      flake = false;
-    };
     ## srcs
     fzf-tab = {
       url = "github:Aloxaf/fzf-tab";

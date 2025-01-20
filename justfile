@@ -10,6 +10,8 @@ import? 'justfile.local'
 set shell := ["bash", "-e", "-u", "-o", "pipefail", "-c"]
 set unstable := true
 
+export XDG_CONFIG_HOME := env('XDG_CONFIG_HOME', home_dir() / ".config")
+
 [private]
 [script]
 default:
@@ -44,10 +46,28 @@ update *inputs:
 repl dir='.' file='repl.nix' args="":
     nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
 
+[macos]
+[private]
+bootstrap:
+    nix run nix-darwin -- switch --flake {{ source_dir() }}
+    just link-flake
+
+run app *args:
+    nix run .#{{ app }} {{ args }}
+
+check: just-check flake-check
+
+[private]
+just-check:
+    just --check
+
+flake-check:
+    env FLAKE_CHECKER_NO_TELEMETRY=true nix run github:DeterminateSystems/flake-checker
+
 [private]
 link-flake:
     just link-system-flake
-    just link flake.nix ~/.config/home-manager/flake.nix
+    just link flake.nix "$XDG_CONFIG_HOME/home-manager/flake.nix"
 
 [macos]
 [private]
@@ -59,45 +79,27 @@ link-system-flake:
 link-system-flake:
     just link flake.nix /etc/nixos/flake.nix
 
-[macos]
 [private]
-bootstrap:
-    nix run nix-darwin -- switch --flake {{ source_dir() }}
-    just link-flake
-
-run app *args:
-    nix run .#{{ app }} {{ args }}
-
-@netrc:
-    op inject -i netrc.tpl -o ~/.netrc
-
-check: just-check flake-check
-
-[private]
-just-check:
-    just --check
-
-flake-check:
-    env FLAKE_CHECKER_NO_TELEMETRY=true nix run github:DeterminateSystems/flake-checker
-
-[linux]
-[macos]
-fix-eol:
-    rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
+link-global-justfile:
+    @just link justfile "$XDG_CONFIG_HOME/just/justfile"
 
 [private]
 [script]
 link path link context=source_dir():
     target="{{ clean(join(context, path)) }}"
     link="{{ clean(link) }}"
-    if [ ! -d "$(dirname "$link")" ]; then
-      echo "{{ BOLD }}{{ YELLOW }} skipped:{{ RESET }} {{ BLUE }}$(dirname "$link"){{ RESET }} does not exist";
-    elif [ "$(readlink -qe "$link")" = "$(readlink -qe "$target")" ]; then
-      echo "{{ BOLD }}{{ GREEN }}   found:{{ RESET }} {{ BLUE }}$link{{ RESET }} -> {{ BLUE }}$target{{ RESET }}";
+    if [ "$(readlink -qe "$link")" = "$(readlink -qe "$target")" ]; then
+      echo -e "{{ BOLD }}{{ BLUE }}exists:{{ NORMAL }} {{ CYAN }}$target{{ NORMAL }} <-- {{ BLUE }}$link{{ NORMAL }}";
     else
-      ln -s -T "$target" "$link";
-      echo "{{ BOLD }}{{ GREEN }} created:{{ RESET }} {{ BLUE }}$link{{ RESET }} -> {{ BLUE }}$target{{ RESET }}";
+      echo -e "{{ BOLD }}{{ GREEN }}create:{{ NORMAL }} {{ CYAN }}$target{{ NORMAL }} <-- {{ GREEN }}$link{{ NORMAL }}";
+      mkdir -p "$(dirname "$link")";
+      ln -s -i -T "$target" "$link";
     fi;
+
+[linux]
+[macos]
+fix-eol:
+    rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
 
 fmt: just-fmt nix-fmt
 
@@ -124,36 +126,24 @@ git *args:
 neogit:
     nvim --cmd "let g:auto_session_enabled = v:false" +Neogit
 
+@netrc:
+    op inject -i netrc.tpl -o ~/.netrc
+
 clickhouse-client-config output=(home_dir() / ".clickhouse-client" / "config.xml"):
     @mkdir -p {{ parent_dir(output) }}
     op inject -i config/clickhouse-client/config.xml -o {{ output }}
+
+clickhouse-connection connection *args:
+    wezterm cli set-tab-title "clickhouse://{{ connection }}"
+    clickhouse client --connection {{ connection }} {{ args }}
 
 [script]
 just *args:
     if ! args=$(gum input --prompt="just " --value="{{ args }}" --placeholder="" --header="$(just --list)\n\n"); then
       exit $?
     fi
-    echo -e "{{ BOLD }}just $args{{ RESET }}"
+    echo -e "{{ BOLD }}just $args{{ NORMAL }}"
     exec just $args
 
 help:
     @just --list --unsorted
-
-BOLD := "$(tput bold)"
-RESET := "$(tput sgr0)"
-BLACK := "$(tput bold)$(tput setaf 0)"
-RED := "$(tput bold)$(tput setaf 1)"
-GREEN := "$(tput bold)$(tput setaf 2)"
-YELLOW := "$(tput bold)$(tput setaf 3)"
-BLUE := "$(tput bold)$(tput setaf 4)"
-MAGENTA := "$(tput bold)$(tput setaf 5)"
-CYAN := "$(tput bold)$(tput setaf 6)"
-WHITE := "$(tput bold)$(tput setaf 7)"
-BLACKB := "$(tput bold)$(tput setab 0)"
-REDB := "$(tput setab 1)$(tput setaf 0)"
-GREENB := "$(tput setab 2)$(tput setaf 0)"
-YELLOWB := "$(tput setab 3)$(tput setaf 0)"
-BLUEB := "$(tput setab 4)$(tput setaf 0)"
-MAGENTAB := "$(tput setab 5)$(tput setaf 0)"
-CYANB := "$(tput setab 6)$(tput setaf 0)"
-WHITEB := "$(tput setab 7)$(tput setaf 0)"

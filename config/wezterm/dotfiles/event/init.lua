@@ -1,22 +1,23 @@
 local M = {}
 
 M.apply_to_config = function(config)
-  local wezterm = require("wezterm")
-  for _, event in pairs({
-    "mux-startup",
-    "gui-startup",
-    "user-var-changed",
-    "window-focus-changed",
-    "window-config-reloaded",
-    "open-uri",
+  for _, modname in pairs({
+    "dotfiles.event.mux-startup",
+    "dotfiles.event.gui-startup",
+    "dotfiles.event.gui-attached",
+    "dotfiles.event.user-var-changed",
+    "dotfiles.event.window-focus-changed",
+    "dotfiles.event.window-config-reloaded",
+    "dotfiles.event.augment-command-palette",
+    "dotfiles.event.open-uri",
   }) do
-    local mod_name = "dotfiles.event." .. event
-    -- wezterm.log_info("loading:", mod_name)
-    local mod = require(mod_name)
+    local mod = require(modname)
     if type(mod) == "table" and mod.apply_to_config then
       mod.apply_to_config(config)
     end
   end
+
+  -- prevent duplicate registration
   M.apply_to_config = function()
     error("event handlers already registered")
   end
