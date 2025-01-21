@@ -32,13 +32,15 @@ in
   };
   config = mkIf cfg.enable {
     home.packages = [ cfg.package ];
+    home.shellAliases = {
+      gsl = "${cfg.package}/bin/gs log long";
+    };
     programs.git = {
       aliases.spice = "!${cfg.package}/bin/gs";
       extraConfig = {
         spice.submit.publish = mkDefault false;
         spice.submit.web = mkDefault true;
         spice.log.all = mkDefault true;
-        spice.shorthand.l = "log long";
         spice.shorthand.sync = "repo sync";
         spice.shorthand.continue = "rebase continue";
         spice.shorthand.abort = "rebase abort";
@@ -56,6 +58,7 @@ in
             git status
           fi
         }
+        complete -C ${cfg.package}/bin/gs gs
       '';
     };
   };

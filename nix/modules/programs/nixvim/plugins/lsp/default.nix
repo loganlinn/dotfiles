@@ -52,7 +52,7 @@ in
         lua_ls.enable = true; # see ./lua_ls.nix
         jsonls.enable = true;
         jqls.enable = true;
-        marksman.enable = true;
+        # marksman.enable = true;
         nil_ls.enable = false;
         nil_ls.settings = {
           # diagnostics.ignored = [ ];

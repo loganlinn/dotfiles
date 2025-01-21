@@ -104,7 +104,6 @@
         ../../nix/home/hammerspoon.nix
         ../../nix/home/just
         ../../nix/home/kitty
-        ../../nix/home/lazygit.nix
         ../../nix/home/nixvim
         ../../nix/home/neovide.nix
         ../../nix/home/pretty.nix

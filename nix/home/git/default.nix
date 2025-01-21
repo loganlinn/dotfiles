@@ -23,10 +23,7 @@ in
 {
   imports = [
     ./gh.nix
-    # ./git-stack.nix
-    # ./git-town.nix
     ./git-spice.nix
-    ./lazygit.nix
   ];
 
   home.packages = with pkgs; [
@@ -35,7 +32,7 @@ in
   ];
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
-  home.shellAliases = rec {
+  home.shellAliases = {
     gc = "git commit -v";
     gca = "git commit -v -a";
     gcm = ''git switch "$(git default-branch || echo main)"'';
