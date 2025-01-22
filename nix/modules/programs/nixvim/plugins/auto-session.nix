@@ -7,6 +7,15 @@ in
     plugins.auto-session = {
       enable = true;
       settings = {
+        allowed_dirs = [
+          "~/src/github.com/gamma-app/*"
+          "~/src/github.com/loganlinn/*"
+          "~/Notes"
+          "~/.dotfiles"
+        ];
+        suppress_dirs = [
+          "*"
+        ];
         show_auto_restore_notif = true;
         pre_save_cmds.__raw = ''
           {

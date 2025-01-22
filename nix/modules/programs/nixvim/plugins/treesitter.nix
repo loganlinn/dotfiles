@@ -16,6 +16,7 @@
         markdown
         mermaid
         nix
+        prisma
         regex
         sql
         terraform

@@ -394,12 +394,10 @@ M.just = function(options)
   local cwd = options.cwd
   local args = shell_args(
     [[
-      echo "just $*"
-      read -s -k '?Press any key to continue.'
       if ! just "$@"; then
         echo Exited with "$?" status
-        read -s -k '?Press any key to continue.'
       fi
+      read -s -k '?Press any key to continue.'
     ]],
     { interactive = true, args = options.args }
   )
