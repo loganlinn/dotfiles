@@ -9,7 +9,7 @@
   imports = [
     self.darwinModules.common
     self.darwinModules.home-manager
-    ../modules/aerospace
+    # ../modules/aerospace
     ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/sunbeam
@@ -75,11 +75,11 @@
     "tailscale"
   ];
 
-  programs.aerospace = {
-    enable = true;
-    terminal.id = "com.github.wez.wezterm";
-    editor.id = "org.gnu.Emacs";
-  };
+  # programs.aerospace = {
+  #   enable = true;
+  #   terminal.id = "com.github.wez.wezterm";
+  #   editor.id = "org.gnu.Emacs";
+  # };
 
   programs.xcode.enable = true;
 
@@ -93,6 +93,9 @@
       pkgs,
       ...
     }:
+    let
+      inherit (config.lib.file) mkOutOfStoreSymlink;
+    in
     {
       imports = [
         self.homeModules.common
@@ -153,6 +156,9 @@
       ];
 
       xdg.enable = true;
+
+      xdg.configFile."aerospace/aerospace.toml".source =
+        mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/aerospace/aerospace.toml";
 
       home.stateVersion = "22.11";
     };
