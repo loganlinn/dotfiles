@@ -88,32 +88,29 @@ local function leader_key()
 end
 
 local tab_label = function(tab)
-  local fmt = {
-    -- { Text = pad(tostring(tab.tab_index + 1)) },
-  }
-
   local title = tab.tab_title
   if title ~= "" and title ~= "default" then
     return wezterm.format({ { Foreground = { Color = C.Pink } }, { Text = pad(title) }, "ResetAttributes" })
-  else
-    if tab.active_pane.current_working_dir then
-      local cwd = tab.active_pane.current_working_dir.file_path
-      local label = basename(cwd)
-      local parent = basename(dirname(cwd))
-      table.insert(fmt, { Text = " " })
-      if parent ~= "." and parent ~= "/" then
-        table.insert(fmt, { Foreground = { Color = "#909090" } })
-        table.insert(fmt, { Text = parent })
-        table.insert(fmt, { Foreground = { AnsiColor = "Grey" } })
-        table.insert(fmt, { Text = "/" })
-        table.insert(fmt, "ResetAttributes")
-      end
-      table.insert(fmt, { Foreground = { AnsiColor = "White" } })
-      table.insert(fmt, { Text = label })
-      table.insert(fmt, { Text = " " })
-    elseif tab.active_pane.foreground_process_name then
-      table.insert(fmt, { Text = basename(tab.active_pane.foreground_process_name) })
+  end
+
+  local fmt = {}
+  if tab.active_pane.current_working_dir then
+    local cwd = tab.active_pane.current_working_dir.file_path
+    local label = basename(cwd)
+    local parent = basename(dirname(cwd))
+    table.insert(fmt, { Text = " " })
+    if parent ~= "." and parent ~= "/" then
+      table.insert(fmt, { Foreground = { Color = "#909090" } })
+      table.insert(fmt, { Text = parent })
+      table.insert(fmt, { Foreground = { AnsiColor = "Grey" } })
+      table.insert(fmt, { Text = "/" })
+      table.insert(fmt, "ResetAttributes")
     end
+    table.insert(fmt, { Foreground = { AnsiColor = "White" } })
+    table.insert(fmt, { Text = label })
+    table.insert(fmt, { Text = " " })
+  elseif tab.active_pane.foreground_process_name then
+    table.insert(fmt, { Text = basename(tab.active_pane.foreground_process_name) })
   end
 
   table.insert(fmt, "ResetAttributes")

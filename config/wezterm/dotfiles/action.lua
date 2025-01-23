@@ -208,6 +208,11 @@ M.debug_pane = wezterm.action_callback(function(window, pane)
   m.inspect(window, m.dump_pane(pane), tostring(pane))
 end)
 
+M.debug_globals = wezterm.action_callback(function(window, pane)
+  local m = require("dotfiles.util.debug")
+  m.inspect(window, { GLOBAL = wezterm.GLOBAL }, "wezterm")
+end)
+
 M.show_config = wezterm.action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
   m.inspect(window, window:effective_config(), tostring(window) .. ".effective_config")
