@@ -43,10 +43,16 @@ in
           };
       in
       {
-        home.file = {
-          ".hammerspoon/init.lua".source =
-            mkOutOfStoreSymlink "${config.home.homeDirectory}/config/hammerspoon/init.lua";
+        home.activation.hammerspoonConfig = hm.dag.entryAfter [ "writeBoundary" ] ''
+          if ! [ -d ~/.hammerspoon ]; then
+            run mkdir -p ~/.hammerspoon
+          fi
+          if ! [ -f ~/.hammerspoon/init.lua ]; then
+            run ln -s "${config.my.flakeDirectory}/darwin/modules/hammerspoon/init.lua" ~/.hammerspoon/init.lua
+          fi
+        '';
 
+        home.file = {
           ".hammerspoon/Spoons/EmmyLua.spoon".source = fetchSpoon {
             name = "EmmyLua";
             rev = "c12db871a179e6af29c1a290222aeb1ad9f34ffb";
