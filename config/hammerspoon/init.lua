@@ -5,8 +5,7 @@ LeftRightHotkey = hs.loadSpoon("LeftRightHotkey")
 local log = hs.logger.new("init", "debug")
 
 hs.hotkey.bind({ "alt", "ctrl" }, "r", function()
-  log.i("reloading config")
-  hs.reload()
+  log.i("hs.reload", hs.reload())
 end)
 
 ---@return string|nil
@@ -47,21 +46,29 @@ local function activateTerminal()
     or hs.applicationLaunchOrFocus("Terminal")
 end
 
-local appHotkey = function(key, app)
-  hs.inspect(LeftRightHotkey.bind({ "rAlt" }, key, app, function()
+-- LeftRightHotkey:start()
+local appHotkey = function(opts)
+  local bind = opts.bind or hs.hotkey.bind
+  local mods = opts.mods or { "alt" } -- LeftRightHotkey.bind, { "rAlt" }
+  local key = assert(opts[1])
+  local app = assert(opts[2])
+  local message = opts.message or opts.app
+  hs.inspect(bind(mods, key, message, function()
     hs.application.launchOrFocus(app)
   end))
 end
 
 hs.hotkey.bind({ "alt" }, "return", activateTerminal)
-LeftRightHotkey:start()
-appHotkey("g", "Gemini")
-appHotkey("s", "Slack")
-appHotkey("m", "Messages")
-appHotkey("n", "Obsidian")
-appHotkey("f", "Finder")
-appHotkey("p", "1Password")
-appHotkey(",", "System Settings")
-appHotkey("f1", "System Information")
-appHotkey("f2", "Console")
-appHotkey("f4", "Activity Monitor")
+appHotkey({ "g", "Gemini" })
+-- appHotkey({ "z", "Zoom" })
+appHotkey({ "s", "Slack" })
+appHotkey({ "m", "Messages" })
+appHotkey({ "o", "Obsidian" })
+appHotkey({ "f", "Finder" })
+appHotkey({ "p", "1Password" })
+appHotkey({ ",", "System Settings" })
+appHotkey({ "f1", "System Information" })
+appHotkey({ "f2", "Console" })
+appHotkey({ "f4", "Activity Monitor" })
+
+hs.alert.show("✅ Hammerspoon")

@@ -11,6 +11,7 @@ set shell := ["bash", "-e", "-u", "-o", "pipefail", "-c"]
 set unstable := true
 
 export XDG_CONFIG_HOME := env('XDG_CONFIG_HOME', home_dir() / ".config")
+export FLAKE_CHECKER_NO_TELEMETRY := 'true'
 
 [private]
 [script]
@@ -23,61 +24,100 @@ default:
       fi
     done
 
-[macos]
-switch *args:
-    darwin-rebuild switch --flake {{ source_dir() }} {{ args }}
-
-[linux]
-switch *args:
-    nixos-rebuild switch --flake {{ source_dir() }} {{ args }}
-
-[macos]
-rebuild *args:
-    darwin-rebuild {{ args }}
-
-[linux]
-rebuild *args:
-    nixos-rebuild {{ args }}
-
-# update flake inputs
-update *inputs:
-    nix flake update {{ inputs }}
-
-repl dir='.' file='repl.nix' args="":
-    nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
-
+# Install and activate system flake
+[group('nix')]
 [macos]
 [private]
 bootstrap:
     nix run nix-darwin -- switch --flake {{ source_dir() }}
     just link-flake
 
-run app *args:
-    nix run .#{{ app }} {{ args }}
+# Build and activate system flake
+[group('nix')]
+[macos]
+switch *args:
+    darwin-rebuild switch --flake {{ source_dir() }} {{ args }}
 
-check: just-check flake-check
+# Build and activate system flake
+[group('nix')]
+[linux]
+switch *args:
+    nixos-rebuild switch --flake {{ source_dir() }} {{ args }}
 
+# Build system flake
+[group('nix')]
+[macos]
+rebuild *args:
+    darwin-rebuild {{ args }}
+
+# Build system flake
+[group('nix')]
+[linux]
+rebuild *args:
+    nixos-rebuild {{ args }}
+
+[group('nix')]
+[macos]
+check:
+    darwin-rebuild check
+
+# Update flake inputs
+[group('nix')]
+update *inputs:
+    nix flake update --commit-lock-file {{ inputs }}
+
+[group('nix')]
+repl dir=source_dir() file='repl.nix' args="":
+    nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
+
+# Run a nix application
+[group('nix')]
+[no-cd]
+run *args:
+    nix run {{ args }}
+
+# Runs an application from nixpkgs
+[group('nix')]
+[no-cd]
+pkg name *args:
+    nix run nixpkgs#{{ name }} -- {{ args }}
+
+# Froms an application from flake output attribute `apps.<system>.<name>`
+[group('nix')]
+[no-cd]
+app name *args:
+    nix run {{ source_dir() }}#{{ name }} -- {{ args }}
+
+# creates symlink to flake.nix
+[group('nix')]
 [private]
-just-check:
-    just --check
-
-flake-check:
-    env FLAKE_CHECKER_NO_TELEMETRY=true nix run github:DeterminateSystems/flake-checker
-
-[private]
-link-flake:
-    just link-system-flake
+link-flake: link-system-flake
     just link flake.nix "$XDG_CONFIG_HOME/home-manager/flake.nix"
 
+# creates symlink to flake.nix in /etc/nix-darwin
+[group('nix')]
 [macos]
 [private]
 link-system-flake:
     just link flake.nix /etc/nix-darwin/flake.nix
 
+[group('nix')]
 [linux]
 [private]
 link-system-flake:
     just link flake.nix /etc/nixos/flake.nix
+
+[group('nix')]
+[private]
+nix-fmt:
+    nix fmt
+
+[group('nix')]
+flake-checker:
+    env  nix run github:DeterminateSystems/flake-checker
+
+lint:
+    just --fmt --check
 
 [private]
 link-global-justfile:
@@ -98,6 +138,7 @@ link path link context=source_dir():
 
 [linux]
 [macos]
+[private]
 fix-eol:
     rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
 
@@ -107,16 +148,14 @@ fmt: just-fmt nix-fmt
 just-fmt:
     just --fmt
 
-[private]
-nix-fmt:
-    nix fmt
-
 shell:
     @exec zsh
 
+[group('nix')]
 nix-develop *args:
     nix develop --command zsh {{ args }}
 
+[group('nix')]
 nix-shell *args:
     nix shell --command zsh {{ args }}
 

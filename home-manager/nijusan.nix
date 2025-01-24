@@ -1,14 +1,24 @@
-{ self, self', config, pkgs, lib, nix-colors, ... }:
+{
+  self,
+  self',
+  config,
+  pkgs,
+  lib,
+  nix-colors,
+  ...
+}:
 
-let inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
+let
+  inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
 
-in {
+in
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
     self.homeModules.secrets
     ../nix/home/awesomewm.nix
-    ../nix/home/common.nix
+    ../nix/home/common
     ../nix/home/clipboard.nix
     ../nix/home/conky
     # ../nix/home/davfs2.nix
@@ -50,7 +60,10 @@ in {
   my.eww.enable = true;
   my.eww.service.enable = false;
   my.java.package = pkgs.jdk17;
-  my.java.toolchains = with pkgs; [ jdk8 jdk11 ];
+  my.java.toolchains = with pkgs; [
+    jdk8
+    jdk11
+  ];
   modules.polybar.monitor = "DP-0";
   modules.polybar.networks = [
     {
@@ -156,7 +169,10 @@ in {
   nix.enable = true;
   nix.package = pkgs.nixUnstable;
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     warn-dirty = false;
     accept-flake-config = true;
     run-diff-hook = true;

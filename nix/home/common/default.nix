@@ -1,5 +1,4 @@
 {
-  self,
   config,
   lib,
   pkgs,
@@ -8,27 +7,24 @@
 
 {
   imports = [
-    ./age-op.nix
-    ./accounts.nix
-    ./common-linux.nix
-    ./common-darwin.nix
-    ./fzf.nix
-    ./git
-    ./gpg.nix
-    ./nix-path.nix
-    # ./ranger.nix
-    ./readline.nix
-    ./ripgrep.nix
-    ./secrets.nix
-    ./security.nix
-    ./shell
+    ../accounts.nix
+    ../age-op.nix
+    ../fzf.nix
+    ../git
+    ../gpg.nix
+    ../nix-path.nix
+    ../readline.nix
+    ../ripgrep.nix
+    ../secrets.nix
+    ../security.nix
+    ../shell
+    ./darwin.nix
+    ./linux.nix
   ];
 
   home.packages =
     with pkgs;
     [
-      # neofetch
-      # pinentry
       bc
       binutils
       cmake
@@ -41,7 +37,6 @@
       envsubst
       file
       flake-root # nb: via overlay
-      just
       gawk
       gnugrep
       gnumake
@@ -49,6 +44,7 @@
       gnutar
       gnutls
       gzip
+      just
       lsof
       moreutils
       pik # pkill, interactively
@@ -57,9 +53,9 @@
       repgrep
       rlwrap
       sd # sed alternative
-      trurl
       sops
       tree
+      trurl
       unzip
       wget
       xh # httpie alternative
@@ -68,28 +64,21 @@
     ]
     ++ (lib.catAttrs "package" (lib.attrValues config.my.shellScripts));
 
-  my.shellScripts.dotfiles = {
-    runtimeInputs = [ pkgs.just ];
-    text = ''exec just --justfile "${config.my.flakeDirectory}/justfile" "$@"'';
-  };
-
-  home.shellAliases.switch = "dotfiles switch";
-
   home.sessionVariables = config.my.environment.variables;
 
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.local/share/cargo/bin"
-    # "$HOME/.dotfiles/bin"
-    # "$HOME/.krew/bin"
     "$HOME/go/bin"
   ];
 
   programs.home-manager.enable = true;
 
-  programs.less.enable = true;
-  programs.less.keys = '''';
+  programs.less = {
+    enable = true;
+    keys = '''';
+  };
 
   programs.man.enable = true;
 
@@ -122,28 +111,6 @@
 
   programs.jq.enable = true;
 
-  programs.lsd = {
-    enable = false;
-    enableAliases = true;
-    settings = {
-      date = "relative";
-      hyperlink = "auto";
-      sorting.dir-grouping = "first";
-      header = true;
-      icons.separator = " ";
-      indicators = true;
-      blocks = [
-        "permission"
-        "user"
-        "group"
-        "size"
-        "date"
-        "git"
-        "name"
-      ];
-    };
-  };
-
   programs.eza = {
     enable = !config.programs.lsd.enable;
     enableBashIntegration = true;
@@ -161,8 +128,6 @@
       "--color-scale-mode=gradient"
     ];
   };
-
-  programs.tealdeer.enable = true; # tldr command
 
   xdg.enable = true;
 }

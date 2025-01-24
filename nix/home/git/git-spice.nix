@@ -25,7 +25,7 @@ in
       extraConfig = {
         spice.submit.publish = mkDefault false;
         spice.submit.web = mkDefault true;
-        spice.log.all = mkDefault true;
+        spice.log.all = mkDefault false;
         spice.shorthand.sync = "repo sync";
         spice.shorthand.continue = "rebase continue";
         spice.shorthand.abort = "rebase abort";

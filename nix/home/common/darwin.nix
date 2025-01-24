@@ -20,6 +20,20 @@ with lib;
 
       app-id.text = ''/usr/bin/mdls -name kMDItemCFBundleIdentifier -r "''${1?}"'';
 
+      defaultz = {
+        runtimeInputs = with pkgs; [
+          fzf
+          gnused
+        ];
+        text = ''
+          {
+            printf '-g\n'
+            defaults domains | sed -e 's/, */\n/g'
+          } |
+          fzf --header 'defaults domain' --preview='defaults read {}' --bind 'enter:become(defaults read {})' "$@"
+        '';
+      };
+
       # app-icon = {
       #   runtimeInputs = with pkgs; [
       #     gawk

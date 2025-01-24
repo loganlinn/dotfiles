@@ -12,6 +12,7 @@
     # ../modules/aerospace
     ../modules/aws.nix
     ../modules/emacs-plus
+    ../modules/hammerspoon
     ../modules/sunbeam
     ../modules/xcode.nix
     ../modules/terraform.nix
@@ -68,24 +69,23 @@
   homebrew.casks = [
     # "1password" # currently installed manually
     "1password-cli"
-    # "clickhouse" # newer version than from nixpkgs
     "discord"
     "obs"
     # "obsidian" # currently installed manually
     "tailscale"
   ];
 
-  # programs.aerospace = {
-  #   enable = true;
-  #   terminal.id = "com.github.wez.wezterm";
-  #   editor.id = "org.gnu.Emacs";
-  # };
+  hammerspoon.enable = true;
 
   programs.xcode.enable = true;
 
   programs.sunbeam.enable = false;
 
   programs.emacs-plus.enable = true;
+
+  system.stateVersion = 5;
+
+  ids.gids.nixbld = 30000;
 
   home-manager.users.logan =
     {
@@ -104,7 +104,6 @@
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
         ../../nix/home/doom
-        ../../nix/home/hammerspoon.nix
         ../../nix/home/just
         ../../nix/home/kitty
         ../../nix/home/nixvim
@@ -133,8 +132,6 @@
         ];
       };
 
-      programs.hammerspoon.enable = true;
-
       programs.wezterm.enable = true;
 
       programs.kitty.enable = true;
@@ -162,6 +159,4 @@
 
       home.stateVersion = "22.11";
     };
-
-  system.stateVersion = 4;
 }

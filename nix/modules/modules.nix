@@ -1,5 +1,5 @@
 [
-  ../../nix/home/common.nix
+  ../../nix/home/common
   ../../nix/home/dev
   ../../nix/home/dunst
   ../../nix/home/emacs

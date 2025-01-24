@@ -28,13 +28,13 @@ in
       home.packages = cfg.extraPackages;
     };
 
-    # Move windows by holding ctrl+cmd and dragging any part of the window
-    system.defaults.NSGlobalDomain.NSWindowShouldDragOnGesture = lib.mkDefault true;
-
-    # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-mission-control
-    system.defaults.dock.expose-group-apps = lib.mkDefault true; # `true` means OFF
-
-    # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-displays-have-separate-spaces
-    system.defaults.spaces.spans-displays = lib.mkDefault true; # `true` means OFF
+    system.defaults = {
+      # Move windows by holding ctrl+cmd and dragging any part of the window
+      NSGlobalDomain.NSWindowShouldDragOnGesture = true;
+      # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-mission-control
+      dock.expose-group-apps = true; # `true` means OFF
+      # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-displays-have-separate-spaces
+      spaces.spans-displays = true; # `true` means OFF
+    };
   };
 }

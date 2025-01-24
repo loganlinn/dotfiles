@@ -212,7 +212,7 @@ in
 
   # NB: 'homeModules' preferred over 'homeManagerModules', see https://github.com/NixOS/nix/blob/af26fe39344faff70e009d980820b8667c319cb2/src/nix/flake.cc#L810-L811
   flake.homeModules = {
-    common = import ../nix/home/common.nix;
+    common = import ../nix/home/common;
     nix-colors =
       { lib, ... }:
       {
