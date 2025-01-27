@@ -20,6 +20,10 @@ function M.apply_to_config(config)
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
 
+  local nix_rebuild_switch = action.just({
+    args = { "--justfile", wezterm.home_dir .. "/.dotfiles/justfile", "switch" },
+  })
+
   M.with_keys(config, {
     { MOD, "H", action.activate_direction("Left") },
     { MOD, "J", action.activate_direction("Down") },
@@ -60,11 +64,7 @@ function M.apply_to_config(config)
     { SUPER, "PageUp", wezterm.action.ToggleAlwaysOnTop },
     -- TODO use global justfile
     { MOD, "&", action.just({ args = { "--choose" } }) },
-    {
-      MOD,
-      "*",
-      action.just({ args = { "--justfile", wezterm.home_dir .. "/.dotfiles/justfile", "switch" } }),
-    },
+    { MOD, "*", nix_rebuild_switch },
     { MOD, "9", wezterm.action.SwitchWorkspaceRelative(-1) },
     { MOD, "0", wezterm.action.SwitchWorkspaceRelative(1) },
     { LEADER, "Space", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES|DOMAINS" }) },
@@ -76,15 +76,15 @@ function M.apply_to_config(config)
     { MOD, "c", wezterm.action.CopyTo("Clipboard") },
     { MOD, "v", wezterm.action.PasteFrom("Clipboard") },
     { LEADER, "v", wezterm.action.ActivateCopyMode },
-    { SUPER, "f", wezterm.action.Search({ CaseSensitiveString = "" }) },
     { MOD, "F", wezterm.action.QuickSelect },
     { MOD, "E", action.quick_open }, -- https://loganlinn.com
-    { MOD, "o", wezterm.action.ActivateKeyTable({ name = "Open" }) }, -- https://loganlinn.com
+    { MOD, "p", wezterm.action.ActivateCommandPalette },
     { [[SUPER|SHIFT]], "E", action.browse_current_working_dir },
     { MOD, "Home", wezterm.action.ScrollToTop },
     { MOD, "PageDown", wezterm.action.ScrollToPrompt(1) },
     { MOD, "PageUp", wezterm.action.ScrollToPrompt(0) },
     { MOD, "End", wezterm.action.ScrollToBottom },
+    { SUPER, "f", wezterm.action.Search({ CaseSensitiveString = "" }) },
     { SUPER, "0", wezterm.action.ResetFontSize },
     { SUPER, "-", wezterm.action.DecreaseFontSize },
     { SUPER, "=", wezterm.action.IncreaseFontSize },
@@ -97,7 +97,6 @@ function M.apply_to_config(config)
     { SUPER, "UpArrow", wezterm.action.ScrollToPrompt(-1) },
     { SUPER, "DownArrow", wezterm.action.ScrollToPrompt(1) },
     { LEADER, "q", wezterm.action.QuitApplication },
-    { MOD, "p", wezterm.action.ActivateCommandPalette },
     { SUPER, "F1", wezterm.action.ShowDebugOverlay },
     {
       SUPER,
@@ -124,20 +123,20 @@ function M.apply_to_config(config)
 
     { LEADER, "r", require("dotfiles.action.yarn-run").input_selector },
 
+    { LEADER, "i", wezterm.action.ActivateKeyTable({ name = "Insert" }) },
     Insert = {
       { NONE, "u", wezterm.action.CharSelect },
       { NONE, "p", wezterm.action.PasteFrom("Clipboard") },
       M.key_assignment({ SHIFT, "P", wezterm.action.PasteFrom("PrimarySelection") }),
     },
-    { LEADER, "i", wezterm.action.ActivateKeyTable({ name = "Insert" }) },
 
+    { MOD, [[|]], wezterm.action.ActivateKeyTable({ name = "Split" }) },
     Split = {
       { NONE, "h", wezterm.action.SplitPane({ top_level = true, direction = "Left" }) },
       { NONE, "j", wezterm.action.SplitPane({ top_level = true, direction = "Down" }) },
       { NONE, "k", wezterm.action.SplitPane({ top_level = true, direction = "Up" }) },
       { NONE, "l", wezterm.action.SplitPane({ top_level = true, direction = "Right" }) },
     },
-    { MOD, [[|]], wezterm.action.ActivateKeyTable({ name = "Split" }) },
   })
 
   -- Mouse bindings

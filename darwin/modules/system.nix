@@ -41,7 +41,7 @@ with lib;
         AppleKeyboardUIMode = 3; # full keyboard control.
         ApplePressAndHoldEnabled = false;
         InitialKeyRepeat = 25; # normal minimum is 15 (225 ms), maximum is 120 (1800 ms)
-        KeyRepeat = 3; # normal minimum is 2 (30 ms), maximum is 120 (1800 ms)
+        KeyRepeat = 2; # normal minimum is 2 (30 ms), maximum is 120 (1800 ms)
         NSAutomaticCapitalizationEnabled = false;
         NSAutomaticDashSubstitutionEnabled = false;
         NSAutomaticPeriodSubstitutionEnabled = false;

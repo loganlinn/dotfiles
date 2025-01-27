@@ -27,8 +27,8 @@ in
         spice.submit.web = mkDefault true;
         spice.log.all = mkDefault false;
         spice.shorthand.sync = "repo sync";
-        spice.shorthand.continue = "rebase continue";
-        spice.shorthand.abort = "rebase abort";
+        spice.shorthand.cont = "rebase continue";
+        spice.shorthand.bail = "rebase abort";
         spice.shorthand.rename = "branch rename";
         spice.shorthand.checkout = "branch checkout";
       };
