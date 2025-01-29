@@ -16,5 +16,5 @@ jobs:
         with:
           name: "loganlinn/dotfiles"
           rolling: true
-          visibility: "Unlisted"
+          visibility: unlisted
           include-output-paths: true
