@@ -1,7 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
-let cfg = config.my.python; in
+let
+  cfg = config.my.python;
+in
 {
 
   options.my.python = {
@@ -27,22 +34,29 @@ let cfg = config.my.python; in
     finalPackage = mkOption {
       type = types.package;
       readOnly = true;
-      default = cfg.package.withPackages (ps:
-        with ps; [
+      default = cfg.package.withPackages (
+        ps:
+        with ps;
+        [
           black
+          ipython
           isort # used by editors
-          pipx
-          setuptools
           jupyter
           jupyterlab
-        ] ++ optionals stdenv.isLinux [
+          numpy
+          pipx
+          setuptools
+        ]
+        ++ optionals stdenv.isLinux [
           # pybluez
           dbus-python
           pygobject3
           pyxdg
-        ] ++ optionals config.xsession.windowManager.i3.enable [
+        ]
+        ++ optionals config.xsession.windowManager.i3.enable [
           i3ipc
-        ]);
+        ]
+      );
     };
   };
 
@@ -52,6 +66,7 @@ let cfg = config.my.python; in
       poetry
       pyright
       ruff
+      uv
     ];
 
     my.shellInitExtra = readFile ./venv.bash; # shell helpers

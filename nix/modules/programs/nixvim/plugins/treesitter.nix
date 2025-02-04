@@ -9,6 +9,7 @@
       grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [
         bash
         fennel
+        graphql
         json
         just
         lua
