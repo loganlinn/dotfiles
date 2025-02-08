@@ -1,71 +1,86 @@
 require("hs.ipc") -- enables `hc` CLI
 
-LeftRightHotkey = hs.loadSpoon("LeftRightHotkey")
+local config = {
+  keys = {
+    g = { app = "Claude" },
+    s = { app = "Slack" },
+    m = { app = "Messages" },
+    o = { app = "Obsidian" },
+    e = { app = "Finder" },
+    p = { app = "1Password" },
+    f1 = { app = "System Information" },
+    f2 = { app = "Console" },
+    f4 = { app = "Activity Monitor" },
+  },
+}
 
-local log = hs.logger.new("init", "debug")
-local hyper = { "cmd", "ctrl", "alt", "shift" }
-local home_dir = os.getenv("HOME") or "/Users/logan"
+local pathlib = {}
 
+--- Expands tilde.
 ---@param path string
+---@return string
+function pathlib.expand(path)
+  if path:sub(1, 1) == "~" then
+    path = os.getenv("HOME") .. path:sub(2)
+  end
+  return path
+end
+
+function pathlib.join(dir, base)
+  if dir:sub(-1) ~= "/" and base:sub(1, 1) ~= "/" then
+    dir = dir .. "/"
+  end
+  return dir .. base
+end
+
+---@param iter string[]|function
+---param name string
 ---@return string|nil
-local function existingPath(path)
-  if hs.fs.attributes(path, "inode") then
-    return path
+function pathlib.search(iter, name)
+  if type(iter) ~= "function" then
+    iter = ipairs(iter)
+  end
+  for _, path in iter do
+    local pathname = pathlib.join(path, name)
+    if hs.fs.attributes(pathname, "inode") then
+      return pathname
+    end
   end
 end
 
-local function findNixAppPath(name)
-  local filename = name .. ".app"
-  return existingPath("/Applications/Nix Apps/" .. filename)
-    or existingPath(home_dir .. "/Applications/Nix Apps/" .. filename)
-    or existingPath(home_dir .. "/Applications/Home Manager Apps/" .. filename)
+function pathlib.findNixApp(name)
+  return pathlib.search({
+    "/Applications/Nix Apps",
+    "/Applications/Nix Apps",
+    "/Applications/Home Manager Apps",
+  }, name .. ".app")
 end
 
-local function activateApp(app)
-  local app = hs.application.get(app)
+local function activateWezterm()
+  local app = hs.application.get("com.github.wez.wezterm")
   if app then
     return app:activate()
   end
-end
-
-local function launchOrFocus(app)
-  if app then
-    return hs.application.launchOrFocus(app)
+  local path = pathlib.findNixApp("WezTerm")
+  if path then
+    return hs.application.launchOrFocus(path)
   end
 end
 
-local function activateTerminal()
-  -- launching nix-installed macOS apps tends to have flaws.
-  -- prefer to launch by explicit path
-  local _ = activateApp("com.github.wez.wezterm")
-    or launchOrFocus(findNixAppPath("WezTerm"))
-    or launchOrFocus("Terminal")
-end
-
--- LeftRightHotkey:start()
-local appHotkey = function(opts)
-  local bind = opts.bind or hs.hotkey.bind
-  local mods = opts.mods or { "alt" } -- LeftRightHotkey.bind, { "rAlt" }
-  local key = assert(opts[1])
-  local app = assert(opts[2])
-  local message = opts.message or opts.app
-  hs.inspect(bind(mods, key, message, function()
-    hs.application.launchOrFocus(app)
-  end))
+local function bindKey(key, opts)
+  local pressFn = opts.pressFn
+  if opts.app then
+    assert(not opts.pressFn)
+    pressFn = function()
+      hs.application.launchOrFocus(opts.app)
+    end
+  end
+  hs.hotkey.bind(opts.mods or { "alt" }, opts.key or key, opts.message, pressFn, opts.releaseFn, opts.repeatFn)
 end
 
 hs.hotkey.bind({ "alt", "ctrl" }, "r", hs.reload)
-hs.hotkey.bind({ "alt" }, "return", activateTerminal)
-appHotkey({ "g", "Gemini" })
--- appHotkey({ "z", "Zoom" })
-appHotkey({ "s", "Slack" })
-appHotkey({ "m", "Messages" })
-appHotkey({ "o", "Obsidian" })
-appHotkey({ "e", "Finder" })
-appHotkey({ "p", "1Password" })
--- appHotkey({ ",", "System Settings" })
-appHotkey({ "f1", "System Information" })
-appHotkey({ "f2", "Console" })
-appHotkey({ "f4", "Activity Monitor" })
-
+hs.hotkey.bind({ "alt" }, "return", activateWezterm)
+for key, opts in pairs(config.keys) do
+  bindKey(key, opts)
+end
 hs.alert.show("✅ Hammerspoon")
