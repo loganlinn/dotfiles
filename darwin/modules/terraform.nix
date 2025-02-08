@@ -7,7 +7,7 @@
   home-manager.users.logan = {
     home.packages = with pkgs; [
       tenv # provides terraform binary
-      # terraform-ls
+      terraform-lsp
       tflint
       # terraformer
       terraform-docs
