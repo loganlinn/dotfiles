@@ -89,6 +89,7 @@ end
 
 local tab_label = function(tab)
   local title = tab.tab_title
+  local insert = table.insert
   if title ~= "" and title ~= "default" then
     return wezterm.format({ { Foreground = { Color = C.Pink } }, { Text = pad(title) }, "ResetAttributes" })
   end
@@ -98,74 +99,36 @@ local tab_label = function(tab)
     local cwd = tab.active_pane.current_working_dir.file_path
     local label = basename(cwd)
     local parent = basename(dirname(cwd))
-    table.insert(fmt, { Text = " " })
     if parent ~= "." and parent ~= "/" then
-      table.insert(fmt, { Foreground = { Color = "#909090" } })
-      table.insert(fmt, { Text = parent })
-      table.insert(fmt, { Foreground = { AnsiColor = "Grey" } })
-      table.insert(fmt, { Text = "/" })
-      table.insert(fmt, "ResetAttributes")
+      insert(fmt, { Foreground = { Color = "#909090" } })
+      insert(fmt, { Text = parent })
+      insert(fmt, { Foreground = { AnsiColor = "Grey" } })
+      insert(fmt, { Text = "/" })
+      insert(fmt, "ResetAttributes")
     end
-    table.insert(fmt, { Foreground = { AnsiColor = "White" } })
-    table.insert(fmt, { Text = label })
-    table.insert(fmt, { Text = " " })
+    insert(fmt, { Foreground = { AnsiColor = "White" } })
+    insert(fmt, { Text = label })
   elseif tab.active_pane.foreground_process_name then
-    table.insert(fmt, { Text = basename(tab.active_pane.foreground_process_name) })
+    insert(fmt, { Text = basename(tab.active_pane.foreground_process_name) })
   end
-
-  table.insert(fmt, "ResetAttributes")
-  return pad(wezterm.format(fmt))
+  insert(fmt, "ResetAttributes")
+  return wezterm.format(fmt)
 end
 
-local function config_reload_count()
-  local state = util.event_counter("window-config-reloaded")
-  return function(_)
-    local scheme = tabline.get_colors().scheme
-    return wezterm.format({
-      { Foreground = { Color = scheme.ansi[#scheme.ansi] } },
-      { Text = " v " .. tostring(state:deref()) },
-      "ResetAttributes",
-    })
-  end
-end
-
-local zoomed = {
-  "zoomed",
-  padding = 1,
-  fmt = function(str)
-    if #(str or "") then
-      return wezterm.nerdfonts.cod_expand_all
-    end
-  end,
-}
-local hour_to_icon = {
-  ["00"] = wezterm.nerdfonts.md_clock_time_twelve_outline,
-  ["01"] = wezterm.nerdfonts.md_clock_time_one_outline,
-  ["02"] = wezterm.nerdfonts.md_clock_time_two_outline,
-  ["03"] = wezterm.nerdfonts.md_clock_time_three_outline,
-  ["04"] = wezterm.nerdfonts.md_clock_time_four_outline,
-  ["05"] = wezterm.nerdfonts.md_clock_time_five_outline,
-  ["06"] = wezterm.nerdfonts.md_clock_time_six_outline,
-  ["07"] = wezterm.nerdfonts.md_clock_time_seven_outline,
-  ["08"] = wezterm.nerdfonts.md_clock_time_eight_outline,
-  ["09"] = wezterm.nerdfonts.md_clock_time_nine_outline,
-  ["10"] = wezterm.nerdfonts.md_clock_time_ten_outline,
-  ["11"] = wezterm.nerdfonts.md_clock_time_eleven_outline,
-  ["12"] = wezterm.nerdfonts.md_clock_time_twelve_outline,
-  ["13"] = wezterm.nerdfonts.md_clock_time_one_outline,
-  ["14"] = wezterm.nerdfonts.md_clock_time_two_outline,
-  ["15"] = wezterm.nerdfonts.md_clock_time_three_outline,
-  ["16"] = wezterm.nerdfonts.md_clock_time_four_outline,
-  ["17"] = wezterm.nerdfonts.md_clock_time_five_outline,
-  ["18"] = wezterm.nerdfonts.md_clock_time_six_outline,
-  ["19"] = wezterm.nerdfonts.md_clock_time_seven_outline,
-  ["20"] = wezterm.nerdfonts.md_clock_time_eight_outline,
-  ["21"] = wezterm.nerdfonts.md_clock_time_nine_outline,
-  ["22"] = wezterm.nerdfonts.md_clock_time_ten_outline,
-  ["23"] = wezterm.nerdfonts.md_clock_time_eleven_outline,
-}
-for k, v in pairs(hour_to_icon) do
-  hour_to_icon[k] = { v, color = { fg = C.fg } }
+local function tab_section(is_active)
+  return {
+    { Attribute = { Intensity = is_active and "Bold" or "Half" } },
+    { "index", padding = { left = 2, right = 1 } },
+    tab_label,
+    " ",
+    {
+      "zoomed",
+      icons_enabled = true,
+      icons_only = true,
+      padding = 0,
+    },
+    " ",
+  }
 end
 
 tabline.setup({
@@ -180,8 +143,8 @@ tabline.setup({
       right = "", -- nerdfonts.pl_right_soft_divider,
     },
     tab_separators = {
-      left = "", -- nerdfonts.pl_left_hard_divider,
-      right = "", -- nerdfonts.pl_right_hard_divider,
+      left = " ", -- nerdfonts.pl_left_hard_divider,
+      right = " ", -- nerdfonts.pl_right_hard_divider,
     },
     padding = 1,
     color_overrides = {
@@ -200,26 +163,8 @@ tabline.setup({
     tabline_c = {
       "    ",
     },
-    tab_active = {
-      -- { "index", padding = { left = 3, right = 0 } },
-      -- { "cwd", padding = { left = 1, right = 1 } },
-      -- { "process", padding = { left = 1, right = 3 }, icons_enabled = true, icons_only = true },
-      -- { "index", padding = { left = 4, right = 1 } },
-      -- { Attribute = { Intensity = "Bold" } },
-      -- "cwd",
-      { "index", padding = 1 },
-      { Attribute = { Intensity = "Bold" } },
-      tab_label,
-      { "zoomed", icons_enabled = true, icons_only = true, padding = 0 },
-      " ",
-    },
-    tab_inactive = {
-      { "index", padding = 1 },
-      { Attribute = { Intensity = "Half" } },
-      tab_label,
-      { "zoomed", icons_enabled = true, icons_only = true, padding = 0 },
-      " ",
-    },
+    tab_active = tab_section(true),
+    tab_inactive = tab_section(false),
     tabline_x = {
       -- config_reload_count(),
       -- active_key_table,
@@ -233,13 +178,6 @@ tabline.setup({
           return window:mux_window():get_title() == "default"
         end,
       },
-      -- {
-      --   "datetime",
-      --   padding = 2,
-      --   icons_enabled = true,
-      --   icons_only = true,
-      --   hour_to_icon = hour_to_icon,
-      -- },
     },
     tabline_z = {
       {

@@ -24,7 +24,7 @@ function M.apply_to_config(config)
     args = { "--justfile", wezterm.home_dir .. "/.dotfiles/justfile", "switch" },
   })
 
-  M.with_keys(config, {
+  M.bind(config, {
     { MOD, "H", action.activate_direction("Left") },
     { MOD, "J", action.activate_direction("Down") },
     { MOD, "K", action.activate_direction("Up") },
@@ -195,7 +195,7 @@ end
 ---@param config Config
 ---@param keys_spec table<string|number, KeySpec|KeySpec[]>
 ---@return Config
-function M.with_keys(config, keys_spec, key_table)
+function M.bind(config, keys_spec, key_table)
   if type(key_table) ~= "table" then
     key_table = M.get_key_table(config, key_table)
   end
@@ -206,7 +206,7 @@ function M.with_keys(config, keys_spec, key_table)
         table.insert(key_table, ka)
       end
     elseif type(k) == "string" then
-      M.with_keys(config, v, k)
+      M.bind(config, v, k)
     end
   end
   return config

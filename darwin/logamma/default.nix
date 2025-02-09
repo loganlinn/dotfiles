@@ -103,6 +103,7 @@
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
+        ../../nix/home/dev/crystal.nix
         ../../nix/home/doom
         ../../nix/home/just
         ../../nix/home/kitty

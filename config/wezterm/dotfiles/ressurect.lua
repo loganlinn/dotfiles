@@ -2,6 +2,7 @@ local wezterm = require("wezterm")
 local resurrect = wezterm.plugin.require("https://github.com/MLFlexer/resurrect.wezterm")
 local shell_quote = wezterm.shell_quote_arg
 local util = require("dotfiles.util")
+local keys = require("dotfiles.keys")
 
 local M = {}
 
@@ -42,8 +43,7 @@ M.apply_to_config = function(config)
       return stdout
     end,
   })
-
-  require("dotfiles.keys").with_keys(config, {
+  keys.bind(config, {
     {
       "LEADER",
       "w",

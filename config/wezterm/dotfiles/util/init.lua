@@ -12,7 +12,16 @@ M.tbl = require("dotfiles.util.tbl")
 M.delay = require("dotfiles.util.delay")
 M.debug = require("dotfiles.util.debug")
 
----executes cmd and passes input to stdin
+---@generic T
+---@param ... T
+---@return T
+M.spy = function(...)
+  wezterm.log_info(...)
+  return ...
+end
+
+--- Executes cmd and passes input to stdin
+-- TODO: Deeper look into how to utilize wezterm's ExecDomain: https://wezterm.org/config/lua/ExecDomain.html
 ---@param command_string string command to be run
 ---@param input string input to stdin
 ---@return boolean
@@ -69,42 +78,6 @@ function M.exec_with_stdin(command_string, input)
   end
 end
 
----@param f function
----@param ... any
----@return function
-M.partial = function(f, ...)
-  local bound = { ... }
-  return function(...)
-    return f(table.unpack(bound), ...)
-  end
-end
-
----@generic F : function
----@param f F
----@return F
-M.fnil = function(f)
-  return function(v, ...)
-    if v ~= nil then
-      return f(v, ...)
-    end
-  end
-end
-
-M.inc = function(n)
-  return n + 1
-end
-M.dec = function(n)
-  return n - 1
-end
-
----@generic T
----@param ... T
----@return T
-M.spy = function(...)
-  wezterm.log_info(...)
-  return ...
-end
-
 ---@generic T
 ---@param v T|T[]
 ---@return T[]
@@ -113,20 +86,6 @@ M.tolist = function(v)
     return { v }
   end
   return v
-end
-
----@generic T
----@param ... nil|T
----@return T
-M.coalesce = function(...)
-  local n = select("#", ...)
-  for i = 1, n do
-    local v = select(i, ...)
-    if v ~= nil then
-      return v
-    end
-  end
-  return nil
 end
 
 ---@param s string

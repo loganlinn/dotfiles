@@ -1,13 +1,15 @@
 require("hs.ipc") -- enables `hc` CLI
 
 local config = {
+  mods = { "alt" },
+  -- NOTE: make sure these don't conflict with aerospace hotkeys!
   keys = {
-    g = { app = "Claude" },
+    ["return"] = { app = "WezTerm" },
+    p = { app = "Claude" },
     s = { app = "Slack" },
     m = { app = "Messages" },
-    o = { app = "Obsidian" },
+    n = { app = "Obsidian" },
     e = { app = "Finder" },
-    p = { app = "1Password" },
     f1 = { app = "System Information" },
     f2 = { app = "Console" },
     f4 = { app = "Activity Monitor" },
@@ -68,18 +70,25 @@ local function activateWezterm()
 end
 
 local function bindKey(key, opts)
+  if type(opts) == "function" then
+    opts = { pressFn = opts }
+  end
   local pressFn = opts.pressFn
+
   if opts.app then
     assert(not opts.pressFn)
-    pressFn = function()
-      hs.application.launchOrFocus(opts.app)
+    if opts.app == "WezTerm" then
+      pressFn = activateWezterm
+    else
+      pressFn = function()
+        hs.application.launchOrFocus(opts.app)
+      end
     end
   end
-  hs.hotkey.bind(opts.mods or { "alt" }, opts.key or key, opts.message, pressFn, opts.releaseFn, opts.repeatFn)
+  hs.hotkey.bind(opts.mods or config.mods, opts.key or key, opts.message, pressFn, opts.releaseFn, opts.repeatFn)
 end
 
 hs.hotkey.bind({ "alt", "ctrl" }, "r", hs.reload)
-hs.hotkey.bind({ "alt" }, "return", activateWezterm)
 for key, opts in pairs(config.keys) do
   bindKey(key, opts)
 end
