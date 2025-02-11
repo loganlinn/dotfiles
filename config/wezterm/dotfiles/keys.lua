@@ -16,6 +16,7 @@ local M = {}
 function M.apply_to_config(config)
   workspace_switcher.apply_to_config(config)
 
+  config.debug_key_events = "1" == os.getenv("WEZTERM_DEBUG_KEY_EVENTS")
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
