@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
 local action = require("dotfiles.action")
 local NONE = [[NONE]]
 local SHIFT = [[SHIFT]]
@@ -13,16 +14,15 @@ local M = {}
 ---@param config Config
 ---@return Config
 function M.apply_to_config(config)
+  workspace_switcher.apply_to_config(config)
+
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
-  config.leader = { mods = [[CTRL|SHIFT]], key = "Space", timeout_milliseconds = math.maxinteger }
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
 
-  local nix_rebuild_switch = action.just({
-    args = { "--justfile", wezterm.home_dir .. "/.dotfiles/justfile", "switch" },
-  })
+  config.leader = { mods = [[CTRL|SHIFT]], key = "Space", timeout_milliseconds = math.maxinteger }
 
   M.bind(config, {
     { MOD, "H", action.activate_direction("Left") },
@@ -64,10 +64,21 @@ function M.apply_to_config(config)
     { SUPER, "PageUp", wezterm.action.ToggleAlwaysOnTop },
     -- TODO use global justfile
     { MOD, "&", action.just({ args = { "--choose" } }) },
-    { MOD, "*", nix_rebuild_switch },
+    {
+      MOD,
+      "*",
+      action.just({
+        args = {
+          "--justfile",
+          wezterm.home_dir .. "/.dotfiles/justfile",
+          "switch",
+        },
+      }),
+    },
     { MOD, "9", wezterm.action.SwitchWorkspaceRelative(-1) },
     { MOD, "0", wezterm.action.SwitchWorkspaceRelative(1) },
-    { LEADER, "Space", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES|DOMAINS" }) },
+    { LEADER, "Space", workspace_switcher.switch_workspace() },
+    { LEADER, "Tab", workspace_switcher.switch_to_prev_workspace() },
     { LEADER, ":", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|LAUNCH_MENU_ITEMS" }) },
     { LEADER, "?", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|KEY_ASSIGNMENTS" }) },
     { LEADER, ".", action.rename_workspace },
@@ -109,7 +120,16 @@ function M.apply_to_config(config)
       }),
     },
     { SUPER, "F3", action.show_config },
-    { SUPER, "F5", wezterm.action.ReloadConfiguration },
+    {
+      SUPER,
+      "F5",
+      wezterm.action.Multiple({
+        wezterm.action.ReloadConfiguration,
+        wezterm.action_callback(function(window, pane)
+          -- TODO show visual notification
+        end),
+      }),
+    },
     { SUPER, "F6", action.debug_window },
     { SUPER, "F7", action.debug_pane },
     { SUPER, "F8", action.debug_globals },

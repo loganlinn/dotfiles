@@ -59,7 +59,7 @@ alt-j = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-ar
 alt-k = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace up"
 alt-l = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace right"
 
-alt-backtick = "workspace --auto-back-and-forth ~"
+alt-backtick = "workspace --auto-back-and-forth 0"
 alt-1 = "workspace --auto-back-and-forth 1"
 alt-2 = "workspace --auto-back-and-forth 2"
 alt-3 = "workspace --auto-back-and-forth 3"
@@ -69,14 +69,14 @@ alt-6 = "workspace --auto-back-and-forth 6"
 alt-7 = "workspace --auto-back-and-forth 7"
 alt-8 = "workspace --auto-back-and-forth 8"
 alt-9 = "workspace --auto-back-and-forth 9"
-alt-0 = "workspace --auto-back-and-forth 0"
+alt-0 = "workspace --auto-back-and-forth 10"
 
 alt-shift-h = "move left"
 alt-shift-j = "move down"
 alt-shift-k = "move up"
 alt-shift-l = "move right"
 
-alt-shift-backtick = "move-node-to-workspace --focus-follows-window  ~"
+alt-shift-backtick = "move-node-to-workspace --focus-follows-window  0"
 alt-shift-1 = "move-node-to-workspace --focus-follows-window 1"
 alt-shift-2 = "move-node-to-workspace --focus-follows-window 2"
 alt-shift-3 = "move-node-to-workspace --focus-follows-window 3"
@@ -86,7 +86,7 @@ alt-shift-6 = "move-node-to-workspace --focus-follows-window 6"
 alt-shift-7 = "move-node-to-workspace --focus-follows-window 7"
 alt-shift-8 = "move-node-to-workspace --focus-follows-window 8"
 alt-shift-9 = "move-node-to-workspace --focus-follows-window 9"
-alt-shift-0 = "move-node-to-workspace --focus-follows-window 0"
+alt-shift-0 = "move-node-to-workspace --focus-follows-window 10"
 
 alt-leftSquareBracket = "workspace --wrap-around prev"
 alt-rightSquareBracket = "workspace --wrap-around next"
@@ -133,15 +133,15 @@ ctrl-c = "mode main"
 ctrl-g = "mode main"
 
 [workspace-to-monitor-force-assignment]
-"~" = "secondary"
+"0" = "secondary"
 
 [[on-window-detected]]
 if.app-id = "com.apple.MobileSMS"
-run = ["layout floating", "move-node-to-workspace ~"]
+run = ["layout floating", "move-node-to-workspace 0"]
 
 [[on-window-detected]]
 if.app-name-regex-substring = "^(Claude|Gemini|Slack)$"
-run = "move-node-to-workspace ~"
+run = "move-node-to-workspace 0"
 
 [[on-window-detected]]
 if.app-id = "com.google.Chrome"
@@ -189,7 +189,7 @@ run = "layout floating"
 
 [[on-window-detected]]
 if.app-id = "com.apple.FaceTime"
-run = ["layout floating", "move-node-to-workspace ~"] # workaround: `move-node-to-monitor retina` not supported here
+run = ["layout floating", "move-node-to-workspace 0"] # workaround: `move-node-to-monitor retina` not supported here
 
 [[on-window-detected]]
 if.app-id = "com.apple.finder"
@@ -213,7 +213,7 @@ run = "layout floating"
 
 [[on-window-detected]]
 if.app-id = "us.zoom.xos"
-run = ["layout floating", "move-node-to-workspace ~"]
+run = ["layout floating", "move-node-to-workspace 0"]
 
 [[on-window-detected]]
 if.app-id = "com.apple.systempreferences"

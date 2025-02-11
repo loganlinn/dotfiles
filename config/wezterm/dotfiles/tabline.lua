@@ -19,8 +19,8 @@ end
 
 -- https://wezfurlong.org/wezterm/config/lua/color/index.html#available-methods
 local C = {}
-C.bg = wezterm.color.parse("#282A36")
-C.fg = wezterm.color.parse("#F8F8F2")
+C.Background = wezterm.color.parse("#282A36")
+C.Foreground = wezterm.color.parse("#F8F8F2")
 C.CurrentLine = wezterm.color.parse("#44475A")
 C.Comment = wezterm.color.parse("#6272A4")
 C.Cyan = wezterm.color.parse("#8BE9FD")
@@ -56,7 +56,6 @@ end
 
 local function leader_key()
   local leader_text = pad(wezterm.nerdfonts.md_home_floor_l)
-
   -- cache static text formats
   local leader_active = util.delay(function()
     local scheme = tabline.get_colors().scheme
@@ -68,7 +67,6 @@ local function leader_key()
       "ResetAttributes",
     })
   end)
-
   local leader_inactive = util.delay(function()
     local scheme = tabline.get_colors().scheme
     return wezterm.format({
@@ -77,7 +75,6 @@ local function leader_key()
       "ResetAttributes",
     })
   end)
-
   return function(window)
     if window:leader_is_active() then
       return leader_active()
@@ -131,28 +128,34 @@ local function tab_section(is_active)
   }
 end
 
-tabline.setup({
-  options = {
-    icons_enabled = false,
-    section_separators = {
-      left = nerdfonts.pl_left_hard_divider,
-      right = nerdfonts.pl_right_hard_divider,
+local options = {
+  icons_enabled = false,
+  -- section_separators = {
+  --   left = nerdfonts.pl_left_hard_divider,
+  --   right = nerdfonts.pl_right_hard_divider,
+  -- },
+  -- component_separators = { left = "", right = "" },
+  -- tab_separators = { left = "", right = "" },
+  padding = 1,
+  theme = "Dracula (Official)",
+  theme_overrides = {
+    normal_mode = {
+      -- different color workspace name (prob a better place to set this)
+      b = { bg = C.Background:darken(0.2), fg = C.Foreground },
     },
-    component_separators = {
-      left = "", -- nerdfonts.pl_left_soft_divider,
-      right = "", -- nerdfonts.pl_right_soft_divider,
-    },
-    tab_separators = {
-      left = " ", -- nerdfonts.pl_left_hard_divider,
-      right = " ", -- nerdfonts.pl_right_hard_divider,
-    },
-    padding = 1,
-    color_overrides = {
-      normal_mode = {
-        b = { bg = "#6272A4", fg = "#F8F8F2" }, -- different color workspace name (prob a better place to set this)
-      },
+    copy_mode = {},
+    search_mode = {},
+    window_mode = {},
+    tab = {
+      active = {},
+      inactive = {},
+      inactive_hover = {},
     },
   },
+}
+
+tabline.setup({
+  options = options,
   sections = {
     tabline_a = {
       { "mode", padding = 2 },
