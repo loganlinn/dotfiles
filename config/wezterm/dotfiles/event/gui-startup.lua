@@ -7,6 +7,7 @@ local spawn_window = function(cmd)
   log.info("spawn_window", cmd)
   return wezterm.mux.spawn_window(cmd)
 end
+
 local function start_dotfiles()
   local tab, pane, window = spawn_window({
     workspace = "dotfiles",
@@ -25,19 +26,12 @@ local function start_gamma()
     workspace = "gamma",
     cwd = prj_root,
   })
-  local tab2 = window:spawn_tab({
-    cwd = prj_root .. "packages/event-tracking",
-  })
-  tab2:active_pane():send_text("nvim\n")
-  -- window:spawn_tab({
-  --   cwd = prj_root .. "packages/server",
-  -- })
-  -- window:spawn_tab({
-  --   cwd = prj_root .. "packages/client",
-  -- })
-  -- window:spawn_tab({
-  --   cwd = prj_root .. "packages/hocuspocus",
-  -- })
+  window
+    :spawn_tab({
+      cwd = prj_root .. "packages/event-tracking",
+    })
+    :active_pane()
+    :send_text("$EDITOR\n")
 end
 
 wezterm.on("gui-startup", function(cmd)

@@ -12,6 +12,29 @@ M.tbl = require("dotfiles.util.tbl")
 M.delay = require("dotfiles.util.delay")
 M.debug = require("dotfiles.util.debug")
 
+M.identity = function(...)
+  return ...
+end
+
+M.walk = function(inner, outer, value)
+  inner = inner or M.identity
+  outer = outer or M.identity
+  local result
+  if type(value) == "table" then
+    result = {}
+    for i, v in pairs(value) do
+      local rv, ri = outer(inner(v), inner(i))
+      if ri ~= nil and rv ~= nil then
+        result[ri] = rv
+      end
+    end
+    setmetatable(result, getmetatable(value))
+  else
+    result = value
+  end
+  return outer(result)
+end
+
 ---@generic T
 ---@param ... T
 ---@return T

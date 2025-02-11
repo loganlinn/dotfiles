@@ -1,5 +1,14 @@
 require("hs.ipc") -- enables `hc` CLI
 
+local log = require("hs.logger").new("init", "info")
+-- local hotkey = require "hs.hotkey"
+-- local application = require "hs.application"
+-- local mouse = require "hs.mouse"
+-- local screen = require "hs.screen"
+-- local geometry = require "hs.geometry"
+-- local spaces = require "hs.spaces"
+-- local timer = require "hs.timer"
+
 local config = {
   mods = { "alt" },
   -- NOTE: make sure these don't conflict with aerospace hotkeys!
@@ -13,6 +22,11 @@ local config = {
     f1 = { app = "System Information" },
     f2 = { app = "Console" },
     f4 = { app = "Activity Monitor" },
+    forwarddelete = {
+      pressFn = function()
+        hs.caffeinate.lockScreen()
+      end,
+    },
   },
 }
 
@@ -59,6 +73,7 @@ function pathlib.findNixApp(name)
 end
 
 local function activateWezterm()
+  log.d("activateWezterm")
   local app = hs.application.get("com.github.wez.wezterm")
   if app then
     return app:activate()
@@ -76,16 +91,25 @@ local function bindKey(key, opts)
   local pressFn = opts.pressFn
 
   if opts.app then
-    assert(not opts.pressFn)
-    if opts.app == "WezTerm" then
+    assert(not pressFn)
+    local app = opts.app
+    if app == "WezTerm" then
       pressFn = activateWezterm
     else
       pressFn = function()
-        hs.application.launchOrFocus(opts.app)
+        log.d("launchOrFocus", app)
+        hs.application.launchOrFocus(app)
       end
     end
   end
-  hs.hotkey.bind(opts.mods or config.mods, opts.key or key, opts.message, pressFn, opts.releaseFn, opts.repeatFn)
+
+  local mods = opts.mods or config.mods
+  local key = opts.key or key
+  local message = opts.message
+  local releaseFn = opts.releaseFn
+  local repeatFn = opts.repeatFn
+  log.d("hs.hotkey.bind <-", mods, key, message, pressFn, releaseFn, repeatFn)
+  hs.hotkey.bind(mods, key, message, pressFn, releaseFn, repeatFn)
 end
 
 hs.hotkey.bind({ "alt", "ctrl" }, "r", hs.reload)
