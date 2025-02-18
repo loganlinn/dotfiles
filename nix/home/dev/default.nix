@@ -39,6 +39,7 @@
     du-dust # du replacement
     entr # similar to watchexec
     gum
+    hyperfine
     sops
     tree
     unzip

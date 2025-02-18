@@ -31,27 +31,6 @@
       homebrew.taps = [ "TylerBrock/saw" ];
       homebrew.brews = [ "TylerBrock/saw/saw" ];
     }
-    # terraform
-    {
-      homebrew.taps = [ "hashicorp/tap" ];
-      homebrew.brews = [
-        # "tfenv"
-        "hashicorp/tap/terraform-ls"
-      ];
-      home-manager.users.logan = {
-        home.packages = with pkgs; [
-          tenv
-          # terraform-ls
-          tflint
-          terraformer
-          terraform-docs
-          terraform-local
-          tfsec
-          tf-summarize
-          iam-policy-json-to-terraform
-        ];
-      };
-    }
   ];
 
   environment.systemPackages = with pkgs; [

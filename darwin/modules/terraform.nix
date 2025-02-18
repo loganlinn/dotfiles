@@ -7,13 +7,12 @@
   home-manager.users.logan = {
     home.packages = with pkgs; [
       tenv # provides terraform binary
-      terraform-lsp
       tflint
-      # terraformer
-      terraform-docs
+      terraformer
+      # terraform-docs
+      # tf-summarize
       # terraform-local # localstack
       # tfsec
-      # tf-summarize
       # iam-policy-json-to-terraform # https://flosell.github.io/iam-policy-json-to-terraform/
     ];
   };
