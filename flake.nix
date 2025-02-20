@@ -46,6 +46,8 @@
     # sops-nix.url = "github:Mic92/sops-nix";
     # sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     wezterm.url = "github:wez/wezterm?dir=nix";
+    # ghostty.url = "github:ghostty-org/ghostty";
+
     ## srcs
     fzf-tab = {
       url = "github:Aloxaf/fzf-tab";
@@ -59,19 +61,6 @@
       url = "github:junegunn/fzf-git.sh";
       flake = false;
     };
-  };
-
-  nixConfig = {
-    extra-substituters = [
-      "https://loganlinn.cachix.org"
-      "https://hyprland.cachix.org"
-      "https://nix-community.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
-      "loganlinn.cachix.org-1:CsnLzdY/Z5Btks1lb9wpySLJ60+H9kwFVbcQeb2Pjf8="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
   };
 
   outputs =
@@ -141,37 +130,34 @@
           };
         };
 
-      flake = {
-        nixosConfigurations.framework = self.lib.mkNixosSystem "x86_64-linux" [
-          # TODO inputs.determinate.nixosModules.default
-          ./nixos/framework/configuration.nix
-        ];
+      flake =
+        let
+          inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
+        in
+        {
+          nixosConfigurations.framework = mkNixosSystem "x86_64-linux" ./nixos/framework/configuration.nix;
+          nixosConfigurations.nijusan = mkNixosSystem "x86_64-linux" ./nixos/nijusan/configuration.nix;
 
-        nixosConfigurations.nijusan = self.lib.mkNixosSystem "x86_64-linux" [
-          # TODO inputs.determinate.nixosModules.default
-          ./nixos/nijusan/configuration.nix
-        ];
+          darwinConfigurations.patchbook = mkDarwinSystem "aarch64-darwin" ./darwin/patchbook.nix;
+          darwinConfigurations.logamma = mkDarwinSystem "aarch64-darwin" ./darwin/logamma;
 
-        homeConfigurations."logan@nijusan" = self.lib.mkHomeConfiguration "x86_64-linux" [
-          ./home-manager/nijusan.nix
-        ];
+          homeConfigurations."logan@nijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/nijusan.nix;
+          homeConfigurations."logan@wijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/wijusan.nix;
+        };
 
-        homeConfigurations."logan@wijusan" = self.lib.mkHomeConfiguration "x86_64-linux" [
-          ./home-manager/wijusan.nix
-        ];
-
-        darwinConfigurations.patchbook = self.lib.mkDarwinSystem "aarch64-darwin" [
-          # TODO inputs.determinate.darwinModules.default
-          ./darwin/patchbook.nix
-        ];
-
-        darwinConfigurations.logamma = self.lib.mkDarwinSystem "aarch64-darwin" [
-          inputs.determinate.darwinModules.default
-          ./darwin/logamma
-        ];
-      };
-
-      # flake-parts debug info integrated in various places (usually where `builtins.getFlake` is used)
-      debug = true;
+      debug = true; # used by mkReplAttrs
     };
+
+  nixConfig = {
+    extra-substituters = [
+      "https://loganlinn.cachix.org"
+      "https://hyprland.cachix.org"
+      "https://nix-community.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+      "loganlinn.cachix.org-1:CsnLzdY/Z5Btks1lb9wpySLJ60+H9kwFVbcQeb2Pjf8="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
 }

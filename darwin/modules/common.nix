@@ -57,8 +57,6 @@ in
       enableSyntaxHighlighting = mkDefault true;
     };
 
-    services.nix-daemon.enable = true;
-
     security.pam.enableSudoTouchIdAuth = mkDefault true;
 
     environment.etc = listToAttrs (
@@ -75,8 +73,6 @@ in
         })
     );
 
-    nix.configureBuildUsers = false; # https://github.com/LnL7/nix-darwin/issues/970
-    nix.gc.automatic = true;
     nix.settings = my.nix.settings // {
       keep-derivations = false;
       auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273

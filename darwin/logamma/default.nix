@@ -66,6 +66,8 @@
 
   ids.gids.nixbld = 30000;
 
+  nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
+
   home-manager.users.logan =
     {
       config,

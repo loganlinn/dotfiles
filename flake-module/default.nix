@@ -51,7 +51,7 @@ let
             nixpkgs.config = pkgs.config;
             nixpkgs.overlays = pkgs.overlays;
           }
-        ] ++ modules;
+        ] ++ pkgs.lib.toList modules;
       }
     );
 
@@ -69,7 +69,7 @@ let
       }:
       inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [ ../options.nix ] ++ modules;
+        modules = [ ../options.nix ] ++ pkgs.lib.toList modules;
         extraSpecialArgs = mkSpecialArgs ctx;
       }
     );
@@ -87,7 +87,7 @@ let
       }:
       inputs.nix-darwin.lib.darwinSystem {
         inherit pkgs;
-        modules = [ ../options.nix ] ++ modules;
+        modules = [ ../options.nix ] ++ pkgs.lib.toList modules;
         specialArgs = mkSpecialArgs systemArgs;
       }
     );
