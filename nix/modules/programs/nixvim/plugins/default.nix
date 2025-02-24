@@ -29,6 +29,7 @@ in
     ./obsidian.nix
     ./oil.nix
     ./project.nix
+    ./snacks.nix
     ./supermaven
     ./telescope.nix
     ./treesitter.nix
@@ -50,7 +51,7 @@ in
       noice.enable = true;
       notify.enable = true;
       nvim-autopairs.enable = true;
-      snacks.enable = true;
+      schemastore.enable = true;
       trouble.enable = true;
       vim-dadbod-completion.enable = true;
       vim-dadbod-ui.enable = true;

@@ -16,6 +16,9 @@
     ../modules/sunbeam
     ../modules/xcode.nix
     ../modules/terraform.nix
+    {
+      homebrew.casks = [ "ghostty" ]; # cask installs Ghostty.app bundle, puts CLI on PATH, and shell completions.
+    }
     # https://book.git-ps.sh/
     {
       homebrew.taps = [ "drewdeponte/oss" ];
