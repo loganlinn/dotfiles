@@ -10,14 +10,12 @@ in
 {
   programs.nixvim = {
     extraPlugins = with pkgs.vimPlugins; [
-      vim-rhubarb # Needed for fugitive :GBrowse
+      # vim-rhubarb # Needed for fugitive :GBrowse
     ];
 
     plugins.fugitive.enable = true;
 
-    plugins.gitlinker.enable = true;
-
-    plugins.lazygit.enable = true;
+    # plugins.gitlinker.enable = true;
 
     plugins.diffview = {
       enable = true;
@@ -63,24 +61,24 @@ in
           desc = "Stage file";
         };
       }
-      {
-        mode = "n";
-        key = "<leader>gd";
-        action = "<cmd>Neogit diff<cr>";
-        options.desc = "Neogit diff";
-      }
-      {
-        mode = "n";
-        key = "<leader>gb";
-        action = "<cmd>Neogit branch<cr>";
-        options.desc = "Neogit branch";
-      }
-      {
-        mode = "n";
-        key = "<leader>gB";
-        action.__raw = "require('neogit').action('branch', 'checkout_recent_branch')";
-        options.desc = "Checkout recent branch";
-      }
+      # {
+      #   mode = "n";
+      #   key = "<leader>gd";
+      #   action = "<cmd>Neogit diff<cr>";
+      #   options.desc = "Neogit diff";
+      # }
+      # {
+      #   mode = "n";
+      #   key = "<leader>gbb";
+      #   action = "<cmd>Neogit branch<cr>";
+      #   options.desc = "Neogit branch";
+      # }
+      # {
+      #   mode = "n";
+      #   key = "<leader>gb";
+      #   action.__raw = "require('neogit').action('branch', 'checkout_recent_branch')";
+      #   options.desc = "Checkout recent branch";
+      # }
       {
         mode = "n";
         key = "<leader>gg";
@@ -93,12 +91,12 @@ in
         action = "<cmd>Telescope git_status<cr>";
         options.desc = "Status";
       }
-      {
-        mode = "v";
-        key = "<leader>gL";
-        action = "<cmd>'<,'>DiffviewFileHistory<CR>";
-        options.desc = "File history";
-      }
+      # {
+      #   mode = "v";
+      #   key = "<leader>gL";
+      #   action = "<cmd>'<,'>DiffviewFileHistory<CR>";
+      #   options.desc = "File history";
+      # }
       {
         mode = "n";
         key = "<leader>gt";
@@ -111,18 +109,18 @@ in
         action = "<cmd>Neogit commit<CR>";
         options.desc = "Commit";
       }
-      {
-        mode = [
-          "n"
-          "v"
-        ];
-        key = "<leader>gf";
-        action = "<cmd>Telescope git_files<CR>";
-        options.desc = "Git files";
-      }
+      # {
+      #   mode = [
+      #     "n"
+      #     "v"
+      #   ];
+      #   key = "<leader>gf";
+      #   action = "<cmd>Telescope git_files<CR>";
+      #   options.desc = "Git files";
+      # }
       {
         mode = "n";
-        key = "<leader>gS";
+        key = "<leader>gW";
         action = "<cmd>Gwrite<cr>";
         options.desc = "Stage file";
       }
@@ -132,24 +130,24 @@ in
         action = "<cmd>Git reset -- %<cr>";
         options.desc = "Unstage file";
       }
-      {
-        mode = "n";
-        key = "<leader>goo";
-        action = "<cmd>GBrowse<cr>";
-        options.desc = "Open file URL";
-      }
-      {
-        mode = "n";
-        key = "<leader>goy";
-        action = "<cmd>GBrowse!<cr>";
-        options.desc = "Yank file URL";
-      }
-      {
-        mode = "n";
-        key = "<leader>grc";
-        action.__raw = "require('neogit').action('branch', 'open_pull_request')";
-        options.desc = "Open PR";
-      }
+      # {
+      #   mode = "n";
+      #   key = "<leader>goo";
+      #   action = "<cmd>GBrowse<cr>";
+      #   options.desc = "Open file URL";
+      # }
+      # {
+      #   mode = "n";
+      #   key = "<leader>goy";
+      #   action = "<cmd>GBrowse!<cr>";
+      #   options.desc = "Yank file URL";
+      # }
+      # {
+      #   mode = "n";
+      #   key = "<leader>grc";
+      #   action.__raw = "require('neogit').action('branch', 'open_pull_request')";
+      #   options.desc = "Open PR";
+      # }
       {
         mode = "n";
         key = "<leader>g~";

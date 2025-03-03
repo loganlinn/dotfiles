@@ -138,7 +138,7 @@ in
       extensions.ui-select.enable = true;
       # extensions.manix.enable = true;
       keymaps = {
-        "<leader>:" = "command_history";
+        # "<leader>:" = "command_history";
         "<leader>'" = "resume";
         "<leader>bb" = "buffers"; # doom: project buffers
         "<leader><" = "buffers"; # doom: all buffers
@@ -154,68 +154,68 @@ in
         "<leader>cy" = "lsp_incoming_calls";
         "<leader>cY" = "lsp_outgoing_calls";
         "<leader>cx" = "diagnostics";
-        "<leader>su" = "undo";
-        "<leader>sa" = {
-          action = "autocommands";
-          options = {
-            desc = "Auto Commands";
-          };
-        };
-        "<leader>s:" = {
-          action = "command_history";
-          options = {
-            desc = "Command History";
-          };
-        };
-        "<leader>hc" = {
-          action = "commands";
-          options = {
-            desc = "Commands";
-          };
-        };
-        "<leader>ss" = "symbols";
-        "<leader>sh" = {
-          action = "help_tags";
-          options = {
-            desc = "Help pages";
-          };
-        };
-        "<leader>sH" = {
-          action = "highlights";
-          options = {
-            desc = "Search Highlight Groups";
-          };
-        };
-        "<leader>sk" = {
-          action = "keymaps";
-          options = {
-            desc = "Keymaps";
-          };
-        };
-        "<leader>sM" = {
-          action = "man_pages";
-          options = {
-            desc = "Man pages";
-          };
-        };
-        "<leader>sm" = {
-          action = "marks";
-          options = {
-            desc = "Jump to Mark";
-          };
-        };
+        # "<leader>su" = "undo";
+        # "<leader>sa" = {
+        #   action = "autocommands";
+        #   options = {
+        #     desc = "Auto Commands";
+        #   };
+        # };
+        # "<leader>s:" = {
+        #   action = "command_history";
+        #   options = {
+        #     desc = "Command History";
+        #   };
+        # };
+        # "<leader>hc" = {
+        #   action = "commands";
+        #   options = {
+        #     desc = "Commands";
+        #   };
+        # };
+        # "<leader>ss" = "symbols";
+        # "<leader>sh" = {
+        #   action = "help_tags";
+        #   options = {
+        #     desc = "Help pages";
+        #   };
+        # };
+        # "<leader>sH" = {
+        #   action = "highlights";
+        #   options = {
+        #     desc = "Search Highlight Groups";
+        #   };
+        # };
+        # "<leader>sk" = {
+        #   action = "keymaps";
+        #   options = {
+        #     desc = "Keymaps";
+        #   };
+        # };
+        # "<leader>sM" = {
+        #   action = "man_pages";
+        #   options = {
+        #     desc = "Man pages";
+        #   };
+        # };
+        # "<leader>sm" = {
+        #   action = "marks";
+        #   options = {
+        #     desc = "Jump to Mark";
+        #   };
+        # };
         "<leader>so" = {
           action = "vim_options";
           options = {
             desc = "Options";
           };
         };
-        "<leader>uC" = {
-          action = "colorscheme";
-          options = {
-            desc = "Colorscheme preview";
-          };
-        };
+        # "<leader>uC" = {
+        #   action = "colorscheme";
+        #   options = {
+        #     desc = "Colorscheme preview";
+        #   };
+        # };
       };
     };
 
@@ -252,12 +252,12 @@ in
       (mkKeymap "v" "<leader>*" "Grep selection in buffer" {
         __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection() end'';
       })
-      (mkKeymap "n" "<leader>sb" "Grep word in buffer" {
-        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer() end'';
-      })
-      (mkKeymap "v" "<leader>sb" "Grep selection in buffer" {
-        __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer() end'';
-      })
+      # (mkKeymap "n" "<leader>sb" "Grep word in buffer" {
+      #   __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer() end'';
+      # })
+      # (mkKeymap "v" "<leader>sb" "Grep selection in buffer" {
+      #   __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection_current_buffer() end'';
+      # })
       (mkKeymap "nv" "<leader>sd" "Search current directory" {
         __raw = ''
           function()

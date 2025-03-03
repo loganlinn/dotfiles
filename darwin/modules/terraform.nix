@@ -13,7 +13,7 @@
       # tf-summarize
       # terraform-local # localstack
       # tfsec
-      # iam-policy-json-to-terraform # https://flosell.github.io/iam-policy-json-to-terraform/
+      iam-policy-json-to-terraform # https://flosell.github.io/iam-policy-json-to-terraform/
     ];
   };
 }

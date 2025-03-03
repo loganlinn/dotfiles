@@ -24,7 +24,7 @@ in
     ./mini.nix
     ./neorepl.nix
     ./neotest.nix
-    ./notify.nix
+    # ./notify.nix # replaced with snacks.nix
     ./nvim-tree.nix
     ./obsidian.nix
     ./oil.nix
@@ -35,7 +35,7 @@ in
     ./treesitter.nix
     ./typescript-tools.nix
     ./which-key.nix
-    ./zen-mode.nix
+    # ./zen-mode.nix # replaced with snacks.nix
   ];
   programs.nixvim = {
     plugins = {

@@ -17,7 +17,7 @@
     ../modules/xcode.nix
     ../modules/terraform.nix
     {
-      homebrew.casks = [ "ghostty" ]; # cask installs Ghostty.app bundle, puts CLI on PATH, and shell completions.
+      homebrew.casks = [ "ghostty" ]; # cask installs Ghostty.app bundle, CLI, man pages, and shell completions.
     }
     # https://book.git-ps.sh/
     {

@@ -106,24 +106,24 @@
       };
     };
     keymaps = [
-      {
-        mode = "n";
-        key = "gd";
-        action = "<cmd>Lspsaga finder def<cr>";
-        options = {
-          desc = "Goto Definition";
-          silent = true;
-        };
-      }
-      {
-        mode = "n";
-        key = "gr";
-        action = "<cmd>Lspsaga finder ref<cr>";
-        options = {
-          desc = "Goto References";
-          silent = true;
-        };
-      }
+      # {
+      #   mode = "n";
+      #   key = "gd";
+      #   action = "<cmd>Lspsaga finder def<cr>";
+      #   options = {
+      #     desc = "Goto Definition";
+      #     silent = true;
+      #   };
+      # }
+      # {
+      #   mode = "n";
+      #   key = "gr";
+      #   action = "<cmd>Lspsaga finder ref<cr>";
+      #   options = {
+      #     desc = "Goto References";
+      #     silent = true;
+      #   };
+      # }
       # {
       #   mode = "n";
       #   key = "gD";
@@ -133,15 +133,15 @@
       #     silent = true;
       #   };
       # }
-      {
-        mode = "n";
-        key = "gI";
-        action = "<cmd>Lspsaga finder imp<cr>";
-        options = {
-          desc = "Goto Implementation";
-          silent = true;
-        };
-      }
+      # {
+      #   mode = "n";
+      #   key = "gI";
+      #   action = "<cmd>Lspsaga finder imp<cr>";
+      #   options = {
+      #     desc = "Goto Implementation";
+      #     silent = true;
+      #   };
+      # }
       {
         mode = "n";
         key = "<leader>c*";
@@ -180,16 +180,7 @@
       }
       {
         mode = "n";
-        key = "<leader>oc";
-        action = "<cmd>Lspsaga outline<cr>";
-        options = {
-          desc = "Outline";
-          silent = true;
-        };
-      }
-      {
-        mode = "n";
-        key = "<leader>co";
+        key = "<leader>to";
         action = "<cmd>Lspsaga outline<cr>";
         options = {
           desc = "Outline";

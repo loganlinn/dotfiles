@@ -73,11 +73,24 @@ in
           }").currentSystem.options'';
         };
         prismals.enable = false;
-        # pyright.enable = true;
-        # pylsp.enable = true;
-        ruff.enable = true;
+        pyright = {
+          enable = true;
+          settings = {
+            # Use ruff for these
+            disableOrganizeImports = true;
+            python.analysis.ignore = [ "*" ];
+          };
+        };
+        ruff = {
+          enable = true;
+          settings = { };
+          onAttach.function = ''
+            -- Defer to pyright for these
+            client.server_capabilities.hoverProvider = false
+          '';
+        };
         sqls.enable = false;
-        terraform_lsp.enable = true;
+        terraformls.enable = true;
         ts_ls.enable = true;
         yamlls.enable = true;
       };

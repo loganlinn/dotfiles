@@ -5,11 +5,13 @@
       settings = {
         bigfile.enable = true;
         debug.enable = true;
-        explorer.enable = true;
+        # explorer.enable = true; # in future version
         git.enable = true;
         gitbrowse.enable = true;
         image.enable = true;
         indent.enable = true;
+        notifier.enable = true;
+        notify.enable = true;
         picker.enable = true;
         quickfile.enable = true;
         scratch.enable = true;
@@ -17,6 +19,7 @@
         toggle.enable = true;
         words.enable = true;
         zen.enable = true;
+        # styles.notification.wo.wrap = true;
       };
     };
     keymaps = [
@@ -36,11 +39,11 @@
         action.__raw = ''function() Snacks.picker.notifications() end'';
         options.desc = "Notification History";
       }
-      {
-        key = "<leader>fe";
-        action.__raw = ''function() Snacks.explorer() end'';
-        options.desc = "Explorer";
-      }
+      # {
+      #   key = "<leader>fe";
+      #   action.__raw = ''function() Snacks.explorer() end'';
+      #   options.desc = "Explorer";
+      # }
       {
         key = "<leader>f<space>";
         action.__raw = ''function() Snacks.picker.smart() end'';
@@ -83,7 +86,7 @@
           "v"
         ];
         key = "<leader>gB";
-        action.__raw = ''function() Snacks.picker.gitbrowse() end'';
+        action.__raw = ''function() Snacks.gitbrowse() end'';
         options.desc = "Browse Git URL";
       }
       {
@@ -92,7 +95,16 @@
           "v"
         ];
         key = "<leader>gY";
-        action.__raw = ''function() vim.fn.setreg("", Snacks.picker.gitbrowse.get_url()) end'';
+        action.__raw = ''
+          function()
+            Snacks.gitbrowse({
+              open = function(url)
+                vim.fn.setreg(vim.v.register or "+", url, "l")
+                Snacks.notify.info("Yanked " .. url)
+              end,
+            })
+          end
+        '';
         options.desc = "Yank Git URL";
       }
       {
@@ -343,8 +355,9 @@
             Snacks.toggle.treesitter():map("<leader>tT")
             Snacks.toggle.option("background", { off = "light", on = "dark", name = "Dark Background" }):map("<leader>tb")
             Snacks.toggle.inlay_hints():map("<leader>th")
-            Snacks.toggle.indent():map("<leader>tg")
-            Snacks.toggle.dim():map("<leader>tD")
+            -- NOTE: following cause NPE 
+            -- Snacks.toggle.indent():map("<leader>tg")
+            -- Snacks.toggle.dim():map("<leader>tD")
           end
         '';
       }

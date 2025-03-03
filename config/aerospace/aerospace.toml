@@ -54,7 +54,7 @@ alt-j = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-ar
 alt-k = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace up"
 alt-l = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace right"
 
-alt-backtick = "workspace --auto-back-and-forth 0"
+# alt-backtick = # ghostty quick terminal
 alt-1 = "workspace --auto-back-and-forth 1"
 alt-2 = "workspace --auto-back-and-forth 2"
 alt-3 = "workspace --auto-back-and-forth 3"
@@ -224,4 +224,9 @@ run = "layout floating"
 
 [[on-window-detected]]
 if.app-id = "com.apple.systempreferences"
+run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.mitchellh.ghostty"
+if.window-title-regex-substring = "Configuration Errors"
 run = "layout floating"

@@ -22,7 +22,13 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-maskedmail= "maskedmail.cli:cli"
+maskedmail = "maskedmail.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/loganlinn/dotfiles"
+Changelog = "https://github.com/loganlinn/dotfiles"
+Issues = "https://github.com/loganlinn/dotfiles/issues"
+CI = "https://github.com/loganlinn/dotfiles/actions"
 
 [project.optional-dependencies]
 test = ["pytest"]
