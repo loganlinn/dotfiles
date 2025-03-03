@@ -57,7 +57,9 @@ in
       enableSyntaxHighlighting = mkDefault true;
     };
 
-    security.pam.enableSudoTouchIdAuth = mkDefault true;
+    security = {
+      pam.services.sudo_local.touchIdAuth = mkDefault true;
+    };
 
     environment.etc = listToAttrs (
       forEach
