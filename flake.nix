@@ -61,6 +61,10 @@
       url = "github:junegunn/fzf-git.sh";
       flake = false;
     };
+    supermaven-nvim = {
+      url = "github:supermaven-inc/supermaven-nvim";
+      flake = false;
+    };
   };
 
   outputs =
