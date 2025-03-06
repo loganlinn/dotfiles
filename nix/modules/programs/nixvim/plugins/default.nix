@@ -44,6 +44,7 @@ in
       # spectre.enable = true;
       colorizer.enable = true;
       direnv.enable = true;
+      firenvim.enable = true;
       helpview.enable = true;
       lazydev.enable = true;
       luasnip.enable = true;
