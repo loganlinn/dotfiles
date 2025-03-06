@@ -15,6 +15,7 @@ let
     ./kubefwd
     ./notify-send-py.nix
     ./age-op
+    ./git-spice
   ];
 
   packages = lib.pipe paths [
