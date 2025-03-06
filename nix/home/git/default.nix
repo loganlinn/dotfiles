@@ -178,7 +178,6 @@ in
       status.displayCommentPrefix = false;
       status.short = true;
       status.showStash = true;
-      status.showUntrackedFiles = "all"; # show untracked files in untracked directory
       user.signingkey = mkDefault config.my.pubkeys.ssh.ed25519;
     };
     # hooks
