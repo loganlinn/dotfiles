@@ -1,4 +1,5 @@
 {
+  self',
   config,
   pkgs,
   lib,
@@ -13,7 +14,10 @@ in
     enable = mkEnableOption "git-spice" // {
       default = true;
     };
-    package = mkPackageOption pkgs "git-spice" { };
+    package = mkOption {
+      type = types.package;
+      default = self'.packages.git-spice;
+    };
   };
   config = mkIf cfg.enable {
     home.packages = [ cfg.package ];

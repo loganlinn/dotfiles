@@ -14,19 +14,15 @@ local config = {
   -- NOTE: make sure these don't conflict with aerospace hotkeys!
   keys = {
     ["return"] = { app = "WezTerm" },
-    p = { app = "Claude" },
-    s = { app = "Slack" },
+    b = { app = "Google Chrome" },
+    e = { app = "Finder" },
     m = { app = "Messages" },
     n = { app = "Obsidian" },
-    e = { app = "Finder" },
-    f1 = { app = "System Information" },
-    f2 = { app = "Console" },
-    f4 = { app = "Activity Monitor" },
-    forwarddelete = {
-      pressFn = function()
-        hs.caffeinate.lockScreen()
-      end,
-    },
+    p = { app = "Claude" },
+    s = { app = "Slack" },
+    -- f1 = { app = "System Information" },
+    -- f2 = { app = "Console" },
+    -- f4 = { app = "Activity Monitor" },
   },
 }
 
