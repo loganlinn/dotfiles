@@ -45,7 +45,7 @@
     # nixpkgs-match.url = "github:srid/nixpkgs-match";
     # sops-nix.url = "github:Mic92/sops-nix";
     # sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-    wezterm.url = "github:wez/wezterm?dir=nix";
+    wezterm.url = "github:wez/wezterm?dir=nix&rev=4accc376f3411f2cbf4f92ca46f79f7bc47688a1";
     # ghostty.url = "github:ghostty-org/ghostty";
 
     ## srcs
@@ -151,17 +151,4 @@
 
       debug = true; # used by mkReplAttrs
     };
-
-  nixConfig = {
-    extra-substituters = [
-      "https://loganlinn.cachix.org"
-      "https://hyprland.cachix.org"
-      "https://nix-community.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
-      "loganlinn.cachix.org-1:CsnLzdY/Z5Btks1lb9wpySLJ60+H9kwFVbcQeb2Pjf8="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
-  };
 }

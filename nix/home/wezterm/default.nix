@@ -1,4 +1,5 @@
 {
+  inputs',
   config,
   lib,
   pkgs,
@@ -30,7 +31,7 @@ in
 {
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {
-      # TODO package = inputs.wezterm.packages.${pkgs.system}.default;
+      package = inputs'.wezterm.packages.default;
 
       enableBashIntegration = mkDefault true;
       enableZshIntegration = mkDefault true;
