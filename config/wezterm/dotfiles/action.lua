@@ -188,15 +188,16 @@ M.rename_tab = wezterm.action_callback(function(window, pane)
   )
 end)
 
-M.rename_workspace = wezterm.action.PromptInputLine({
-  description = format_prompt_description("Rename workspace:"),
-  initial_value = wezterm.mux.get_active_workspace(),
-  action = wezterm.action_callback(function(_, _, input)
-    if input and input ~= "" then
-      wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
-    end
-  end),
-})
+M.rename_workspace = wezterm.action.Nop
+-- M.rename_workspace = wezterm.action.PromptInputLine({
+--   description = format_prompt_description("Rename workspace:"),
+--   initial_value = wezterm.mux.get_active_workspace(),
+--   action = wezterm.action_callback(function(_, _, input)
+--     if input and input ~= "" then
+--       wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
+--     end
+--   end),
+-- })
 
 M.debug_window = wezterm.action_callback(function(window, _)
   local m = require("dotfiles.util.debug")

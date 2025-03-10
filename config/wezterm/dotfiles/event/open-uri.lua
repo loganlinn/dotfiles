@@ -50,10 +50,6 @@ local function open_with_nvim_remote(window, pane, url)
   return false
 end
 
-local function open_with_nvim_tab(window, pane, url)
-  return true
-end
-
 ---@param window Window
 ---@param pane Pane
 ---@param uri string
@@ -61,18 +57,20 @@ end
 local function open_with_nvim(window, pane, uri)
   local url = wezterm.url.parse(uri)
 
-  if url.scheme ~= "file" then
-    return false
-  end
+  if url.scheme == "file" then
+    if open_with_nvim_remote(window, pane, url) then
+      return true -- stop propagation
+    end
 
-  if not open_with_nvim_remote(window, pane, url) then
-    local command = { args = nvim_args("--", url.file_path) }
-    local action = wezterm.action.SplitPane({ top_level = false, direction = "Right", command = command })
-    log.info("performing action", action)
-    window:perform_action(action, pane)
+    if window then
+      local command = { args = nvim_args("--", url.file_path) }
+      -- local action = wezterm.action.SplitPane({ top_level = false, direction = "Right", command = command })
+      local action = wezterm.action.SpawnCommandInNewTab(command)
+      log.info("performing action", action)
+      window:perform_action(action, pane)
+      return true -- stop propagation
+    end
   end
-
-  return true
 end
 
 wezterm.on("open-uri", function(window, pane, uri)
