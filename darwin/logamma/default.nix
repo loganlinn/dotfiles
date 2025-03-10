@@ -124,6 +124,7 @@
       programs.age-op.enable = true;
 
       home.packages = with pkgs; [
+        aider-chat
         asciinema
         bun
         flyctl
