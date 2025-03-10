@@ -35,6 +35,7 @@ in
         spice.shorthand.bail = "rebase abort";
         spice.shorthand.rename = "branch rename";
         spice.shorthand.checkout = "branch checkout";
+        spice.shorthand.amend = "commit create --no-edit";
       };
     };
     programs.zsh = {
