@@ -252,6 +252,17 @@ in
       (mkKeymap "v" "<leader>*" "Grep selection in buffer" {
         __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_visual_selection() end'';
       })
+      (mkKeymap "v" "<leader>*" "Grep selection in git repo" {
+        __raw = ''
+          function()
+            local root = (Snacks or require("snacks")).git.get_root() or error("Not in git repo")
+            require("telescope-live-grep-args.shortcuts")
+              .grep_visual_selection({
+                search_dirs = { root },
+              })
+          end
+        '';
+      })
       # (mkKeymap "n" "<leader>sb" "Grep word in buffer" {
       #   __raw = ''function() require("telescope-live-grep-args.shortcuts").grep_word_under_cursor_current_buffer() end'';
       # })
@@ -285,7 +296,7 @@ in
           end
         '';
       })
-      # TODO use Telescope file_browser to select directory for seearch context
+      # TODO use Telescope file_browser to select directory for search context
       # https://nix-community.github.io/nixvim/search/?query=telescope.extensions.file&option_scope=0&option=plugins.telescope.extensions.file-browser.settings.browse_folders
       (mkKeymap "nv" "<leader>sD" "Search other dir" {
         __raw = ''

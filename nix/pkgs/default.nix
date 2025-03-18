@@ -8,14 +8,14 @@ let
   inherit (pkgs) lib;
 
   paths = [
+    ./age-op
     ./closh
     ./fztea
+    ./git-spice
     ./i3-auto-layout.nix
     ./jib.nix
     ./kubefwd
     ./notify-send-py.nix
-    ./age-op
-    ./git-spice
   ];
 
   packages = lib.pipe paths [

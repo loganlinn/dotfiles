@@ -20,6 +20,12 @@ with lib;
 
       app-id.text = ''/usr/bin/mdls -name kMDItemCFBundleIdentifier -r "''${1?}"'';
 
+      pbedit.text = ''
+        if out=$(pbpaste | ${pkgs.moreutils}/bin/vipe); then
+          pbcopy <<< "$out"
+        fi
+      '';
+
       defaultz = {
         runtimeInputs = with pkgs; [
           fzf

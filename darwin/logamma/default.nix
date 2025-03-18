@@ -124,6 +124,7 @@
       programs.age-op.enable = true;
 
       home.packages = with pkgs; [
+        actionlint
         aider-chat
         asciinema
         bun

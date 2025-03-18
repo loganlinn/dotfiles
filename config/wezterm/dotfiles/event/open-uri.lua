@@ -64,8 +64,12 @@ local function open_with_nvim(window, pane, uri)
 
     if window then
       local command = { args = nvim_args("--", url.file_path) }
-      -- local action = wezterm.action.SplitPane({ top_level = false, direction = "Right", command = command })
-      local action = wezterm.action.SpawnCommandInNewTab(command)
+      local action
+      if #(pane:tab():panes()) == 1 then
+        action = wezterm.action.SplitPane({ top_level = false, direction = "Right", command = command })
+      else
+        action = wezterm.action.SpawnCommandInNewTab(command)
+      end
       log.info("performing action", action)
       window:perform_action(action, pane)
       return true -- stop propagation

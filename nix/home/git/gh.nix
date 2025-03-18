@@ -15,6 +15,8 @@ with lib.my;
     settings = {
       aliases = {
         o = ''!gh browse "$@"'';
+        O = "!gh browse --commit=$@";
+
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
         prc = "pr create --web";
         pd = "pr diff";
@@ -27,6 +29,7 @@ with lib.my;
         prz = ''
           !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
         '';
+        prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}' "$@"'';
 
         checks = "pr checks";
         # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';
@@ -50,15 +53,6 @@ with lib.my;
         edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
 
         aliases = "alias list";
-
-        prl = concatStrings [
-          ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName "$@" --template ''
-          "'"
-          ''
-            {{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}
-          ''
-          "'"
-        ];
 
         gists = ''
           !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
