@@ -100,8 +100,9 @@
         ../../nix/home/yt-dlp.nix
       ];
 
-      programs.zsh.dirHashes.gamma = "~src/github.com/gamma-app/gamma";
-      programs.zsh.dirHashes.notes = "$HOME/Notes";
+      programs.age-op.enable = true;
+
+      programs.kitty.enable = true;
 
       programs.nixvim = {
         enable = true;
@@ -119,9 +120,12 @@
 
       programs.wezterm.enable = true;
 
-      programs.kitty.enable = true;
-
-      programs.age-op.enable = true;
+      programs.zsh = {
+        dirHashes = {
+          gamma = "~/src/github.com/gamma-app/gamma";
+          notes = "$HOME/Notes";
+        };
+      };
 
       home.packages = with pkgs; [
         actionlint

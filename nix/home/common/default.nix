@@ -47,6 +47,7 @@
       just
       lsof
       moreutils
+      nix-output-monitor
       pik # pkill, interactively
       procs # ps alternative
       pstree
@@ -110,6 +111,15 @@
   };
 
   programs.jq.enable = true;
+
+  programs.nh = {
+    enable = true;
+    clean = {
+      enable = true;
+      extraArgs = "--keep-since 7d --keep 5";
+    };
+    flake = config.my.flakeDirectory;
+  };
 
   programs.eza = {
     enable = !config.programs.lsd.enable;
