@@ -16,26 +16,14 @@ on-focused-monitor-changed = ["move-mouse monitor-lazy-center"]
 inherit-env-vars = true
 
 [gaps.inner]
-horizontal = [ { monitor."Built-in Retina Display" = 0 }, 5  ]
-vertical = [ { monitor."Built-in Retina Display" = 0 }, 5  ]
+horizontal = [{ monitor."Built-in Retina Display" = 0 }, 5]
+vertical = [{ monitor."Built-in Retina Display" = 0 }, 5]
 
 [gaps.outer]
-top = [
-  { monitor."LG SDQHD" = 10 },
-  0
-]
-right = [
-  { monitor."LG SDQHD" = 10 },
-  0
-]
-bottom = [
-  { monitor."LG SDQHD" = 10 },
-  0
-]
-left = [
-  { monitor."LG SDQHD" = 10 },
-  0
-]
+top = [{ monitor."LG SDQHD" = 10 }, 0]
+right = [{ monitor."LG SDQHD" = 10 }, 0]
+bottom = [{ monitor."LG SDQHD" = 10 }, 0]
+left = [{ monitor."LG SDQHD" = 10 }, 0]
 
 [key-mapping]
 preset = "qwerty"
@@ -85,8 +73,8 @@ alt-shift-0 = "move-node-to-workspace --focus-follows-window 10"
 
 alt-leftSquareBracket = "workspace --wrap-around prev"
 alt-rightSquareBracket = "workspace --wrap-around next"
-alt-shift-leftSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around next"
-alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev"
+alt-shift-leftSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around prev"
+alt-shift-rightSquareBracket = "move-node-to-workspace --focus-follows-window --wrap-around next"
 
 # move-*-to-monitor 
 alt-shift-ctrl-h = "move-node-to-monitor --focus-follows-window left"
@@ -184,7 +172,10 @@ run = "layout floating"
 
 [[on-window-detected]]
 if.app-id = "com.apple.FaceTime"
-run = ["layout floating", "move-node-to-workspace 0"] # workaround: `move-node-to-monitor retina` not supported here
+run = [
+  "layout floating",
+  "move-node-to-workspace 0",
+] # workaround: `move-node-to-monitor retina` not supported here
 
 [[on-window-detected]]
 if.app-id = "com.apple.finder"
