@@ -65,7 +65,7 @@
       "KC_RSFT",
       "MO(3)",
       "KC_END",
-      "KC_ESC",
+      "MO(1)",
       "KC_LALT",
       "KC_LGUI",
       "KC_NUBS",
