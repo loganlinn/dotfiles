@@ -19,7 +19,7 @@
       "KC_MINS",
       "KC_EQL",
       "KC_BSPC",
-      "KC_DEL",
+      "KC_HOME",
       "KC_TAB",
       "KC_Q",
       "KC_W",
@@ -78,7 +78,7 @@
       "KC_NO",
       "KC_LALT",
       "KC_DOWN",
-      "MO(1)"
+      "S(A(G(KC_RCTL)))"
     ],
     [
       "KC_ESC",
