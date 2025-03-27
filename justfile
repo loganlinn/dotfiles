@@ -24,6 +24,9 @@ default:
       fi
     done
 
+help:
+    @just --list --unsorted
+
 # Install and activate system flake
 [group('nix')]
 [macos]
@@ -82,7 +85,7 @@ run *args:
 pkg name *args:
     nix run nixpkgs#{{ name }} -- {{ args }}
 
-# Froms an application from flake output attribute `apps.<system>.<name>`
+# Forms an application from flake output attribute `apps.<system>.<name>`
 [group('nix')]
 [no-cd]
 app name *args:
@@ -115,6 +118,11 @@ nix-fmt:
 [group('nix')]
 flake-checker:
     env  nix run github:DeterminateSystems/flake-checker
+
+[group('nix')]
+[macos]
+nixdctl command *args:
+    sudo launchctl {{ command }} systems.determinate.nix-daemon {{ args }}
 
 lint:
     just --fmt --check
@@ -184,5 +192,13 @@ just *args:
     echo -e "{{ BOLD }}just $args{{ NORMAL }}"
     exec just $args
 
-help:
-    @just --list --unsorted
+[positional-arguments]
+qmk-shell *args:
+    cd "${SRC_HOME:-$HOME/src}/${QMK_FIRMWARE_REPO:-github.com/loganlinn/qmk_firmware}" && nix-shell --quiet "$@"
+
+[positional-arguments]
+qmk *args:
+    just qmk-shell --command "qmk $*"
+
+qmk-compile keyboard="mode/m256wh" keymap="loganlinn":
+    just qmk compile -kb {{ keyboard }} -km {{ keymap }}

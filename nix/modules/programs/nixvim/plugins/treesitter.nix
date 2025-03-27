@@ -27,6 +27,9 @@
         xml
         yaml
       ];
+      languageRegister = {
+        terraform = [ "hcl" ];
+      };
       settings = {
         auto_install = false;
         ensure_installed = [

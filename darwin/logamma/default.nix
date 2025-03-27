@@ -1,5 +1,6 @@
 {
   self,
+  config,
   pkgs,
   lib,
   ...
@@ -64,6 +65,8 @@
   programs.sunbeam.enable = false;
 
   programs.emacs-plus.enable = true;
+
+  services.postgresql.enable = false;
 
   system.stateVersion = 5;
 
