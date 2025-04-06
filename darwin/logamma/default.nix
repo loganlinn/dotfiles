@@ -131,8 +131,8 @@
       };
 
       home.packages = with pkgs; [
-        actionlint
-        aider-chat
+        # actionlint
+        # aider-chat
         asciinema
         bun
         flyctl
@@ -140,9 +140,10 @@
         kcat
         mkcert
         nodejs
-        pls
-        process-compose
-        supabase-cli
+        # pls
+        pnpm
+        # process-compose
+        # supabase-cli
         uv
       ];
 
