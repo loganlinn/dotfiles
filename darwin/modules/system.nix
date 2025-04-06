@@ -33,7 +33,11 @@ with lib;
         #       Valid range is 1-3, with 1 being the slowest and 3 being the fastest.
         "com.apple.mouse.scaling" = 1.0;
       };
-
+      ActivityMonitor = {
+        ShowCategory = 101; # All Processes, hierarchically
+        SortColumn = "CPUUsage";
+        SortDirection = 0; # descending
+      };
       NSGlobalDomain = {
         "com.apple.sound.beep.feedback" = 1;
         "com.apple.springing.delay" = 0.0;
@@ -150,6 +154,14 @@ with lib;
         };
         # Prevent Photos from opening automatically when devices are plugged in
         "com.apple.ImageCapture".disableHotPlug = true;
+        # Do not autogather large files when submitting a report
+        # Can result in a slow Mac and important upload metrics.
+        # https://macos-defaults.com/feedback-assistant/autogather.html
+        "com.apple.appleseed.FeedbackAssistant".Autogather = false;
+        # https://macos-defaults.com/activity-monitor/updateperiod.html
+        "com.apple.ActivityMonitor".UpdatePeriod = 2;
+        # https://macos-defaults.com/misc/apple-intelligence.html
+        "com.apple.CloudSubscriptionFeatures.optIn"."545129924" = false; # disable Apple Intelligence
       };
     };
   };
