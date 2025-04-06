@@ -11,7 +11,16 @@ let
   cfg = config.programs.aerospace;
 in
 {
-  options = import ./options.nix { inherit config pkgs lib; };
+  options.programs.aerospace = {
+    enable = mkEnableOption "aerospace window manager";
+    borders = {
+      enable = mkEnableOption "JankyBorders";
+    };
+    configFile = mkOption {
+      type = types.nullOr types.path;
+      default = "${config.my.flakeDirectory}/config/aerospace/aerospace.toml";
+    };
+  };
 
   config = mkIf cfg.enable {
     homebrew = {
@@ -20,13 +29,13 @@ in
       brews = optional cfg.borders.enable "FelixKratz/formulae/borders";
     };
 
-    home-manager.users.${config.my.user.name} = {
-      xdg.configFile."aerospace/aerospace.toml" = {
-        source = (pkgs.formats.toml { }).generate "aerospace.toml" cfg.settings;
-        onChange = ''${config.homebrew.brewPrefix}/aerospace reload-config'';
+    home-manager.users.${config.my.user.name} =
+      { config, ... }:
+      {
+        xdg.configFile = optionalAttrs (cfg.configFile != null) {
+          "aerospace/aerospace.toml".source = config.lib.file.mkOutOfStoreSymlink cfg.configFile;
+        };
       };
-      home.packages = cfg.extraPackages;
-    };
 
     system.defaults = {
       # Move windows by holding ctrl+cmd and dragging any part of the window
@@ -34,7 +43,7 @@ in
       # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-mission-control
       dock.expose-group-apps = true; # `true` means OFF
       # See: https://nikitabobko.github.io/AeroSpace/guide#a-note-on-displays-have-separate-spaces
-      spaces.spans-displays = true; # `true` means OFF
+      spaces.spans-displays = true; # `true` means spaces span all displays; `false` means spaces are separate for each display
     };
   };
 }

@@ -50,7 +50,7 @@ with lib;
         NSAutomaticWindowAnimationsEnabled = false;
         NSNavPanelExpandedStateForSaveMode = true;
         NSNavPanelExpandedStateForSaveMode2 = true;
-        NSUseAnimatedFocusRing = false; # disbale focus ring animnation
+        NSUseAnimatedFocusRing = false; # disable focus ring animnation
         NSWindowResizeTime = 0.0; # disable resize animation
         NSWindowShouldDragOnGesture = true;
         _HIHideMenuBar = false; # auto-hide menu bar
@@ -71,19 +71,27 @@ with lib;
         mru-spaces = false;
         orientation = "bottom";
         showhidden = true;
+        static-only = true; # only show active apps
+        mineffect = "scale"; # https://macos-defaults.com/dock/mineffect.html#set-to-scale
       };
 
       finder = {
         AppleShowAllExtensions = true;
-        AppleShowAllFiles = true;
+        AppleShowAllFiles = true; # show hidden files
+        CreateDesktop = true; # Whether to show icons on the desktop or not
         FXDefaultSearchScope = "SCcf"; # When performing a search, search the current folder by default
         FXEnableExtensionChangeWarning = false; # disable warning when changing file extension
         FXPreferredViewStyle = "Nlsv"; # icnv=Icon, Nlsv=List, clmv=Column, Flwv=Gallery
-        FXRemoveOldTrashItems = true;
+        FXRemoveOldTrashItems = true; # Remove items in the trash after 30 days.
         NewWindowTarget = "Home";
         QuitMenuItem = true;
-        ShowPathbar = true;
-        ShowStatusBar = true; # show status bar
+        ShowExternalHardDrivesOnDesktop = true;
+        ShowHardDrivesOnDesktop = true;
+        ShowMountedServersOnDesktop = true;
+        ShowPathbar = true; # Show path breadcrumbs
+        ShowRemovableMediaOnDesktop = true;
+        ShowStatusBar = true; # Show status bar at bottom of finder windows with item/disk space stats.
+        _FXSortFoldersFirst = true;
         _FXShowPosixPathInTitle = true; # show full path in finder title
       };
 
@@ -95,7 +103,7 @@ with lib;
       screencapture = {
         disable-shadow = true;
         show-thumbnail = true;
-        location = "~/Desktop";
+        location = "~" + strings.removePrefix config.my.user.home config.my.userDirs.screenshots;
         type = "png";
       };
 
@@ -121,20 +129,10 @@ with lib;
           _HIHideMenuBar = false;
           "com.apple.mouse.tapBehavior" = null; # disable tap to click
         };
-        "com.apple.finder" = {
-          ShowExternalHardDrivesOnDesktop = true;
-          ShowHardDrivesOnDesktop = true;
-          ShowMountedServersOnDesktop = true;
-          ShowRemovableMediaOnDesktop = true;
-          _FXSortFoldersFirst = true;
-        };
         "com.apple.desktopservices" = {
           # Avoid creating .DS_Store files on external file systems
           DSDontWriteNetworkStores = true;
           DSDontWriteUSBStores = true;
-        };
-        "com.apple.spaces" = {
-          "spans-displays" = 0; # Display have seperate spaces
         };
         "com.apple.WindowManager" = {
           EnableStandardClickToShowDesktop = 0; # Click wallpaper to reveal desktop

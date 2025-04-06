@@ -10,7 +10,7 @@
   imports = [
     self.darwinModules.common
     self.darwinModules.home-manager
-    # ../modules/aerospace
+    ../modules/aerospace
     ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/hammerspoon
@@ -59,6 +59,8 @@
   ];
 
   hammerspoon.enable = true;
+
+  programs.aerospace.enable = true;
 
   programs.xcode.enable = true;
 
@@ -147,9 +149,6 @@
       ];
 
       xdg.enable = true;
-
-      xdg.configFile."aerospace/aerospace.toml".source =
-        mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/aerospace/aerospace.toml";
 
       home.stateVersion = "22.11";
     };
