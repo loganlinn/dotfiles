@@ -112,8 +112,9 @@
 
   programs.jq.enable = true;
 
+  # https://github.com/nix-community/nh
   programs.nh = {
-    enable = true;
+    enable = lib.mkDefault true;
     clean = {
       enable = true;
       extraArgs = "--keep-since 7d --keep 5";
