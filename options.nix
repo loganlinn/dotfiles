@@ -35,6 +35,8 @@ in
 
     environment.variables = mkOpt (attrsOf str) { };
 
+    # https://github.com/NixOS/nixpkgs/blob/68898dd/nixos/modules/config/users-groups.nix
+    # https://github.com/nix-darwin/nix-darwin/blob/73d5958/modules/users/user.nix
     user = {
       name = mkOpt str "logan";
       description = mkOpt str "Logan Linn";
@@ -44,27 +46,33 @@ in
       openssh.authorizedKeys.keys = mkOpt (listOf str) [ ];
     };
 
-    home = with lib.types; {
-      file = mkOpt' attrs { } "Files to place directly in $HOME";
-      configFile = mkOpt' attrs { } "Files to place in $XDG_CONFIG_HOME";
-      dataFile = mkOpt' attrs { } "Files to place in $XDG_DATA_HOME";
-      fakeFile = mkOpt' attrs { } "Files to place in $XDG_FAKE_HOME";
+    # https://github.com/nix-community/home-manager/blob/ef3b2a6/modules/misc/xdg-user-dirs.nix
+    userDirs = mkOpt (types.submodule {
+      options = {
+        # Well-known directory list from
+        # https://gitlab.freedesktop.org/xdg/xdg-user-dirs/blob/master/man/user-dirs.dirs.xml
+        desktop = mkOpt (nullOr pathStr) "${cfg.user.home}/Desktop";
+        documents = mkOpt (nullOr pathStr) "${cfg.user.home}/Documents";
+        download = mkOpt (nullOr pathStr) "${cfg.user.home}/Downloads";
+        music = mkOpt (nullOr pathStr) "${cfg.user.home}/Music";
+        pictures = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures";
+        publicShare = mkOpt (nullOr pathStr) "${cfg.user.home}/Public";
+        templates = mkOpt (nullOr pathStr) "${cfg.user.home}/Templates";
+        videos = mkOpt (nullOr pathStr) "${cfg.user.home}/Videos";
 
-      binDir = mkOpt str "${cfg.my.user.home}/.local/bin";
-      cacheDir = mkOpt str "${cfg.my.user.home}/.cache";
-      configDir = mkOpt str "${cfg.my.user.home}/.config";
-      dataDir = mkOpt str "${cfg.my.user.home}/.local/share";
-      stateDir = mkOpt str "${cfg.my.user.home}/.local/state";
-      fakeDir = mkOpt str "${cfg.my.user.home}/.local/user";
-    };
+        # Non-standard directories
+        code = mkOpt (nullOr pathStr) "${cfg.user.home}/src";
+        notes = mkOpt (nullOr pathStr) "${cfg.user.home}/Notes";
+        screenshots = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures/Screenshots";
+      };
+      freeformType = (nullOr pathStr);
+    }) { };
 
     pubkeys.ssh = mkOpt (attrsOf str) { };
 
     # homeModules = mkOpt (listOf raw) [ ];
     # nixosModules = mkOpt (listOf raw) [ ];
     # darwinModules = mkOpt (listOf raw) [ ];
-
-    # userDirs = mkOpt (with types; attrsOf (nullOr pathType)) { };
 
     fonts = {
       serif = mkOption { type = myLib.types.font; };
@@ -116,29 +124,23 @@ in
         ];
       };
 
-      environment.variables = {
-        DOTFILES_DIR = cfg.flakeDirectory;
-        DISABLE_TELEMETRY = "1";
-        DOCKER_SCAN_SUGGEST = "false";
-        DOTNET_CLI_TELEMETRY_OPTOUT = "true";
-        DO_NOT_TRACK = "1";
-        FLAKE_CHECKER_NO_TELEMETRY = "true";
-        NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
-        TELEMETRY_DISABLED = "1";
-      };
-
-      # userDirs = mkDefault {
-      #   desktop = "Desktop";
-      #   documents = "Documents";
-      #   download = "Downloads";
-      #   music = "Music";
-      #   pictures = "Pictures";
-      #   publicShare = "Public";
-      #   videos = "Videos";
-      #   screenshots = "Screenshots";
-      #   code = "src";
-      #   dotfiles = ".dotfiles";
-      # };
+      environment.variables =
+        {
+          DISABLE_TELEMETRY = "1";
+          DOCKER_SCAN_SUGGEST = "false";
+          DOTFILES_DIR = cfg.flakeDirectory;
+          DOTNET_CLI_TELEMETRY_OPTOUT = "true";
+          DO_NOT_TRACK = "1";
+          FLAKE_CHECKER_NO_TELEMETRY = "true";
+          NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
+          TELEMETRY_DISABLED = "1";
+        }
+        // optionalAttrs isDarwin {
+          # Since home-managers xdg-user-dirs module does not support darwin
+          XDG_NOTES_DIR = toString cfg.userDirs.notes;
+          XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
+          XDG_CODE_DIR = toString cfg.userDirs.code;
+        };
 
       fonts = {
         serif = mkDefault {

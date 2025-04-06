@@ -139,5 +139,24 @@
     ];
   };
 
-  xdg.enable = true;
+  xdg = {
+    enable = true;
+    userDirs = lib.optionalAttrs pkgs.stdenv.isLinux {
+      enable = true;
+      desktop = config.my.userDirs.desktop;
+      documents = config.my.userDirs.documents;
+      download = config.my.userDirs.download;
+      music = config.my.userDirs.music;
+      pictures = config.my.userDirs.pictures;
+      publicShare = config.my.userDirs.publicShare;
+      templates = config.my.userDirs.templates;
+      videos = config.my.userDirs.videos;
+      extraConfig = {
+        XDG_CODE_DIR = config.my.userDirs.code;
+        XDG_NOTES_DIR = config.my.userDirs.notes;
+        XDG_SCREENSHOTS_DIR = config.my.userDirs.screenshots;
+      };
+      createDirectories = true;
+    };
+  };
 }

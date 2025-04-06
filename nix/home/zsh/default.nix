@@ -50,34 +50,27 @@ with lib;
     sessionVariables = mkOptionDefault config.home.sessionVariables;
 
     dirHashes = mergeAttrsList [
-      (mapAttrs (name: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etckj:W
-      ({
+      (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
+      (filterAttrs (_: value: value != null) config.my.userDirs)
+      rec {
         cfg = ''''${XDG_CONFIG_HOME:-$HOME/.config}'';
         cache = ''''${XDG_CACHE_HOME:-$HOME/.cache}'';
         data = ''''${XDG_DATA_HOME:-$HOME/.local/share}'';
         state = ''''${XDG_DATA_HOME:-$HOME/.local/state}'';
-        bin = ''$HOME/.local/bin'';
 
         dot = ''''${DOTFILES_DIR:-$HOME/.dotfiles}'';
         src = ''''${SRC_HOME:-$HOME/src}'';
-        gh = ''~src/github.com'';
-        nvim = ''''${XDG_CONFIG_HOME:-$HOME/.config}/nvim''${NVIM_APPNAME:+"_$NVIM_APPNAME"}'';
-        emacs = ''''${EMACSDIR:-~cfg/emacs}'';
-        doom = ''''${DOOMDIR:-~cfg/doom}'';
-        wez = ''''${WEZTERM_CONFIG_DIR:-~cfg/wezterm}'';
-        kitty = ''~cfg/kitty'';
-      })
-      (optionalAttrs config.xdg.enable {
-        dl = config.xdg.userDirs.download;
-        docs = config.xdg.userDirs.documents;
-        pics = config.xdg.userDirs.pictures;
-        vids = config.xdg.userDirs.videos;
-      })
-      (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin {
+        gh = ''${src}/github.com'';
+        nvim = ''${cfg}/nvim''${NVIM_APPNAME:+"_$NVIM_APPNAME"}'';
+        emacs = ''''${EMACSDIR:-${cfg}/emacs}'';
+        doom = ''''${DOOMDIR:-${cfg}/doom}'';
+        wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
+      }
+      (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin rec {
         apps = ''$HOME/Applications'';
         appdata = ''$HOME/Library/Application Support'';
-        chromedata = ''~appdata/Google/Chrome'';
-        ffdata = ''~appdata/Firefox'';
+        chromedata = ''${appdata}/Google/Chrome'';
+        firefoxdata = ''${appdata}/Firefox'';
       })
     ];
 

@@ -126,7 +126,6 @@
       programs.zsh = {
         dirHashes = {
           gamma = "~/src/github.com/gamma-app/gamma";
-          notes = "$HOME/Notes";
         };
       };
 
