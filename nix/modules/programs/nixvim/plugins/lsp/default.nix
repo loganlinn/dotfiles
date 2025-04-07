@@ -91,7 +91,7 @@ in
         };
         sqls.enable = false;
         terraformls.enable = true;
-        ts_ls.enable = true;
+        ts_ls.enable = false; # using plugins.typescript-tools instead
         yamlls.enable = true;
       };
       # NOTE: lspsaga provides its own keymaps

@@ -19,7 +19,37 @@
               "typescriptreact"
             ];
           };
+          tsserver_plugins = [
+            "@styled/typescript-styled-plugin"
+          ];
+          tsserver_file_preferences.__raw = ''
+            function(ft)
+              -- Some "ifology" using `ft` of opened file
+              return {
+                includeInlayParameterNameHints = "all",
+                includeCompletionsForModuleExports = true,
+                quotePreference = "auto",
+              }
+            end
+          '';
+          # tsserver_format_options.__raw = ''
+          #   function(ft)
+          #     -- Some "ifology" using `ft` of opened file
+          #     return {
+          #       allowIncompleteCompletions = false,
+          #       allowRenameOfImportPath = false,
+          #     }
+          #   end
+          # '';
         };
+      };
+      handlers = {
+        "textDocument/publishDiagnostics" = ''
+          api.filter_diagnostics(
+            -- Ignore 'This may be converted to an async function' diagnostics.
+            { 80006 }
+          )
+        '';
       };
     };
   };

@@ -108,6 +108,10 @@ r = [
   "mode main",
 ]
 c = ["exec-and-forget zsh -lc 'hs -A -c \"hs.openConsole()\"'", "mode main"]
+d = [
+  "exec-and-forget zsh -lc 'aerospace debug-windows | logger -i'",
+  "mode main",
+]
 t = ["mode main", "enable toggle"]
 f = ["flatten-workspace-tree", "mode main"]
 q = "mode main"
