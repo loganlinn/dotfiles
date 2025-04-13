@@ -135,17 +135,15 @@
         # actionlint
         # aider-chat
         asciinema
-        bun
         flyctl
         google-cloud-sdk
         kcat
         mkcert
-        nodejs
         # pls
-        pnpm
         # process-compose
         # supabase-cli
         uv
+        process-compose
       ];
 
       xdg.enable = true;

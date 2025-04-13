@@ -26,27 +26,49 @@ in
         default = { };
       };
     };
+
+    programs.fnm = {
+      # enable = mkEnableOption "fnm (node.js version manager)"; # TODO
+      settings = mkOption {
+        type = types.attrs;
+        default = {
+          use-on-cd = true;
+          version-file-strategy = "recursive";
+          corepack-enabled = true;
+        };
+      };
+    };
   };
 
   config = {
+    home.packages = with pkgs; [
+      # nodejs
+      fnm
+      bun
+    ];
+
+    programs.zsh.initExtra = ''
+      # initialize fnm (node.js version manager)
+      eval "$(fnm env --shell zsh ${
+        concatStringsSep " " (cli.toGNUCommandLine { } config.programs.fnm.settings)
+      })"
+    '';
+
+    programs.bash.initExtra = ''
+      # initialize fnm (node.js version manager)
+      eval "$(fnm env --shell bash ${
+        concatStringsSep " " (cli.toGNUCommandLine { } config.programs.fnm.settings)
+      })"
+    '';
+
     programs.npm.settings = {
       fund = false;
       update-notifier = false; # suppress the update notification when using an older version of npm than the latest.
       usage = false;
-
       userconfig = "${config.xdg.configHome}/npm/config";
       prefix = "${config.xdg.dataHome}/npm";
       cache = "${config.xdg.cacheHome}/npm";
     };
-
-    # i.e. userconfig file (aka npmrc)
-    xdg.configFile."npm/config".source = npmrcFormat.generate "npmrc" config.programs.npm.settings;
-
-    home.packages = with pkgs; [
-      nodejs
-      yarn
-      yarn-bash-completion
-    ];
 
     home.sessionVariables = {
       # XDG, please
@@ -62,16 +84,7 @@ in
       "${config.programs.npm.settings.prefix}/bin"
     ];
 
-    programs.zsh.plugins = [
-      {
-        name = "yarn-completions";
-        src = pkgs.fetchFromGitHub {
-          owner = "g-plane";
-          repo = "zsh-yarn-autocompletions";
-          rev = "12e282950d592f32648b980c9edcdf1fd4eefb28";
-          hash = "sha256-6G0ace7ooeTAEyXPjU0HvbVjrp9Y/TbMS0xSon9P/P0=";
-        };
-      }
-    ];
+    # i.e. userconfig file (aka npmrc)
+    xdg.configFile."npm/config".source = npmrcFormat.generate "npmrc" config.programs.npm.settings;
   };
 }

@@ -15,7 +15,7 @@
     ./data.nix
     ./golang.nix
     ./images.nix
-    ./kube.nix
+    # ./kube.nix
     ./markdown.nix
     ./nix.nix
     ./nodejs.nix
