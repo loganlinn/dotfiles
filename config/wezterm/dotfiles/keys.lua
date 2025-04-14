@@ -90,7 +90,7 @@ function M.apply_to_config(config)
     { LEADER, "v", wezterm.action.ActivateCopyMode },
     { MOD, "F", wezterm.action.QuickSelect },
     { MOD, "E", action.quick_open }, -- https://loganlinn.com
-    { MOD, "p", wezterm.action.ActivateCommandPalette },
+    { MOD, "o", wezterm.action.ActivateCommandPalette },
     { [[SUPER|SHIFT]], "E", action.browse_current_working_dir },
     { MOD, "Home", wezterm.action.ScrollToTop },
     { MOD, "PageDown", wezterm.action.ScrollToPrompt(1) },
@@ -143,6 +143,21 @@ function M.apply_to_config(config)
     { LEADER, "l", wezterm.action.SplitPane({ direction = "Right", size = { Cells = 100 } }) },
 
     { LEADER, "r", require("dotfiles.action.yarn-run").input_selector },
+
+    { MOD, "p", wezterm.action.ActivateKeyTable({ name = "Select" }) },
+    Select = {
+      { NONE, "e", action.quick_open },
+      { NONE, "f", wezterm.action.QuickSelect },
+      {
+        NONE,
+        "l",
+        wezterm.action.QuickSelectArgs({
+          patterns = {
+            "^(?!\\s*$).+$", -- non-empty line
+          },
+        }),
+      },
+    },
 
     { LEADER, "i", wezterm.action.ActivateKeyTable({ name = "Insert" }) },
     Insert = {
