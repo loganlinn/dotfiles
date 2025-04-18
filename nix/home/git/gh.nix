@@ -14,8 +14,7 @@ with lib.my;
     gitCredentialHelper.enable = true;
     settings = {
       aliases = {
-        o = ''!gh browse "$@"'';
-        O = "!gh browse --commit=$@";
+        o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" "$${1-.}"'';
 
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
         prc = "pr create --web";
