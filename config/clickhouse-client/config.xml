@@ -10,7 +10,7 @@
             <database>{{ op://gamma-staging/clickhouse/database }}</database>
         </connection>
         <connection>
-            <name>production</name>
+            <name>prod</name>
             <hostname>{{ op://gamma-prod/clickhouse/server }}</hostname>
             <port>{{ op://gamma-prod/clickhouse/port }}</port>
             <secure>1</secure>

@@ -28,7 +28,6 @@ in
       aliases.spice = "!${cfg.package}/bin/gs";
       extraConfig = {
         spice.submit.publish = mkDefault false;
-        spice.submit.web = mkDefault true;
         spice.log.all = mkDefault false;
         spice.shorthand.sync = "repo sync";
         spice.shorthand.cont = "rebase continue";
