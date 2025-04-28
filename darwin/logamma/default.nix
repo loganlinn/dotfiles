@@ -89,6 +89,7 @@
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
+        ../../nix/home/claude
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
@@ -106,48 +107,32 @@
       ];
 
       programs.age-op.enable = true;
-
+      programs.claude.desktop.enable = true;
       programs.kitty.enable = true;
-
       programs.nixvim = {
         enable = true;
         defaultEditor = true;
         plugins.lsp.servers.nixd.settings.options = {
           darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
         };
-        plugins.obsidian.settings.workspaces = [
-          {
-            name = "Primary";
-            path = "~/Notes";
-          }
-        ];
       };
-
       programs.wezterm.enable = true;
-
       programs.zsh = {
         dirHashes = {
           gamma = "~/src/github.com/gamma-app/gamma";
         };
       };
-
       home.packages = with pkgs; [
-        # actionlint
-        # aider-chat
+        actionlint
         asciinema
         flyctl
         google-cloud-sdk
         kcat
         mkcert
-        # pls
-        # process-compose
-        # supabase-cli
         uv
         process-compose
       ];
-
       xdg.enable = true;
-
       home.stateVersion = "22.11";
     };
 }
