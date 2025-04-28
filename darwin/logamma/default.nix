@@ -20,12 +20,12 @@
     {
       homebrew.casks = [ "ghostty" ]; # cask installs Ghostty.app bundle, CLI, man pages, and shell completions.
     }
-    # https://book.git-ps.sh/
+    # https://github.com/abhinav/restack
     {
-      homebrew.taps = [ "drewdeponte/oss" ];
-      homebrew.brews = [ "drewdeponte/oss/git-ps-rs" ];
+      homebrew.taps = [ "abhinav/tap" ];
+      homebrew.brews = [ "abhinav/tap/restack" ];
     }
-    # https://github.com/dhth/kplay?ref=terminaltrove
+    # https://github.com/dhth/kplay
     {
       homebrew.taps = [ "dhth/tap" ];
       homebrew.brews = [ "dhth/tap/kplay" ];
