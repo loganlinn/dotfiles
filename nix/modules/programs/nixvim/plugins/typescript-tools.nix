@@ -24,6 +24,7 @@
           tsserver_plugins = [
             "@styled/typescript-styled-plugin"
           ];
+          tsserver_max_memory = 3120;
           tsserver_file_preferences = {
             allowTextChangesInNewFiles = true;
             disableLineTextInReferences = true;
