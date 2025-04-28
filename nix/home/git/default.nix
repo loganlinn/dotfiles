@@ -49,6 +49,7 @@ in
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
     gg = "git status";
     gw = "git show";
+    gsw = "git stash show -p";
   };
 
   programs.git = {
