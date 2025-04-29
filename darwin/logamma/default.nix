@@ -1,13 +1,13 @@
 {
+  inputs,
   self,
-  config,
   pkgs,
-  lib,
   ...
 }:
 
 {
   imports = [
+    # inputs.agenix.darwinModules.default
     self.darwinModules.common
     self.darwinModules.home-manager
     ../modules/aerospace
@@ -89,7 +89,6 @@
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
-        ../../nix/home/claude
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
@@ -105,9 +104,7 @@
         ../../nix/home/yazi
         ../../nix/home/yt-dlp.nix
       ];
-
       programs.age-op.enable = true;
-      programs.claude.desktop.enable = true;
       programs.kitty.enable = true;
       programs.nixvim = {
         enable = true;

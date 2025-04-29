@@ -1,5 +1,5 @@
 {
-  inputs ? (with builtins; (getFlake (toString ./.)).inputs),
+  # inputs ? (with builtins; (getFlake (toString ./.)).inputs),
   config,
   pkgs,
   lib,
