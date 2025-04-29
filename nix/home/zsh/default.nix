@@ -96,7 +96,9 @@ with lib;
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
 
-    initExtraFirst = readFile ./initExtraFirst.zsh;
+    initExtraFirst = ''
+      ${readFile ./initExtraFirst.zsh}
+    '';
 
     initExtraBeforeCompInit = ''
       ${readFile ./line-editor.zsh}
@@ -109,30 +111,37 @@ with lib;
         functionNames = attrNames (builtins.readDir functionsDir);
       in
       ''
-        : "''${DOTFILES_DIR:=$HOME/.dotfiles}"
+        if [[ -r ~/.znap/znap.zsh ]] || git clone --quiet --depth 1 --no-tags --filter=blob:none --rev=909e3842dc301ad3588cdb505f8ed9003a34d2bb https://github.com/marlonrichert/zsh-snap.git ~/.znap >/dev/null; then
+          source ~/.znap/znap.zsh
+        fi
 
-        fpath+=(
-          "$DOTFILES_DIR/nix/home/zsh/functions"
-          "$XDG_DATA_HOME/zsh/functions"
-        )
+          # znap function _hist hist "znap source marlonrichert/zsh-hist"
+          # compctl -K    _hist hist
 
-        autoload -Uz ${concatStringsSep " " functionNames}
+          : "''${DOTFILES_DIR:=$HOME/.dotfiles}"
 
-        bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
-        bindkey -s '^G^S' ' git snapshot^M'
-        bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
-        bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
-        bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
+          fpath+=(
+            "$DOTFILES_DIR/nix/home/zsh/functions"
+            "''${XDG_DATA_HOME:-$HOME/.local/share}/zsh/functions"
+          )
 
-        ${readFile ./nixpkgs.zsh}
+          autoload -Uz ${concatStringsSep " " functionNames}
 
-        ${readFile ./initExtra.zsh}
+          bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
+          bindkey -s '^G^S' ' git snapshot^M'
+          bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
+          bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+          bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
 
-        ${readFile ./wezterm.zsh}
+          ${readFile ./nixpkgs.zsh}
 
-        wezterm::init
+          ${readFile ./initExtra.zsh}
 
-        [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+          ${readFile ./wezterm.zsh}
+
+          wezterm::init
+
+          [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '';
 
     loginExtra = ''
