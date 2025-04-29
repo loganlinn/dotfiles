@@ -122,6 +122,7 @@
       home.packages = with pkgs; [
         actionlint
         asciinema
+        checkov
         flyctl
         google-cloud-sdk
         kcat
