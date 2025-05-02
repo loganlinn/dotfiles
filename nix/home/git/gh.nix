@@ -15,31 +15,16 @@ with lib.my;
     settings = {
       aliases = {
         o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" "$${1-.}"'';
-
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
-        prc = "pr create --web";
-        pd = "pr diff";
-        pr = "pr list";
-        pm = "pr merge";
         prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
         pro = "pr view --web";
-        prs = "pr list --author @me";
         pss = "pr status";
-        prz = ''
-          !gh prl "$@" | fzf --ansi --color  | awk '{print $1}'
-        '';
+        prz = ''gh prl "$@" | fzf --ansi --color --accept-nth=1'';
         prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}' "$@"'';
 
         checks = "pr checks";
         # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';
         # procc = ''!gh failed | | .link)[]' | xargs -L1 open'';
-
-        land = ''
-          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch
-        '';
-        landf = ''
-          !gh prz --author=@me | ifne xargs -n1 gh pr merge --rebase --delete-branch --admin
-        '';
 
         repo-fork-sync = ''!gh api /repos/{owner}/{repo}/merge-upstream --method POST --field "branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"'';
 
@@ -47,6 +32,8 @@ with lib.my;
 
         my-org = "api /orgs/{owner}/members --jq '.[].login'";
         my-team = "!gh my-org | sed '/loganlinn/d'";
+        my-prs = "pr list --author @me";
+        my-runs = "run list --user loganlinn";
 
         reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
         edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';

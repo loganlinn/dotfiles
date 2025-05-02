@@ -35,6 +35,10 @@
       homebrew.taps = [ "TylerBrock/saw" ];
       homebrew.brews = [ "TylerBrock/saw/saw" ];
     }
+    {
+      homebrew.taps = [ "aws/tap" ];
+      homebrew.brews = [ "aws/tap/copilot-cli" ];
+    }
   ];
 
   environment.systemPackages = with pkgs; [
