@@ -112,36 +112,35 @@ with lib;
       in
       ''
         if [[ -r ~/.znap/znap.zsh ]] || git clone --quiet --depth 1 --no-tags --filter=blob:none --rev=909e3842dc301ad3588cdb505f8ed9003a34d2bb https://github.com/marlonrichert/zsh-snap.git ~/.znap >/dev/null; then
-          source ~/.znap/znap.zsh
+         source ~/.znap/znap.zsh
         fi
+        # znap function _hist hist "znap source marlonrichert/zsh-hist"
+        # compctl -K    _hist hist
 
-          # znap function _hist hist "znap source marlonrichert/zsh-hist"
-          # compctl -K    _hist hist
+        : "''${DOTFILES_DIR:=$HOME/.dotfiles}"
 
-          : "''${DOTFILES_DIR:=$HOME/.dotfiles}"
+        fpath+=(
+          "$DOTFILES_DIR/nix/home/zsh/functions"
+          "''${XDG_DATA_HOME:-$HOME/.local/share}/zsh/functions"
+        )
 
-          fpath+=(
-            "$DOTFILES_DIR/nix/home/zsh/functions"
-            "''${XDG_DATA_HOME:-$HOME/.local/share}/zsh/functions"
-          )
+        autoload -Uz ${concatStringsSep " " functionNames}
 
-          autoload -Uz ${concatStringsSep " " functionNames}
+        bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
+        bindkey -s '^G^S' ' git snapshot^M'
+        bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
+        bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+        bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
 
-          bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
-          bindkey -s '^G^S' ' git snapshot^M'
-          bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
-          bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
-          bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
+        ${readFile ./nixpkgs.zsh}
 
-          ${readFile ./nixpkgs.zsh}
+        ${readFile ./initExtra.zsh}
 
-          ${readFile ./initExtra.zsh}
+        ${readFile ./wezterm.zsh}
 
-          ${readFile ./wezterm.zsh}
+        wezterm::init
 
-          wezterm::init
-
-          [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+        [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '';
 
     loginExtra = ''
