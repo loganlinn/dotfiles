@@ -51,8 +51,11 @@
         }
       ];
 
-      diagnostics = {
-        virtual_lines.only_current_line = true;
+      # https://neovim.io/doc/user/diagnostic.html#vim.Diagnostic
+      diagnostic.settings = {
+        underline = true;
+        virtual_lines.current_line = true;
+        virtual_text = false;
       };
 
       extraConfigLuaPre = ''

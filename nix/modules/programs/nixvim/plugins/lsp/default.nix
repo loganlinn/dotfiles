@@ -41,6 +41,7 @@ in
       servers = {
         awk_ls.enable = false;
         bashls.enable = true;
+        buf_ls.enable = true;
         eslint.enable = true;
         fennel_ls.enable = true;
         gopls.enable = true;

@@ -5,7 +5,7 @@ in
 {
   programs.nixvim = {
     plugins.obsidian = {
-      enable = true;
+      # enable = true;
       settings = {
         completion = {
           min_chars = 2;
