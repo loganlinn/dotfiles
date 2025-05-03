@@ -45,7 +45,7 @@ switch *args:
 [group('nix')]
 [macos]
 rebuild *args:
-    darwin-rebuild --flake "${NIX_DARWIN_FLAKE?}" "$@"
+    darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "$@"
 
 # Build system flake
 [group('nix')]
