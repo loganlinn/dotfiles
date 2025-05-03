@@ -40,7 +40,7 @@ TAGS
 .socket-repl-port
 .terraform/
 .venv
-antigen-shapshot
+antigen-snapshot
 classes/
 devenv.local.nix
 node_modules/
@@ -50,3 +50,4 @@ result-bin
 sqlite.db
 target/
 .clj-kondo/
+.env

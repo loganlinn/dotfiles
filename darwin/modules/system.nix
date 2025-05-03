@@ -162,6 +162,10 @@ with lib;
         "com.apple.ActivityMonitor".UpdatePeriod = 2;
         # https://macos-defaults.com/misc/apple-intelligence.html
         "com.apple.CloudSubscriptionFeatures.optIn"."545129924" = false; # disable Apple Intelligence
+        "com.google.Chrome" = {
+          # Keyboard shortcut for Pin Tab menu item: ⌘'
+          NSUserKeyEquivalents."Pin Tab" = "@'";
+        };
       };
     };
   };

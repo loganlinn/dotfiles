@@ -1,17 +1,11 @@
-#! /usr/bin/env nix
+#!/usr/bin/env just --justfile
 
 import? 'justfile.local'
 
-#! nix shell nixpkgs#just nixpkgs#gum --command just --justfile
-# mod nixos
-# mod windows
-# mod firewalla
-
-set shell := ["bash", "-e", "-u", "-o", "pipefail", "-c"]
 set unstable := true
-
-export XDG_CONFIG_HOME := env('XDG_CONFIG_HOME', home_dir() / ".config")
-export FLAKE_CHECKER_NO_TELEMETRY := 'true'
+set shell := ["bash", "-e", "-u", "-o", "pipefail", "-c"]
+set positional-arguments := true
+set dotenv-load := true
 
 [private]
 [script]
@@ -39,63 +33,46 @@ bootstrap:
 [group('nix')]
 [macos]
 switch *args:
-    darwin-rebuild switch --flake {{ source_dir() }} {{ args }}
+    just rebuild switch "$@"
 
 # Build and activate system flake
 [group('nix')]
 [linux]
 switch *args:
-    nixos-rebuild switch --flake {{ source_dir() }} {{ args }}
+    nixos-rebuild switch --flake {{ source_dir() }} "$@"
 
 # Build system flake
 [group('nix')]
 [macos]
 rebuild *args:
-    darwin-rebuild {{ args }}
+    darwin-rebuild --flake "${NIX_DARWIN_FLAKE?}" "$@"
 
 # Build system flake
 [group('nix')]
 [linux]
 rebuild *args:
-    nixos-rebuild {{ args }}
+    nixos-rebuild "$@"
 
 [group('nix')]
 [macos]
 check:
-    darwin-rebuild check
+    just rebuild check
 
 # Update flake inputs
 [group('nix')]
 update *inputs:
     nix flake update --commit-lock-file {{ inputs }}
 
+# Starts flake repl
 [group('nix')]
 repl dir=source_dir() file='repl.nix' args="":
-    nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} {{ args }}
-
-# Run a nix application
-[group('nix')]
-[no-cd]
-run *args:
-    nix run {{ args }}
-
-# Runs an application from nixpkgs
-[group('nix')]
-[no-cd]
-pkg name *args:
-    nix run nixpkgs#{{ name }} -- {{ args }}
-
-# Forms an application from flake output attribute `apps.<system>.<name>`
-[group('nix')]
-[no-cd]
-app name *args:
-    nix run {{ source_dir() }}#{{ name }} -- {{ args }}
+    nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} "$@"
 
 # creates symlink to flake.nix
 [group('nix')]
 [private]
 link-flake: link-system-flake
-    just link flake.nix "$XDG_CONFIG_HOME/home-manager/flake.nix"
+    just link flake.nix "${XDG_CONFIG_HOME-/$HOME/.config}/home-manager/flake.nix"
 
 # creates symlink to flake.nix in /etc/nix-darwin
 [group('nix')]
@@ -122,14 +99,14 @@ flake-checker:
 [group('nix')]
 [macos]
 nixdctl command *args:
-    sudo launchctl {{ command }} systems.determinate.nix-daemon {{ args }}
+    sudo launchctl {{ command }} systems.determinate.nix-daemon "$@"
 
 lint:
     just --fmt --check
 
 [private]
 link-global-justfile:
-    @just link justfile "$XDG_CONFIG_HOME/just/justfile"
+    @just link justfile "${XDG_CONFIG_HOME-/$HOME/.config}/just/justfile"
 
 [private]
 [script]
@@ -161,17 +138,14 @@ shell:
 
 [group('nix')]
 nix-develop *args:
-    nix develop --command zsh {{ args }}
+    nix develop --command zsh "$@"
 
 [group('nix')]
 nix-shell *args:
-    nix shell --command zsh {{ args }}
+    nix shell --command zsh "$@"
 
 git *args:
-    git {{ args }}
-
-neogit:
-    nvim --cmd "let g:auto_session_enabled = v:false" +Neogit
+    git "$@"
 
 @netrc:
     op inject -i netrc.tpl -o ~/.netrc
@@ -182,21 +156,19 @@ clickhouse-client-config output=(home_dir() / ".clickhouse-client" / "config.xml
 
 clickhouse-connection connection *args:
     wezterm cli set-tab-title "clickhouse://{{ connection }}"
-    clickhouse client --connection {{ connection }} {{ args }}
+    clickhouse client --connection {{ connection }} "$@"
 
 [script]
-just *args:
-    if ! args=$(gum input --prompt="just " --value="{{ args }}" --placeholder="" --header="$(just --list)\n\n"); then
+run *args:
+    if ! args=$(gum input --prompt="just " --value=""$@"" --placeholder="" --header="$(just --list)\n\n"); then
       exit $?
     fi
     echo -e "{{ BOLD }}just $args{{ NORMAL }}"
     exec just $args
 
-[positional-arguments]
 qmk-shell *args:
     cd "${SRC_HOME:-$HOME/src}/${QMK_FIRMWARE_REPO:-github.com/loganlinn/qmk_firmware}" && nix-shell --quiet "$@"
 
-[positional-arguments]
 qmk *args:
     just qmk-shell --command "qmk $*"
 

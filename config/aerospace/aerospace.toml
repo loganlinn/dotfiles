@@ -122,9 +122,9 @@ ctrl-g = "mode main"
 [workspace-to-monitor-force-assignment]
 "0" = "secondary"
 
-[[on-window-detected]]
-if.app-id = "com.apple.MobileSMS"
-run = ["layout floating", "move-node-to-workspace 0"]
+# [[on-window-detected]]
+# if.app-id = "com.apple.MobileSMS"
+# run = ["layout floating", "move-node-to-workspace 0"]
 
 [[on-window-detected]]
 if.app-name-regex-substring = "^(Claude|Gemini|Slack)$"
@@ -132,6 +132,10 @@ run = "move-node-to-workspace 0"
 
 [[on-window-detected]]
 if.app-id = "com.google.Chrome"
+run = "move-node-to-workspace 2"
+
+[[on-window-detected]]
+if.app-id = "com.kagi.kagimacOS"
 run = "move-node-to-workspace 2"
 
 [[on-window-detected]]
