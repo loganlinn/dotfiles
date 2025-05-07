@@ -93,16 +93,17 @@ in
       extensions.file-browser = {
         enable = true;
         settings = {
+          collapse_dirs = true;
           cwd_to_path = true;
           git_status = true;
           grouped = true;
-          select_buffer = true;
-          collapse_dirs = true;
-          use_fd = true;
           hidden.file_browser = true;
           hidden.folder_browser = true;
+          no_ignore = true;
           path = "%:p:h";
           prompt_path = true;
+          select_buffer = true;
+          use_fd = true;
           mappings = {
             i = {
               # "<Tab>" = ""; # TODO make this key go into directory :|
@@ -237,7 +238,7 @@ in
           end'';
       })
       (mkKeymap "nv" "<leader>ff" "Browse files" {
-        __raw = ''function() require("telescope").extensions.file_browser.file_browser {  } end'';
+        __raw = ''function() require("telescope").extensions.file_browser.file_browser { } end'';
       })
       (mkKeymap "nv" "<leader>fF" "Find from directory" {
         # __raw = ''function() require("telescope.builtin").find_files { cwd = vim.fn.expand("%:p:h") } end'';

@@ -146,9 +146,9 @@ run = "move-node-to-workspace 8"
 if.app-name-regex-substring = "Excalidraw"
 run = "move-node-to-workspace 9"
 
-[[on-window-detected]]
-if.app-id = "com.1password.1password"
-run = "layout floating"
+# [[on-window-detected]]
+# if.app-id = "com.1password.1password"
+# run = "layout floating"
 
 [[on-window-detected]]
 if.app-id = "com.apple.ActivityMonitor"
