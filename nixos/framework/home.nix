@@ -31,7 +31,7 @@
     ../../nix/modules/desktop/i3
   ];
 
-  my.python.package = pkgs.python311;
+  # my.python.package = pkgs.python311;
   my.deadd.enable = true;
   modules.polybar.monitor = "eDP-1";
   modules.polybar.networks = [

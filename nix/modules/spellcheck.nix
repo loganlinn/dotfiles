@@ -24,11 +24,7 @@ in
           en-science
         ])))
       ++
-      (optional cfg.hunspell.enable (
-        pkgs.hunspellWithDicts [
-          pkgs.hunspellDicts.en-us
-          pkgs.hunspellDicts.en-gb-ize
-        ]))
+      (optional cfg.hunspell.enable pkgs.hunspell)
     ;
 
   };

@@ -113,13 +113,13 @@
   programs.jq.enable = true;
 
   # https://github.com/nix-community/nh
-  programs.nh = {
-    clean = {
-      enable = !config.nix.gc.automatic;
-      extraArgs = "--keep-since 7d --keep 5";
-    };
-    flake = config.my.flakeDirectory;
-  };
+  # programs.nh = {
+  #   clean = {
+  #     enable = !config.nix.gc.automatic;
+  #     extraArgs = "--keep-since 7d --keep 5";
+  #   };
+  #   flake = config.my.flakeDirectory;
+  # };
 
   programs.eza = {
     enable = !config.programs.lsd.enable;

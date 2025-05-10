@@ -99,7 +99,6 @@ with lib;
     usbutils
     usbrip
     usbtop
-    cachix
     powertop
     pkg-config
     # (fenix.complete.withComponents [
