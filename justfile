@@ -39,7 +39,7 @@ switch *args:
 [group('nix')]
 [linux]
 switch *args:
-    nixos-rebuild switch --flake {{ source_dir() }} "$@"
+    sudo nixos-rebuild switch --flake {{ source_dir() }} "$@"
 
 # Build system flake
 [group('nix')]
