@@ -93,6 +93,7 @@
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
+        ../../nix/home/aider.nix
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
@@ -108,6 +109,8 @@
         ../../nix/home/yazi
         ../../nix/home/yt-dlp.nix
       ];
+      my.aider.enable = true;
+      my.aider.envFilePath = "${config.home.homeDirectory}/aider.env";
       programs.age-op.enable = true;
       programs.kitty.enable = true;
       programs.nixvim = {
@@ -123,8 +126,8 @@
           gamma = "~/src/github.com/gamma-app/gamma";
         };
       };
+      home.sessionVariables = { };
       home.packages = with pkgs; [
-        aider-chat-with-playwright
         actionlint
         asciinema
         checkov

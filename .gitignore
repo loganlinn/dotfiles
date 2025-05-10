@@ -51,3 +51,4 @@ sqlite.db
 target/
 .clj-kondo/
 .env
+.aider*
