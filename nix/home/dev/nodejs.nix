@@ -32,7 +32,7 @@ in
       settings = mkOption {
         type = types.attrs;
         default = {
-          use-on-cd = true;
+          use-on-cd = false;
           version-file-strategy = "recursive";
           corepack-enabled = true;
         };
