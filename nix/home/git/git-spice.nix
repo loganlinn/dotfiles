@@ -29,12 +29,6 @@ in
       extraConfig = {
         spice.submit.publish = mkDefault false;
         spice.log.all = mkDefault false;
-        spice.shorthand.sync = "repo sync";
-        spice.shorthand.cont = "rebase continue";
-        spice.shorthand.bail = "rebase abort";
-        spice.shorthand.rename = "branch rename";
-        spice.shorthand.checkout = "branch checkout";
-        spice.shorthand.amend = "commit create --no-edit";
       };
     };
     programs.zsh = {
