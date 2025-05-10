@@ -1,6 +1,5 @@
 {
   self,
-  inputs,
   config,
   pkgs,
   lib,
@@ -124,7 +123,7 @@
   home.stateVersion = "22.11";
 
   nix.enable = true;
-  nix.package = pkgs.nixVersions.stable;
+  nix.package = pkgs.nixVersions.latest;
   nix.settings = {
     trusted-users = [
       "root"

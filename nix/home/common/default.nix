@@ -114,9 +114,8 @@
 
   # https://github.com/nix-community/nh
   programs.nh = {
-    enable = lib.mkDefault true;
     clean = {
-      enable = true;
+      enable = !config.nix.gc.automatic;
       extraArgs = "--keep-since 7d --keep 5";
     };
     flake = config.my.flakeDirectory;

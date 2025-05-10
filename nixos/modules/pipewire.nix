@@ -7,7 +7,7 @@
     jack.enable = false; # not needed atm
   };
 
-  hardware.pulseaudio.enable = false; # handled by/conflicts with services.pipewire
+  services.pulseaudio.enable = false; # handled by/conflicts with services.pipewire
 
   security.rtkit.enable = true; # recommended for pipewire
 

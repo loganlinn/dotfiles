@@ -100,6 +100,7 @@
             overlays = [
               self.overlays.default
               inputs.emacs-overlay.overlays.default
+              # (_: super: let pkgs = inputs.fenix.inputs.nixpkgs.legacyPackages.${super.system}; in inputs.fenix.overlays.default pkgs pkgs)
             ];
           };
 

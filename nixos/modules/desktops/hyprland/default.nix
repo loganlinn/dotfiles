@@ -1,4 +1,4 @@
-{ inputs, self, config, lib, pkgs, system, ... }:
+{ inputs', self, config, lib, pkgs, system, ... }:
 
 with lib;
 
@@ -17,11 +17,20 @@ in {
     #     needed to use Hyprland module.
     #   '';
     # }];
+    programs.hyprland = {
+      enable = true;
+      # set the flake package
+      package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+      portalPackage = inputs'.hyprland.packages.xdg-desktop-portal-hyprland;
+      enableNvidiaPatches = true;
+      xwayland.enable = true;
+    };
 
-    programs.hyprland.enable = true;
-    programs.hyprland.package = hyprland;
-    programs.hyprland.enableNvidiaPatches = true;
-    programs.hyprland.xwayland.enable = true;
+    # hardware.graphics = {
+    #   package = pkgs-unstable.mesa.drivers;
+    #   driSupport32Bit = true; # if you also want 32-bit support (e.g for Steam)
+    #   package32 = pkgs.pkgsi686Linux.mesa.drivers;
+    # };
 
     # services.xserver.enable = false;
     services.greetd.enable = true;

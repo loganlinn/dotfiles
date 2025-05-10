@@ -11,7 +11,7 @@ with lib;
 
 let
   systemdSupported = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
-  audioEnabled = config.hardware.pulseaudio.enable || config.services.pipewire.enable;
+  audioEnabled = config.services.pulseaudio.enable || config.services.pipewire.enable;
   graphicsEnabled = config.services.xserver.enable || config.services.displayManager.enable;
   my = config.my;
 in
@@ -139,7 +139,7 @@ in
     security.sudo.enable = mkDefault true;
 
     nix.enable = true;
-    nix.package = pkgs.nixFlakes;
+    nix.package = pkgs.nixVersions.stable;
     nix.settings = my.nix.settings;
     nix.gc.automatic = mkDefault true;
     nix.nixPath = [

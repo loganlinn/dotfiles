@@ -1,4 +1,4 @@
-{ inputs, self, config , pkgs , lib , nix-colors, ...  }:
+{ inputs, inputs', self, config , pkgs , lib , ...  }:
 
 with lib;
 
@@ -30,7 +30,7 @@ with lib;
 
   home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
 
-  # my.hyprland.enable = false;
+  my.hyprland.enable = false;
   # my.tailscale.ssh.enable = true;
   # my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
 
@@ -102,16 +102,16 @@ with lib;
     cachix
     powertop
     pkg-config
-    (fenix.complete.withComponents [
-      # https://rust-lang.github.io/rustup/concepts/components.html
-      "cargo"
-      "clippy"
-      "rust-docs"
-      "rust-src"
-      "rustc"
-      "rustfmt"
-    ])
-    rust-analyzer-nightly
+    # (fenix.complete.withComponents [
+    #   # https://rust-lang.github.io/rustup/concepts/components.html
+    #   "cargo"
+    #   "clippy"
+    #   "rust-docs"
+    #   "rust-src"
+    #   "rustc"
+    #   "rustfmt"
+    # ])
+    # rust-analyzer-nightly
     # jetbrains.rust-rover
     restream
     (pkgs.makeDesktopItem {

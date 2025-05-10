@@ -25,9 +25,9 @@
         };
       };
       "sr.ht" = {
-        host = "*.sr.ht":
+        host = "*.sr.ht";
         extraOptions = {
-          PreferredAuthentications= "publickey":
+          PreferredAuthentications= "publickey";
         };
       };
     };

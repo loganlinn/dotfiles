@@ -4,7 +4,6 @@
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
-    self.homeModules.secrets
     ../../nix/home/dev # TODO module
     ../../nix/home/emacs
     ../../nix/home/home-manager.nix
@@ -17,6 +16,7 @@
     # ../../nix/home/polkit.nix
     ../../nix/home/pretty.nix
     # ../../nix/home/qalculate
+    ../../nix/home/secrets.nix
     ../../nix/home/ssh.nix
     # ../../nix/home/sync.nix
     # ../../nix/home/urxvt.nix
@@ -67,6 +67,7 @@
   programs.google-chrome.enable = true;
   programs.firefox.enable = true;
   programs.librewolf.enable = true;
+  programs.nh.enable = false;
   # error: builder for '/nix/store/2f6m4847kdxkg36w408yfvc6yxqrf7w7-python3.11-stem-1.8.2.drv' failed with exit code 1;
   #    last 10 log lines:
   #    >   https://pypi.org/project/pycodestyle/

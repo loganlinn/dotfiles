@@ -42,7 +42,6 @@ in
       gcolor3
       gpick
       gtk3
-      hacksaw # Lightweight selection tool for usage in screenshot scripts etc
       libnotify
       ncpamixer # An ncurses mixer for PulseAudio inspired by pavucontrol
       networkmanagerapplet # nm-connection-editor
