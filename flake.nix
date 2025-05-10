@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
     ## builders
     home-manager.url = "github:nix-community/home-manager";
