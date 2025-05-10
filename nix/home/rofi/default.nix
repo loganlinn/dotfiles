@@ -122,7 +122,7 @@ in
       kb-ellipsize = "Alt+period";
       kb-toggle-case-sensitivity = "grave,dead_grave";
       kb-toggle-sort = "Alt+grave";
-      kb-cancel = "Escape,Control+g,Control+c,Control+w";
+      kb-cancel = "Escape,Control+g";
     };
     configPath = "${config.xdg.configHome}/rofi/common.rasi";
   };
