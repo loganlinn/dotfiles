@@ -24,7 +24,7 @@ in
     ./neorepl.nix
     ./neotest.nix
     # ./notify.nix # replaced with snacks.nix
-    ./nvim-tree.nix
+    # ./nvim-tree.nix # have never gotten this to play nice with auto-session
     ./obsidian.nix
     ./oil.nix
     ./project.nix
@@ -60,14 +60,17 @@ in
       web-devicons.enable = true;
       wezterm.enable = true;
     };
-    extraPlugins = with pkgs.vimPlugins; [
-      { plugin = fennel-vim; }
-      { plugin = nfnl; }
-      { plugin = vim-abolish; }
-      { plugin = vim-just; }
-      { plugin = vim-lion; }
-      { plugin = zoxide-vim; }
-    ];
+    extraPlugins =
+      with pkgs.vimPlugins;
+      [
+        { plugin = fennel-vim; }
+        { plugin = nfnl; }
+        { plugin = vim-abolish; }
+        { plugin = vim-just; }
+        { plugin = vim-lion; }
+        { plugin = zoxide-vim; }
+      ]
+      ++ (lib.optional config.my.aider.enable { plugin = aider-nvim; });
     keymaps = [
       {
         mode = "n";
