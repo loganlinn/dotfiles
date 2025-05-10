@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+app_list() {
+  mdfind "kMDItemKind = 'Application' && kMDItemCFBundleIdentifier == '*'"
+}
+
+app_id__help() {
+  echo "usage: $(basename "$0") [-h | --help] <app>"
+}
+
+app_id() {
+  local app=
+  while (($#)); do
+    case $1 in
+    -h | --help)
+      app_id__help 
+      exit 0
+      ;;
+    -*)
+      {
+        echo "error: unrecognized option: $1"
+        echo
+        app_id__help
+      } >&2
+      exit 1
+      ;;
+    *)
+      if [[ -z $app ]]; then
+        echo >&2 "error: unexpected argument: $1"
+        usage >&2
+        exit 1
+      fi
+      app=$1
+      shift
+      ;;
+    esac
+  done
+
+  mdls -name kMDItemCFBundleIdentifier -raw "${app:?}"
+}
+
+app__help() {
+
+}

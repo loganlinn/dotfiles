@@ -124,6 +124,7 @@
         };
       };
       home.packages = with pkgs; [
+        aider-chat-with-playwright
         actionlint
         asciinema
         checkov
