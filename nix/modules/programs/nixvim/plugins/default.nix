@@ -32,6 +32,7 @@ in
     ./supermaven
     ./telescope.nix
     ./treesitter.nix
+    ./ts-actions.nix
     ./typescript-tools.nix
     ./which-key.nix
     # ./zen-mode.nix # replaced with snacks.nix
