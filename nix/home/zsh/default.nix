@@ -111,7 +111,7 @@ with lib;
         functionNames = attrNames (builtins.readDir functionsDir);
       in
       ''
-        if [[ -r ~/.znap/znap.zsh ]] || git clone --quiet --depth 1 --no-tags --filter=blob:none --rev=909e3842dc301ad3588cdb505f8ed9003a34d2bb https://github.com/marlonrichert/zsh-snap.git ~/.znap >/dev/null; then
+        if [[ -r ~/.znap/znap.zsh ]] || git clone --quiet --depth 1 --no-tags --filter=blob:none --revision=909e3842dc301ad3588cdb505f8ed9003a34d2bb https://github.com/marlonrichert/zsh-snap.git ~/.znap >/dev/null; then
          source ~/.znap/znap.zsh
         fi
         # znap function _hist hist "znap source marlonrichert/zsh-hist"
