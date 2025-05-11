@@ -52,6 +52,7 @@ in
       noice.enable = true;
       notify.enable = true;
       nvim-autopairs.enable = true;
+      nvim-tree.enable = false;
       schemastore.enable = true;
       trouble.enable = true;
       vim-surround.enable = true;

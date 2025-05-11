@@ -63,7 +63,6 @@ in
       fd
       git
       hunspell
-      libvterm
       ripgrep
     ];
   };

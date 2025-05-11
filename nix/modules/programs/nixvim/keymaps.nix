@@ -378,7 +378,7 @@ in
       action = "mzJ`z";
       options = {
         silent = true;
-        desc = "Allow cursor to stay in the same place after appeding to current line";
+        desc = "Allow cursor to stay in the same place after appending to current line";
       };
     }
     {
@@ -708,7 +708,7 @@ in
     {
       mode = "n";
       key = "<leader>he";
-      action = ''<cmd>200messages<cr>'';
+      action = ''<cmd>25messages<cr>'';
       options.desc = "Messages";
     }
     {
