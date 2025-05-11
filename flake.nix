@@ -104,7 +104,10 @@
             ];
           };
 
-          packages = import ./nix/pkgs { inherit pkgs; };
+          packages = import ./nix/pkgs { inherit pkgs; } // {
+            home-manager = inputs'.home-manager.packages.home-manager;
+            home-manager-docs-html = inputs'.home-manager.packages.docs-html;
+          };
 
           overlayAttrs = {
             inherit (inputs'.home-manager.packages) home-manager;
