@@ -66,9 +66,10 @@ in
       [
         { plugin = fennel-vim; }
         { plugin = nfnl; }
-        { plugin = vim-abolish; }
+        { plugin = vim-abolish; } # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
         { plugin = vim-just; }
-        { plugin = vim-lion; }
+        { plugin = vim-lion; } # alignment operators
+        { plugin = vim-rsi; } # readline style insertion
         { plugin = zoxide-vim; }
       ]
       ++ (lib.optional config.my.aider.enable { plugin = aider-nvim; });
