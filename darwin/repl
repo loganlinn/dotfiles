@@ -2,9 +2,9 @@
 
 set -e
 
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOLD="\e[1m"
 RESET="\e[0m"
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 nix_repl_command=(nix repl --file "$HERE/repl.nix")
 

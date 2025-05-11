@@ -1,5 +1,5 @@
 {
-  flakeRef ? (import ./lib { }).flakeRoot,
+  flakeref ? (import ./lib { }).flakeRoot,
   ...
 }@args:
-(builtins.getFlake flakeRef).lib.mkReplAttrs args
+(builtins.getFlake flakeref).lib.mkReplAttrs args
