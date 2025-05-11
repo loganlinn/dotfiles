@@ -65,8 +65,8 @@ update *inputs:
 
 # Starts flake repl
 [group('nix')]
-repl dir=source_dir() file='repl.nix' args="":
-    nix repl --verbose --trace-verbose --file {{ dir }}/{{ file }} "$@"
+repl file='./repl.nix':
+    nix repl --verbose --trace-verbose --file {{ file }}
 
 # creates symlink to flake.nix
 [group('nix')]
