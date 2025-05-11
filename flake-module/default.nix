@@ -109,7 +109,7 @@ let
   mkReplAttrs =
     {
       system ? null,
-      hostname ? import ../lib/currentHostname.nix,
+      hostname ? import ../lib/currentHostname.nix { pkgs = import inputs.nixpkgs { }; },
       user ? (builtins.getEnv "USER"),
     }:
     assert hostname != null;

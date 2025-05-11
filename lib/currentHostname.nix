@@ -1,6 +1,9 @@
+{
+  pkgs ? import (import ../.).inputs.nixpkgs { },
+  lib ? pkgs.lib,
+}:
 with builtins;
 let
-  pkgs = import <nixpkgs> { };
   when = c: x: if c then x else null;
   some =
     xs:
@@ -9,7 +12,7 @@ let
     in
     when (xs' != [ ]) (head xs');
 in
-with pkgs.lib;
+with lib;
 some [
   # macOS stores hostname in plist, of course.
   (when pkgs.stdenv.isDarwin

@@ -3,7 +3,27 @@
 set -e
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BOLD="\e[1m"
+RESET="\e[0m"
 
-exec nix repl --file "$HERE/repl.nix" \
-    --argstr username "$(whoami)" \
-    --argstr hostname "$(hostname -s)"
+if [[ -z "$1" ]]; then
+  username="$(whoami)"
+  hostname="$(hostname -s)"
+else
+  username="${1%%@*}"
+  hostname="${1#*@}"
+  if [[ -z $username ]] || [[ -z $hostname ]]; then
+    echo "Usage: $(basename "$0") [user@host]" >&2
+    exit 1
+  fi
+fi
+
+nix_repl_command=(
+  nix repl
+  --file "$HERE/repl.nix"
+  --argstr username "${username}"
+  --argstr hostname "${hostname}"
+)
+
+echo -e "${BOLD}${nix_repl_command[*]}${RESET}" >&2
+exec "${nix_repl_command[@]}"

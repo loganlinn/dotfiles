@@ -1,7 +1,10 @@
 # USAGE: nix repl repl.nix --argstr name USER@HOST
+let
+  inherit (import ../lib { }) flakeRoot currentHostname;
+in
 {
-  flakeref ? (toString ./..),
-  name ? "${builtins.getEnv "USER"}@${import ../lib/currentHostname.nix}",
+  flakeref ? flakeRoot,
+  name ? "${builtins.getEnv "USER"}@${currentHostname}",
   system ? builtins.currentSystem,
 }:
 let
