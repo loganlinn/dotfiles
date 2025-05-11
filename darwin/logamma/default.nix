@@ -110,7 +110,6 @@
         ../../nix/home/yt-dlp.nix
       ];
       my.aider.enable = true;
-      my.aider.envFilePath = "${config.home.homeDirectory}/aider.env";
       programs.age-op.enable = true;
       programs.kitty.enable = true;
       programs.nixvim = {

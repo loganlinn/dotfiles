@@ -7,16 +7,25 @@
 with lib;
 let
   cfg = config.my.aider;
+  yaml = pkgs.formats.yaml { };
 in
 {
   options.my.aider = {
     enable = mkEnableOption "Aider";
-    envFilePath = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-    };
     playwright.enable = mkEnableOption "Playwright";
     voiceCoding.enable = mkEnableOption "Voice Coding";
+    settings = mkOption {
+      type = yaml.type;
+      default = {
+        gitignore = false;
+        auto-accept-architect = false;
+        auto-commits = false;
+        subtree-only = true;
+        attribute-co-authored-by = false;
+        commit = false;
+        analytics-disable = true;
+      };
+    };
   };
   config = mkIf cfg.enable {
     home.packages =
@@ -27,13 +36,9 @@ in
         [ pkgs.portaudio ] ++ optional pkgs.stdenv.targetPlatform.isLinux pkgs.alsa-lib
       ));
 
-    home.sessionVariables =
-      {
-        AIDER_ANALYTICS = "false";
-      }
-      // optionalAttrs (cfg.envFilePath != null) {
-        AIDER_ENV_FILE = cfg.envFilePath;
-      };
+    home.file = optionalAttrs (cfg.settings != { }) {
+      ".aider.conf.yml".source = yaml.generate ".aider.conf.yml" cfg.settings;
+    };
 
     programs.git.ignores = [ ".aider*" ];
   };
