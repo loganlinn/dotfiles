@@ -34,5 +34,7 @@ in
       // optionalAttrs (cfg.envFilePath != null) {
         AIDER_ENV_FILE = cfg.envFilePath;
       };
+
+    programs.git.ignores = [ ".aider*" ];
   };
 }
