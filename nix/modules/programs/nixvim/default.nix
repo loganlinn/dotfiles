@@ -53,8 +53,14 @@
 
       # https://neovim.io/doc/user/diagnostic.html#vim.Diagnostic
       diagnostic.settings = {
+        float = true;
+        jump.float = false;
+        jump.wrap = true;
+        severity_sort = true;
+        signs = true;
         underline = true;
-        virtual_lines.current_line = true;
+        update_on_insert = false;
+        virtual_lines.current_line = false;
         virtual_text = false;
       };
 
@@ -67,15 +73,6 @@
 
       extraConfigLua = ''
         -- require('kanagawa')
-      '';
-
-      extraConfigLuaPost = ''
-        vim.diagnostic.config({
-          virtual_text = false,
-          underline = true,
-          signs = true,
-          severity_sort = true,
-        })
       '';
 
       extraConfigVim = ''
