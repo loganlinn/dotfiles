@@ -10,18 +10,19 @@ with lib;
 let
   cfg = config.programs.emacs-plus;
   emacs-plus-brew = {
-        name = "emacs-plus@${cfg.version}";
-        args = [
-          # "with-imagemagick"
-          # "with-debug"     # build with debug symbols and debugger friendly optimizations
-          "with-xwidgets" #
-          # "with-no-frame-refocus" # disables frame re-focus (ie. closing one frame does not refocus another one)
-        ]
-        ++ optional ((toString cfg.icon) != "") "with-${cfg.icon}-icon"
-        ++ optional cfg.enableNativeComp "with-native-comp"
-        ++ optional cfg.enableXwidgets "with-xwidgets"
-        ++ optional cfg.enablePoll "with-poll";
-      };
+    name = "emacs-plus@${cfg.version}";
+    args =
+      [
+        # "with-imagemagick"
+        # "with-debug"     # build with debug symbols and debugger friendly optimizations
+        "with-xwidgets"
+        # "with-no-frame-refocus" # disables frame re-focus (ie. closing one frame does not refocus another one)
+      ]
+      ++ optional ((toString cfg.icon) != "") "with-${cfg.icon}-icon"
+      ++ optional cfg.enableNativeComp "with-native-comp"
+      ++ optional cfg.enableXwidgets "with-xwidgets"
+      ++ optional cfg.enablePoll "with-poll";
+  };
 in
 {
   options = {
@@ -62,6 +63,7 @@ in
       git
       ripgrep
       fd
+      hunspell
     ];
   };
 }

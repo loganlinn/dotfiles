@@ -85,7 +85,7 @@
           "n"
           "v"
         ];
-        key = "<leader>gB";
+        key = "<leader>goo";
         action.__raw = ''function() Snacks.gitbrowse() end'';
         options.desc = "Browse Git URL";
       }
@@ -121,16 +121,6 @@
         key = "<leader>gs";
         action.__raw = ''function() Snacks.picker.git_status() end'';
         options.desc = "Status";
-      }
-      {
-        key = "<leader>gd";
-        action.__raw = ''function() Snacks.picker.git_diff() end'';
-        options.desc = "Diff (Hunks)";
-      }
-      {
-        key = "<leader>gS";
-        action.__raw = ''function() Snacks.picker.git_stash() end'';
-        options.desc = "Stash";
       }
       {
         key = "<leader>gf";

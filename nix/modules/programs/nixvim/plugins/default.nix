@@ -14,7 +14,7 @@ in
     ./cmp.nix
     ./comment.nix
     ./conform.nix
-    ./dadbod.nix
+    # ./dadbod.nix
     ./early-retirement.nix
     ./git
     ./lazydev.nix
@@ -54,9 +54,6 @@ in
       nvim-autopairs.enable = true;
       schemastore.enable = true;
       trouble.enable = true;
-      vim-dadbod-completion.enable = true;
-      vim-dadbod-ui.enable = true;
-      vim-dadbod.enable = true;
       vim-surround.enable = true;
       web-devicons.enable = true;
       wezterm.enable = true;
@@ -73,12 +70,5 @@ in
         { plugin = zoxide-vim; }
       ]
       ++ (lib.optional config.my.aider.enable { plugin = aider-nvim; });
-    keymaps = [
-      {
-        mode = "n";
-        key = "<leader>od";
-        action = "<cmd>DBUIToggle<cr>";
-      }
-    ];
   };
 }

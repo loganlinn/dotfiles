@@ -15,6 +15,7 @@ in
     plugins.neogit = {
       enable = true;
       settings = {
+        kind = "floating";
         graph_style = "unicode";
         git_services."github.com" =
           "https://github.com/\${owner}/\${repository}/compare/\${branch_name}?expand=1";
@@ -26,6 +27,8 @@ in
           "https://bitbucket.org/\${owner}/\${repository}/pull-requests/new?source=\${branch_name}&t=1";
         integrations.diffview = cfg.plugins.diffview.enable;
         integrations.telescope = cfg.plugins.telescope.enable;
+
+        sections.untracked.folded = true;
       };
     };
   };

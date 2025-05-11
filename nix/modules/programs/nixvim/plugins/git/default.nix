@@ -55,7 +55,7 @@ in
       }
       {
         mode = "n";
-        key = "<leader>gS";
+        key = "<leader>gS"; # doomemacs style
         action = "<cmd>Gwrite<cr>";
         options = {
           desc = "Stage file";
