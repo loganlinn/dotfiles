@@ -174,3 +174,15 @@ qmk *args:
 
 qmk-compile keyboard="mode/m256wh" keymap="loganlinn":
     just qmk compile -kb {{ keyboard }} -km {{ keymap }}
+
+[positional-arguments]
+[script]
+passage *args:
+    hash passage
+    if [[ ! -f ${PASSAGE_IDENTITIES_FILE:=$HOME/.passage/identities} ]]; then
+      echo "Installing ${PASSAGE_IDENTITIES_FILE} from 1Password..."
+      mkdir -p "$(dirname "${PASSAGE_IDENTITIES_FILE}")"
+      op document get "passage identities" -o "${PASSAGE_IDENTITIES_FILE}"
+      echo "Done."
+    fi
+    passage "$@"

@@ -60,10 +60,11 @@ in
     ];
 
     environment.systemPackages = with pkgs; [
-      git
-      ripgrep
       fd
+      git
       hunspell
+      libvterm
+      ripgrep
     ];
   };
 }
