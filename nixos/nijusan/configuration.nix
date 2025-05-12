@@ -1,4 +1,10 @@
-{ self, config, pkgs, lib, ... }:
+{
+  self,
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 with lib;
 
@@ -10,7 +16,6 @@ with lib;
     self.nixosModules.davfs2
     self.nixosModules.docker
     self.nixosModules.gaming
-    self.nixosModules.hyprland
     self.nixosModules.networking
     self.nixosModules.nvidia
     self.nixosModules.pipewire
@@ -27,7 +32,6 @@ with lib;
   ];
 
   my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
-  my.hyprland.enable = false;
   my.tailscale.ssh.enable = true;
   my.vivaldi.enable = true;
 
@@ -54,16 +58,18 @@ with lib;
       log_destination = lib.mkForce "syslog";
       wal_level = "logical";
     };
-    ensureUsers = [{
-      name = "logan"; # config.my.user.name;
-      ensurePermissions = {
-        "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
-      };
-      ensureClauses.replication = true;
-      ensureClauses.login = true;
-      ensureClauses.createrole = true;
-      ensureClauses.createdb = true;
-    }];
+    ensureUsers = [
+      {
+        name = "logan"; # config.my.user.name;
+        ensurePermissions = {
+          "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
+        };
+        ensureClauses.replication = true;
+        ensureClauses.login = true;
+        ensureClauses.createrole = true;
+        ensureClauses.createdb = true;
+      }
+    ];
   };
 
   services.printing.enable = true;

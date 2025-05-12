@@ -1,4 +1,12 @@
-{ inputs, inputs', self, config , pkgs , lib , ...  }:
+{
+  inputs,
+  inputs',
+  self,
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 with lib;
 
@@ -17,7 +25,6 @@ with lib;
     self.nixosModules.docker
     self.nixosModules.frigate
     self.nixosModules.home-manager
-    self.nixosModules.hyprland
     self.nixosModules.monitor-brightness
     self.nixosModules.networking
     self.nixosModules.pipewire
@@ -26,11 +33,21 @@ with lib;
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
     self.nixosModules.xserver
+    {
+      programs.hyprland = {
+        enable = true;
+        xwayland.enable = true;
+      };
+      # wayland.windowManager.hyprland.enable = true; # enable Hyprland
+      nix.settings = {
+        substituters = [ "https://hyprland.cachix.org" ];
+        trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+      };
+    }
   ];
 
   home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
 
-  my.hyprland.enable = false;
   # my.tailscale.ssh.enable = true;
   # my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
 

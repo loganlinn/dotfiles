@@ -18,6 +18,8 @@
     eww.url = "github:elkowar/eww";
     # eww.inputs.nixpkgs.follows = "nixpkgs";
     hyprland.url = "github:hyprwm/Hyprland";
+    hyprland-plugins.url = "github:hyprwm/hyprland-plugins";
+    hyprland-plugins.inputs.hyprland.follows = "hyprland";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     # emacs-overlay.inputs.nixpkgs.follows = "nixpkgs";
     # emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs-stable";

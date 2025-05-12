@@ -1,4 +1,13 @@
-{ inputs, self, config, lib, pkgs, nix-colors, ... }:
+{
+  inputs,
+  inputs',
+  self,
+  config,
+  lib,
+  pkgs,
+  nix-colors,
+  ...
+}:
 
 {
   imports = [
@@ -29,6 +38,62 @@
     ../../nix/modules/spellcheck.nix
     ../../nix/modules/desktop
     ../../nix/modules/desktop/i3
+    {
+      wayland.windowManager.hyprland = {
+        enable = true;
+        # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
+        package = null; # inputs'.hyprland.packages.hyprland;
+        portalPackage = null; # inputs'.hyprland.packages.xdg-desktop-portal-hyprland;
+        plugins = [
+          # inputs'.hyprland-plugins.packages.hyprbars
+        ];
+        settings = {
+          "$mod" = "SUPER";
+          bind =
+            [
+              "$mod, F, exec, firefox"
+              ", Print, exec, grimblast copy area"
+            ]
+            ++ (
+              # workspaces
+              # binds $mod + [shift +] {1..9} to [move to] workspace {1..9}
+              builtins.concatLists (
+                builtins.genList (
+                  i:
+                  let
+                    ws = i + 1;
+                  in
+                  [
+                    "$mod, code:1${toString i}, workspace, ${toString ws}"
+                    "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
+                  ]
+                ) 9
+              )
+            );
+        };
+      };
+      home.pointerCursor = {
+        gtk.enable = true;
+        package = pkgs.bibata-cursors;
+        name = "Bibata-Modern-Classic";
+        size = 16;
+      };
+      gtk = {
+        enable = true;
+        # theme = {
+        #   package = pkgs.flat-remix-gtk;
+        #   name = "Flat-Remix-GTK-Grey-Darkest";
+        # };
+        # iconTheme = {
+        #   package = pkgs.adwaita-icon-theme;
+        #   name = "Adwaita";
+        # };
+        # font = {
+        #   name = "Sans";
+        #   size = 11;
+        # };
+      };
+    }
   ];
 
   # my.python.package = pkgs.python311;
@@ -47,7 +112,7 @@
   };
   services.picom.enable = true;
   services.polybar.enable = true;
-  services.polybar.settings = {};
+  services.polybar.settings = { };
   xsession.windowManager.i3.enable = true;
   xsession.windowManager.i3.config.terminal = "kitty";
 
@@ -71,13 +136,13 @@
   # error: builder for '/nix/store/2f6m4847kdxkg36w408yfvc6yxqrf7w7-python3.11-stem-1.8.2.drv' failed with exit code 1;
   #    last 10 log lines:
   #    >   https://pypi.org/project/pycodestyle/
-  #    > 
+  #    >
   #    > TESTING FAILED (1 seconds)
   #    >   [UNIT TEST] test_descriptor_signing (test.unit.descriptor.server_descriptor.TestServerDescriptor) ... ERROR
   #    >   [UNIT TEST] test_descriptor_signing (test.unit.descriptor.extrainfo_descriptor.TestExtraInfoDescriptor) ... ERROR
-  #    > 
+  #    >
   #    > You can re-run just these tests with:
-  #    > 
+  #    >
   #    >   run_tests.py --unit --test descriptor.server_descriptor
   #    >   run_tests.py --unit --test descriptor.extrainfo_descriptor
   #    For full logs, run 'nix log /nix/store/2f6m4847kdxkg36w408yfvc6yxqrf7w7-python3.11-stem-1.8.2.drv'``
