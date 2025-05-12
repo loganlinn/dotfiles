@@ -120,7 +120,11 @@ ctrl-c = "mode main"
 ctrl-g = "mode main"
 
 [workspace-to-monitor-force-assignment]
-"0" = "secondary"
+"6" = ["secondary", 'built-in']
+"7" = ["secondary", 'built-in']
+"8" = ["secondary", 'built-in']
+"9" = ["secondary", 'built-in']
+"0" = ["secondary", 'built-in']
 
 # [[on-window-detected]]
 # if.app-id = "com.apple.MobileSMS"
