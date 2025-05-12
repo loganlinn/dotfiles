@@ -33,17 +33,18 @@ with lib;
     self.nixosModules.thunar
     self.nixosModules.thunderbolt
     self.nixosModules.xserver
-    {
-      programs.hyprland = {
-        enable = true;
-        xwayland.enable = true;
-      };
-      # wayland.windowManager.hyprland.enable = true; # enable Hyprland
-      nix.settings = {
-        substituters = [ "https://hyprland.cachix.org" ];
-        trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
-      };
-    }
+    # inputs.hyprland.nixosModules.default
+    # {
+    #   programs.hyprland = {
+    #     enable = true;
+    #     xwayland.enable = true;
+    #   };
+    #   # wayland.windowManager.hyprland.enable = true; # enable Hyprland
+    #   nix.settings = {
+    #     substituters = [ "https://hyprland.cachix.org" ];
+    #     trusted-public-keys = [ "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=" ];
+    #   };
+    # }
   ];
 
   home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
