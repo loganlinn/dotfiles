@@ -124,7 +124,7 @@ ctrl-g = "mode main"
 "7" = ["secondary", 'built-in']
 "8" = ["secondary", 'built-in']
 "9" = ["secondary", 'built-in']
-"0" = ["secondary", 'built-in']
+"10" = ["secondary", 'built-in']
 
 # [[on-window-detected]]
 # if.app-id = "com.apple.MobileSMS"

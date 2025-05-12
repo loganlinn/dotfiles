@@ -58,12 +58,12 @@ in
       "pngpaste" # :lang org
       emacs-plus-brew
     ];
-
     environment.systemPackages = with pkgs; [
       fd
       git
       hunspell
       ripgrep
+      (writeShellScriptBin "magit" (readFile ../../../bin/magit))
     ];
   };
 }

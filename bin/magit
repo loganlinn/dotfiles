@@ -2,22 +2,36 @@
 
 set -euo pipefail
 
+if [[ -n ${1-} ]]; then
+  cd "${1}"
+fi
+
+if ! git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+  echo >&2 "Not in a git repository!"
+  exit 1
+fi
+
 # If emacs isn't running, we start a temporary daemon, solely for this window.
 if ! emacsclient --suppress-output --eval nil 2>/dev/null; then
   cleanup() {
     emacsclient --eval '(let (kill-emacs-hook) (kill-emacs))'
   }
 
-  echo "No Emacs daemon/server is available! Starting one..."
+  echo >&2 "No Emacs daemon/server is available! Starting one..."
   emacs --daemon
   trap cleanup EXIT INT TERM
 fi
 
 # Fix incompatible terminals that cause odd 'not a valid terminal' errors
-[[ ! $TERM = "alacritty" ]] || export TERM=xterm-256color
+if [[ ${TERM-} != "alacritty" ]]; then
+  export TERM=xterm-256color
+fi
 
-exec emacsclient \
-  --alternate-editor "" \
-  --create-frame \
-  --eval "(map! :map magit-mode-map :nv \"q\" #'evil-quit-all)" \
-  --eval "(magit-status)"
+emacsclient \
+  --alternate-editor "emacs" \
+  --suppress-output \
+  --eval "(magit-status \"${git_root}\")"
+
+if hash osascript 2>/dev/null; then
+  osascript -e "tell application \"Emacs\" to activate" || true
+fi

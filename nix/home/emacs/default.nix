@@ -40,6 +40,10 @@ with lib;
     };
   };
 
+  home.packages = [
+    (pkgs.writeShellScriptBin "magit" (readFile ../../../bin/magit))
+  ];
+
   programs.zsh.initExtra = ''
     function e() {
         hash emacs || return 1
