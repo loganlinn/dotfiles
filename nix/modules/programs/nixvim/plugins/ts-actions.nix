@@ -45,6 +45,19 @@
     ];
     # TODO make this lazy
     extraConfigLua = ''
+      local ts_priority_f = {
+        { key = "f", pattern = "^update import", order = 102 },
+        { key = "f", pattern = "^add import", order = 101 },
+        { key = "f", pattern = "^fix this", order = 101 },
+        { key = "f", pattern = "^add async modifier", order = 100 },
+        { key = "f", pattern = "^change spelling", order = 100 },
+        { key = "f", pattern = "^remove unused", order = 100 },
+        { key = "f", pattern = "^prefix .* with an underscore", order = 100 },
+        { key = "f", pattern = "^update the dependencies array", order = 100 },
+        { key = "F", pattern = "^fix all", order = 99 },
+        { key = "d", pattern = "disable .* for this line", order = 99 },
+        { key = "D", pattern = "disable .* entire file", order = 98 },
+      }
       require("ts-actions").setup {
         ---@type table<string, { pattern: string, key: string, order?: integer }[]>
         priority = {
