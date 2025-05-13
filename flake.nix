@@ -94,6 +94,7 @@
         ./flake-module
         flake-parts.flakeModules.easyOverlay
         inputs.flake-root.flakeModule
+        inputs.home-manager.flakeModules.home-manager
       ];
 
       systems = [
