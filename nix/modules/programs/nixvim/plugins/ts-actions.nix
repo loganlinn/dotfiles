@@ -21,28 +21,24 @@
         };
       }
     ];
-    keymaps = [
+    autoCmd = [
       {
-        mode = "n";
-        key = "<leader>cp";
-        action.__raw = ''
-          function() require("ts-actions").prev() end
+        event = "VimEnter";
+        pattern = [
+          "*.ts"
+          "*.tsx"
+          "*.js"
+          "*.jsx"
+        ];
+        callback.__raw = ''
+          function()
+            vim.api.nvim_buf_set_keymap(0, 'n', ']d', '<cmd>lua require("ts-actions").next()<CR>', { noremap = true, desc = "Next ts-action" })
+            vim.api.nvim_buf_set_keymap(0, 'n', '[d', '<cmd>lua require("ts-actions").prev()<CR>', { noremap = true, desc = "Prev ts-action" })
+          end
         '';
-        options = {
-          desc = "Next ts-action";
-        };
-      }
-      {
-        mode = "n";
-        key = "<leader>cn";
-        action.__raw = ''
-          function() require("ts-actions").next() end
-        '';
-        options = {
-          desc = "Next ts-action";
-        };
       }
     ];
+
     # TODO make this lazy
     extraConfigLua = ''
       local ts_priority_f = {
