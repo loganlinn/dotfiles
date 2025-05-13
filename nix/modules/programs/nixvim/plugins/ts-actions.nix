@@ -23,12 +23,10 @@
     ];
     autoCmd = [
       {
-        event = "VimEnter";
+        event = "FileType";
         pattern = [
-          "*.ts"
-          "*.tsx"
-          "*.js"
-          "*.jsx"
+          "typescript"
+          "javascript"
         ];
         callback.__raw = ''
           function()
