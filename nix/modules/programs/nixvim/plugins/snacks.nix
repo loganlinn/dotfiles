@@ -294,7 +294,11 @@
         action.__raw = ''function() Snacks.scratch.select() end'';
         options.desc = "Select Scratch Buffer";
       }
-      # { "<leader>n",  function() Snacks.notifier.show_history() end, desc = "Notification History" },
+      {
+        key = "<leader>od";
+        action.__raw = ''function() Snacks.picker.diagnostics_buffer() end'';
+        options.desc = "Select Scratch Buffer";
+      }
       # { "<leader>bd", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
       # { "<leader>cR", function() Snacks.rename.rename_file() end, desc = "Rename File" },
       # { "<leader>gg", function() Snacks.lazygit() end, desc = "Lazygit" },
