@@ -60,7 +60,7 @@
         signs = true;
         underline = true;
         update_on_insert = false;
-        virtual_lines.current_line = false;
+        virtual_lines = false;
         virtual_text = false;
       };
 
