@@ -109,18 +109,16 @@ M.balance_panes = function(...)
 end
 
 function M.apply_to_config(config)
-  wezterm.on("augment-command-palette", function()
-    return {
-      {
-        brief = "Balance panes horizontally",
-        action = wezterm.action_callback(M.balance_panes_x),
-      },
-      {
-        brief = "Balance panes vertically",
-        action = wezterm.action_callback(M.balance_panes_y),
-      },
-    }
-  end)
+  require("dotfiles.command-palette").add_entries({
+    {
+      brief = "Balance panes horizontally",
+      action = wezterm.action_callback(M.balance_panes_x),
+    },
+    {
+      brief = "Balance panes vertically",
+      action = wezterm.action_callback(M.balance_panes_y),
+    },
+  })
 
   table.insert(config.keys, {
     key = "=",

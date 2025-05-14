@@ -8,7 +8,6 @@ M.apply_to_config = function(config)
     "dotfiles.event.user-var-changed",
     "dotfiles.event.window-focus-changed",
     "dotfiles.event.window-config-reloaded",
-    "dotfiles.event.augment-command-palette",
     "dotfiles.event.open-uri",
   }) do
     local mod = require(modname)
