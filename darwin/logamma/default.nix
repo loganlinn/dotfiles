@@ -110,6 +110,7 @@
         ../../nix/home/yt-dlp.nix
       ];
       my.aider.enable = true;
+      programs.passage.enable = true;
       programs.age-op.enable = true;
       programs.kitty.enable = true;
       programs.nixvim = {

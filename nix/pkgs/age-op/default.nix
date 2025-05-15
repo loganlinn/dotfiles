@@ -28,5 +28,6 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/${src.owner}/${src.repo}";
     license = licenses.mit;
     platforms = platforms.all;
+    mainProgram = "age-op";
   };
 }
