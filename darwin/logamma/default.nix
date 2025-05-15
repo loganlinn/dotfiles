@@ -131,14 +131,16 @@
         actionlint
         asciinema
         checkov
-        flyctl
-        google-cloud-sdk
-        kcat
-        mkcert
-        uv
-        process-compose
         deno
         dive
+        flyctl
+        go-task
+        google-cloud-sdk
+        kanata-with-cmd
+        kcat
+        mkcert
+        process-compose
+        uv
       ];
       xdg.enable = true;
       manual.html.enable = true;

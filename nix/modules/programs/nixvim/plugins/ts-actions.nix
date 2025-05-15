@@ -21,25 +21,30 @@
         };
       }
     ];
-    autoCmd = [
+    keymaps = [
       {
-        event = "FileType";
-        pattern = [
-          "typescript"
-          "javascript"
-        ];
-        callback.__raw = ''
-          function()
-            vim.api.nvim_buf_set_keymap(0, 'n', ']d', '<cmd>lua require("ts-actions").next()<CR>', { noremap = true, desc = "Next ts-action" })
-            vim.api.nvim_buf_set_keymap(0, 'n', '[d', '<cmd>lua require("ts-actions").prev()<CR>', { noremap = true, desc = "Prev ts-action" })
-          end
+        mode = "n";
+        key = "[d";
+        action.__raw = ''
+          function() require("ts-actions").prev() end
         '';
+        options = {
+          desc = "Next ts-action";
+        };
+      }
+      {
+        mode = "n";
+        key = "]d";
+        action.__raw = ''
+          function() require("ts-actions").prev() end
+        '';
+        options = {
+          desc = "Next ts-action";
+        };
       }
     ];
-
-    # TODO make this lazy
     extraConfigLua = ''
-      local ts_priority_f = {
+      local es_priority = {
         { key = "f", pattern = "^update import", order = 102 },
         { key = "f", pattern = "^add import", order = 101 },
         { key = "f", pattern = "^fix this", order = 101 },
@@ -55,27 +60,28 @@
       require("ts-actions").setup {
         ---@type table<string, { pattern: string, key: string, order?: integer }[]>
         priority = {
-          ["typescript"] = ts_priority_f,
-          ["typescriptreact"] = ts_priority_f,
+          ["javascript"] = es_priority,
+          ["typescript"] = es_priority,
+          ["typescriptreact"] = es_priority,
         },
         severity = {
-          ["typescriptreact"] = vim.diagnostic.severity.ERROR,
-          ["typescript"] = vim.diagnostic.severity.ERROR,
-          ["lua"] = vim.diagnostic.severity.WARN,
+          -- ["typescriptreact"] = vim.diagnostic.severity.ERROR,
+          -- ["typescript"] = vim.diagnostic.severity.ERROR,
+          -- ["lua"] = vim.diagnostic.severity.WARN,
         },
         ---@param action LocalCodeAction
-        filter_function = function(action)
-          -- Check if title exists and contains "refactor."
-          if type(action.kind) == "string" and action.kind:find "^refactor%." then
-            return false
-          end
-
-          if action.title:match "missing function declaration" then
-            return false
-          end
-          -- Default to false if none of the conditions are met
-          return true
-        end,
+        -- filter_function = function(action)
+        --   -- Check if title exists and contains "refactor."
+        --   if type(action.kind) == "string" and action.kind:find "^refactor%." then
+        --     return false
+        --   end
+        --
+        --   if action.title:match "missing function declaration" then
+        --     return false
+        --   end
+        --   -- Default to false if none of the conditions are met
+        --   return true
+        -- end,
       }
     '';
   };
