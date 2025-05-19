@@ -60,17 +60,14 @@ in
       { path = ./include/gitalias.txt; }
     ];
     aliases = {
+      branch-name = "rev-parse --abbrev-ref HEAD";
       config-private = "config --file ${privateConfigFile}";
-
       toplevel = "rev-parse --show-toplevel";
       cdup = "rev-parse --show-cdup";
       prefix = "rev-parse --show-prefix";
-
       fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
       rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
-
       commit-empty = "commit --allow-empty-message -m ''";
-
       stash-search = ''
         !f() {
           if ! (( $# )); then

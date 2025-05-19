@@ -36,6 +36,7 @@
         splitbelow = true;
         splitkeep = "screen";
         splitright = true;
+        exrc = true;
       };
 
       globals = {

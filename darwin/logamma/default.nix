@@ -128,6 +128,7 @@
       };
       home.sessionVariables = { };
       home.packages = with pkgs; [
+        act
         actionlint
         asciinema
         checkov
@@ -139,6 +140,7 @@
         kanata-with-cmd
         kcat
         mkcert
+        pinact
         process-compose
         uv
       ];
