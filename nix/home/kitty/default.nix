@@ -129,7 +129,7 @@ in
     '';
   };
 
-  programs.rofi.terminal = "${config.programs.kitty.package}/bin/kitty";
+  programs.rofi.terminal = lib.mkDefault "${config.programs.kitty.package}/bin/kitty";
 
   home.packages =
     with pkgs;

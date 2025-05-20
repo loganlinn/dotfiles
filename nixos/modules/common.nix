@@ -139,7 +139,7 @@ in
     security.sudo.enable = mkDefault true;
 
     nix.enable = true;
-    nix.package = pkgs.nixVersions.stable;
+    # nix.package = pkgs.nixVersions.stable;
     nix.settings = my.nix.settings;
     nix.gc.automatic = mkDefault true;
     nix.nixPath = [

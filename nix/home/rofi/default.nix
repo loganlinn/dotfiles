@@ -37,7 +37,7 @@ in
       rofi-file-browser
       rofi-top
     ];
-    terminal = getExe config.programs.kitty.package;
+    terminal = mkDefault (getExe config.programs.kitty.package);
     font = "Iosevka Nerd Font 12";
     extraConfig = {
       modes = [ "combi" "emoji" "ssh" "keys" ]; # default modes

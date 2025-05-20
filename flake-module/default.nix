@@ -31,20 +31,22 @@ let
       lib = mkLib lib;
     };
 
-  mkNixosSystem =
-    system: modules:
+  mkNixosSystem = system: modules: mkNixosSystem' system modules {};
+
+  mkNixosSystem' =
+    system: modules: specialArgs:
     withSystem system (
       systemArgs@{
-        self,
         self',
         inputs',
         config,
         pkgs,
+        lib ? pkgs.lib,
         ...
       }:
       inputs.nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = mkSpecialArgs systemArgs;
+        specialArgs = (mkSpecialArgs systemArgs) // specialArgs;
         modules = [
           ../options.nix
           {
@@ -177,6 +179,7 @@ in
   flake.lib = {
     inherit
       mkSpecialArgs
+      mkNixosSystem'
       mkNixosSystem
       mkHomeConfiguration
       mkDarwinSystem

@@ -88,7 +88,7 @@
   programs.btop = {
     enable = true;
     settings = {
-      color_theme = "onedark";
+      color_theme = lib.mkDefault "onedark";
       theme_background = false;
     };
   };

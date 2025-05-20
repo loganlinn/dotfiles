@@ -1,12 +1,8 @@
 { config, lib, pkgs, ... }:
-
 with lib;
-
 let
-
   cliCfg = config.programs._1password;
   guiCfg = config.programs._1password-gui;
-
 in {
   config = {
     programs._1password.enable = mkDefault true;
