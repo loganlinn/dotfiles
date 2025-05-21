@@ -125,7 +125,7 @@
   };
 
   boot.loader = {
-    grub.configurationLimit = 1;
-    systemd-boot.configurationLimit = 1;
+    grub.configurationLimit = 10;
+    systemd-boot.configurationLimit = 10;
   };
 }
