@@ -331,6 +331,7 @@ in
             "float,class:^(nm-applet)$"
             "float,class:^(nm-connection-editor)$"
             "float,class:^(org.kde.polkit-kde-authentication-agent-1)$"
+            "float,title:^(Event Tester)$" # xev
           ];
           binde = [
             # Resize windows
@@ -367,27 +368,26 @@ in
             "$mainMod, F10, Disable night mode, exec, pkill hyprsunset"
             "$mainMod, F9, Enable night mode, exec, ${getExe pkgs.hyprsunset} --temperature 3500" # good values: 3500, 3000, 2500
             "$mainMod, P, Pin, pin"
-            "$mainMod, Q, Close window, killactive"
+            "$mainMod, Q, Close, killactive"
             "$mainMod, Return, Terminal, exec, ${cfg.terminal}"
-            "$mainMod, SPACE, Application launcher, exec, pkill -x rofi || ${./scripts/rofi.sh} drun"
-            "$mainMod, Z, Emoji picker, exec, pkill -x rofi || ${./scripts/rofi.sh} emoji"
-            "$mainMod, backslash, Clipboard manager, exec, ${./scripts/ClipManager.sh}"
+            "$mainMod, SPACE, Application, exec, pkill -x rofi || ${./scripts/rofi.sh} drun"
+            "$mainMod, Z, Emoji, exec, pkill -x rofi || ${./scripts/rofi.sh} emoji"
+            "$mainMod, backslash, Clipboard, exec, ${./scripts/ClipManager.sh}"
             "$mainMod, backspace, Logout, exec, pkill -x wlogout || wlogout -b 4" # logout menu
-            "$mainMod, question, Show keybinds, exec, ${./scripts/keybinds.sh}"
+            "$mainMod, question, Keybinds, exec, ${./scripts/keybinds.sh}"
+            "$mainMod SHIFT, N, Control center, exec, swaync-client -t -sw" # swayNC panel
             # "$mainMod CTRL, C, Color picker, exec, hyprpicker --autocopy --format=hex"
             # "$mainMod, F6, Rename workspace, renameworkspace,"
           ];
           bind =
             [
               # "$mainMod, tab, exec, pkill -x rofi || ${./scripts/rofi.sh} window" # switch between desktop applications
-              "$mainMod SHIFT, N, exec, swaync-client -t -sw" # swayNC panel
-              "$mainMod SHIFT, Q, exec, swaync-client -t -sw" # swayNC panel
 
               # Screenshot/Screencapture
-              ", Print, exec, ${./scripts/screenshot.sh} s" # drag to snip an area / click on a window to print it
-              "$mainMod CTRL, P, exec, ${./scripts/screenshot.sh} sf" # frozen screen, drag to snip an area / click on a window to print it
-              "$mainMod, print, exec, ${./scripts/screenshot.sh} m" # print focused monitor
-              "$mainMod ALT, P, exec, ${./scripts/screenshot.sh} p" # print all monitor outputs
+              ", Print, exec, ${./scripts/screenshot.sh} m" # print focused monitor
+              "SHIFT, Print, exec, ${./scripts/screenshot.sh} s" # drag to snip an area / click on a window to print it
+              "$CONTROL SHIFT, Print, exec, ${./scripts/screenshot.sh} sf" # frozen screen, drag to snip an area / click on a window to print it
+              "$CONTROL, Print, exec, ${./scripts/screenshot.sh} p" # print all monitor outputs
 
               # Functional keybinds
               ",XF86Sleep, exec, systemctl suspend"
@@ -483,6 +483,16 @@ in
           ];
         };
         extraConfig = ''
+          # window resize
+          bind = $mod, S, submap, resize
+          submap = resize
+          binde = , right, resizeactive, 10 0
+          binde = , left, resizeactive, -10 0
+          binde = , up, resizeactive, 0 -10
+          binde = , down, resizeactive, 0 10
+          bind = , escape, submap, reset
+          submap = reset
+
           binds {
             workspace_back_and_forth = 1
             #allow_workspace_cycles=1

@@ -126,13 +126,14 @@
       ];
 
       perSystem =
-        ctx@{ inputs'
-        , self'
-        , config
-        , system
-        , pkgs
-        , lib
-        , ...
+        ctx@{
+          inputs',
+          self',
+          config,
+          system,
+          pkgs,
+          lib,
+          ...
         }:
         {
           imports = [ ./options.nix ];
@@ -143,7 +144,6 @@
             overlays = [
               self.overlays.default
               inputs.emacs-overlay.overlays.default
-              inputs.hyprland.overlays.default
               # (_: super: let pkgs = inputs.fenix.inputs.nixpkgs.legacyPackages.${super.system}; in inputs.fenix.overlays.default pkgs pkgs)
             ];
           };
