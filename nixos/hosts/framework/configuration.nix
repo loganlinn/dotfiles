@@ -39,7 +39,7 @@
   ];
 
   networking.hostName = hostname;
-  
+
   # home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
   home-manager.sharedModules = [
     (_: {
@@ -74,10 +74,13 @@
       ];
       home.packages = with pkgs; [
         uv
+        slack
+        zoom-us
       ];
       programs.emacs.enable = true;
-      programs.google-chrome.enable = true;
       programs.firefox.enable = true;
+      programs.google-chrome.enable = true;
+      programs.kitty.enable = true;
       programs.librewolf.enable = true;
       programs.ssh.enable = true;
       programs.wezterm.enable = true;
@@ -85,20 +88,47 @@
         enable = true;
         defaultEditor = true;
         plugins.lsp.servers.nixd.settings.options = {
-          nixos.expr = ''(builtins.getFlake "${self}").nixosConfigurations.framework.options'';
+          nixos.expr = ''(builtins.getFlake "${self}").nixosConfigurations.${hostname}.options'';
         };
       };
+      wayland.windowManager.hyprland =
+        let
+          primaryMonitors = [
+            "Dell Inc. DELL U2723QE 6DS19P3"
+          ];
+        in
+        {
+          extraConfig = ''
+            # monitor = name, resolution, position, scale
+            bindl = , switch:off:[Lid Switch], exec, hyprctl keyword monitor "eDP-1, disable"
+            bindl = , switch:on:[Lid Switch], exec, hyprctl keyword monitor "eDP-1, preferred, auto-left, auto"
+
+            # workspace=1,monitor:desc:BNQ BenQ EL2870U PCK00489SL0,default:true
+            # workspace=2,monitor:desc:BNQ BenQ EL2870U PCK00489SL0
+            # workspace=3,monitor:desc:BNQ BenQ EL2870U PCK00489SL0
+            # workspace=4,monitor:desc:BNQ BenQ EL2870U PCK00489SL0
+
+            # workspace=5,monitor:desc:BNQ BenQ EW277HDR 99J01861SL0,default:true
+            # workspace=6,monitor:desc:BNQ BenQ EW277HDR 99J01861SL0
+            # workspace=7,monitor:desc:BNQ BenQ EW277HDR 99J01861SL0
+
+            # workspace=8,monitor:desc:BNQ BenQ xl2420t 99D06760SL0,default:true
+            # workspace=9,monitor:desc:BNQ BenQ xl2420t 99D06760SL0
+
+            # workspace=10,monitor:desc:BNQ BenQ EL2870U PCK00489SL0
+          '';
+        };
     })
   ];
 
   environment.systemPackages = with pkgs; [
-     pciutils
-     usbutils
-     usbrip
-     usbtop
-     powertop
+    pciutils
+    usbutils
+    usbrip
+    usbtop
+    powertop
   ];
-  
+
   programs._1password.enable = true;
   programs._1password-gui.enable = true;
 
@@ -121,7 +151,7 @@
     };
   };
   users.users.minidlna = {
-    extraGroups = ["users"]; # so minidlna can access the files.
+    extraGroups = [ "users" ]; # so minidlna can access the files.
   };
 
   boot.loader = {

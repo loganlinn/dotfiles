@@ -12,18 +12,18 @@ fi
 #     grep "$1" "$HOME/NixOS/flake.nix" | sed -E 's/.*"([^"]+)".*/\1/'
 # }
 get_nix_value() {
-    awk '
-    /settings = {/ {inside_settings=1; next} 
-    inside_settings && /}/ {inside_settings=0} 
+  awk '
+    /settings = {/ {inside_settings=1; next}
+    inside_settings && /}/ {inside_settings=0}
     inside_settings && $0 ~ key {print gensub(/.*"([^"]+)".*/, "\\1", "g", $0)}
     ' key="$1" "$HOME/NixOS/flake.nix"
 }
-
 
 _browser=$(get_nix_value "browser =")
 _terminal=$(get_nix_value "terminal =")
 _terminal_FM=$(get_nix_value "terminalFileManager =")
 
+# TODO hyprctl binds -j | jq ...
 yad \
   --center \
   --title="Hyprland Keybinds" \
@@ -104,4 +104,4 @@ yad \
   "ALT Tab" "Move focus down" "movefocus d" \
   "SUPER 1-0" "Switch to workspace 1-10" "workspace 1-10" \
   "SUPER SHIFT 1-0" "Move to workspace 1-10" "movetoworkspace 1-10" \
-  "SUPER SHIFT 1-0" "Silently move to workspace 1-10" "movetoworkspacesilent 1-10" \
+  "SUPER SHIFT 1-0" "Silently move to workspace 1-10" "movetoworkspacesilent 1-10"
