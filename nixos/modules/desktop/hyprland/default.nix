@@ -103,7 +103,7 @@ in
           variables = [ "--all" ];
         };
         settings = {
-          "$mainMod" = "SUPER";
+          "$mod" = "SUPER";
           "$moveMod" = "SUPER SHIFT";
           "$moveSilentMod" = "SUPER SHIFT CTRL";
           "$hyper" = "ALT CTRL SHIFT SUPER";
@@ -335,16 +335,16 @@ in
           ];
           binde = [
             # Resize windows
-            "$mainMod SHIFT, right, resizeactive, 30 0"
-            "$mainMod SHIFT, left, resizeactive, -30 0"
-            "$mainMod SHIFT, up, resizeactive, 0 -30"
-            "$mainMod SHIFT, down, resizeactive, 0 30"
+            "$mod SHIFT, right, resizeactive, 30 0"
+            "$mod SHIFT, left, resizeactive, -30 0"
+            "$mod SHIFT, up, resizeactive, 0 -30"
+            "$mod SHIFT, down, resizeactive, 0 30"
 
             # Resize windows with hjkl keys
-            "$mainMod SHIFT, l, resizeactive, 30 0"
-            "$mainMod SHIFT, h, resizeactive, -30 0"
-            "$mainMod SHIFT, k, resizeactive, 0 -30"
-            "$mainMod SHIFT, j, resizeactive, 0 30"
+            "$mod SHIFT, l, resizeactive, 30 0"
+            "$mod SHIFT, h, resizeactive, -30 0"
+            "$mod SHIFT, k, resizeactive, 0 -30"
+            "$mod SHIFT, j, resizeactive, 0 30"
 
             # Functional keybinds
             ",XF86MonBrightnessDown,exec,brightnessctl set 2%-"
@@ -355,33 +355,33 @@ in
           bindd = [
             "$CONTROL ALT, DELETE, System monitor, exec, ${cfg.processManager}'"
             "$CONTROL, ESCAPE, Toggle waybar, exec, pkill waybar || waybar" # toggle waybar
-            "$mainMod ALT, Q, Kill window, forcekillactive"
-            "$mainMod CTRL, F, Toggle fullscreen, fullscreen"
-            "$mainMod CTRL, L, Lock, exec, hyprlock"
-            "$mainMod CTRL, Q, Kill window picker, exec, hyprctl kill"
-            "$mainMod CTRL, Return, Editor, exec, $editor"
-            "$mainMod SHIFT, F, Toggle floating, togglefloating"
-            "$mainMod SHIFT, G, Toggle group, togglegroup"
-            "$mainMod SHIFT, Return, Web browser, exec, $browser"
-            "$mainMod, E, File browser, exec, $fileManager"
-            "$mainMod, F, Focus next, cyclenext"
-            "$mainMod, F10, Disable night mode, exec, pkill hyprsunset"
-            "$mainMod, F9, Enable night mode, exec, ${getExe pkgs.hyprsunset} --temperature 3500" # good values: 3500, 3000, 2500
-            "$mainMod, P, Pin, pin"
-            "$mainMod, Q, Close, killactive"
-            "$mainMod, Return, Terminal, exec, ${cfg.terminal}"
-            "$mainMod, SPACE, Application, exec, pkill -x rofi || ${./scripts/rofi.sh} drun"
-            "$mainMod, Z, Emoji, exec, pkill -x rofi || ${./scripts/rofi.sh} emoji"
-            "$mainMod, backslash, Clipboard, exec, ${./scripts/ClipManager.sh}"
-            "$mainMod, backspace, Logout, exec, pkill -x wlogout || wlogout -b 4" # logout menu
-            "$mainMod, question, Keybinds, exec, ${./scripts/keybinds.sh}"
-            "$mainMod SHIFT, N, Control center, exec, swaync-client -t -sw" # swayNC panel
-            # "$mainMod CTRL, C, Color picker, exec, hyprpicker --autocopy --format=hex"
-            # "$mainMod, F6, Rename workspace, renameworkspace,"
+            "$mod ALT, Q, Kill window, forcekillactive"
+            "$mod CTRL, F, Toggle fullscreen, fullscreen"
+            "$mod CTRL, L, Lock, exec, hyprlock"
+            "$mod CTRL, Q, Kill window picker, exec, hyprctl kill"
+            "$mod CTRL, Return, Editor, exec, $editor"
+            "$mod SHIFT, F, Toggle floating, togglefloating"
+            "$mod SHIFT, G, Toggle group, togglegroup"
+            "$mod SHIFT, Return, Web browser, exec, $browser"
+            "$mod, E, File browser, exec, $fileManager"
+            "$mod, F, Focus next, cyclenext"
+            "$mod, F10, Disable night mode, exec, pkill hyprsunset"
+            "$mod, F9, Enable night mode, exec, ${getExe pkgs.hyprsunset} --temperature 3500" # good values: 3500, 3000, 2500
+            "$mod, P, Pin, pin"
+            "$mod, Q, Close, killactive"
+            "$mod, Return, Terminal, exec, ${cfg.terminal}"
+            "$mod, SPACE, Application, exec, pkill -x rofi || ${./scripts/rofi.sh} drun"
+            "$mod, Z, Emoji, exec, pkill -x rofi || ${./scripts/rofi.sh} emoji"
+            "$mod, backslash, Clipboard, exec, ${./scripts/ClipManager.sh}"
+            "$mod, backspace, Logout, exec, pkill -x wlogout || wlogout -b 4" # logout menu
+            "$mod, question, Keybinds, exec, ${./scripts/keybinds.sh}"
+            "$mod SHIFT, N, Control center, exec, swaync-client -t -sw" # swayNC panel
+            # "$mod CTRL, C, Color picker, exec, hyprpicker --autocopy --format=hex"
+            # "$mod, F6, Rename workspace, renameworkspace,"
           ];
           bind =
             [
-              # "$mainMod, tab, exec, pkill -x rofi || ${./scripts/rofi.sh} window" # switch between desktop applications
+              # "$mod, tab, exec, pkill -x rofi || ${./scripts/rofi.sh} window" # switch between desktop applications
 
               # Screenshot/Screencapture
               ", Print, exec, ${./scripts/screenshot.sh} m" # print focused monitor
@@ -399,65 +399,65 @@ in
               ",xf86AudioPrev, exec, playerctl previous"
 
               # to switch between windows in a floating workspace
-              "$mainMod, Tab, cyclenext"
-              "$mainMod, Tab, bringactivetotop"
+              "$mod, Tab, cyclenext"
+              "$mod, Tab, bringactivetotop"
 
-              "$mainMod, rightbracket, workspace, r+1"
-              "$mainMod, leftbracket, workspace, r-1"
+              "$mod, rightbracket, workspace, r+1"
+              "$mod, leftbracket, workspace, r-1"
               "$moveMod, rightbracket, movetoworkspace, r+1"
               "$moveMod, leftbracket, movetoworkspace, r-1"
               "$moveSilentMod, rightbracket, movetoworkspacesilent, r+1"
               "$moveSilentMod, leftbracket, movetoworkspacesilent, r-1"
 
               # first empty workspace
-              "$mainMod, minus, workspace, empty"
+              "$mod, minus, workspace, empty"
               "$moveMod, minus, movetoworkspace, empty"
               "$moveSilentMod, minus, movetoworkspacesilent, empty"
 
               # Move focus with MOD + arrow keys
-              "$mainMod, left, movefocus, l"
-              "$mainMod, right, movefocus, r"
-              "$mainMod, up, movefocus, u"
-              "$mainMod, down, movefocus, d"
+              "$mod, left, movefocus, l"
+              "$mod, right, movefocus, r"
+              "$mod, up, movefocus, u"
+              "$mod, down, movefocus, d"
               "ALT, Tab, movefocus, d"
 
               # Move focus with MOD + HJKL keys
-              "$mainMod, h, movefocus, l"
-              "$mainMod, l, movefocus, r"
-              "$mainMod, k, movefocus, u"
-              "$mainMod, j, movefocus, d"
+              "$mod, h, movefocus, l"
+              "$mod, l, movefocus, r"
+              "$mod, k, movefocus, u"
+              "$mod, j, movefocus, d"
 
               # Go to workspace 6 and 7 with mouse side buttons
-              "$mainMod, mouse:276, workspace, 5"
-              "$mainMod, mouse:275, workspace, 6"
-              "$mainMod SHIFT, mouse:276, movetoworkspace, 5"
-              "$mainMod SHIFT, mouse:275, movetoworkspace, 6"
+              "$mod, mouse:276, workspace, 5"
+              "$mod, mouse:275, workspace, 6"
+              "$mod SHIFT, mouse:276, movetoworkspace, 5"
+              "$mod SHIFT, mouse:275, movetoworkspace, 6"
               "$moveSilentMod, mouse:276, movetoworkspacesilent, 5"
               "$moveSilentMod, mouse:275, movetoworkspacesilent, 6"
 
               # Scroll through existing workspaces with MOD + scroll
-              "$mainMod, mouse_down, workspace, e+1"
-              "$mainMod, mouse_up, workspace, e-1"
+              "$mod, mouse_down, workspace, e+1"
+              "$mod, mouse_up, workspace, e-1"
 
               # Move active window to a relative workspace with MOD + CTRL + ALT + [←→]
-              "$mainMod CTRL ALT, right, movetoworkspace, r+1"
-              "$mainMod CTRL ALT, left, movetoworkspace, r-1"
+              "$mod CTRL ALT, right, movetoworkspace, r+1"
+              "$mod CTRL ALT, left, movetoworkspace, r-1"
 
               # Move active window around current workspace with MOD + SHIFT + CTRL [←→↑↓]
-              "$mainMod SHIFT $CONTROL, left, movewindow, l"
-              "$mainMod SHIFT $CONTROL, right, movewindow, r"
-              "$mainMod SHIFT $CONTROL, up, movewindow, u"
-              "$mainMod SHIFT $CONTROL, down, movewindow, d"
+              "$mod SHIFT $CONTROL, left, movewindow, l"
+              "$mod SHIFT $CONTROL, right, movewindow, r"
+              "$mod SHIFT $CONTROL, up, movewindow, u"
+              "$mod SHIFT $CONTROL, down, movewindow, d"
 
               # Move active window around current workspace with MOD + SHIFT + CTRL [HLJK]
-              "$mainMod SHIFT $CONTROL, H, movewindow, l"
-              "$mainMod SHIFT $CONTROL, L, movewindow, r"
-              "$mainMod SHIFT $CONTROL, K, movewindow, u"
-              "$mainMod SHIFT $CONTROL, J, movewindow, d"
+              "$mod SHIFT $CONTROL, H, movewindow, l"
+              "$mod SHIFT $CONTROL, L, movewindow, r"
+              "$mod SHIFT $CONTROL, K, movewindow, u"
+              "$mod SHIFT $CONTROL, J, movewindow, d"
 
               # Special workspaces (scratchpad)
               "$moveMod, Grave, movetoworkspacesilent, special"
-              "$mainMod, Grave, togglespecialworkspace,"
+              "$mod, Grave, togglespecialworkspace,"
             ]
             ++ (builtins.concatLists (
               builtins.genList (
@@ -470,16 +470,16 @@ in
                     builtins.toString (x + 1 - (c * 10));
                 in
                 [
-                  "$mainMod, ${ws}, workspace, ${toString (x + 1)}"
-                  "$mainMod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}"
-                  "$mainMod CTRL, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
+                  "$mod, ${ws}, workspace, ${toString (x + 1)}"
+                  "$mod SHIFT, ${ws}, movetoworkspace, ${toString (x + 1)}"
+                  "$mod CTRL, ${ws}, movetoworkspacesilent, ${toString (x + 1)}"
                 ]
               ) 10
             ));
           bindm = [
             # Move/Resize windows with MOD + LMB/RMB and dragging
-            "$mainMod, mouse:272, movewindow"
-            "$mainMod, mouse:273, resizewindow"
+            "$mod, mouse:272, movewindow"
+            "$mod, mouse:273, resizewindow"
           ];
         };
         extraConfig = ''
