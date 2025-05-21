@@ -3,5 +3,5 @@ local log = require("dotfiles.util.logger").new("dotfiles.event.window-config-re
 
 wezterm.on("window-config-reloaded", function(window, _pane)
   log.info("the config was reloaded for", window)
-  window:toast_notification("wezterm", "configuration reloaded!")
+  -- window:toast_notification("wezterm", "configuration reloaded!")
 end)

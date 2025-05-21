@@ -143,6 +143,7 @@
             overlays = [
               self.overlays.default
               inputs.emacs-overlay.overlays.default
+              inputs.hyprland.overlays.default
               # (_: super: let pkgs = inputs.fenix.inputs.nixpkgs.legacyPackages.${super.system}; in inputs.fenix.overlays.default pkgs pkgs)
             ];
           };
@@ -183,27 +184,34 @@
 
       flake =
         let
-          inherit (self.lib) mkNixosSystem' mkNixosSystem mkHomeConfiguration mkDarwinSystem;
+          inherit (self.lib)
+            mkNixosSystem'
+            mkNixosSystem
+            mkHomeConfiguration
+            mkDarwinSystem
+            ;
         in
         {
-          nixosConfigurations.framework = mkNixosSystem' "x86_64-linux" ./nixos/hosts/framework/configuration.nix {
-            inherit self;
-            outputs = self.outputs;
-            inputs = self.inputs;
-            username = "logan";
-            editor = "nixvim";
-            browser = "floorp";
-            terminal = "wezterm";
-            terminalFileManager = "yazi";
-            sddmTheme = "purple_leaves";
-            wallpaper = "kurzgesagt";
-            hostname = "framework";
-            locale = "en_US.UTF-8";
-            timezone = "America/Los_Angeles";
-            kbdLayout = "us";
-            kbdVariant = "";
-            consoleKeymap = "us";
-          };
+          nixosConfigurations.framework =
+            mkNixosSystem' "x86_64-linux" ./nixos/hosts/framework/configuration.nix
+              {
+                inherit self;
+                outputs = self.outputs;
+                inputs = self.inputs;
+                username = "logan";
+                editor = "nixvim";
+                browser = "floorp";
+                terminal = "wezterm";
+                terminalFileManager = "yazi";
+                sddmTheme = "purple_leaves";
+                wallpaper = "kurzgesagt";
+                hostname = "framework";
+                locale = "en_US.UTF-8";
+                timezone = "America/Los_Angeles";
+                kbdLayout = "us";
+                kbdVariant = "";
+                consoleKeymap = "us";
+              };
 
           nixosConfigurations.nijusan = mkNixosSystem "x86_64-linux" ./nixos/nijusan/configuration.nix;
 
