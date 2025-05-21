@@ -22,7 +22,6 @@ in
     ./programs/hypridle
     ./programs/hyprlock
     ./programs/swaync
-    # ./programs/dunst
   ];
 
   nix.settings = {
@@ -46,6 +45,7 @@ in
 
   services.displayManager.defaultSession = "hyprland";
 
+  programs.waybar.enable = true;
   programs.hyprland = {
     enable = true;
     package = inputs'.hyprland.packages.hyprland;
@@ -354,7 +354,7 @@ in
           ];
           bindd = [
             "$CONTROL ALT, DELETE, System monitor, exec, ${cfg.processManager}'"
-            "$CONTROL, ESCAPE, Toggle waybar, exec, pkill waybar || waybar" # toggle waybar
+            "$CONTROL, ESCAPE, Toggle waybar, exec, pkill waybar || waybar"
             "$mod ALT, Q, Kill window, forcekillactive"
             "$mod CTRL, F, Toggle fullscreen, fullscreen"
             "$mod CTRL, L, Lock, exec, hyprlock"
