@@ -6,11 +6,11 @@
 }:
 with lib;
 let
-  cfg = config.my.aider;
+  cfg = config.programs.aider;
   yaml = pkgs.formats.yaml { };
 in
 {
-  options.my.aider = {
+  options.programs.aider = {
     enable = mkEnableOption "Aider";
     playwright.enable = mkEnableOption "Playwright";
     voiceCoding.enable = mkEnableOption "Voice Coding";

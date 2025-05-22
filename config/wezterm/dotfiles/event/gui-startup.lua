@@ -36,11 +36,9 @@ end
 
 wezterm.on("gui-startup", function(cmd)
   log.info(cmd)
-  -- if cmd then
-  --   spawn_window(cmd)
-  --   return
-  -- end
-  start_dotfiles()
-  start_gamma()
-  set_active_workspace("gamma")
+  if not cmd then
+    start_dotfiles()
+    start_gamma()
+    set_active_workspace("gamma")
+  end
 end)

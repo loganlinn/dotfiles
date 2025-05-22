@@ -95,6 +95,7 @@
         self.homeModules.common
         self.homeModules.nix-colors
         ../../nix/home/aider.nix
+        ../../nix/home/asciinema.nix
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
@@ -110,7 +111,8 @@
         ../../nix/home/yazi
         ../../nix/home/yt-dlp.nix
       ];
-      my.aider.enable = true;
+      programs.aider.enable = true;
+      programs.asciinema.enable = true;
       programs.passage.enable = true;
       programs.age-op.enable = true;
       programs.kitty.enable = true;
@@ -131,7 +133,6 @@
       home.packages = with pkgs; [
         act
         actionlint
-        asciinema
         checkov
         deno
         dive
