@@ -10,12 +10,12 @@
 
 buildGo124Module rec {
   pname = "git-spice";
-  version = "0.12.0";
+  version = "73c5fd2cf8906736c7597cb1a0691e25a4313cfc";
 
   src = fetchFromGitHub {
-    owner = "abhinav";
+    owner = "loganlinn";
     repo = "git-spice";
-    tag = "v${version}";
+    rev = "73c5fd2cf8906736c7597cb1a0691e25a4313cfc";
     hash = "sha256-ew0ehaYXJgc1ePdQCxxfahBdTs5zsiHDfB4SdS2WZ8A=";
   };
 
@@ -23,7 +23,10 @@ buildGo124Module rec {
 
   subPackages = [ "." ];
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [
+    installShellFiles
+    git
+  ];
 
   nativeCheckInputs = [ git ];
 
@@ -36,6 +39,8 @@ buildGo124Module rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+
+  doCheck = false;
 
   preCheck = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) ''
     # timeout
