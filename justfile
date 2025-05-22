@@ -1,5 +1,7 @@
 #!/usr/bin/env just --justfile
 
+mod pkgs "nix/pkgs/justfile"
+
 import? 'justfile.local'
 
 set unstable := true
@@ -20,6 +22,14 @@ default:
 
 help:
     @just --list --unsorted
+
+clean:
+    fd -u -F result
+
+[group('git')]
+git-snapshot message="snapshot":
+    git stash push --include-untracked --message "{{ message }}: $(date)" && \
+        git stash apply "stash@{0}" --index
 
 # Install and activate system flake
 [group('nix')]
@@ -45,12 +55,14 @@ switch *args:
 [group('nix')]
 [macos]
 rebuild *args:
+    just git-snapshot "darwin-rebuild {{ args }}"
     darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "$@"
 
 # Build system flake
 [group('nix')]
 [linux]
 rebuild *args:
+    just git-snapshot "nixos-rebuild {{ args }}"
     nixos-rebuild "$@"
 
 [group('nix')]

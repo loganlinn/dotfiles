@@ -9,7 +9,9 @@ let
 
   paths = [
     ./age-op
+    ./chrome-cli
     ./closh
+    ./everything-fzf
     ./fztea
     ./git-spice
     ./i3-auto-layout.nix
