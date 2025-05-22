@@ -29,6 +29,7 @@ in
       extraConfig = {
         spice.submit.publish = mkDefault false;
         spice.log.all = mkDefault false;
+        spice.branchCreate.prefix = "logan/";
       };
     };
     programs.zsh = {

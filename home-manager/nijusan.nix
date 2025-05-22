@@ -26,6 +26,7 @@ in
     ../nix/home/dev # TODO module
     ../nix/home/dunst
     ../nix/home/emacs
+    ../nix/home/doom
     ../nix/home/eww
     ../nix/home/git/graphite.nix
     ../nix/home/home-manager.nix

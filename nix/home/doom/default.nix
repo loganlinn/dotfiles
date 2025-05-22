@@ -8,8 +8,8 @@
 with lib;
 
 let
-  emacsdir = "${config.xdg.configHome}/emacs"; # i.e. doom framework
-  doomdir = "${config.xdg.configHome}/doom"; # i.e. doom private config
+  emacsdir = "${config.xdg.configHome}/emacs"; # i.e. github.com/doomemacs/doomemacs
+  doomdir = "${config.xdg.configHome}/doom"; # i.e. github.com/loganlinn/.doom.d
 in
 {
   home.packages = concatLists (attrValues (import ./packages.nix pkgs));

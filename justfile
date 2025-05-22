@@ -27,9 +27,10 @@ clean:
     fd -u -F result
 
 [group('git')]
-git-snapshot message="snapshot":
-    git stash push --include-untracked --message "{{ message }}: $(date)" && \
-        git stash apply "stash@{0}" --index
+@snapshot message="snapshot":
+    git stash push --include-untracked --message "{{ message }} [$(date)]" --quiet && \
+        git stash apply "stash@{0}" --index --quiet && \
+        git rev-parse "stash@{0}"
 
 # Install and activate system flake
 [group('nix')]
@@ -42,28 +43,38 @@ bootstrap:
 # Build and activate system flake
 [group('nix')]
 [macos]
-switch *args:
+@switch *args:
     just rebuild switch "$@"
 
 # Build and activate system flake
 [group('nix')]
 [linux]
-switch *args:
+@switch *args:
     sudo nixos-rebuild switch --flake {{ source_dir() }} "$@"
 
 # Build system flake
 [group('nix')]
 [macos]
+[script]
 rebuild *args:
-    just git-snapshot "darwin-rebuild {{ args }}"
-    darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "$@"
+    set -eo pipefail
+    cmd=(darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "$@")
+    echo -e "{{ style("command") }}${cmd[*]}{{ NORMAL }}"
+    "${cmd[@]}" | tee "$0.log"
+    rev=$(just snapshot "darwin-rebuild ${args[*]}")
+    git notes add --allow-empty -F "$0.log" "${rev?}"
 
 # Build system flake
 [group('nix')]
 [linux]
+[script]
 rebuild *args:
-    just git-snapshot "nixos-rebuild {{ args }}"
-    nixos-rebuild "$@"
+    set -eo pipefail
+    cmd=(nixos-rebuild "$@")
+    echo -e "{{ style("command") }}${cmd[*]}{{ NORMAL }}"
+    "${cmd[@]}" | tee "$0.log"
+    rev=$(just snapshot "darwin-rebuild {{ args }}")
+    git notes add --allow-empty -F "$0.log" "${rev?}"
 
 [group('nix')]
 [macos]

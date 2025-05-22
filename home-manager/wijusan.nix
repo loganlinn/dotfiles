@@ -17,6 +17,7 @@
     ../nix/home/dev/nodejs.nix
     ../nix/home/dev/shell.nix
     ../nix/home/emacs
+    ../nix/home/doom
     ../nix/home/home-manager.nix
     ../nix/home/nixvim
     ../nix/home/pretty.nix

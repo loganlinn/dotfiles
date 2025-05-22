@@ -12,7 +12,7 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "prasmussen";
     repo = "chrome-cli";
-    rev = version;
+    tag = version;
     hash = "sha256-w9pXu0f0rsTjl8o8IUm8oYEumFkvDV0Sos72J8lN9nc=";
   };
 

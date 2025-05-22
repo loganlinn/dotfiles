@@ -1,6 +1,7 @@
 {
   inputs,
   self,
+  self',
   pkgs,
   ...
 }:
@@ -143,6 +144,8 @@
         pinact
         process-compose
         uv
+        self'.packages.everything-fzf
+        self'.packages.chrome-cli
       ];
       xdg.enable = true;
       manual.html.enable = true;

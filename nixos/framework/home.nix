@@ -15,6 +15,7 @@
     self.homeModules.nix-colors
     ../../nix/home/dev # TODO module
     ../../nix/home/emacs
+    ../../nix/home/doom
     ../../nix/home/home-manager.nix
     # ../../nix/home/intellij.nix
     ../../nix/home/deadd
@@ -37,7 +38,7 @@
     ../../nix/modules/services
     ../../nix/modules/spellcheck.nix
     ../../nix/modules/desktop
-     ../../nix/modules/desktop/i3
+    ../../nix/modules/desktop/i3
     # inputs.hyprland.homeManagerModules.default
     # {
     #   wayland.windowManager.hyprland = {
