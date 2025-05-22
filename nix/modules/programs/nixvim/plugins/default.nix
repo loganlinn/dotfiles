@@ -17,6 +17,7 @@ in
     # ./dadbod.nix
     ./early-retirement.nix
     ./git
+    ./harpoon.nix
     ./lazydev.nix
     ./lsp
     ./lualine.nix
