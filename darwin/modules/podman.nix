@@ -17,7 +17,10 @@ with lib;
         message = "homebrew must be enabled for podman-desktop";
       }
     ];
-    homebrew.brews = [ "podman-desktop" ];
+    homebrew.brews = [
+      "podman-compose"
+      "podman-desktop"
+    ];
     environment.systemPath = [
       "/opt/podman/bin" # podman toolchain installed via podman-desktop
     ];
