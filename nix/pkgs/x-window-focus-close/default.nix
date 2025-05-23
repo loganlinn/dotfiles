@@ -1,12 +1,12 @@
-{ writeShellApplication
-, xdotool
-, xorg
-, yad
+{
+  writeShellApplication,
+  xdotool,
+  xorg,
+  yad,
 }:
-
 writeShellApplication {
   name = "x-window-focus-close";
-  runtimeInputs = [ xdotool xorg.xprop yad ];
+  runtimeInputs = [xdotool xorg.xprop yad];
   text = ''
     eval "$(xdotool getwindowfocus getwindowgeometry --shell)"
     eval "$(xprop -id "$WINDOW" -f WM_CLASS 8s '=$1\n' -notype WM_CLASS)"

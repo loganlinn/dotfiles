@@ -5,26 +5,21 @@
   lib,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   myLib = (import ./lib/extended.nix lib).my;
 
   inherit (pkgs.stdenv) isLinux isDarwin;
 
   cfg = config.my;
 
-  mkOpt = type: default: mkOption { inherit type default; };
+  mkOpt = type: default: mkOption {inherit type default;};
 
-  pathStr =
-    with types;
+  pathStr = with types;
     coercedTo path toString str
     // {
       check = x: isString x && builtins.substring 0 1 x == "/";
     };
-in
-{
+in {
   options.my = with types; {
     email = mkOpt (nullOr str) "logan@loganlinn.com";
     homepage = mkOpt str "https://loganlinn.com";
@@ -33,76 +28,83 @@ in
     flakeDirectory = mkOpt pathStr "${cfg.user.home}/.dotfiles";
     flakeRepository = mkOpt str "https://github.com/loganlinn/dotfiles";
 
-    environment.variables = mkOpt (attrsOf str) { };
+    environment.variables = mkOpt (attrsOf str) {};
 
     # https://github.com/NixOS/nixpkgs/blob/68898dd/nixos/modules/config/users-groups.nix
     # https://github.com/nix-darwin/nix-darwin/blob/73d5958/modules/users/user.nix
     user = {
       name = mkOpt str "logan";
       description = mkOpt str "Logan Linn";
-      home = mkOpt str (if isDarwin then "/Users/${cfg.user.name}" else "/home/${cfg.user.name}");
+      home = mkOpt str (
+        if isDarwin
+        then "/Users/${cfg.user.name}"
+        else "/home/${cfg.user.name}"
+      );
       shell = mkOpt (either str package) pkgs.zsh;
-      packages = mkOpt (listOf package) [ ];
-      openssh.authorizedKeys.keys = mkOpt (listOf str) [ ];
+      packages = mkOpt (listOf package) [];
+      openssh.authorizedKeys.keys = mkOpt (listOf str) [];
     };
 
     # https://github.com/nix-community/home-manager/blob/ef3b2a6/modules/misc/xdg-user-dirs.nix
-    userDirs = mkOpt (types.submodule {
-      options = {
-        # Well-known directory list from
-        # https://gitlab.freedesktop.org/xdg/xdg-user-dirs/blob/master/man/user-dirs.dirs.xml
-        desktop = mkOpt (nullOr pathStr) "${cfg.user.home}/Desktop";
-        documents = mkOpt (nullOr pathStr) "${cfg.user.home}/Documents";
-        download = mkOpt (nullOr pathStr) "${cfg.user.home}/Downloads";
-        music = mkOpt (nullOr pathStr) "${cfg.user.home}/Music";
-        pictures = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures";
-        publicShare = mkOpt (nullOr pathStr) "${cfg.user.home}/Public";
-        templates = mkOpt (nullOr pathStr) "${cfg.user.home}/Templates";
-        videos = mkOpt (nullOr pathStr) "${cfg.user.home}/Videos";
+    userDirs =
+      mkOpt
+      (types.submodule {
+        options = {
+          # Well-known directory list from
+          # https://gitlab.freedesktop.org/xdg/xdg-user-dirs/blob/master/man/user-dirs.dirs.xml
+          desktop = mkOpt (nullOr pathStr) "${cfg.user.home}/Desktop";
+          documents = mkOpt (nullOr pathStr) "${cfg.user.home}/Documents";
+          download = mkOpt (nullOr pathStr) "${cfg.user.home}/Downloads";
+          music = mkOpt (nullOr pathStr) "${cfg.user.home}/Music";
+          pictures = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures";
+          publicShare = mkOpt (nullOr pathStr) "${cfg.user.home}/Public";
+          templates = mkOpt (nullOr pathStr) "${cfg.user.home}/Templates";
+          videos = mkOpt (nullOr pathStr) "${cfg.user.home}/Videos";
 
-        # Non-standard directories
-        code = mkOpt (nullOr pathStr) "${cfg.user.home}/src";
-        notes = mkOpt (nullOr pathStr) "${cfg.user.home}/Notes";
-        screenshots = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures/Screenshots";
-      };
-      freeformType = (nullOr pathStr);
-    }) { };
+          # Non-standard directories
+          code = mkOpt (nullOr pathStr) "${cfg.user.home}/src";
+          notes = mkOpt (nullOr pathStr) "${cfg.user.home}/Notes";
+          screenshots = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures/Screenshots";
+        };
+        freeformType = nullOr pathStr;
+      })
+      {};
 
-    pubkeys.ssh = mkOpt (attrsOf str) { };
+    pubkeys.ssh = mkOpt (attrsOf str) {};
 
     # homeModules = mkOpt (listOf raw) [ ];
     # nixosModules = mkOpt (listOf raw) [ ];
     # darwinModules = mkOpt (listOf raw) [ ];
 
     fonts = {
-      serif = mkOption { type = myLib.types.font; };
-      sans = mkOption { type = myLib.types.font; };
-      mono = mkOption { type = myLib.types.font; };
-      terminal = mkOption { type = myLib.types.font; };
-      packages = mkOpt (listOf package) [ ];
+      serif = mkOption {type = myLib.types.font;};
+      sans = mkOption {type = myLib.types.font;};
+      mono = mkOption {type = myLib.types.font;};
+      terminal = mkOption {type = myLib.types.font;};
+      packages = mkOpt (listOf package) [];
     };
 
     nix.registry = mkOption {
       type = myLib.types.nix-registry;
-      default = { };
+      default = {};
     };
 
     nix.settings = mkOption {
-      type =
-        let
-          confAtom =
-            nullOr (oneOf [
-              bool
-              int
-              float
-              str
-              path
-              package
-            ])
-            // {
-              description = "Nix config atom (null, bool, int, float, str, path or package)";
-            };
-        in
+      type = let
+        confAtom =
+          nullOr
+          (oneOf [
+            bool
+            int
+            float
+            str
+            path
+            package
+          ])
+          // {
+            description = "Nix config atom (null, bool, int, float, str, path or package)";
+          };
+      in
         attrsOf (either confAtom (listOf confAtom));
     };
   };
@@ -146,25 +148,41 @@ in
         serif = mkDefault {
           package = pkgs.dejavu_fonts;
           name = "DejaVu Serif";
-          size = mkDefault (if isLinux then 10 else 12);
+          size = mkDefault (
+            if isLinux
+            then 10
+            else 12
+          );
         };
 
         sans = mkDefault {
           package = pkgs.dejavu_fonts;
           name = "DejaVu Sans";
-          size = mkDefault (if isLinux then 10 else 12);
+          size = mkDefault (
+            if isLinux
+            then 10
+            else 12
+          );
         };
 
         mono = mkDefault {
           package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
-          size = mkDefault (if isLinux then 10 else 12);
+          size = mkDefault (
+            if isLinux
+            then 10
+            else 12
+          );
         };
 
         terminal = mkDefault {
           package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
-          size = mkDefault (if isLinux then 11 else 12);
+          size = mkDefault (
+            if isLinux
+            then 11
+            else 12
+          );
         };
 
         packages = with pkgs; [
@@ -193,7 +211,7 @@ in
       nix.settings = rec {
         warn-dirty = mkDefault false;
         show-trace = mkDefault true;
-        trusted-users = [ cfg.user.name ];
+        trusted-users = [cfg.user.name];
         extra-substituters = [
           "https://cache.nixos.org"
           "https://wezterm.cachix.org"

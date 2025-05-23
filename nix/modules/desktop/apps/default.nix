@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   imports = [
     ./graphics.nix
   ];
@@ -14,6 +17,4 @@
   ];
 
   programs.nheko.enable = false; # matrix chat app
-  
-
 }

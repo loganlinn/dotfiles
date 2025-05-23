@@ -3,18 +3,17 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  inherit (import ../helpers.nix { inherit lib; }) mkKeymap;
+  inherit (import ../helpers.nix {inherit lib;}) mkKeymap;
   cfg = config.programs.nixvim.plugins.telescope;
-in
-{
+in {
   programs.nixvim = {
-
     # used by smart-open
     globals.sqlite_clib_path = "${pkgs.sqlite.out}/lib/libsqlite3.${
-      if isDarwin then "dylib" else "so" # iirc there's a function in nixpkgs for this
+      if isDarwin
+      then "dylib"
+      else "so" # iirc there's a function in nixpkgs for this
     }";
 
     extraPlugins = [
@@ -56,7 +55,7 @@ in
               "^__pycache__/",
               "^node_packages/",
               "^output/",
-              "^target/" 
+              "^target/"
             },
             mappings = {
                 i = {
@@ -72,9 +71,10 @@ in
         '';
       };
 
-      enabledExtensions = [ "gh" ];
+      enabledExtensions = ["gh"];
 
-      luaConfig.pre = # lua
+      luaConfig.pre =
+        # lua
         '''';
 
       # luaConfig.content = lib.mkOverride #lua

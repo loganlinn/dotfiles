@@ -1,9 +1,10 @@
-{ pkgs, lib, ... }:
-
-let
-  inherit (import ../helpers.nix { inherit lib; }) buildVimPlugin;
-in
 {
+  pkgs,
+  lib,
+  ...
+}: let
+  inherit (import ../helpers.nix {inherit lib;}) buildVimPlugin;
+in {
   programs.nixvim = {
     extraPlugins = [
       {

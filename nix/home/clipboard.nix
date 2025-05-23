@@ -1,21 +1,23 @@
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkIf;
   inherit (pkgs.stdenv.targetPlatform) isLinux;
-in
-{
+in {
   config = mkIf isLinux {
     home.packages = with pkgs; [
       xclip
       (writeShellApplication {
         name = "pbcopy";
-        runtimeInputs = [ xclip ];
+        runtimeInputs = [xclip];
         text = ''xclip -in -selection clipboard'';
       })
       (writeShellApplication {
         name = "pbpaste";
-        runtimeInputs = [ xclip ];
+        runtimeInputs = [xclip];
         text = ''xclip -out -selection clipboard'';
       })
     ];

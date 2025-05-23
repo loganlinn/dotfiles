@@ -1,6 +1,9 @@
-{ config, lib, ... }:
-with lib;
 {
+  config,
+  lib,
+  ...
+}:
+with lib; {
   config = mkIf config.services.xserver.enable {
     console.useXkbConfig = true;
     services.xserver = {

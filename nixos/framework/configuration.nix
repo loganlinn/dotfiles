@@ -7,10 +7,7 @@
   lib,
   ...
 }:
-
-with lib;
-
-{
+with lib; {
   imports = [
     ./hardware-configuration.nix
     ../../nix/modules/programs/nixvim

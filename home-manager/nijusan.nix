@@ -6,13 +6,9 @@
   lib,
   nix-colors,
   ...
-}:
-
-let
-  inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
-
-in
-{
+}: let
+  inherit (nix-colors.lib.contrib {inherit pkgs;}) nixWallpaperFromScheme;
+in {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors

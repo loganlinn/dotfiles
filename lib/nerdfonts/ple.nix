@@ -32,5 +32,4 @@
   "trapezoid_top_bottom_mirrored" = "";
   "upper_left_triangle" = "";
   "upper_right_triangle" = "";
-
 }

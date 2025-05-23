@@ -1,4 +1,4 @@
-{ writeShellApplication, ... }:
+{writeShellApplication, ...}:
 writeShellApplication {
   name = "nixos-repl";
   text = ''

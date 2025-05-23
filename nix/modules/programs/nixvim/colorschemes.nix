@@ -100,7 +100,7 @@
         commentStyle.italic = true;
         keywordStyle.italic = false;
         statementStyle.bold = false;
-        functionStyle = { };
+        functionStyle = {};
 
         compile = false;
         dimInactive = false;

@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   programs.nixvim = {
     plugins.lazydev = {
       enable = lib.mkDefault true;
@@ -20,11 +18,11 @@ in
             rev = "45ef8d4d98d27be3ec2e472adde4b31df1d6edcb";
             hash = "sha256-kQJ7hzMAj7lbM83kZAqcslte1EqSY/2R6oSt5s0K/V0=";
           };
-          mods = [ "wezterm" ];
+          mods = ["wezterm"];
         }
         {
           path = "luvit-meta/library";
-          words = [ "vim%.uv" ];
+          words = ["vim%.uv"];
         }
       ];
     };

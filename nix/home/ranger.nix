@@ -1,9 +1,9 @@
-{ config, pkgs, ... }:
-
-let
-
-in
 {
+  config,
+  pkgs,
+  ...
+}: let
+in {
   home.packages = with pkgs; [
     ranger
     # ranger-archive

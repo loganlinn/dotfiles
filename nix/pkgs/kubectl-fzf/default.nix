@@ -1,9 +1,9 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
-, installShellFiles
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  installShellFiles,
 }:
-
 buildGoModule rec {
   pname = "kubectl-fzf";
   version = "3.0.3";
@@ -17,7 +17,7 @@ buildGoModule rec {
 
   vendorHash = "sha256-dOEYHMHHaksy7K1PgfFrSzRcucOgnHjZFpl+/2A1Zzs=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [installShellFiles];
 
   ldflags = [
     "-X 'main.version=${version}'"
@@ -41,6 +41,6 @@ buildGoModule rec {
     description = "A fast kubectl autocompletion with fzf";
     homepage = "https://github.com/bonnefoa/kubectl-fzf";
     license = licenses.mit;
-    maintainers = with maintainers; [ ];
+    maintainers = with maintainers; [];
   };
 }

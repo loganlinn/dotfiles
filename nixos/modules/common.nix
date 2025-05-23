@@ -6,16 +6,12 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   systemdSupported = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
   audioEnabled = config.services.pulseaudio.enable || config.services.pipewire.enable;
   graphicsEnabled = config.services.xserver.enable || config.services.displayManager.enable;
   my = config.my;
-in
-{
+in {
   imports = [
     ../../options.nix
     ./security
@@ -23,7 +19,8 @@ in
 
   config = {
     users.users.${my.user.name} = {
-      inherit (my.user)
+      inherit
+        (my.user)
         description
         shell
         openssh
@@ -34,7 +31,7 @@ in
       isNormalUser = true;
       createHome = mkDefault true;
       extraGroups =
-        [ "wheel" ]
+        ["wheel"]
         ++ optional graphicsEnabled "video"
         ++ optional audioEnabled "audio"
         ++ optional config.networking.networkmanager.enable "networkmanager"
@@ -62,7 +59,7 @@ in
     services.openssh.settings.PasswordAuthentication = mkDefault false;
     services.openssh.settings.KbdInteractiveAuthentication = mkDefault false;
 
-    services.udev.packages = [ pkgs.qmk-udev-rules ];
+    services.udev.packages = [pkgs.qmk-udev-rules];
 
     programs.bash.completion.enable = mkDefault true;
     programs.bash.enableLsColors = mkDefault true;
@@ -93,8 +90,7 @@ in
     environment.variables = my.environment.variables;
     environment.homeBinInPath = mkDefault true; # Add ~/bin to PATH
     environment.localBinInPath = mkDefault true; # Add ~/.local/bin to PATH
-    environment.systemPackages =
-      with pkgs;
+    environment.systemPackages = with pkgs;
       [
         bat
         curl
@@ -112,8 +108,8 @@ in
       ++ optionals graphicsEnabled [
         mupdf # Simple PDF/EPUB/etc viewer
       ]
-      ++ optionals audioEnabled [ ]
-      ++ optionals systemdSupported [ sysz ];
+      ++ optionals audioEnabled []
+      ++ optionals systemdSupported [sysz];
 
     time.timeZone = mkDefault "America/Los_Angeles";
 

@@ -1,17 +1,16 @@
-{ config, pkgs, lib, ... }:
-
-with lib;
-
-let
-
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+with lib; let
   cfg = config.my.tailscale;
 
   tailscaleCfg = config.services.tailscale;
   tailscalePkg = tailscaleCfg.package;
   tailscaleExe = getExe tailscalePkg;
-
-in
-{
+in {
   options.my.tailscale = {
     # autoconnect = {
     #   enable = mkEnableOption "Automatically authenticate with Tailscale at startup. Requires authkey.";
@@ -29,10 +28,9 @@ in
         default =
           if config.services.openssh.enable
           then config.services.openssh.ports
-          else [ 22 ];
+          else [22];
       };
     };
-
   };
 
   config = mkIf tailscaleCfg.enable {
@@ -45,15 +43,17 @@ in
       permitCertUid = config.my.user.name;
     };
 
-    my.sudo.commands = [{
-      command = tailscaleExe;
-    }];
+    my.sudo.commands = [
+      {
+        command = tailscaleExe;
+      }
+    ];
 
     # Strict reverse path filtering breaks Tailscale exit node use and some subnet routing setups.
     networking.firewall = {
       checkReversePath = mkDefault "loose";
-      trustedInterfaces = [ tailscaleCfg.interfaceName ];
-      allowedUDPPorts = [ tailscaleCfg.port ];
+      trustedInterfaces = [tailscaleCfg.interfaceName];
+      allowedUDPPorts = [tailscaleCfg.port];
       allowedTCPPorts = mkIf cfg.ssh.enable cfg.ssh.ports;
     };
 

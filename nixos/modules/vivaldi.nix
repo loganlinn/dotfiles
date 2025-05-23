@@ -1,14 +1,16 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let cfg = config.my.vivaldi; in
 {
-
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  cfg = config.my.vivaldi;
+in {
   options.my.vivaldi = {
     enable = mkEnableOption "Vivaldi browser";
 
-    enableFFmpegCodecs = (mkEnableOption "Additional support for (free + proprietary) codecs for Vivaldi") // { default = true; };
+    enableFFmpegCodecs = (mkEnableOption "Additional support for (free + proprietary) codecs for Vivaldi") // {default = true;};
 
     enableWidevine = mkEnableOption "Additional support for Wildvine CDM (for EME/DRM) for Vivaldi";
 
@@ -17,7 +19,7 @@ let cfg = config.my.vivaldi; in
       default = "";
     };
 
-    package = mkPackageOption pkgs "vivaldi" { };
+    package = mkPackageOption pkgs "vivaldi" {};
 
     finalPackage = mkOption {
       type = types.package;

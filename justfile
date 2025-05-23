@@ -1,7 +1,5 @@
 #!/usr/bin/env just --justfile
 
-mod pkgs "nix/pkgs/justfile"
-
 import? 'justfile.local'
 
 set unstable := true
@@ -78,8 +76,7 @@ rebuild *args:
 
 [group('nix')]
 [macos]
-check:
-    just rebuild check
+check: (rebuild "check")
 
 # Update flake inputs
 [group('nix')]
@@ -111,15 +108,6 @@ link-system-flake:
     just link flake.nix /etc/nixos/flake.nix
 
 [group('nix')]
-[private]
-nix-fmt:
-    nix fmt
-
-[group('nix')]
-flake-checker:
-    env  nix run github:DeterminateSystems/flake-checker
-
-[group('nix')]
 [macos]
 nixdctl command *args:
     sudo launchctl {{ command }} systems.determinate.nix-daemon "$@"
@@ -144,31 +132,27 @@ link path link context=source_dir():
       ln -s -i -T "$target" "$link";
     fi;
 
-[linux]
-[macos]
-[private]
-fix-eol:
-    rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
-
-fmt: just-fmt nix-fmt
-
-[private]
-just-fmt:
+fmt:
     just --fmt
+    nix fmt
+    # rg -g '!windows/*' -l -0 $'\r$' | xargs -0 dos2unix --
+
+# Run `nix flake` in dotfiles repo context
+[group('nix')]
+[positional-arguments]
+flake *args:
+    nix flake "$@"
+
+# Run `git` in dotfiles repo context
+git *args:
+    git "$@"
 
 shell:
     @exec zsh
 
 [group('nix')]
-nix-develop *args:
+develop *args:
     nix develop --command zsh "$@"
-
-[group('nix')]
-nix-shell *args:
-    nix shell --command zsh "$@"
-
-git *args:
-    git "$@"
 
 @netrc:
     op inject -i netrc.tpl -o ~/.netrc

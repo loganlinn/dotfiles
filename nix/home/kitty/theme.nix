@@ -1,13 +1,15 @@
-{ pkgs, lib, ... }:
-let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   dracula = pkgs.fetchFromGitHub {
     owner = "dracula";
     repo = "kitty";
     rev = "87717a3f00e3dff0fc10c93f5ff535ea4092de70";
     hash = "sha256-78PTH9wE6ktuxeIxrPp0ZgRI8ST+eZ3Ok2vW6BCIZkc=";
   };
-in
-{
+in {
   # https://draculatheme.com/kitty
   programs.kitty.extraConfig = ''
     include dracula.conf

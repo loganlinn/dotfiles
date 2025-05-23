@@ -4,9 +4,7 @@
   pkgs,
   lib,
   ...
-}:
-
-let
+}: let
   walker-skip-dirs = [
     ".cache"
     ".direnv"
@@ -15,8 +13,7 @@ let
   ];
   walker-skip-option = "--walker-skip=[${builtins.concatStringsSep "," walker-skip-dirs}]";
   termcopy = pkgs.writeShellScriptBin "termcopy" ../../bin/termcopy;
-in
-{
+in {
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
@@ -24,8 +21,7 @@ in
     tmux.enableShellIntegration = config.programs.tmux.enable;
     defaultOptions = lib.warnIf (!config ? colorScheme) "Missing config.colorScheme" (
       lib.mkIf (config ? colorScheme) (
-        with config.colorScheme.palette;
-        [
+        with config.colorScheme.palette; [
           "--multi"
           "--layout=reverse"
           "--highlight-line"

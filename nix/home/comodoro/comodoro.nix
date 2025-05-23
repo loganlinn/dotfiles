@@ -8,7 +8,6 @@
   installManPages ? stdenv.hostPlatform == stdenv.buildPlatform,
   withTcp ? true,
 }:
-
 rustPlatform.buildRustPackage rec {
   pname = "comodoro";
   version = "5b7aa9c2cc2f6761f8c0c300c56601abe01f0848";
@@ -45,7 +44,7 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://pimalaya.org/comodoro/";
     changelog = "https://github.com/soywod/comodoro/blob/v${version}/CHANGELOG.md";
     license = licenses.mit;
-    maintainers = with maintainers; [ soywod ];
+    maintainers = with maintainers; [soywod];
     mainProgram = "comodoro";
   };
 }

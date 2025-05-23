@@ -3,10 +3,7 @@
   lib,
   ...
 }:
-
-with lib;
-
-{
+with lib; {
   services.printing.cups-pdf.enable = mkDefault true;
   services.printing.startWhenNeeded = mkDefault true;
   services.printing.webInterface = mkDefault false;

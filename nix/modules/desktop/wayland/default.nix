@@ -1,20 +1,17 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-
-  cfg = config.my.desktop.wayland;
-
-in
 {
-
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  cfg = config.my.desktop.wayland;
+in {
   options.my.desktop.wayland = {
     enable = mkEnableOption "Wayland";
   };
 
   config = mkIf cfg.enable {
-
     security.polkit.enable = true;
 
     systemd.user.sessionVariables = {
@@ -35,12 +32,10 @@ in
       gpu-context = "wayland";
     };
 
-    programs.obs-studio.plugins = [ pkgs.obs-studio-plugins.wlrobs ];
+    programs.obs-studio.plugins = [pkgs.obs-studio-plugins.wlrobs];
 
     home.packages = with pkgs; [
       # gtk-layer-shell
     ];
-
-
   };
 }

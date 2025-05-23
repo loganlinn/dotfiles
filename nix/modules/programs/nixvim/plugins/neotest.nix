@@ -9,7 +9,7 @@
       adapters.bash.enable = true;
       adapters.jest.enable = true;
       adapters.python.enable = true;
-      settings = { };
+      settings = {};
     };
   };
 }

@@ -4,36 +4,37 @@
   lib,
   ...
 }:
-with lib;
-let
-  mkOptionalPathOption =
-    attrs:
-    mkOption {
+with lib; let
+  mkOptionalPathOption = attrs:
+    mkOption
+    {
       type = with types; nullOr (coercedTo path toString str);
       default = null;
     }
     // attrs;
   cfg = config.programs.passage;
-in
-{
+in {
   imports = [
     ./age-op.nix
   ];
 
   options.programs.passage = {
     enable = mkEnableOption "passage";
-    package = mkPackageOption pkgs "passage" { };
+    package = mkPackageOption pkgs "passage" {};
     age.package = mkOption {
       type = types.package;
-      default = if config.programs.age-op.enable then config.programs.age-op.package else pkgs.age;
+      default =
+        if config.programs.age-op.enable
+        then config.programs.age-op.package
+        else pkgs.age;
     };
     settings = {
-      storeDirectory = mkOptionalPathOption { };
-      identitiesFile = mkOptionalPathOption { };
-      recipientsFile = mkOptionalPathOption { };
+      storeDirectory = mkOptionalPathOption {};
+      identitiesFile = mkOptionalPathOption {};
+      recipientsFile = mkOptionalPathOption {};
       recipients = mkOptionalPathOption {
         type = types.listOf types.str;
-        default = [ ];
+        default = [];
       };
     };
   };

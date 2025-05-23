@@ -4,26 +4,20 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
-  npmrcFormat =
-    let
-      ini = pkgs.formats.iniWithGlobalSection { };
-    in
-    {
-      type = (ini.type.getSubOptions [ ]).globalSection.type;
-      generate = name: value: ini.generate name { globalSection = value; };
-    };
-in
-{
+with lib; let
+  npmrcFormat = let
+    ini = pkgs.formats.iniWithGlobalSection {};
+  in {
+    type = (ini.type.getSubOptions []).globalSection.type;
+    generate = name: value: ini.generate name {globalSection = value;};
+  };
+in {
   options = {
     programs.npm = {
       settings = mkOption {
         # use same type constraints as global section of INI format,
         type = npmrcFormat.type;
-        default = { };
+        default = {};
       };
     };
 
@@ -50,14 +44,14 @@ in
     programs.zsh.initExtra = ''
       # initialize fnm (node.js version manager)
       eval "$(fnm env --shell zsh ${
-        concatStringsSep " " (cli.toGNUCommandLine { } config.programs.fnm.settings)
+        concatStringsSep " " (cli.toGNUCommandLine {} config.programs.fnm.settings)
       })"
     '';
 
     programs.bash.initExtra = ''
       # initialize fnm (node.js version manager)
       eval "$(fnm env --shell bash ${
-        concatStringsSep " " (cli.toGNUCommandLine { } config.programs.fnm.settings)
+        concatStringsSep " " (cli.toGNUCommandLine {} config.programs.fnm.settings)
       })"
     '';
 

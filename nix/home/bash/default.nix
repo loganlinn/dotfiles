@@ -3,9 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   home.packages = with pkgs; [
     bashInteractive # otherwise we get bashNonInteractive (?)
   ];

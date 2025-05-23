@@ -1,5 +1,9 @@
-{config, pkgs, lib, ...}:
-let
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
   inherit (pkgs.stdenv.targetPlatform) isLinux;
 in {
   home.packages =

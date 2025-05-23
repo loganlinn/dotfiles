@@ -4,38 +4,44 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.claude.desktop;
-  json = pkgs.formats.json { };
-  mkOpt = type: default: mkOption { inherit type default; };
-in
-{
+  json = pkgs.formats.json {};
+  mkOpt = type: default: mkOption {inherit type default;};
+in {
   options = {
     programs.claude.desktop = {
-      enable = mkEnableOption "Claude Desktop" // {
-        default = true;
-      };
-      settings = mkOpt (types.submodule {
-        options = {
-          mcpServers = mkOpt (types.attrsOf (
-            types.submodule {
-              options = {
-                command = mkOption {
-                  type = types.coercedTo types.path toString types.str;
-                };
-                args = mkOpt (types.listOf types.str) [ ];
-                env = mkOpt (types.attrsOf types.str) { };
-              };
-            }
-          )) { };
+      enable =
+        mkEnableOption "Claude Desktop"
+        // {
+          default = true;
         };
-        freeformType = json.type;
-      }) { };
+      settings =
+        mkOpt
+        (types.submodule {
+          options = {
+            mcpServers =
+              mkOpt
+              (types.attrsOf (
+                types.submodule {
+                  options = {
+                    command = mkOption {
+                      type = types.coercedTo types.path toString types.str;
+                    };
+                    args = mkOpt (types.listOf types.str) [];
+                    env = mkOpt (types.attrsOf types.str) {};
+                  };
+                }
+              ))
+              {};
+          };
+          freeformType = json.type;
+        })
+        {};
       mcpServers = {
         mcp-obsidian = {
           enable = mkEnableOption "mcp-obsidian";
-          env = mkOpt (types.attrsOf types.str) { };
+          env = mkOpt (types.attrsOf types.str) {};
           package = mkOpt types.package (
             pkgs.fetchFromGitHub {
               owner = "MarkusPfundstein";
@@ -70,7 +76,7 @@ in
       };
     };
 
-    home.file = optionalAttrs (cfg.settings != { }) {
+    home.file = optionalAttrs (cfg.settings != {}) {
       "Library/Application Support/Claude/claude_desktop_config.json".source =
         json.generate "developer_settings.json" cfg.settings;
     };

@@ -786,5 +786,4 @@
   "youtube" = "";
   "youtube_play" = "";
   "youtube_square" = "";
-
 }

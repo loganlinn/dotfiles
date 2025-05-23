@@ -5,13 +5,9 @@
   lib,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.age-op;
-in
-{
+in {
   options.programs.age-op = {
     enable = mkEnableOption "age-op";
     package = mkOption {

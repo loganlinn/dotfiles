@@ -5,5 +5,4 @@
   "power_on" = "⏽";
   "sleep_mode" = "⏾";
   "toggle_power" = "⏼";
-
 }

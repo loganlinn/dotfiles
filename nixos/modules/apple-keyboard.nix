@@ -1,7 +1,10 @@
-{ config, lib, pkgs, ... }:
-
 {
-  boot.kernelModules = [ "hid-apple" ];
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
+  boot.kernelModules = ["hid-apple"];
 
   # hid_apple module options
   #

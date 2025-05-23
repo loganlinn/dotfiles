@@ -2,11 +2,11 @@
   programs.nixvim = {
     plugins.dap = {
       enable = true;
-      settings = { };
+      settings = {};
     };
     plugins.dap-ui = {
       enable = true;
-      settings = { };
+      settings = {};
     };
   };
 }

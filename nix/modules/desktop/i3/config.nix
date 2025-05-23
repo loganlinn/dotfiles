@@ -1,10 +1,12 @@
-{ config, lib, pkgs, ... }:
-
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with builtins;
 with lib;
-with lib.my;
-
-let
+with lib.my; let
   cfg = config.modules.desktop.i3;
   i3Cfg = config.xsession.windowManager.i3.config;
   themeCfg = config.modules.theme;
@@ -14,28 +16,26 @@ let
   polybarCfg' = config.modules.polybar; # TODO config.my.polybar;
   barHeight = toString polybarCfg'.bars.top.height;
 
-  bindings = import ./keybindings.nix { inherit config pkgs lib; };
-
+  bindings = import ./keybindings.nix {inherit config pkgs lib;};
   # i3-completion = pkgs.fetchFromGitHub {
   #   owner = "cornerman";
   #   repo = "i3-completion";
   #   rev = "01b9030500812403988ea78bd9bf2b47a7a0ae6d";
   #   hash = "sha256-efw45V0sfsPjSd8bYygDl+5oETgoRaRBnW6jNoIcpo0=";
   # };
-
 in {
   xsession.windowManager.i3.config = {
     modifier = cfg.keysyms.mod;
     menu = mkIf rofiCfg.enable "${rofiExe} -dmenu";
 
-    keybindings = foldl' attrsets.unionOfDisjoint { } (attrValues bindings);
+    keybindings = foldl' attrsets.unionOfDisjoint {} (attrValues bindings);
 
-    bars = lib.mkIf polybarCfg.enable [ ]; # disable for polybar
+    bars = lib.mkIf polybarCfg.enable []; # disable for polybar
 
     # List of font names list used for window titles. Only FreeType fonts are supported.
     # The order here is important (e.g. icons font should go before the one used for text).
     fonts = {
-      names = [ "FontAwesome" config.my.fonts.mono.name ];
+      names = ["FontAwesome" config.my.fonts.mono.name];
       style = "Normal";
       size = 11.0;
     };
@@ -46,53 +46,52 @@ in {
       hideEdgeBorders = "none"; # none, vertical, horizontal, both, smart
 
       # List of commands that should be executed on specific windows (i.e. for_window)
-      commands = [
-        {
-          criteria.class = "(?i)conky";
-          command =
-            "floating enable, move position mouse, move down ${barHeight} px";
-        }
-        {
-          criteria.class = "(?i)nm-connection-editor";
-          command = "floating enable, move position center";
-        }
-        {
-          criteria.class = "(?i)qalculate";
-          command =
-            "floating enable, move position mouse, move down ${barHeight} px";
-        }
-        {
-          criteria.class = "(?i)pavucontrol";
-          command =
-            "floating enable, move position mouse, move down ${barHeight} px";
-        }
-        {
-          criteria.class = "^zoom$";
-          criteria.title = "^.*(?<!Zoom Meeting)$"; # criteria.instance?
-          command = "floating enable, sticky enable, move position center";
-        }
-        {
-          criteria.class = "(?i)git-citool";
-          command = "floating enable, move position mouse";
-        }
-        {
-          criteria.class = "kitty";
-          command = "border normal"; # show window title
-        }
-        {
-          criteria.title = "^(doom|org)-capture$";
-          command =
-            "floating enable, resize set 70 ppt 70 ppt, move position center, move scratchpad; scratchpad show";
-        }
-      ] ++ (forEach [
-        { window_role = "^pop-up$"; }
-        { class = "obsidian"; }
-        { class = "^scratchpad$"; }
-        { title = "^scratchpad$"; }
-      ] (criteria: {
-        inherit criteria;
-        command = "move scratchpad, scratchpad show";
-      }));
+      commands =
+        [
+          {
+            criteria.class = "(?i)conky";
+            command = "floating enable, move position mouse, move down ${barHeight} px";
+          }
+          {
+            criteria.class = "(?i)nm-connection-editor";
+            command = "floating enable, move position center";
+          }
+          {
+            criteria.class = "(?i)qalculate";
+            command = "floating enable, move position mouse, move down ${barHeight} px";
+          }
+          {
+            criteria.class = "(?i)pavucontrol";
+            command = "floating enable, move position mouse, move down ${barHeight} px";
+          }
+          {
+            criteria.class = "^zoom$";
+            criteria.title = "^.*(?<!Zoom Meeting)$"; # criteria.instance?
+            command = "floating enable, sticky enable, move position center";
+          }
+          {
+            criteria.class = "(?i)git-citool";
+            command = "floating enable, move position mouse";
+          }
+          {
+            criteria.class = "kitty";
+            command = "border normal"; # show window title
+          }
+          {
+            criteria.title = "^(doom|org)-capture$";
+            command = "floating enable, resize set 70 ppt 70 ppt, move position center, move scratchpad; scratchpad show";
+          }
+        ]
+        ++ (forEach [
+            {window_role = "^pop-up$";}
+            {class = "obsidian";}
+            {class = "^scratchpad$";}
+            {title = "^scratchpad$";}
+          ]
+          (criteria: {
+            inherit criteria;
+            command = "move scratchpad, scratchpad show";
+          }));
     };
 
     focus = {
@@ -112,77 +111,81 @@ in {
       smartBorders = "off";
     };
 
-    floating = { # uses for_window
+    floating = {
+      # uses for_window
       titlebar = false;
       border = 3;
       criteria = [
-        { class = "(?i)1password.*"; }
-        { class = "(?i)gcolor*"; }
-        { class = "(?i)gpick*"; }
-        { class = "(?i)pavucontrol"; }
-        { class = "(?i)qalculate"; }
-        { class = "(?i)xarchiver"; }
-        { class = "System76 Keyboard Configurator"; }
-        { class = "ProcessManager"; }
-        { class = "Thunar"; }
-        { class = "blueman-manager"; }
-        { class = "file-manager"; }
-        { class = "mpv"; }
-        { class = "feh"; }
-        { class = "nm-connection-editor"; }
-        { class = "notification*"; }
-        { class = "obs"; }
-        { class = "pop-up"; }
-        { class = "(?i)syncthing"; }
-        { class = "(?i)xmessage"; }
-        { class = "(?i)yad"; }
-        { class = "(?i)zenity"; }
-        { title = "(?i)artha"; }
-        { title = "NVIDIA Settings"; }
-        { title = "Screen Layout Editor"; } # i.e. arandr
-        { title = "Calculator"; }
-        { title = "Event Tester"; } # i.e. xev
-        { title = "(?i)yubico authenticator"; }
-        { title = "^Emacs Everywhere ::"; }
-        { class = "^i3-floating$"; } # generic
+        {class = "(?i)1password.*";}
+        {class = "(?i)gcolor*";}
+        {class = "(?i)gpick*";}
+        {class = "(?i)pavucontrol";}
+        {class = "(?i)qalculate";}
+        {class = "(?i)xarchiver";}
+        {class = "System76 Keyboard Configurator";}
+        {class = "ProcessManager";}
+        {class = "Thunar";}
+        {class = "blueman-manager";}
+        {class = "file-manager";}
+        {class = "mpv";}
+        {class = "feh";}
+        {class = "nm-connection-editor";}
+        {class = "notification*";}
+        {class = "obs";}
+        {class = "pop-up";}
+        {class = "(?i)syncthing";}
+        {class = "(?i)xmessage";}
+        {class = "(?i)yad";}
+        {class = "(?i)zenity";}
+        {title = "(?i)artha";}
+        {title = "NVIDIA Settings";}
+        {title = "Screen Layout Editor";} # i.e. arandr
+        {title = "Calculator";}
+        {title = "Event Tester";} # i.e. xev
+        {title = "(?i)yubico authenticator";}
+        {title = "^Emacs Everywhere ::";}
+        {class = "^i3-floating$";} # generic
       ];
     };
 
     assigns = {
-      "1" = [ ];
-      "2" = [ ];
-      "3" = [ ];
-      "4" = [ ];
-      "5" = [ ];
-      "6" = [ ];
-      "7" = [ ];
-      "8" = [ ];
-      "9" = [{ class = "Slack"; }];
-      "0" = [ ];
-      "output primary" = [{
-        class = "^zoom$";
-        title = "^.*(?<!Zoom Meeting)$";
-      }];
+      "1" = [];
+      "2" = [];
+      "3" = [];
+      "4" = [];
+      "5" = [];
+      "6" = [];
+      "7" = [];
+      "8" = [];
+      "9" = [{class = "Slack";}];
+      "0" = [];
+      "output primary" = [
+        {
+          class = "^zoom$";
+          title = "^.*(?<!Zoom Meeting)$";
+        }
+      ];
     };
 
-    workspaceOutputAssign = (forEach (range 1 8) (n: {
-      workspace = toString n;
-      output = "primary";
-    })) ++ [
-      {
-        workspace = "9";
-        output = "nonprimary";
-      }
-      {
-        workspace = "0";
-        output = "nonprimary";
-      }
-    ];
+    workspaceOutputAssign =
+      (forEach (range 1 8) (n: {
+        workspace = toString n;
+        output = "primary";
+      }))
+      ++ [
+        {
+          workspace = "9";
+          output = "nonprimary";
+        }
+        {
+          workspace = "0";
+          output = "nonprimary";
+        }
+      ];
 
     startup = [
       (mkIf (themeCfg.wallpaper != null) {
-        command =
-          "${config.programs.feh.package}/bin/feh --no-fehbg --bg-fill ${themeCfg.wallpaper}";
+        command = "${config.programs.feh.package}/bin/feh --no-fehbg --bg-fill ${themeCfg.wallpaper}";
         always = true;
         notification = false;
       })
@@ -219,35 +222,44 @@ in {
     #   }
     # '';
 
-    mkBinding = { modifiers, keysym ? null, keycode ? null, command ? null
-      , exec ? { }, flags ? [ ] }:
+    mkBinding = {
+      modifiers,
+      keysym ? null,
+      keycode ? null,
+      command ? null,
+      exec ? {},
+      flags ? [],
+    }:
       assert (keysym != null) == (keycode == null);
-      assert noStartupId -> exec != null;
-      let
-        bindOp = if keysym then "bindsym" else "bindcode";
-        hasFlags = flags != [ ];
+      assert noStartupId -> exec != null; let
+        bindOp =
+          if keysym
+          then "bindsym"
+          else "bindcode";
+        hasFlags = flags != [];
         bind = "${bindOp}${
-            if hasFlags then " ${forEach flags (flag: "--${flag}")}" else ""
-          }";
+          if hasFlags
+          then " ${forEach flags (flag: "--${flag}")}"
+          else ""
+        }";
       in ''
         ${bind} ${command}
       '';
 
     mkBindings = bindings:
       pipe [
-
       ];
-    mkMode = name: description: keysym: bindings:
-      let variable = "$mode_${name}";
-      in ''
-        set ${variable} ${name}> ${description}
-        mode "${variable}" {
-            ${strings.concatLines modeBindings}
-            # common mode bindings
-            ${modeCommonEscape}
-        }
-        bindsym ${keysym} mode "${modeReference}"
-      '';
+    mkMode = name: description: keysym: bindings: let
+      variable = "$mode_${name}";
+    in ''
+      set ${variable} ${name}> ${description}
+      mode "${variable}" {
+          ${strings.concatLines modeBindings}
+          # common mode bindings
+          ${modeCommonEscape}
+      }
+      bindsym ${keysym} mode "${modeReference}"
+    '';
   in ''
     ################################################################################
     # Variables
@@ -641,43 +653,42 @@ in {
   #
   # NOTE: for window decorations, the color around the child window is the "child_border", and "border" color is only the two thin lines around the titlebar.
   #
-  xsession.windowManager.i3.config.colors =
-    with (mapAttrs (_: color: "#${color}") config.colorScheme.palette); {
-      background = base08;
-      focused = {
-        background = base02;
-        border = base02;
-        childBorder = base02;
-        indicator = base0A;
-        text = base00;
-      };
-      focusedInactive = {
-        background = base00;
-        border = base00;
-        childBorder = base00;
-        indicator = base01;
-        text = base03;
-      };
-      placeholder = {
-        background = base00;
-        border = base00;
-        childBorder = base00;
-        indicator = base01;
-        text = base03;
-      };
-      unfocused = {
-        background = base00;
-        border = base01;
-        childBorder = base01;
-        indicator = base01;
-        text = base03;
-      };
-      urgent = {
-        background = base09;
-        border = base09;
-        childBorder = base09;
-        indicator = base09;
-        text = base00;
-      };
+  xsession.windowManager.i3.config.colors = with (mapAttrs (_: color: "#${color}") config.colorScheme.palette); {
+    background = base08;
+    focused = {
+      background = base02;
+      border = base02;
+      childBorder = base02;
+      indicator = base0A;
+      text = base00;
     };
+    focusedInactive = {
+      background = base00;
+      border = base00;
+      childBorder = base00;
+      indicator = base01;
+      text = base03;
+    };
+    placeholder = {
+      background = base00;
+      border = base00;
+      childBorder = base00;
+      indicator = base01;
+      text = base03;
+    };
+    unfocused = {
+      background = base00;
+      border = base01;
+      childBorder = base01;
+      indicator = base01;
+      text = base03;
+    };
+    urgent = {
+      background = base09;
+      border = base09;
+      childBorder = base09;
+      indicator = base09;
+      text = base00;
+    };
+  };
 }

@@ -1,12 +1,12 @@
-{ lib
-, stdenv
-, fetchurl
-, installShellFiles
-, jre_headless
-, makeWrapper
-, testers
+{
+  lib,
+  stdenv,
+  fetchurl,
+  installShellFiles,
+  jre_headless,
+  makeWrapper,
+  testers,
 }:
-
 stdenv.mkDerivation rec {
   pname = "closh";
   version = "0.5.0";
@@ -20,7 +20,7 @@ stdenv.mkDerivation rec {
 
   dontUnpack = true;
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [makeWrapper];
 
   installPhase = ''
     runHook preInstall
@@ -42,9 +42,15 @@ stdenv.mkDerivation rec {
     mainProgram = pname;
     homepage = "https://github.com/dundalek/closh";
     description = "Bash-like shell based on Clojure";
-    sourceProvenance = with sourceTypes; [ binaryBytecode ];
+    sourceProvenance = with sourceTypes; [binaryBytecode];
     license = licenses.epl10;
     platforms = jre_headless.meta.platforms;
-    maintainers = [{ email = "logan@loganlinn.com"; github = "loganlinn"; name = "Logan Linn"; }];
+    maintainers = [
+      {
+        email = "logan@loganlinn.com";
+        github = "loganlinn";
+        name = "Logan Linn";
+      }
+    ];
   };
 }

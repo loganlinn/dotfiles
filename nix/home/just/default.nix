@@ -3,10 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   config = {
-    home.packages = [ pkgs.just ];
+    home.packages = [pkgs.just];
 
     home.shellAliases = {
       j = "just";

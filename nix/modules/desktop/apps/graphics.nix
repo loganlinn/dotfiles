@@ -1,7 +1,4 @@
-{ pkgs, ... }:
-
-{
-
+{pkgs, ...}: {
   home.packages = with pkgs; [
     # blender
     fstl
@@ -16,8 +13,7 @@
     type = "Application";
     exec = "${pkgs.fstl}/bin/fstl";
     terminal = false;
-    mimeType = [ "model/stl" ];
-    categories = [ "Graphics" "3DGraphics" "Viewer" "Qt" ];
+    mimeType = ["model/stl"];
+    categories = ["Graphics" "3DGraphics" "Viewer" "Qt"];
   };
-
 }

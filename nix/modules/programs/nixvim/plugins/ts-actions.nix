@@ -2,8 +2,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   programs.nixvim = {
     plugins.nui.enable = true;
     extraPlugins = [
@@ -17,7 +16,7 @@
             rev = version;
             hash = "sha256-cGFPRBJoLXjbK+DiT8kpcU7w/PVok5VQDSOvbXy4ItA=";
           };
-          dependencies = [ config.programs.nixvim.plugins.nui.package ];
+          dependencies = [config.programs.nixvim.plugins.nui.package];
         };
       }
     ];

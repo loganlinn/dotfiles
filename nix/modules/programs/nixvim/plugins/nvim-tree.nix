@@ -4,11 +4,9 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (config.lib.nixvim) mkRaw;
-in
-{
+in {
   programs.nixvim = {
     plugins.nvim-tree = {
       enable = true;
@@ -38,8 +36,8 @@ in
     autoCmd = [
       {
         # https://github.com/nvim-tree/nvim-tree.lua/issues/1992#issuecomment-1467085424
-        event = [ "FileType" ];
-        pattern = [ "NvimTree" ];
+        event = ["FileType"];
+        pattern = ["NvimTree"];
         callback.__raw = ''
           function(args)
             vim.api.nvim_buf_delete(args.buf, { force = true })

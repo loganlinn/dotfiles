@@ -1,8 +1,10 @@
-{ config, lib, pkgs, ... }:
-
-with builtins;
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with builtins; {
   programs.urxvt = {
     enable = true;
     iso14755 = true; # support for viewing and entering unicode characters
@@ -18,8 +20,14 @@ with builtins;
       keepPosition = true;
       lines = 10000;
     };
-    fonts = let cfg = config.my.fonts.terminal; in [
-      "xft:${cfg.name}:size=${if cfg.size == null then 12 else (toString cfg.size)}:antialias=true"
+    fonts = let
+      cfg = config.my.fonts.terminal;
+    in [
+      "xft:${cfg.name}:size=${
+        if cfg.size == null
+        then 12
+        else (toString cfg.size)
+      }:antialias=true"
       "xft:Material Design Icons:size=14:minspace=false"
     ];
   };

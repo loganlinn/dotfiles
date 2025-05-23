@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
-
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 # WIP WIP WIP
 # TODO https://github.com/nix-community/nixpkgs-wayland
 let
@@ -16,8 +20,7 @@ let
   };
 
   cfg = config.modules.wayland;
-in
-{
+in {
   options.modules.wayland = with lib; {
     enable = mkEnableOption "wayland";
   };
@@ -47,7 +50,7 @@ in
     hardware.nvidia.package = nvidiaPackage;
     hardware.nvidia.powerManagement.enable = false;
     services.xserver = {
-      videoDrivers = [ "nvidia" ];
+      videoDrivers = ["nvidia"];
       displayManager.gdm.wayland = true;
       displayManager.gdm.nvidiaWayland = true;
     };
@@ -72,7 +75,7 @@ in
       enable = true;
       wlr.enable = true;
       # gtk portal needed to make gtk apps happy
-      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+      extraPortals = [pkgs.xdg-desktop-portal-gtk];
     };
   };
 }

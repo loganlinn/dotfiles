@@ -1,9 +1,6 @@
-{ lib, ... }:
-
-with lib;
-
-{
-  imports = [ ./wireless.nix ];
+{lib, ...}:
+with lib; {
+  imports = [./wireless.nix];
 
   networking.networkmanager.enable = mkDefault true;
 

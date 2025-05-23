@@ -1,11 +1,14 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   config = lib.mkIf config.programs.hexchat.enable {
     programs.hexchat = {
       channels."Libera.Chat" = {
-        servers = [ "irc.libera.chat" ];
-        autojoin = [ "#nixos" ];
+        servers = ["irc.libera.chat"];
+        autojoin = ["#nixos"];
 
         # mkdir -p $XDG_CONFIG_HOME/hexchat/certs
         # op document get hy5sueypnainlye7gcnbskuima >$XDG_CONFIG_HOME/hexchat/certs/client.pem
@@ -22,13 +25,13 @@
         };
       };
       overwriteConfigFiles = true;
-      settings = { text_font = "Victor Mono 12"; };
+      settings = {text_font = "Victor Mono 12";};
       theme = pkgs.fetchzip {
         url = "https://dl.hexchat.net/themes/Monokai.hct#Monokai.zip";
         sha256 = "sha256-WCdgEr8PwKSZvBMs0fN7E2gOjNM0c2DscZGSKSmdID0=";
         stripRoot = false;
       };
     };
-    home.packages = with pkgs; [ victor-mono ];
+    home.packages = with pkgs; [victor-mono];
   };
 }

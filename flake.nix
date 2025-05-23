@@ -87,9 +87,12 @@
     };
   };
 
-  outputs =
-    inputs@{ self, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
+  outputs = inputs @ {
+    self,
+    flake-parts,
+    ...
+  }:
+    flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [
         ./flake-module
         flake-parts.flakeModules.easyOverlay
@@ -102,77 +105,75 @@
         "aarch64-darwin"
       ];
 
-      perSystem =
-        ctx@{
-          inputs',
-          self',
-          config,
-          system,
-          pkgs,
-          lib,
-          ...
-        }:
-        {
-          imports = [ ./options.nix ];
+      perSystem = ctx @ {
+        inputs',
+        self',
+        config,
+        system,
+        pkgs,
+        lib,
+        ...
+      }: {
+        imports = [./options.nix];
 
-          _module.args.pkgs = import inputs.nixpkgs {
-            inherit system;
-            config = import ./config/nixpkgs/config.nix;
-            overlays = [
-              self.overlays.default
-              inputs.emacs-overlay.overlays.default
-              # (_: super: let pkgs = inputs.fenix.inputs.nixpkgs.legacyPackages.${super.system}; in inputs.fenix.overlays.default pkgs pkgs)
-            ];
-          };
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          config = import ./config/nixpkgs/config.nix;
+          overlays = [
+            self.overlays.default
+            inputs.emacs-overlay.overlays.default
+            # (_: super: let pkgs = inputs.fenix.inputs.nixpkgs.legacyPackages.${super.system}; in inputs.fenix.overlays.default pkgs pkgs)
+          ];
+        };
 
-          packages = import ./nix/pkgs { inherit pkgs; } // {
+        packages =
+          import ./nix/pkgs {inherit pkgs;}
+          // {
             home-manager = inputs'.home-manager.packages.home-manager;
             home-manager-docs-html = inputs'.home-manager.packages.docs-html;
           };
 
-          overlayAttrs = {
-            inherit (inputs'.home-manager.packages) home-manager;
-            inherit (inputs'.emacs.packages) emacs-unstable;
-            inherit (inputs'.agenix.packages) agenix;
-            wezterm = inputs'.wezterm.packages.default;
-            flake-root = config.flake-root.package;
-            fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
-              version = inputs.fzf-git-sh.shortRev;
-              src = inputs.fzf-git-sh;
-            });
-          };
-
-          formatter = pkgs.nixpkgs-fmt;
-
-          devShells.default = pkgs.mkShell {
-            inputsFrom = [
-              config.flake-root.devShell # sets FLAKE_ROOT
-            ];
-            nativeBuildInputs = [
-              config.formatter
-              inputs'.agenix.packages.agenix
-              pkgs.just
-              pkgs.age
-              pkgs.ssh-to-age
-              pkgs.sops
-            ];
-          };
+        overlayAttrs = {
+          inherit (inputs'.home-manager.packages) home-manager;
+          inherit (inputs'.emacs.packages) emacs-unstable;
+          inherit (inputs'.agenix.packages) agenix;
+          wezterm = inputs'.wezterm.packages.default;
+          flake-root = config.flake-root.package;
+          fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
+            version = inputs.fzf-git-sh.shortRev;
+            src = inputs.fzf-git-sh;
+          });
         };
 
-      flake =
-        let
-          inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
-        in
-        {
-          nixosConfigurations.framework = mkNixosSystem "x86_64-linux" ./nixos/framework/configuration.nix;
-          nixosConfigurations.nijusan = mkNixosSystem "x86_64-linux" ./nixos/nijusan/configuration.nix;
+        formatter = pkgs.alejandra;
 
-          darwinConfigurations.patchbook = mkDarwinSystem "aarch64-darwin" ./darwin/patchbook.nix;
-          darwinConfigurations.logamma = mkDarwinSystem "aarch64-darwin" ./darwin/logamma;
-
-          homeConfigurations."logan@nijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/nijusan.nix;
-          homeConfigurations."logan@wijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/wijusan.nix;
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            config.flake-root.devShell # sets FLAKE_ROOT
+          ];
+          nativeBuildInputs = [
+            config.formatter
+            inputs'.agenix.packages.agenix
+            pkgs.just
+            pkgs.age
+            pkgs.ssh-to-age
+            pkgs.sops
+          ];
         };
+      };
+
+      flake = let
+        inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
+      in {
+        nixosConfigurations.framework = mkNixosSystem "x86_64-linux" ./nixos/framework/configuration.nix;
+        nixosConfigurations.nijusan = mkNixosSystem "x86_64-linux" ./nixos/nijusan/configuration.nix;
+
+        darwinConfigurations.patchbook = mkDarwinSystem "aarch64-darwin" ./darwin/patchbook.nix;
+        darwinConfigurations.logamma = mkDarwinSystem "aarch64-darwin" ./darwin/logamma;
+
+        homeConfigurations."logan@nijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/nijusan.nix;
+        homeConfigurations."logan@wijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/wijusan.nix;
+      };
 
       debug = true; # used by mkReplAttrs
     };

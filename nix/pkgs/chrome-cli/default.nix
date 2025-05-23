@@ -16,9 +16,9 @@ stdenv.mkDerivation rec {
     hash = "sha256-w9pXu0f0rsTjl8o8IUm8oYEumFkvDV0Sos72J8lN9nc=";
   };
 
-  buildInputs = [ xcodebuild ];
+  buildInputs = [xcodebuild];
 
-  nativeBuildInputs = [ xcbuildHook ];
+  nativeBuildInputs = [xcbuildHook];
 
   installPhase = ''
     runHook preInstall
@@ -42,7 +42,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/prasmussen/chrome-cli";
     mainProgram = "chrome-cli";
     license = lib.licenses.mit;
-    maintainers = [ ]; # with lib.maintainers; [ loganlinn ];
+    maintainers = []; # with lib.maintainers; [ loganlinn ];
     platforms = lib.platforms.darwin;
   };
 }

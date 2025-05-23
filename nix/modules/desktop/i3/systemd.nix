@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
-
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 # systemd integration for i3, polybar
 #
 # see:
@@ -15,9 +19,7 @@ let
     systemctl --user set-environment I3SOCK=$(${config.xsession.windowManager.i3.package}/bin/i3 --get-socketpath)
     systemctl --user start i3-session.target
   '';
-
-in
-{
+in {
   # WIP
   # config = {
 

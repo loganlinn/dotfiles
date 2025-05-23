@@ -4,15 +4,11 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-{
+with lib; {
   config = mkIf pkgs.stdenv.isDarwin {
-
     my.shellScripts = {
       fd-app = {
-        runtimeInputs = [ pkgs.fd ];
+        runtimeInputs = [pkgs.fd];
         text = ''
           exec fd --type directory --extension app --max-depth 2 --follow --search-path=/System/Applications --search-path=/Applications --search-path="$HOME/Applications" "$@"
         '';

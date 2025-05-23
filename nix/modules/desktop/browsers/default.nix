@@ -1,8 +1,10 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
   cfg = config.modules.desktop.browsers;
 
   hasUnescapedQuote = s: (strings.match ''.*[^\]".*'' s) != null;
@@ -23,12 +25,12 @@ in {
     home.sessionVariables = attrsets.mergeAttrsList [
       (optionalAttrs (cfg.default != null) {
         BROWSER = assert assertMsg (!hasUnescapedQuote cfg.default)
-          "must escape quotes for session variable";
+        "must escape quotes for session variable";
           cfg.default;
       })
       (optionalAttrs (cfg.alternate != null) {
         BROWSER_ALT = assert assertMsg (!hasUnescapedQuote cfg.alternate)
-          "must escape quotes for session variable";
+        "must escape quotes for session variable";
           cfg.alternate;
       })
       (optionalAttrs config.programs.firefox.enable {

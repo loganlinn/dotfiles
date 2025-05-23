@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.aerospace;
-in
-{
+in {
   options.programs.aerospace = {
     enable = mkEnableOption "aerospace window manager";
     borders = {
@@ -24,18 +20,16 @@ in
 
   config = mkIf cfg.enable {
     homebrew = {
-      taps = [ "nikitabobko/tap" ] ++ optional cfg.borders.enable "FelixKratz/formulae";
-      casks = [ "nikitabobko/tap/aerospace" ];
+      taps = ["nikitabobko/tap"] ++ optional cfg.borders.enable "FelixKratz/formulae";
+      casks = ["nikitabobko/tap/aerospace"];
       brews = optional cfg.borders.enable "FelixKratz/formulae/borders";
     };
 
-    home-manager.users.${config.my.user.name} =
-      { config, ... }:
-      {
-        xdg.configFile = optionalAttrs (cfg.configFile != null) {
-          "aerospace/aerospace.toml".source = config.lib.file.mkOutOfStoreSymlink cfg.configFile;
-        };
+    home-manager.users.${config.my.user.name} = {config, ...}: {
+      xdg.configFile = optionalAttrs (cfg.configFile != null) {
+        "aerospace/aerospace.toml".source = config.lib.file.mkOutOfStoreSymlink cfg.configFile;
       };
+    };
 
     system.defaults = {
       # Move windows by holding ctrl+cmd and dragging any part of the window

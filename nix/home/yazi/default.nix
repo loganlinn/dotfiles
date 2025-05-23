@@ -3,9 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   programs.yazi = {
     enable = true;
     enableBashIntegration = true;
@@ -26,7 +24,7 @@
       #   { exec = "close"; on = [ "<C-q>" ]; }
       # ];
     };
-    plugins = { };
+    plugins = {};
     settings = {
       manager = {
         show_hidden = false;

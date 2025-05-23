@@ -7,9 +7,7 @@
   pkgs,
   nix-colors,
   ...
-}:
-
-{
+}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -126,7 +124,7 @@
   };
   services.picom.enable = true;
   services.polybar.enable = true;
-  services.polybar.settings = { };
+  services.polybar.settings = {};
   xsession.windowManager.i3.enable = true;
   xsession.windowManager.i3.config.terminal = "kitty";
 

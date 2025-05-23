@@ -4,15 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
-
+with lib; let
   cfg = config.programs.the-way;
-
-in
-{
+in {
   options.programs.the-way = {
     enable = mkEnableOption "the-way";
 
@@ -49,8 +43,7 @@ in
   };
 
   config = mkIf cfg.enable {
-
-    home.packages = [ cfg.package ];
+    home.packages = [cfg.package];
 
     programs.bash.initExtra = mkIf cfg.enableBashIntegration ''
        function cmdsave() {
@@ -87,5 +80,4 @@ in
       end
     '';
   };
-
 }

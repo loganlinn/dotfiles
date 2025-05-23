@@ -1,5 +1,9 @@
-{ lib, fetchFromGitHub, dbus, python3 }:
-
+{
+  lib,
+  fetchFromGitHub,
+  dbus,
+  python3,
+}:
 python3.pkgs.buildPythonApplication rec {
   pname = "notify-send-py";
   version = "unstable-2021-05-12";
@@ -12,18 +16,17 @@ python3.pkgs.buildPythonApplication rec {
     hash = "sha256-+6hh2c+TWMYaAI2SCRZrrwIh8FhKpJthFL0o6QMsoSY=";
   };
 
-  nativeBuildInputs = [ python3.pkgs.flit-core ];
+  nativeBuildInputs = [python3.pkgs.flit-core];
 
-  propagatedBuildInputs = with python3.pkgs; [ dbus-python pygobject3 ];
+  propagatedBuildInputs = with python3.pkgs; [dbus-python pygobject3];
 
-  pythonImportsCheck = [ "notify_send_py" ];
+  pythonImportsCheck = ["notify_send_py"];
 
   meta = with lib; {
-    description =
-      "A python-script like libnotify but with improved functionality";
+    description = "A python-script like libnotify but with improved functionality";
     homepage = "https://github.com/phuhl/notify-send.py";
-    license = with licenses; [ bsd2 mit ];
-    maintainers = with maintainers; [ ];
+    license = with licenses; [bsd2 mit];
+    maintainers = with maintainers; [];
     mainProgram = "notify-send.py";
     platforms = dbus.meta.platforms;
   };

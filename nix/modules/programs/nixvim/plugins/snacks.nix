@@ -349,7 +349,7 @@
             Snacks.toggle.treesitter():map("<leader>tT")
             Snacks.toggle.option("background", { off = "light", on = "dark", name = "Dark Background" }):map("<leader>tb")
             Snacks.toggle.inlay_hints():map("<leader>th")
-            -- NOTE: following cause NPE 
+            -- NOTE: following cause NPE
             -- Snacks.toggle.indent():map("<leader>tg")
             -- Snacks.toggle.dim():map("<leader>tD")
           end

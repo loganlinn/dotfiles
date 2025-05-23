@@ -1,9 +1,9 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
-, installShellFiles
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  installShellFiles,
 }:
-
 buildGoModule rec {
   pname = "kubefwd";
   version = "1.22.4";
@@ -17,7 +17,7 @@ buildGoModule rec {
 
   vendorHash = "sha256-oeRShx5lYwJ9xFPg5Ch0AzdQXwX/5OA3EyuumgH9gXU=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [installShellFiles];
 
   ldflags = [
     "-s" # Omit symbol table and debug information
@@ -36,6 +36,6 @@ buildGoModule rec {
     description = "Bulk port forwarding Kubernetes services for local development";
     homepage = "https://github.com/txn2/kubefwd";
     license = licenses.asl20;
-    maintainers = with maintainers; [ ];
+    maintainers = with maintainers; [];
   };
 }

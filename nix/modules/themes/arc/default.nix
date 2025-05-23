@@ -1,11 +1,11 @@
-{ config, lib, pkgs, ... }:
-
-let
-
-  cfg = config.modules.theme;
-
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.modules.theme;
+in {
   config = lib.mkIf (cfg.active == "arc") {
     gtk.enable = true;
     gtk.theme = {

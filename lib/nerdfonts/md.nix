@@ -6880,5 +6880,4 @@
   "zodiac_scorpio" = "󰪆";
   "zodiac_taurus" = "󰪇";
   "zodiac_virgo" = "󰪈";
-
 }

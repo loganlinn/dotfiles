@@ -1,8 +1,11 @@
-{ config, pkgs, ... }:
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   inherit (config.lib.nixvim) mkRaw;
   mode = {
-    n = [ "n" ];
+    n = ["n"];
     nv = [
       "n"
       "v"
@@ -11,15 +14,14 @@ let
       "n"
       "i"
     ];
-    i = [ "i" ];
-    v = [ "v" ];
+    i = ["i"];
+    v = ["v"];
   };
-in
-{
+in {
   # dependencies of keymap below
   programs.nixvim.extraPlugins = with pkgs.vimPlugins; [
-    { plugin = vim-bbye; }
-    { plugin = vim-eunuch; }
+    {plugin = vim-bbye;}
+    {plugin = vim-eunuch;}
   ];
 
   programs.nixvim.keymaps = [

@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   boot.loader = {
     timeout = 3;
 
@@ -20,7 +23,7 @@
       # `grub-install` if efiSupport is true
       # (the devices list is not used by the EFI grub install,
       # but must be set to some value in order to pass an assert in grub.nix)
-      devices = [ "nodev" ];
+      devices = ["nodev"];
       efiSupport = true;
       # set $FS_UUID to the UUID of the EFI partition
       # extraEntries = ''
@@ -35,7 +38,6 @@
       # '';
       # version = 2;
     };
-
   };
 
   boot.plymouth = {
@@ -50,7 +52,7 @@
     # ];
   };
 
-  boot.supportedFilesystems = [ "ntfs" ];
+  boot.supportedFilesystems = ["ntfs"];
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [
     "i915.enable_psr=1"

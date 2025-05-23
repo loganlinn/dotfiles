@@ -1,8 +1,9 @@
-{ config, lib, ... }:
-
-with lib;
-
-let
+{
+  config,
+  lib,
+  ...
+}:
+with lib; let
   images = [
     "image/bmp"
     "image/gif"
@@ -300,10 +301,8 @@ let
     "librewolf.desktop"
     "vivaldi.desktop"
   ];
-
-in
-{
-  options = { };
+in {
+  options = {};
   config = {
     xdg.mimeApps.enable = true;
     xdg.mimeApps.defaultApplications = lib.attrsets.mergeAttrsList [
@@ -316,7 +315,7 @@ in
         "nvim.desktop"
         "vim.desktop"
       ]))
-      (genAttrs audioVideo (_: [ "vlc.desktop" "mpv.desktop" ]))
+      (genAttrs audioVideo (_: ["vlc.desktop" "mpv.desktop"]))
       # (genAttrs archives (_: [ "xarchiver.desktop" ]))
       {
         "inode/directory" = [
@@ -329,15 +328,15 @@ in
           "emacs.desktop"
           "kitty-open.desktop"
         ];
-        "x-scheme-handler/jetbrains" = [ "jetbrains-toolbox.desktop" ];
-        "x-scheme-handler/slack" = [ "slack.desktop" ];
-        "x-scheme-handler/obsidian" = [ "obsidian.desktop" ];
-        "x-scheme-handler/terminal" = [ "kitty.desktop" ];
-        "x-scheme-handler/zoommtg" = [ "Zoom.desktop" ];
+        "x-scheme-handler/jetbrains" = ["jetbrains-toolbox.desktop"];
+        "x-scheme-handler/slack" = ["slack.desktop"];
+        "x-scheme-handler/obsidian" = ["obsidian.desktop"];
+        "x-scheme-handler/terminal" = ["kitty.desktop"];
+        "x-scheme-handler/zoommtg" = ["Zoom.desktop"];
       }
     ];
     xdg.mimeApps.associations.removed = {
-      "inode/directory" = [ "code.desktop" ];
+      "inode/directory" = ["code.desktop"];
     };
   };
 }

@@ -5,10 +5,7 @@
   lib,
   ...
 }:
-
-with lib;
-
-{
+with lib; {
   imports = [
     self.nixosModules._1password
     self.nixosModules.bluetooth

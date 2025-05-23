@@ -1,8 +1,11 @@
-{ writeShellApplication, nvd, ... }:
-
+{
+  writeShellApplication,
+  nvd,
+  ...
+}:
 writeShellApplication {
   name = "nixos-build-diff";
-  runtimeInputs = [ nvd ];
+  runtimeInputs = [nvd];
   text = ''
     nixos-rebuild build "$@" && nvd diff /run/current-system result
   '';

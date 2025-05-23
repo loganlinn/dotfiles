@@ -227,5 +227,4 @@
   "wind_south_west" = "";
   "wind_west" = "";
   "windy" = "";
-
 }

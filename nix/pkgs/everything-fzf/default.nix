@@ -10,7 +10,6 @@
   ruby,
   stdenv,
 }:
-
 stdenv.mkDerivation rec {
   pname = "everything-fzf";
 
@@ -34,10 +33,10 @@ stdenv.mkDerivation rec {
       ruby
     ]
     ++ lib.optionals stdenv.isDarwin [
-      (callPackage ../chrome-cli { })
+      (callPackage ../chrome-cli {})
     ];
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [makeWrapper];
 
   installPhase = ''
     mkdir -p "$out/bin"
@@ -55,6 +54,6 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/junegunn/everything.fzf";
     license = licenses.mit;
     platforms = platforms.all;
-    maintainers = [ ];
+    maintainers = [];
   };
 }

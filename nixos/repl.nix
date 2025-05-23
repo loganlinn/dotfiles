@@ -2,9 +2,8 @@
 {
   flakeref ? (toString ./..),
   name ? import ../lib/currentHostname.nix,
-}:
-let
+}: let
   flake = builtins.getFlake flakeref;
   cfg = flake.nixosConfigurations.${name};
 in
-flake // cfg
+  flake // cfg

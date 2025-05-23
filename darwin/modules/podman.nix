@@ -4,8 +4,7 @@
   lib,
   ...
 }:
-with lib;
-{
+with lib; {
   options = {
     programs.podman-desktop.enable = mkEnableOption "podman-desktop";
   };
@@ -19,6 +18,8 @@ with lib;
     ];
     homebrew.brews = [
       "podman-compose"
+    ];
+    homebrew.casks = [
       "podman-desktop"
     ];
     environment.systemPath = [

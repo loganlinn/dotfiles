@@ -4,10 +4,7 @@
   lib,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.emacs-plus;
   emacs-plus-brew = {
     name = "emacs-plus@${cfg.version}";
@@ -23,8 +20,7 @@ let
       ++ optional cfg.enableXwidgets "with-xwidgets"
       ++ optional cfg.enablePoll "with-poll";
   };
-in
-{
+in {
   options = {
     programs.emacs-plus = {
       enable = mkEnableOption "emacs-plus";
@@ -49,7 +45,7 @@ in
     };
 
     homebrew.enable = true;
-    homebrew.taps = [ { name = "d12frosted/emacs-plus"; } ];
+    homebrew.taps = [{name = "d12frosted/emacs-plus";}];
     homebrew.brews = [
       "gcc"
       "coreutils"

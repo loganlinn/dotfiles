@@ -1,6 +1,10 @@
-{ config, lib, ... }:
-let cfg = config.programs.xcode; in
 {
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.programs.xcode;
+in {
   options.programs.xcode = {
     enable = lib.mkEnableOption "Xcode";
   };

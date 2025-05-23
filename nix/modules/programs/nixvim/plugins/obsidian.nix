@@ -1,8 +1,10 @@
-{ config, pkgs, ... }:
-let
-  inherit (pkgs.stdenv) isDarwin;
-in
 {
+  config,
+  pkgs,
+  ...
+}: let
+  inherit (pkgs.stdenv) isDarwin;
+in {
   programs.nixvim = {
     plugins.obsidian = {
       # enable = true;
@@ -16,14 +18,13 @@ in
         preferred_link_style = "markdown";
         use_advanced_uri = true;
         picker.name =
-          if config.programs.nixvim.plugins.snacks.enable then
-            "snacks.pick"
-          else if config.programs.nixvim.plugins.mini.enable then
-            "mini.pick"
-          else if config.programs.nixvim.plugins.telescope.enable then
-            "telescope.nvim"
-          else
-            null;
+          if config.programs.nixvim.plugins.snacks.enable
+          then "snacks.pick"
+          else if config.programs.nixvim.plugins.mini.enable
+          then "mini.pick"
+          else if config.programs.nixvim.plugins.telescope.enable
+          then "telescope.nvim"
+          else null;
         templates.subdir = "System/Templates";
         callbacks.post_setup = null; # fun(client: obsidian.Client)
         callbacks.enter_note = null; # fun(client: obsidian.Client, note: obsidian.Note)

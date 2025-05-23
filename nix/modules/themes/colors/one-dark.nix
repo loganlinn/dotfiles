@@ -42,5 +42,4 @@ rec {
     white = "#A0A1A7";
     yellow = "#986801";
   };
-
 }

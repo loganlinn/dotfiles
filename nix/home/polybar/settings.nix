@@ -1,9 +1,11 @@
-{ config, lib, pkgs, ... }:
-
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with builtins;
-with lib;
-
-let
+with lib; let
   inherit (lib.my) nerdfonts;
 
   cfg = config.modules.polybar;
@@ -22,11 +24,12 @@ let
   ### colors
   baseColors =
     mapAttrs (k: v: "#${v}")
-      (filterAttrs (k: _: hasPrefix "base" k)
-        config.colorScheme.palette);
+    (filterAttrs (k: _: hasPrefix "base" k)
+      config.colorScheme.palette);
 
   colors = with config.colorScheme.palette;
-    baseColors // {
+    baseColors
+    // {
       transparent = "#00000000";
       # see https://github.com/tinted-theming/home/blob/main/styling.md
       background = base00;
@@ -69,9 +72,8 @@ let
   iconFont = 2; # see settings."bar/base".font
   iconText = fontText iconFont;
   iconLargeText = fontText 3; # see settings."bar/base".font
-in
-{
-  services.polybar.settings = foldl' recursiveUpdate { } [
+in {
+  services.polybar.settings = foldl' recursiveUpdate {} [
     (nvs "colors" colors)
     (nvs "settings" {
       # Compositing operators
@@ -286,14 +288,13 @@ in
       label.text = "%output%";
       label-fail = "${iconText nerdfonts.seti.error} ${iconText nerdfonts.oct.mark_github} %output%";
       format.text = "<label>";
-      exec =
-        let
-          alertStyle = mkStyle [
-            (tag.bg colors.base0E)
-            (tag.fg colors.base00)
-            (tag.font 2)
-          ];
-        in
+      exec = let
+        alertStyle = mkStyle [
+          (tag.bg colors.base0E)
+          (tag.fg colors.base00)
+          (tag.font 2)
+        ];
+      in
         pkgs.writeShellScript "github" ''
           export PATH=${makeBinPath [
             config.programs.gh.package
@@ -316,17 +317,17 @@ in
              case $count in
                 0)
                   echo -e "${
-                    tag.action
-                      "xdg-open https://github.com/pulls/review-requested"
-                      (iconStyle " ${nerdfonts.oct.git_pull_request} $count ")
-                  }"
+            tag.action
+            "xdg-open https://github.com/pulls/review-requested"
+            (iconStyle " ${nerdfonts.oct.git_pull_request} $count ")
+          }"
                     ;;
                 *)
                 echo -e "${
-                  tag.action
-                    "xdg-open https://github.com/pulls/review-requested"
-                    (alertStyle " ${nerdfonts.oct.git_pull_request} $count ")
-                }"
+            tag.action
+            "xdg-open https://github.com/pulls/review-requested"
+            (alertStyle " ${nerdfonts.oct.git_pull_request} $count ")
+          }"
                 ;;
              esac
 
@@ -408,14 +409,46 @@ in
         empty.foreground = "\${colors.base04}";
       };
       ramp.coreload = [
-        { text = "▁"; foreground = "\${colors.ok}"; spacing = 0; }
-        { text = "▂"; foreground = "\${colors.ok}"; spacing = 0; }
-        { text = "▃"; foreground = "\${colors.ok}"; spacing = 0; }
-        { text = "▄"; foreground = "\${colors.warn}"; spacing = 0; }
-        { text = "▅"; foreground = "\${colors.warn}"; spacing = 0; }
-        { text = "▆"; foreground = "\${colors.warn}"; spacing = 0; }
-        { text = "▇"; foreground = "\${colors.warn}"; spacing = 0; }
-        { text = "█"; foreground = "\${colors.alert}"; spacing = 0; }
+        {
+          text = "▁";
+          foreground = "\${colors.ok}";
+          spacing = 0;
+        }
+        {
+          text = "▂";
+          foreground = "\${colors.ok}";
+          spacing = 0;
+        }
+        {
+          text = "▃";
+          foreground = "\${colors.ok}";
+          spacing = 0;
+        }
+        {
+          text = "▄";
+          foreground = "\${colors.warn}";
+          spacing = 0;
+        }
+        {
+          text = "▅";
+          foreground = "\${colors.warn}";
+          spacing = 0;
+        }
+        {
+          text = "▆";
+          foreground = "\${colors.warn}";
+          spacing = 0;
+        }
+        {
+          text = "▇";
+          foreground = "\${colors.warn}";
+          spacing = 0;
+        }
+        {
+          text = "█";
+          foreground = "\${colors.alert}";
+          spacing = 0;
+        }
       ];
     })
     ####################################################
@@ -438,14 +471,46 @@ in
       label.margin = 1;
       units = true;
       ramp = [
-        { margin = 1; text = iconText ""; foreground = "\${colors.ok}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.ok}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.ok}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.warn}"; }
-        { margin = 1; text = iconText ""; foreground = "\${colors.alert}"; }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.ok}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.ok}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.ok}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.warn}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.warn}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.warn}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.warn}";
+        }
+        {
+          margin = 1;
+          text = iconText "";
+          foreground = "\${colors.alert}";
+        }
       ];
     })
     ####################################################
@@ -466,39 +531,40 @@ in
     ####################################################
     (
       let
-        kubebar = pkgs.writeShellApplication
+        kubebar =
+          pkgs.writeShellApplication
           {
             name = "kubebar";
-            runtimeInputs = with pkgs; [ kubectl entr jq envsubst ];
+            runtimeInputs = with pkgs; [kubectl entr jq envsubst];
             text = builtins.readFile ./kubebar.bash;
           };
       in
-      nvs "module/kubernetes" {
-        type = "custom/script";
-        exec-if = "kubectl version --client=true";
-        # tail = true;
-        # exec = "${kubebar}/bin/kubebar --watch";
-        exec = "${kubebar}/bin/kubebar --no-watch";
-        env = {
-          KUBEBAR_ESCAPE = "@";
-          KUBEBAR_FORMAT = concatStrings [
-            "%{A1:kitty-floating k9s &:}"
-            "%{F#${config.colorScheme.palette.base04}}${iconText nerdfonts.md.kubernetes}%{F-} "
-            "@{KUBE_CURRENT_CONTEXT}/@{KUBE_CURRENT_NAMESPACE}"
-            "%{A}"
-          ];
-        };
-        tail = false;
-        interval = 10;
-        background = "\${colors.background}";
-        foreground = "\${colors.foreground}";
-        format.background = "\${colors.background}";
-        format.foreground = "\${colors.foreground}";
-        format.prefix-foreground = "\${colors.foreground-dim}";
-        format.suffix-foreground = "\${colors.foreground-dim}";
-        format.prefix-padding = 1;
-        format.padding = 2;
-      }
+        nvs "module/kubernetes" {
+          type = "custom/script";
+          exec-if = "kubectl version --client=true";
+          # tail = true;
+          # exec = "${kubebar}/bin/kubebar --watch";
+          exec = "${kubebar}/bin/kubebar --no-watch";
+          env = {
+            KUBEBAR_ESCAPE = "@";
+            KUBEBAR_FORMAT = concatStrings [
+              "%{A1:kitty-floating k9s &:}"
+              "%{F#${config.colorScheme.palette.base04}}${iconText nerdfonts.md.kubernetes}%{F-} "
+              "@{KUBE_CURRENT_CONTEXT}/@{KUBE_CURRENT_NAMESPACE}"
+              "%{A}"
+            ];
+          };
+          tail = false;
+          interval = 10;
+          background = "\${colors.background}";
+          foreground = "\${colors.foreground}";
+          format.background = "\${colors.background}";
+          format.foreground = "\${colors.foreground}";
+          format.prefix-foreground = "\${colors.foreground-dim}";
+          format.suffix-foreground = "\${colors.foreground-dim}";
+          format.prefix-padding = 1;
+          format.padding = 2;
+        }
     )
     ####################################################
     (nvs "module/space" {
@@ -516,7 +582,7 @@ in
       content.foreground = "\${colors.background-alt}";
       content.background = "\${colors.background}";
       content.font = 5;
-      content.offset = (-5);
+      content.offset = -5;
     })
     (mapAttrs'
       (name: text: (nameValuePair "module/nerdfonts_ple_${name}" {
@@ -530,10 +596,10 @@ in
 
   #####################################################
   # TODO finish converting to services.polybar.settings
-  services.polybar.config =
-    let
-      mkModule = name: type: settings: {
-        "module/${name}" = {
+  services.polybar.config = let
+    mkModule = name: type: settings: {
+      "module/${name}" =
+        {
           inherit type;
           background = "\${colors.background}";
           foreground = "\${colors.foreground}";
@@ -543,41 +609,44 @@ in
           format-suffix-foreground = "\${colors.foreground-dim}";
           format-prefix-padding = 1;
           format-padding = 2;
-        } // settings;
-      };
-    in
-    fold recursiveUpdate { } (forEach cfg.networks ({ interface, interface-type, ... }@settings:
-      (mkModule "network-${interface}" "internal/network" ({
-        inherit interface;
+        }
+        // settings;
+    };
+  in
+    fold recursiveUpdate {} (forEach cfg.networks ({
+        interface,
+        interface-type,
+        ...
+      } @ settings: (mkModule "network-${interface}" "internal/network" ({
+          inherit interface;
 
-        format-connected =
-          if interface-type == "wireless"
-          then "<ramp-signal>"
-          else "<label-connected>";
-        format-connected-padding = 2;
-        format-connected-background = "\${colors.background}";
-        format-connected-foreground = "\${colors.foreground-dim}";
-        label-connected =
-          "%{A1:nm-connection-editor &:}${iconText nerdfonts.md.network_outline}%{A}";
+          format-connected =
+            if interface-type == "wireless"
+            then "<ramp-signal>"
+            else "<label-connected>";
+          format-connected-padding = 2;
+          format-connected-background = "\${colors.background}";
+          format-connected-foreground = "\${colors.foreground-dim}";
+          label-connected = "%{A1:nm-connection-editor &:}${iconText nerdfonts.md.network_outline}%{A}";
 
-        format-disconnected = "<label-disconnected>";
-        format-disconnected-padding = 2;
-        format-disconnected-background = "\${colors.background}";
-        format-disconnected-foreground = "\${colors.foreground-dim}";
-        label-disconnected =
-          if interface-type == "wireless"
-          then (iconText nerdfonts.md.wifi_off)
-          else (iconText nerdfonts.md.network_off);
+          format-disconnected = "<label-disconnected>";
+          format-disconnected-padding = 2;
+          format-disconnected-background = "\${colors.background}";
+          format-disconnected-foreground = "\${colors.foreground-dim}";
+          label-disconnected =
+            if interface-type == "wireless"
+            then (iconText nerdfonts.md.wifi_off)
+            else (iconText nerdfonts.md.network_off);
 
-        format-packetloss = "<animation-packetloss> <label-packetloss>";
-        format-packetloss-padding = 2;
-        format-packetloss-background = "\${colors.background}";
-        format-packetloss-foreground = "\${colors.foreground-dim}";
+          format-packetloss = "<animation-packetloss> <label-packetloss>";
+          format-packetloss-padding = 2;
+          format-packetloss-background = "\${colors.background}";
+          format-packetloss-foreground = "\${colors.foreground-dim}";
 
-        ramp-signal-0 = iconText nerdfonts.md.wifi_strength_1;
-        ramp-signal-1 = iconText nerdfonts.md.wifi_strength_2;
-        ramp-signal-2 = iconText nerdfonts.md.wifi_strength_3;
-        ramp-signal-3 = iconText nerdfonts.md.wifi_strength_4;
-      } // settings))));
-
+          ramp-signal-0 = iconText nerdfonts.md.wifi_strength_1;
+          ramp-signal-1 = iconText nerdfonts.md.wifi_strength_2;
+          ramp-signal-2 = iconText nerdfonts.md.wifi_strength_3;
+          ramp-signal-3 = iconText nerdfonts.md.wifi_strength_4;
+        }
+        // settings))));
 }

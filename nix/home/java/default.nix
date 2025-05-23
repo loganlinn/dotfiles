@@ -1,22 +1,23 @@
-{ config, pkgs, lib, ... }:
-
-with lib;
-
-let
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
 
   cfg = config.my.java;
-
 in {
   options.my.java = {
-    enable = mkEnableOption "java" // { default = true; };
+    enable = mkEnableOption "java" // {default = true;};
 
-    package = mkPackageOption pkgs "jdk" { };
+    package = mkPackageOption pkgs "jdk" {};
 
     toolchains = mkOption {
       description = "Additional JDK/JREs to be registered as toolchains.";
       type = types.listOf types.package;
-      default = [ ];
+      default = [];
 
       example = literalExpression ''
         [
@@ -43,11 +44,11 @@ in {
 
     graalvm = {
       enable = mkEnableOption "graalvm";
-      package = mkPackageOption pkgs "graalvm-ce" { };
+      package = mkPackageOption pkgs "graalvm-ce" {};
     };
 
     illegalAccess = mkOption {
-      type = types.nullOr (types.oneOf [ "permit" "warn" "debug" "deny" ]);
+      type = types.nullOr (types.oneOf ["permit" "warn" "debug" "deny"]);
       default = null;
     };
 
@@ -56,7 +57,7 @@ in {
       description = ''
         https://docs.oracle.com/en/java/javase/17/migrate/migrating-jdk-8-later-jdk-releases.html#GUID-2F61F3A9-0979-46A4-8B49-325BA0EE8B66
       '';
-      default = [ ];
+      default = [];
     };
 
     opens = mkOption {
@@ -64,7 +65,7 @@ in {
       description = ''
         https://docs.oracle.com/en/java/javase/17/migrate/migrating-jdk-8-later-jdk-releases.html#GUID-2F61F3A9-0979-46A4-8B49-325BA0EE8B66
       '';
-      default = [ ];
+      default = [];
     };
 
     enableCommercialFeatures = mkOption {
@@ -79,50 +80,66 @@ in {
   };
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = cfg.enableFlightRecorder -> cfg.enableCommercialFeatures;
-      message =
-        "Java Flight Recorder requires a commercial license for use in production.";
-    }] ++ (forEach cfg.toolchains (p: {
-      assertion = p.meta.mainProgram == "java";
-      message =
-        "Invalid Java toolchain package: ${p}: mainProgram expected to be `java`";
-    }));
+    assertions =
+      [
+        {
+          assertion = cfg.enableFlightRecorder -> cfg.enableCommercialFeatures;
+          message = "Java Flight Recorder requires a commercial license for use in production.";
+        }
+      ]
+      ++ (forEach cfg.toolchains (p: {
+        assertion = p.meta.mainProgram == "java";
+        message = "Invalid Java toolchain package: ${p}: mainProgram expected to be `java`";
+      }));
 
     programs.java.enable = true;
     programs.java.package = cfg.package;
 
     # this works, but is there a better way? (makeWrapper?)
-    home.sessionVariables = optionalAttrs (cfg.toolOptions != [ ]) {
+    home.sessionVariables = optionalAttrs (cfg.toolOptions != []) {
       JAVA_TOOL_OPTIONS = escapeShellArgs cfg.toolOptions;
     };
 
-    home.packages = (attrValues rec {
-      jdk = cfg.package;
-      maven = pkgs.maven; #.override { jdk_headless = jdk; };
-      gradle = pkgs.gradle.override {
-        java = jdk;
-        javaToolchains =
-          remove (p: p.meta.name == jdk.meta.name) cfg.toolchains;
-      };
-      clojure = pkgs.clojure.override { inherit jdk; };
-      clojure-lsp = pkgs.clojure-lsp;
-      leiningen = pkgs.leiningen.override { inherit jdk; };
-      inherit (pkgs)
-        babashka bbin clj-kondo jet neil zprint rep gradle-completion;
-    }) ++ (optional cfg.graalvm.enable cfg.graalvm.package);
+    home.packages =
+      (attrValues rec {
+        jdk = cfg.package;
+        maven = pkgs.maven; #.override { jdk_headless = jdk; };
+        gradle = pkgs.gradle.override {
+          java = jdk;
+          javaToolchains =
+            remove (p: p.meta.name == jdk.meta.name) cfg.toolchains;
+        };
+        clojure = pkgs.clojure.override {inherit jdk;};
+        clojure-lsp = pkgs.clojure-lsp;
+        leiningen = pkgs.leiningen.override {inherit jdk;};
+        inherit
+          (pkgs)
+          babashka
+          bbin
+          clj-kondo
+          jet
+          neil
+          zprint
+          rep
+          gradle-completion
+          ;
+      })
+      ++ (optional cfg.graalvm.enable cfg.graalvm.package);
 
     # Create a symlink that applications can depend on rather than nix-store
     xdg.dataFile = pipe cfg.toolchains [
       (map (p: {
         name = "jvms/${p.pname}";
-        value = { source = p; };
+        value = {source = p;};
       }))
       (xs:
-        xs ++ [{
-          name = "jvms/default";
-          value = { source = cfg.package; };
-        }])
+        xs
+        ++ [
+          {
+            name = "jvms/default";
+            value = {source = cfg.package;};
+          }
+        ])
       listToAttrs
     ];
   };

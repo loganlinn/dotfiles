@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   programs.kakoune = {
     config.numberLines.relative = true;
     plugins = with pkgs.kakounePlugins; [

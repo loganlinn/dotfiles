@@ -11,5 +11,4 @@
   "pomodoro_squashed" = "";
   "pomodoro_ticking" = "";
   "short_pause" = "";
-
 }

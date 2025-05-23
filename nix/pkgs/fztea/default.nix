@@ -1,8 +1,8 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
 }:
-
 buildGoModule rec {
   pname = "fztea";
   version = "0.6.2";
@@ -16,13 +16,13 @@ buildGoModule rec {
 
   vendorHash = "sha256-tQNPiReMQMDDMKaBHXn7d4v4XtTyKQvmzhIdXp/I3xM=";
 
-  ldflags = [ "-s" "-w" ];
+  ldflags = ["-s" "-w"];
 
   meta = with lib; {
     description = "Remote control your flipper from the local terminal or remotely over SSH";
     homepage = "https://github.com/jon4hz/fztea";
     license = licenses.mit;
-    maintainers = with maintainers; [ ];
+    maintainers = with maintainers; [];
     mainProgram = "fztea";
   };
 }

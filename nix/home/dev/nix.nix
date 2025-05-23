@@ -3,9 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   home.packages = with pkgs; [
     alejandra
     deadnix
@@ -23,7 +21,7 @@
     toml2nix
     (writeShellApplication {
       name = "nix-env-print";
-      runtimeInputs = [ direnv ];
+      runtimeInputs = [direnv];
       text = ''
         direnv apply_dump <(nix shell --impure "$@" --command "$(command -v direnv)" dump)
       '';

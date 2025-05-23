@@ -4,9 +4,7 @@
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   home.packages = [
     pkgs.graphite-cli
   ];

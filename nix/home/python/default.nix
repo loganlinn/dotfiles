@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-let
+with lib; let
   cfg = config.my.python;
-in
-{
-
+in {
   options.my.python = {
     package = mkOption {
       type = types.package;
@@ -36,26 +32,26 @@ in
       readOnly = true;
       default = cfg.package.withPackages (
         ps:
-        with ps;
-        [
-          black
-          ipython
-          isort # used by editors
-          jupyter
-          jupyterlab
-          numpy
-          pipx
-          setuptools
-        ]
-        ++ optionals stdenv.isLinux [
-          # pybluez
-          dbus-python
-          pygobject3
-          pyxdg
-        ]
-        ++ optionals config.xsession.windowManager.i3.enable [
-          i3ipc
-        ]
+          with ps;
+            [
+              black
+              ipython
+              isort # used by editors
+              jupyter
+              jupyterlab
+              numpy
+              pipx
+              setuptools
+            ]
+            ++ optionals stdenv.isLinux [
+              # pybluez
+              dbus-python
+              pygobject3
+              pyxdg
+            ]
+            ++ optionals config.xsession.windowManager.i3.enable [
+              i3ipc
+            ]
       );
     };
   };

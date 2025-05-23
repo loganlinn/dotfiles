@@ -1,11 +1,12 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-  inherit (pkgs.stdenv.targetPlatform) isLinux;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  inherit (pkgs.stdenv.targetPlatform) isLinux;
+in {
   programs.mpv = {
     enable = isLinux;
     scripts = with pkgs.mpvScripts; [
@@ -14,58 +15,60 @@ in
       thumbnail # in OSC seekbar
       sponsorblock
     ];
-    config = {
-      # REF: https://github.com/hl2guide/better-mpv-config/blob/ff34dca21bd7689585af8b6fbe53c7abbada4873/mpv_v3/mpv.conf
-      # REF: https://github.com/Argon-/mpv-config/blob/master/mpv.conf
-      # REF: https://github.com/Zabooby/mpv-config
-      # REF: https://gist.github.com/igv
-      # ===== General =====
-      hls-bitrate = "max"; # uses max quality for HLS streams
-      prefetch-playlist = true; # prefetches the playlist
-      cache= true;
-      osc = false;
-      hwdec = "auto-safe";
-      hwdec-codecs = "all";
-      autofit = "1080";
-      # ===== Audio =====
-      volume-max = 100; # maximum volume in %, everything above 100 results in amplification
-      volume = 80; # default volume, 100 = unchanged
-      # ===== Video =====
-      vo = "gpu-next"; # Sets the video out to an experimental video renderer based on libplacebo
-      force-seekable = true;
-      # ===== RAM =====
-      demuxer-max-bytes = "20M"; # sets fast seeking
-      demuxer-max-back-bytes = "20M"; # sets fast seeking
-      # ===== Term =====
-      cursor-autohide = 250; # autohides the cursor after X millis
-      cursor-autohide-fs-only = true; # don't autohide the cursor in window mode, only fullscreen
-      msg-color = true; # color log messages on terminal
-      msg-module = true; # prepend module name to log messages
-      term-osd-bar = true; # displays a progress bar on the terminal
-      # ===== OSD =====
-      osd-bar-align-y = -1; # progress bar y alignment (-1 top, 0 centered, 1 bottom)
-      osd-bar-h = 2; # height of osd bar as a fractional percentage of your screen height
-      osd-bar-w = 99; # width of " " "
-      osd-border-color = "#DD322640"; # ARGB format
-      osd-border-size = 2; # size for osd text and progress bar
-      osd-color = "#FFFFFFFF"; # ARGB format
-      osd-duration = 2500; # hide the osd after X ms
-      osd-font-size = 32;
-      # osd-status-msg = concatStrings [
-      #   "\${time-pos} / \${duration}"
-      #   "\${?percent-pos:  (\${percent-pos}%)}"
-      #   "\${?frame-drop-count:\${!frame-drop-count==0:  Dropped: \${frame-drop-count}}}"
-      #   "\n"
-      #   "\${?chapter:Chapter: \${chapter}}"
-      # ];
-      # ===== Shaders =====
-      # TODO https://github.com/hl2guide/better-mpv-config/blob/master/mpv_v3/mpv_shaders.conf
-      # ===== Subtitles =====
-      # TODO https://github.com/hl2guide/better-mpv-config/blob/master/mpv_v3/mpv_subtitles.conf
-    } // optionalAttrs config.programs.yt-dlp.enable {
-      script-opts = "ytdl_hook-ytdl_path=${getExe config.programs.yt-dlp.package}";
-      ytdl-format = "bv[height<=1440]+ba/best[height<=1440]/bestvideo+bestaudio/best";
-    };
+    config =
+      {
+        # REF: https://github.com/hl2guide/better-mpv-config/blob/ff34dca21bd7689585af8b6fbe53c7abbada4873/mpv_v3/mpv.conf
+        # REF: https://github.com/Argon-/mpv-config/blob/master/mpv.conf
+        # REF: https://github.com/Zabooby/mpv-config
+        # REF: https://gist.github.com/igv
+        # ===== General =====
+        hls-bitrate = "max"; # uses max quality for HLS streams
+        prefetch-playlist = true; # prefetches the playlist
+        cache = true;
+        osc = false;
+        hwdec = "auto-safe";
+        hwdec-codecs = "all";
+        autofit = "1080";
+        # ===== Audio =====
+        volume-max = 100; # maximum volume in %, everything above 100 results in amplification
+        volume = 80; # default volume, 100 = unchanged
+        # ===== Video =====
+        vo = "gpu-next"; # Sets the video out to an experimental video renderer based on libplacebo
+        force-seekable = true;
+        # ===== RAM =====
+        demuxer-max-bytes = "20M"; # sets fast seeking
+        demuxer-max-back-bytes = "20M"; # sets fast seeking
+        # ===== Term =====
+        cursor-autohide = 250; # autohides the cursor after X millis
+        cursor-autohide-fs-only = true; # don't autohide the cursor in window mode, only fullscreen
+        msg-color = true; # color log messages on terminal
+        msg-module = true; # prepend module name to log messages
+        term-osd-bar = true; # displays a progress bar on the terminal
+        # ===== OSD =====
+        osd-bar-align-y = -1; # progress bar y alignment (-1 top, 0 centered, 1 bottom)
+        osd-bar-h = 2; # height of osd bar as a fractional percentage of your screen height
+        osd-bar-w = 99; # width of " " "
+        osd-border-color = "#DD322640"; # ARGB format
+        osd-border-size = 2; # size for osd text and progress bar
+        osd-color = "#FFFFFFFF"; # ARGB format
+        osd-duration = 2500; # hide the osd after X ms
+        osd-font-size = 32;
+        # osd-status-msg = concatStrings [
+        #   "\${time-pos} / \${duration}"
+        #   "\${?percent-pos:  (\${percent-pos}%)}"
+        #   "\${?frame-drop-count:\${!frame-drop-count==0:  Dropped: \${frame-drop-count}}}"
+        #   "\n"
+        #   "\${?chapter:Chapter: \${chapter}}"
+        # ];
+        # ===== Shaders =====
+        # TODO https://github.com/hl2guide/better-mpv-config/blob/master/mpv_v3/mpv_shaders.conf
+        # ===== Subtitles =====
+        # TODO https://github.com/hl2guide/better-mpv-config/blob/master/mpv_v3/mpv_subtitles.conf
+      }
+      // optionalAttrs config.programs.yt-dlp.enable {
+        script-opts = "ytdl_hook-ytdl_path=${getExe config.programs.yt-dlp.package}";
+        ytdl-format = "bv[height<=1440]+ba/best[height<=1440]/bestvideo+bestaudio/best";
+      };
 
     bindings = {
       "AXIS_DOWN" = "add volume -2";

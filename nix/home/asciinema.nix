@@ -4,15 +4,13 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.asciinema;
-  toml = pkgs.formats.toml { };
-in
-{
+  toml = pkgs.formats.toml {};
+in {
   options.programs.asciinema = {
     enable = mkEnableOption "asciinema";
-    package = mkPackageOption pkgs "asciinema" { };
+    package = mkPackageOption pkgs "asciinema" {};
     settings = mkOption {
       description = "https://docs.asciinema.org/manual/cli/configuration/";
       type = types.attrsOf toml.type;
@@ -28,7 +26,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home.packages = [cfg.package];
     xdg.configFile."asciinema/config".source = toml.generate "asciinema-config" cfg.settings;
   };
 }

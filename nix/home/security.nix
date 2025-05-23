@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   pam.yubico.authorizedYubiKeys.ids = [
     "ccccccukcufv"
   ];

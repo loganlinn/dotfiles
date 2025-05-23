@@ -4,11 +4,9 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (config.lib.nixvim) listToUnkeyedAttrs;
-in
-{
+in {
   programs.nixvim = {
     plugins.conform-nvim = {
       enable = true;
@@ -23,58 +21,56 @@ in
           lsp_format = "fallback";
           timeout_ms = 2000;
         };
-        formatters_by_ft =
-          let
-            prettier =
-              (listToUnkeyedAttrs [
-                "prettierd"
-                "prettier"
-              ])
-              // {
-                stop_after_first = true;
-              };
-          in
-          {
-            bash = [
-              "shellcheck"
-              "shellharden"
-              "sfmt"
-            ];
-            crystal = [ "crystal" ];
-            clojure = [ "cljfmt" ];
-            cpp = [ "clang_format" ];
-            css = prettier;
-            fennel = [ "fnlfmt" ];
-            gleam = [ "gleam" ];
-            go = [
-              "goimports"
-              "gofmt"
-            ];
-            hcl = [ "hcl" ];
-            html = prettier;
-            javascript = prettier;
-            just = [ "just" ];
-            lua = [ "stylua" ];
-            markdown = [
+        formatters_by_ft = let
+          prettier =
+            (listToUnkeyedAttrs [
+              "prettierd"
               "prettier"
-              "injected"
-            ];
-            proto = [ "buf" ];
-            python = [
-              "ruff_format"
-              "ruff_organize_imports"
-            ];
-            nix = [ "nixfmt" ];
-            rust = [ "rustfmt" ];
-            sql = [ "sqlfluff" ];
-            terraform = [ "terraform_fmt" ];
-            toml = [ "taplo" ];
-            typescript = prettier;
-            typescriptreact = prettier;
-            yaml = prettier;
-            "*" = [ "typos" ];
-            "_" = [ "trim_whitespace" ];
-          };
+            ])
+            // {
+              stop_after_first = true;
+            };
+        in {
+          bash = [
+            "shellcheck"
+            "shellharden"
+            "sfmt"
+          ];
+          crystal = ["crystal"];
+          clojure = ["cljfmt"];
+          cpp = ["clang_format"];
+          css = prettier;
+          fennel = ["fnlfmt"];
+          gleam = ["gleam"];
+          go = [
+            "goimports"
+            "gofmt"
+          ];
+          hcl = ["hcl"];
+          html = prettier;
+          javascript = prettier;
+          just = ["just"];
+          lua = ["stylua"];
+          markdown = [
+            "prettier"
+            "injected"
+          ];
+          proto = ["buf"];
+          python = [
+            "ruff_format"
+            "ruff_organize_imports"
+          ];
+          nix = ["nixfmt"];
+          rust = ["rustfmt"];
+          sql = ["sqlfluff"];
+          terraform = ["terraform_fmt"];
+          toml = ["taplo"];
+          typescript = prettier;
+          typescriptreact = prettier;
+          yaml = prettier;
+          "*" = ["typos"];
+          "_" = ["trim_whitespace"];
+        };
         formatters = {
           fnlfmt.command = getExe pkgs.fnlfmt;
           goimpports.command = getExe' pkgs.gotools "goimports";

@@ -5,22 +5,22 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.git.spice;
-in
-{
+in {
   options.programs.git.spice = {
-    enable = mkEnableOption "git-spice" // {
-      default = true;
-    };
+    enable =
+      mkEnableOption "git-spice"
+      // {
+        default = true;
+      };
     package = mkOption {
       type = types.package;
       default = self'.packages.git-spice;
     };
   };
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home.packages = [cfg.package];
     home.shellAliases = {
       gsl = "${cfg.package}/bin/gs log long";
     };

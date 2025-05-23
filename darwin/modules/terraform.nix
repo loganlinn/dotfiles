@@ -1,12 +1,10 @@
-{ lib, ... }:
-{
-  homebrew.taps = [ "hashicorp/tap" ];
+{lib, ...}: {
+  homebrew.taps = ["hashicorp/tap"];
   homebrew.brews = [
     "hashicorp/tap/terraform-ls"
   ];
   home-manager.sharedModules = lib.singleton (
-    { pkgs, ... }:
-    {
+    {pkgs, ...}: {
       home.packages = with pkgs; [
         # terraform-docs
         # terraform-local # localstack

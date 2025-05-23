@@ -1,7 +1,11 @@
-{ config, lib, pkgs, ... }:
-
-let user = config.my.user.name; in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  user = config.my.user.name;
+in {
   config = {
     services.syncthing = {
       enable = true;

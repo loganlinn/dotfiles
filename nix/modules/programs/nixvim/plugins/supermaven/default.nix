@@ -3,12 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-
-let
-  inherit (import ../../helpers.nix { inherit lib; }) buildVimPlugin;
-in
-{
+}: let
+  inherit (import ../../helpers.nix {inherit lib;}) buildVimPlugin;
+in {
   programs.nixvim = {
     extraPlugins = [
       pkgs.vimPlugins.supermaven-nvim

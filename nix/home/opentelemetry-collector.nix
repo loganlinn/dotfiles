@@ -1,17 +1,20 @@
-{ config, lib, pkgs, ... }:
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkEnableOption mkIf mkOption types getExe;
 
   cfg = config.my.opentelemetry-collector;
   opentelemetry-collector = cfg.package;
 
-  settingsFormat = pkgs.formats.yaml { };
+  settingsFormat = pkgs.formats.yaml {};
 
-  configFile = if cfg.configFile == null then
-    settingsFormat.generate "config.yaml" cfg.settings
-  else
-    cfg.configFile;
+  configFile =
+    if cfg.configFile == null
+    then settingsFormat.generate "config.yaml" cfg.settings
+    else cfg.configFile;
 in {
   options.my.opentelemetry-collector = {
     enable = mkEnableOption (lib.mdDoc "Opentelemetry Collector");
@@ -25,7 +28,7 @@ in {
 
     settings = mkOption {
       type = settingsFormat.type;
-      default = { };
+      default = {};
       description = lib.mdDoc ''
         Specify the configuration for Opentelemetry Collector in Nix.
 
@@ -43,20 +46,21 @@ in {
   };
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = ((cfg.settings == { }) != (cfg.configFile == null));
-      message = ''
-        Please specify a configuration for Opentelemetry Collector with either
-        'services.opentelemetry-collector.settings' or
-        'services.opentelemetry-collector.configFile'.
-      '';
-    }];
+    assertions = [
+      {
+        assertion = (cfg.settings == {}) != (cfg.configFile == null);
+        message = ''
+          Please specify a configuration for Opentelemetry Collector with either
+          'services.opentelemetry-collector.settings' or
+          'services.opentelemetry-collector.configFile'.
+        '';
+      }
+    ];
 
     systemd.user.services.opentelemetry-collector = {
       Unit.Desecription = "Opentelemetry Collector Service Daemon";
-      Install.WantedBy = [ "default.target" ];
-      Service.ExecStart =
-        "${getExe opentelemetry-collector} --config=file:${configFile}";
+      Install.WantedBy = ["default.target"];
+      Service.ExecStart = "${getExe opentelemetry-collector} --config=file:${configFile}";
     };
   };
 }

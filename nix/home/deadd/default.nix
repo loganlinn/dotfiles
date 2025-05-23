@@ -1,21 +1,26 @@
-{ self', config, lib, pkgs, ... }:
-
-with lib;
-
-let
-
-  yamlFormat = pkgs.formats.yaml { };
+{
+  self',
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  yamlFormat = pkgs.formats.yaml {};
 
   cfg = config.my.deadd;
 
   notify-send-py = self'.packages.notify-send-py;
 
-  helpers = mapAttrs (name: text:
-    pkgs.writeShellApplication {
-      name = "deadd-${name}";
-      runtimeInputs = with pkgs; [ procps findutils notify-send-py ];
-      text = text;
-    }) {
+  helpers =
+    mapAttrs
+    (name: text:
+      pkgs.writeShellApplication {
+        name = "deadd-${name}";
+        runtimeInputs = with pkgs; [procps findutils notify-send-py];
+        text = text;
+      })
+    {
       toggle = ''
         if PID=$(pidof deadd-notification-center); then
           kill -s USR1 "$PID"
@@ -73,11 +78,10 @@ let
         wait < <(jobs -p)
       '';
     };
-
 in {
   options.my.deadd = {
     enable = mkEnableOption "deadd-notification-center";
-    package = mkPackageOption pkgs "deadd-notification-center" { };
+    package = mkPackageOption pkgs "deadd-notification-center" {};
     font = mkOption {
       type = lib.hm.types.fontType;
       default = config.my.fonts.terminal;
@@ -195,7 +199,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package notify-send-py ] ++ (attrValues helpers);
+    home.packages = [cfg.package notify-send-py] ++ (attrValues helpers);
 
     xdg.configFile."deadd/deadd.yml".source =
       yamlFormat.generate "deadd.yml" cfg.settings;

@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.sketchybar;
-in
-{
+in {
   options = {
     programs.sketchybar = {
       enable = mkEnableOption "sketchybar";
@@ -19,8 +15,8 @@ in
 
   config = mkIf cfg.enable {
     homebrew = {
-      taps = [ "FelixKratz/formulae" ];
-      brews = [ "FelixKratz/formulae/sketchybar" ];
+      taps = ["FelixKratz/formulae"];
+      brews = ["FelixKratz/formulae/sketchybar"];
     };
 
     # sketchybar's default font

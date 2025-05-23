@@ -1,11 +1,13 @@
-{ config, lib, ... }:
-let
-  cfg = config.programs.nixvim;
-in
 {
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.programs.nixvim;
+in {
   programs.nixvim = {
     plugins = {
-      blink-cmp = { };
+      blink-cmp = {};
       cmp-nvim-lsp = {
         enable = true;
       };
@@ -31,37 +33,36 @@ in
           disallow_partial_matching = false;
           disallow_prefix_unmatching = true;
           sorting.priority_weight = 2;
-          sorting.comparators =
-            let
-              cmp-comparator =
-                name: # lua
-                ''require('cmp.config.compare').${name}'';
-            in
-            [
-              (cmp-comparator "locality")
-              (cmp-comparator "scopes")
-              (cmp-comparator "offset")
-              (cmp-comparator "exact")
-              # #lua
-              # ''
-              #   function(entry1, entry2)
-              #     local _, entry1_under = entry1.completion_item.label:find "^_+"
-              #     local _, entry2_under = entry2.completion_item.label:find "^_+"
-              #     return (entry1_under or 0) <= (entry2_under or 0)
-              #   end
-              # ''
-              (cmp-comparator "score")
-              (cmp-comparator "recently_used")
-              (cmp-comparator "kind")
-              (cmp-comparator "length")
-              (cmp-comparator "order")
-            ];
+          sorting.comparators = let
+            cmp-comparator = name:
+            # lua
+            ''require('cmp.config.compare').${name}'';
+          in [
+            (cmp-comparator "locality")
+            (cmp-comparator "scopes")
+            (cmp-comparator "offset")
+            (cmp-comparator "exact")
+            # #lua
+            # ''
+            #   function(entry1, entry2)
+            #     local _, entry1_under = entry1.completion_item.label:find "^_+"
+            #     local _, entry2_under = entry2.completion_item.label:find "^_+"
+            #     return (entry1_under or 0) <= (entry2_under or 0)
+            #   end
+            # ''
+            (cmp-comparator "score")
+            (cmp-comparator "recently_used")
+            (cmp-comparator "kind")
+            (cmp-comparator "length")
+            (cmp-comparator "order")
+          ];
 
           experimental.ghost_text = true;
 
           snippet.expand =
             lib.optionalString cfg.plugins.cmp_luasnip.enable # lua
-              ''function(args) require("luasnip").lsp_expand(args.body) end'';
+            
+            ''function(args) require("luasnip").lsp_expand(args.body) end'';
 
           mapping.__raw = ''
             {

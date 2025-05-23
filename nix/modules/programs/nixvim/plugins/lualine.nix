@@ -1,16 +1,17 @@
-{ config, lib, ... }:
-let
+{
+  config,
+  lib,
+  ...
+}: let
   inherit (config.lib.nixvim) listToUnkeyedAttrs;
   cfg = config.programs.nixvim;
-  mkComponent = component: options: (listToUnkeyedAttrs [ component ]) // options;
-in
-{
+  mkComponent = component: options: (listToUnkeyedAttrs [component]) // options;
+in {
   programs.nixvim = {
     plugins.lualine = {
       enable = true;
 
       settings = {
-
         extensions = lib.concatLists [
           (lib.optional cfg.plugins.nvim-tree.enable "nvim-tree")
           (lib.optional cfg.plugins.fugitive.enable "fugitive")

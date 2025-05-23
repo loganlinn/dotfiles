@@ -39,17 +39,17 @@
         };
       };
 
-      modules.cursorword = { };
+      modules.cursorword = {};
 
-      modules.icons = { };
+      modules.icons = {};
 
       # modules.indentscope = { };
 
-      modules.hipatterns = { };
+      modules.hipatterns = {};
 
       # modules.sessions = { };
 
-      modules.splitjoin = { };
+      modules.splitjoin = {};
 
       modules.surround = {
         mappings = {

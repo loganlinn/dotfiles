@@ -4,12 +4,10 @@
   config,
   lib,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-  inherit (import ../../helpers.nix { inherit lib; }) mkKeymap;
-in
-{
+  inherit (import ../../helpers.nix {inherit lib;}) mkKeymap;
+in {
   imports = [
     ./lsp-format.nix
     ./lspsaga.nix
@@ -17,7 +15,6 @@ in
   ];
 
   programs.nixvim = {
-
     plugins.none-ls = {
       enable = true;
       enableLspFormat = true;
@@ -26,7 +23,7 @@ in
         just.enable = true;
       };
       settings = {
-        diagnostic_config = { };
+        diagnostic_config = {};
       };
     };
 
@@ -66,12 +63,12 @@ in
         };
         nixd.enable = true;
         nixd.settings = {
-          formatting.command = [ "nixpkgs-fmt" ];
-          diagnostic.suppress = [ "sema-escaping-with" ];
+          formatting.command = ["nixpkgs-fmt"];
+          diagnostic.suppress = ["sema-escaping-with"];
           nixpkgs.expr = ''import ${inputs.nixpkgs} {}'';
           options.flake.expr = ''(builtins.getFlake "${
-            config.my.flakeDirectory or self
-          }").currentSystem.options'';
+              config.my.flakeDirectory or self
+            }").currentSystem.options'';
         };
         prismals.enable = false;
         pyright = {
@@ -79,12 +76,12 @@ in
           settings = {
             # Use ruff for these
             disableOrganizeImports = true;
-            python.analysis.ignore = [ "*" ];
+            python.analysis.ignore = ["*"];
           };
         };
         ruff = {
           enable = true;
-          settings = { };
+          settings = {};
           onAttach.function = ''
             -- Defer to pyright for these
             client.server_capabilities.hoverProvider = false

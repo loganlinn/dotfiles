@@ -4,13 +4,9 @@
   pkgs,
   ...
 }:
-
-with lib;
-
-let
+with lib; let
   cfg = config.programs.comodoro;
-in
-{
+in {
   options = {
     programs.comodoro.enableBashIntegration = mkEnableOption "Bash integration";
     programs.comodoro.enableZshIntegration = mkEnableOption "Zsh integration";
@@ -26,7 +22,6 @@ in
       enableFishIntegration = mkDefault cfg.enable;
       settings = {
         presets.example = {
-
           # TCP configuration, used by server binders and by clients.
           # Requires the cargo feature "tcp".
           tcp.host = "localhost";

@@ -4,12 +4,10 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.aider;
-  yaml = pkgs.formats.yaml { };
-in
-{
+  yaml = pkgs.formats.yaml {};
+in {
   options.programs.aider = {
     enable = mkEnableOption "Aider";
     playwright.enable = mkEnableOption "Playwright";
@@ -30,16 +28,20 @@ in
   config = mkIf cfg.enable {
     home.packages =
       [
-        (if cfg.playwright.enable then pkgs.aider-chat-with-playwright else pkgs.aider-chat)
+        (
+          if cfg.playwright.enable
+          then pkgs.aider-chat-with-playwright
+          else pkgs.aider-chat
+        )
       ]
       ++ (optionals cfg.voiceCoding.enable (
-        [ pkgs.portaudio ] ++ optional pkgs.stdenv.targetPlatform.isLinux pkgs.alsa-lib
+        [pkgs.portaudio] ++ optional pkgs.stdenv.targetPlatform.isLinux pkgs.alsa-lib
       ));
 
-    home.file = optionalAttrs (cfg.settings != { }) {
+    home.file = optionalAttrs (cfg.settings != {}) {
       ".aider.conf.yml".source = yaml.generate ".aider.conf.yml" cfg.settings;
     };
 
-    programs.git.ignores = [ ".aider*" ];
+    programs.git.ignores = [".aider*"];
   };
 }

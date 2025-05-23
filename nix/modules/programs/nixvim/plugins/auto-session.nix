@@ -1,8 +1,10 @@
-{ config, lib, ... }:
-let
-  cfg = config.programs.nixvim;
-in
 {
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.programs.nixvim;
+in {
   programs.nixvim = {
     plugins.auto-session = {
       enable = true;

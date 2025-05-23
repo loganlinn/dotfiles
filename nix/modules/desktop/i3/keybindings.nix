@@ -3,22 +3,15 @@
   lib,
   pkgs,
 }:
-
 with lib;
-with lib.my;
-
-let
+with lib.my; let
   inherit (config.xsession.windowManager.i3.config) terminal;
 
-  i3-input =
-    prompt: limit: format:
-    ''exec --no-startup-id "i3-input -P '${prompt}' -l ${limit} -F '${format}' -f 'pango:${config.my.fonts.mono.name} 14' '';
+  i3-input = prompt: limit: format: ''exec --no-startup-id "i3-input -P '${prompt}' -l ${limit} -F '${format}' -f 'pango:${config.my.fonts.mono.name} 14' '';
 
   # TODO access via flake via special args
-  x-window-focus-close = pkgs.callPackage ../../../pkgs/x-window-focus-close { };
-
-in
-{
+  x-window-focus-close = pkgs.callPackage ../../../pkgs/x-window-focus-close {};
+in {
   session = {
     "$mod+Shift+q" = "kill";
     # "$mod+Ctrl+Shift+q" = ''mode "$mode_kill"'';
@@ -95,10 +88,9 @@ in
     "$mod+Shift+n" = "exec ${terminal} ${getExe pkgs.ranger}";
   };
 
-  menus =
-    let
-      rofi = toExe config.programs.rofi;
-    in
+  menus = let
+    rofi = toExe config.programs.rofi;
+  in
     mapAttrs' (keybind: exec: nameValuePair "--release ${keybind}" "exec --no-startup-id ${exec}") {
       "$mod+space" = "${rofi} -show combi -sidebar-mode true";
       "$mod+Shift+space" = "${rofi} -show window -modi window#windowcd -sidebar-mode true";
@@ -235,29 +227,25 @@ in
     "$mod+grave" = "[class=.*] scratchpad show "; # toggles all scratchpad windows
   };
 
-  audio =
-    let
-      ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} --notify ${args}";
-    in
-    {
-      "XF86AudioRaiseVolume " = ponymix "--output increase 5";
-      "XF86AudioLowerVolume" = ponymix "--output decrease 5";
-      "XF86AudioMute" = ponymix "--output toggle";
-      "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
-      "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
-      "Shift+XF86AudioMute" = ponymix "--input toggle";
-    };
+  audio = let
+    ponymix = args: "exec --no-startup-id ${getExe pkgs.ponymix} --notify ${args}";
+  in {
+    "XF86AudioRaiseVolume " = ponymix "--output increase 5";
+    "XF86AudioLowerVolume" = ponymix "--output decrease 5";
+    "XF86AudioMute" = ponymix "--output toggle";
+    "Shift+XF86AudioRaiseVolume " = ponymix "--input increase 5";
+    "Shift+XF86AudioLowerVolume" = ponymix "--input decrease 5";
+    "Shift+XF86AudioMute" = ponymix "--input toggle";
+  };
 
-  media =
-    let
-      playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
-    in
-    {
-      "XF86AudioPlay" = playerctl "play";
-      "XF86AudioPause" = playerctl "pause";
-      "XF86AudioNext" = playerctl "next";
-      "XF86AudioPrev" = playerctl "previous";
-    };
+  media = let
+    playerctl = args: "exec --no-startup-id ${getExe pkgs.playerctl} ${args}";
+  in {
+    "XF86AudioPlay" = playerctl "play";
+    "XF86AudioPause" = playerctl "pause";
+    "XF86AudioNext" = playerctl "next";
+    "XF86AudioPrev" = playerctl "previous";
+  };
 
   backlight = {
     "XF86MonBrightnessDown" = "exec xbacklight -dec 20";
@@ -269,12 +257,11 @@ in
   };
 
   bar =
-    if config.services.polybar.enable then
-      {
-        "$mod+z" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
-      }
-    else
-      {
-        "$mod+z" = "bar mode toggle";
-      };
+    if config.services.polybar.enable
+    then {
+      "$mod+z" = "exec --no-startup-id ${../../../home/rofi/scripts/polybar.sh}";
+    }
+    else {
+      "$mod+z" = "bar mode toggle";
+    };
 }

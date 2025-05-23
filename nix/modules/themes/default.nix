@@ -1,12 +1,15 @@
-{ config, lib, pkgs, nix-colors, ... }:
-
-with lib;
-let
-  inherit (nix-colors.lib.contrib { inherit pkgs; }) vimThemeFromScheme shellThemeFromScheme;
+{
+  config,
+  lib,
+  pkgs,
+  nix-colors,
+  ...
+}:
+with lib; let
+  inherit (nix-colors.lib.contrib {inherit pkgs;}) vimThemeFromScheme shellThemeFromScheme;
 
   cfg = config.modules.theme;
-in
-{
+in {
   imports = [
     ./dracula
     ./arc
@@ -16,10 +19,9 @@ in
     active = mkOption {
       type = with types; nullOr str;
       default = "arc";
-      apply = v:
-        let
-          theme = builtins.getEnv "THEME";
-        in
+      apply = v: let
+        theme = builtins.getEnv "THEME";
+      in
         if theme != ""
         then theme
         else v;
@@ -32,10 +34,9 @@ in
     wallpaper = mkOption {
       type = with types; nullOr (either str path);
       default = null;
-      apply = v:
-        let
-          wallpaper = builtins.getEnv "WALLPAPER";
-        in
+      apply = v: let
+        wallpaper = builtins.getEnv "WALLPAPER";
+      in
         if wallpaper != ""
         then wallpaper
         else v;
@@ -43,33 +44,35 @@ in
 
     onReload = mkOption {
       type = with types; attrsOf lines;
-      default = { };
+      default = {};
     };
 
     vimTheme = mkOption {
       type = types.package;
       readOnly = true;
-      default = vimThemeFromScheme { scheme = config.colorScheme; };
+      default = vimThemeFromScheme {scheme = config.colorScheme;};
     };
   };
 
   config = mkIf (cfg.active != null) (mkMerge [
     {
-      home.packages = with pkgs; [
-        # zafiro-icons
-        paper-icon-theme
-        pywal
-        wpgtk # gui for pywal ('wpg' command)
-        siji # iconic bitmap font
+      home.packages = with pkgs;
+        [
+          # zafiro-icons
+          paper-icon-theme
+          pywal
+          wpgtk # gui for pywal ('wpg' command)
+          siji # iconic bitmap font
 
-        config.my.fonts.sans.package
-        config.my.fonts.serif.package
-        config.my.fonts.mono.package
-        config.my.fonts.terminal.package
-      ] ++ config.my.fonts.packages;
+          config.my.fonts.sans.package
+          config.my.fonts.serif.package
+          config.my.fonts.mono.package
+          config.my.fonts.terminal.package
+        ]
+        ++ config.my.fonts.packages;
 
       xdg.dataFile."nix-colors.sh" = {
-        text = (shellThemeFromScheme { scheme = config.colorScheme; }).text;
+        text = (shellThemeFromScheme {scheme = config.colorScheme;}).text;
         executable = true;
       };
 

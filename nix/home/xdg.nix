@@ -1,11 +1,9 @@
-{ config
-, lib
-, ...
+{
+  config,
+  lib,
+  ...
 }:
-
-with lib;
-
-let
+with lib; let
   images = [
     "image/bmp"
     "image/gif"
@@ -305,14 +303,18 @@ let
     "vim.desktop"
     # "code.desktop"
   ];
-  viewer = [
-    "viewnior.desktop"
-    "imv.desktop"
-  ] ++ browser;
-  player = [
-    "vlc.desktop"
-    "mpv.desktop"
-  ] ++ browser;
+  viewer =
+    [
+      "viewnior.desktop"
+      "imv.desktop"
+    ]
+    ++ browser;
+  player =
+    [
+      "vlc.desktop"
+      "mpv.desktop"
+    ]
+    ++ browser;
   filemanager = [
     "thunar.desktop"
     "dolphin.desktop"
@@ -322,9 +324,7 @@ let
     "kitty-open.desktop"
     "emacs.desktop"
   ];
-
-in
-{
+in {
   options.xdg = {
     # a la  https://www.pathname.com/fhs/pub/fhs-2.3.html#USRSRCSOURCECODE2
     userDirs.sourceCode = mkOption {
@@ -347,19 +347,19 @@ in
     xdg.mimeApps = {
       enable = true;
       defaultApplications =
-        (genAttrs urls (_: browser)) //
-        (genAttrs code (_: editor)) //
-        (genAttrs images (_: viewer)) //
-        (genAttrs audioVideo (_: player)) //
-        { "inode/directory" = filemanager; } //
-        {
+        (genAttrs urls (_: browser))
+        // (genAttrs code (_: editor))
+        // (genAttrs images (_: viewer))
+        // (genAttrs audioVideo (_: player))
+        // {"inode/directory" = filemanager;}
+        // {
           "x-scheme-handler/jetbrains" = "jetbrains-toolbox.desktop";
           "x-scheme-handler/slack" = "slack.desktop";
           "x-scheme-handler/obsidian" = "obsidian.desktop";
           "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
         };
       associations.removed = {
-        "inode/directory" = [ "code.desktop" ];
+        "inode/directory" = ["code.desktop"];
       };
     };
 

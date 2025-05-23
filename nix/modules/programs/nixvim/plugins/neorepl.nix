@@ -1,8 +1,7 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   programs.nixvim = {
     extraPlugins = with pkgs.vimPlugins; [
-      { plugin = neorepl-nvim; }
+      {plugin = neorepl-nvim;}
     ];
 
     keymaps = [

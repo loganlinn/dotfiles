@@ -1,8 +1,10 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
   # cfg = config.my.picom;
   # mkOpt = type: default: attrs: mkOption ({ inherit type default; } // attrs);
 in {
@@ -39,7 +41,7 @@ in {
         "100:class_g = 'VirtualBox Machine'"
       ];
       shadow = false;
-      shadowOffsets = [ (-15) (-15) ];
+      shadowOffsets = [(-15) (-15)];
       shadowOpacity = 0.75;
       shadowExclude = [
         "_GTK_FRAME_EXTENTS@:c"
@@ -87,7 +89,7 @@ in {
       ];
       fade = false;
       fadeDelta = 10;
-      fadeSteps = [ 3.0e-2 3.0e-2 ];
+      fadeSteps = [3.0e-2 3.0e-2];
       fadeExclude = [
         "window_type = 'combo'"
         "window_type = 'desktop'"
@@ -158,7 +160,7 @@ in {
         sw-opti = false;
 
         # Specify a list of conditions of windows that should always be considered focused.
-        focus-exclude = [ ];
+        focus-exclude = [];
 
         # Use WM_TRANSIENT_FOR to group windows, and consider windows in the same group focused at the same time.
         detect-transient = true;

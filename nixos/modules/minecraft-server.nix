@@ -1,7 +1,11 @@
-{ config, lib, pkgs, ... }:
-
-let cfg = config.modules.minecraft-server; in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.modules.minecraft-server;
+in {
   options.modules.minecraft-server = with lib; {
     enable = mkEnableOption "creepers";
   };

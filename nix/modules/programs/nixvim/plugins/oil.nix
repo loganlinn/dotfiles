@@ -3,7 +3,7 @@
     plugins.oil = {
       enable = true;
       settings = {
-        columns = [ "icon" ];
+        columns = ["icon"];
         use_default_keymaps = true;
         # keymaps = {
         #   "<C-c>" = false;

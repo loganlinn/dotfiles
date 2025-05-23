@@ -3,16 +3,13 @@
   lib,
   pkgs,
   ...
-}:
-{
-  # imports = [../k9s]; TODO
-
+}: {
   home.shellAliases = {
     k = "kubectl";
     kctx = "kubectx";
     kk = "kustomize";
     kkb = "kustomize build";
-    kno = "kzf nodes";
+    know = "kzf nodes";
     kcm = "kzf configmaps";
     kns = "kzf namespaces";
     kpo = "kzf pods";
@@ -72,7 +69,7 @@
   };
   xdg.configFile."k9s/hotkey.yml".source = ../../../config/k9s/hotkey.yml;
 
-  xdg.configFile."k9s/views.yml".source = (pkgs.formats.yaml { }).generate "k9s-view" {
+  xdg.configFile."k9s/views.yml".source = (pkgs.formats.yaml {}).generate "k9s-view" {
     k9s = {
       views = {
         "v1/namespaces" = {
@@ -86,7 +83,7 @@
     };
   };
 
-  xdg.configFile."k9s/plugin.yml".source = (pkgs.formats.yaml { }).generate "k9s-plugin" {
+  xdg.configFile."k9s/plugin.yml".source = (pkgs.formats.yaml {}).generate "k9s-plugin" {
     plugin = {
       debug = {
         command = "${
@@ -150,7 +147,7 @@
         background = false;
         confirm = true;
         description = "Add debug container";
-        scopes = [ "containers" ];
+        scopes = ["containers"];
         shortCut = "Shift-D";
       };
 
@@ -171,7 +168,7 @@
           "$GROUPS"
           "$NAME"
         ];
-        scopes = [ "all" ]; # TODO revisit
+        scopes = ["all"]; # TODO revisit
       };
 
       images = {
@@ -189,16 +186,16 @@
           "--unique"
           "$FILTER"
         ];
-        scopes = [ "all" ]; # TODO revisit
+        scopes = ["all"]; # TODO revisit
       };
 
       dive = {
-        args = [ "$COL-IMAGE" ];
+        args = ["$COL-IMAGE"];
         background = false;
         command = "dive";
         confirm = false;
         description = "Dive image";
-        scopes = [ "containers" ];
+        scopes = ["containers"];
         shortCut = "Shift+X";
       };
 
@@ -241,10 +238,9 @@
         background = false;
         confirm = false;
         description = "Get Events";
-        scopes = [ "all" ];
+        scopes = ["all"];
         shortCut = "Shift-E";
       };
-
     };
   };
 

@@ -1,5 +1,4 @@
-{ config, ... }:
-{
+{config, ...}: {
   config = {
     assertions = [
       {

@@ -1,7 +1,11 @@
-{ writeShellApplication, home-manager, ... }:
+{
+  writeShellApplication,
+  home-manager,
+  ...
+}:
 writeShellApplication {
   name = "home-switch";
-  runtimeInputs = [ home-manager ];
+  runtimeInputs = [home-manager];
   text = ''
     exec home-manager switch -b backup "$@"
   '';

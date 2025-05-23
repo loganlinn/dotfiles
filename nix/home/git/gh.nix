@@ -4,11 +4,8 @@
   pkgs,
   ...
 }:
-
 with lib;
-with lib.my;
-
-{
+with lib.my; {
   programs.gh = {
     enable = true;
     gitCredentialHelper.enable = true;
@@ -76,6 +73,6 @@ with lib.my;
   };
 
   xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
-    config.floating.criteria = [ { class = "gh-dash"; } ];
+    config.floating.criteria = [{class = "gh-dash";}];
   };
 }

@@ -1,6 +1,9 @@
-{ inputs, modulesPath, lib, ... }:
-
 {
+  inputs,
+  modulesPath,
+  lib,
+  ...
+}: {
   # Things to try
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/undervolt.nix
   # - https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/hardware/fancontrol.nix
@@ -22,7 +25,7 @@
     "sd_mod"
   ];
 
-  boot.initrd.kernelModules = [ "i915" ];
+  boot.initrd.kernelModules = ["i915"];
 
   fileSystems = {
     "/" = {
@@ -36,31 +39,31 @@
     "/nix" = {
       device = "/dev/disk/by-uuid/b5ce2531-a3ee-476e-930e-83b6ecef2609";
       fsType = "btrfs";
-      options = [ "subvol=nix" ];
+      options = ["subvol=nix"];
     };
     "/etc" = {
       device = "/dev/disk/by-uuid/b5ce2531-a3ee-476e-930e-83b6ecef2609";
       fsType = "btrfs";
-      options = [ "subvol=etc" ];
+      options = ["subvol=etc"];
     };
     "/var/log" = {
       device = "/dev/disk/by-uuid/b5ce2531-a3ee-476e-930e-83b6ecef2609";
       fsType = "btrfs";
-      options = [ "subvol=log" ];
+      options = ["subvol=log"];
     };
     "/root" = {
       device = "/dev/disk/by-uuid/b5ce2531-a3ee-476e-930e-83b6ecef2609";
       fsType = "btrfs";
-      options = [ "subvol=root" ];
+      options = ["subvol=root"];
     };
     "/home" = {
       device = "/dev/disk/by-uuid/b5ce2531-a3ee-476e-930e-83b6ecef2609";
       fsType = "btrfs";
-      options = [ "subvol=home" ];
+      options = ["subvol=home"];
     };
   };
 
-  swapDevices = [{ device = "/dev/disk/by-uuid/29401b32-91cd-4ab7-b7a4-58ab9a607f59"; }];
+  swapDevices = [{device = "/dev/disk/by-uuid/29401b32-91cd-4ab7-b7a4-58ab9a607f59";}];
 
   nixpkgs.hostPlatform = "x86_64-linux";
 }

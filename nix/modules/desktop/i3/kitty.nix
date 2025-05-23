@@ -1,18 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  writeKittyBin = name: args:
+    pkgs.writeShellScriptBin name ''
+      exec kitty ${escapeShellArgs (map toString (toList args))} "$@"
+    '';
 
-with lib;
-
-let
-
-  writeKittyBin = name: args: pkgs.writeShellScriptBin name ''
-    exec kitty ${escapeShellArgs (map toString (toList args))} "$@"
-  '';
-
-  scratchCommand = direction:
-    let
-      width = 42;
-      height = 72;
-    in
+  scratchCommand = direction: let
+    width = 42;
+    height = 72;
+  in
     concatStringsSep ", " [
       "floating enable"
       "resize set width ${toString width} ppt height ${toString height} ppt"
@@ -22,15 +23,13 @@ let
       "move scratchpad"
       "scratchpad show"
     ];
-in
-{
+in {
   config = mkIf config.programs.kitty.enable {
-
     home.packages = [
-      (writeKittyBin "kitty-floating" [ "--class" "kitty-floating" ])
-      (writeKittyBin "kitty-left" [ "--name" "kitty-left" ])
-      (writeKittyBin "kitty-right" [ "--name" "kitty-right" ])
-      (writeKittyBin "kitty-scratch" [ "--name" "kitty-scratch" ])
+      (writeKittyBin "kitty-floating" ["--class" "kitty-floating"])
+      (writeKittyBin "kitty-left" ["--name" "kitty-left"])
+      (writeKittyBin "kitty-right" ["--name" "kitty-right"])
+      (writeKittyBin "kitty-scratch" ["--name" "kitty-scratch"])
     ];
 
     xsession.windowManager.i3.config = {

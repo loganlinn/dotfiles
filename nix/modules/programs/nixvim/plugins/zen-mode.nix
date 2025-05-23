@@ -1,8 +1,6 @@
-{ lib, ... }:
-let
-  inherit (import ../helpers.nix { inherit lib; }) mkKeymap;
-in
-{
+{lib, ...}: let
+  inherit (import ../helpers.nix {inherit lib;}) mkKeymap;
+in {
   programs.nixvim = {
     ## Replaced by snacks
     # plugins.zen-mode = {

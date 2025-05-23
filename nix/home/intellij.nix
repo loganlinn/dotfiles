@@ -1,7 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
-
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   home.packages = with pkgs; [
     jetbrains.idea-community
   ];
@@ -35,5 +37,4 @@
     map <leader>g <Action>(FindInPath)
     map <leader>b <Action>(Switcher)
   '';
-
 }

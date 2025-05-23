@@ -4,8 +4,7 @@
   pkgs,
   ...
 }:
-with lib;
-{
+with lib; {
   config = {
     home.packages = with pkgs; [
       lua-language-server

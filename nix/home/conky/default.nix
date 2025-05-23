@@ -1,11 +1,12 @@
-{ config, lib, pkgs, ... }:
-
-with lib;
-
-let
-
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
 in {
-  home.packages = with pkgs; [ conky ];
+  home.packages = with pkgs; [conky];
 
   # xdg.configFile."conky/conky.conf".source = ./conky.conf;
 
