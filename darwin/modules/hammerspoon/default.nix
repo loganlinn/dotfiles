@@ -5,12 +5,12 @@
 }:
 with lib;
 let
-  cfg = config.hammerspoon;
+  cfg = config.programs.hammerspoon;
   inherit (config) my;
 in
 {
   options = {
-    hammerspoon = {
+    programs.hammerspoon = {
       enable = mkEnableOption "hammerspoon";
     };
   };

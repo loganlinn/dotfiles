@@ -38,7 +38,6 @@ in
     fonts.packages = my.fonts.packages;
 
     environment.variables = my.environment.variables;
-
     environment.systemPackages = with pkgs; [
       bashInteractive
       pinentry_mac

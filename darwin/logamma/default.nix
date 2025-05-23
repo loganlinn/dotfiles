@@ -15,6 +15,7 @@
     ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/hammerspoon
+    ../modules/podman.nix
     ../modules/sunbeam
     ../modules/xcode.nix
     ../modules/terraform.nix
@@ -63,15 +64,12 @@
     "tailscale"
   ];
 
-  hammerspoon.enable = true;
-
   programs.aerospace.enable = true;
-
-  programs.xcode.enable = true;
-
-  programs.sunbeam.enable = false;
-
   programs.emacs-plus.enable = true;
+  programs.hammerspoon.enable = true;
+  programs.podman-desktop.enable = true;
+  programs.sunbeam.enable = false;
+  programs.xcode.enable = true;
 
   services.postgresql.enable = false;
 

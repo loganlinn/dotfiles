@@ -1,11 +1,8 @@
 { self, ... }:
 {
-
   imports = [
     self.darwinModules.common
     self.darwinModules.home-manager
-    # ./modules/skhd.nix
-    # ./modules/yabai.nix
   ];
 
   homebrew.enable = true;
