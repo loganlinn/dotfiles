@@ -1,16 +1,13 @@
 {
-  inputs,
+  config,
   self,
   self',
   pkgs,
   ...
 }:
-
 {
   imports = [
-    # inputs.agenix.darwinModules.default
     self.darwinModules.common
-    self.darwinModules.home-manager
     ../modules/aerospace
     ../modules/aws.nix
     ../modules/emacs-plus
@@ -19,75 +16,13 @@
     ../modules/sunbeam
     ../modules/xcode.nix
     ../modules/terraform.nix
-    {
-      homebrew.casks = [ "ghostty" ]; # cask installs Ghostty.app bundle, CLI, man pages, and shell completions.
-    }
-    # https://github.com/abhinav/restack
-    {
-      homebrew.taps = [ "abhinav/tap" ];
-      homebrew.brews = [ "abhinav/tap/restack" ];
-    }
-    # https://github.com/dhth/kplay
-    {
-      homebrew.taps = [ "dhth/tap" ];
-      homebrew.brews = [ "dhth/tap/kplay" ];
-    }
-    # Utility for AWS CloudWatch Logs <https://github.com/TylerBrock/saw>
-    {
-      homebrew.taps = [ "TylerBrock/saw" ];
-      homebrew.brews = [ "TylerBrock/saw/saw" ];
-    }
-    {
-      homebrew.taps = [ "aws/tap" ];
-      homebrew.brews = [ "aws/tap/copilot-cli" ];
-    }
   ];
 
-  environment.systemPackages = with pkgs; [
-    postgresql
-    devenv
-    plistwatch
-    libplist
-  ];
-
-  homebrew.brews = [
-    "nss" # used by mkcert
-    # "terminal-notifier" # like notify-send
-  ];
-
-  homebrew.casks = [
-    # "1password" # currently installed manually
-    "1password-cli"
-    "discord"
-    "obs"
-    # "obsidian" # currently installed manually
-    "tailscale"
-  ];
-
-  programs.aerospace.enable = true;
-  programs.emacs-plus.enable = true;
-  programs.hammerspoon.enable = true;
-  programs.podman-desktop.enable = true;
-  programs.sunbeam.enable = false;
-  programs.xcode.enable = true;
-
-  services.postgresql.enable = false;
-
-  system.stateVersion = 5;
-
-  ids.gids.nixbld = 30000;
-
-  nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
-
-  home-manager.users.logan =
+  home-manager.users.${config.my.user.name} =
     {
-      config,
       pkgs,
       ...
     }:
-    let
-      inherit (config.lib.file) mkOutOfStoreSymlink;
-    in
     {
       imports = [
         self.homeModules.common
@@ -150,4 +85,41 @@
       manual.html.enable = true;
       home.stateVersion = "22.11";
     };
+
+  programs.aerospace.enable = true;
+  programs.emacs-plus.enable = true;
+  programs.hammerspoon.enable = true;
+  programs.podman-desktop.enable = true;
+  programs.sunbeam.enable = false;
+  programs.xcode.enable = true;
+
+  homebrew = {
+    taps = [
+      "abhinav/tap"
+    ];
+    brews = [
+      "abhinav/tap/restack"
+      "nss" # used by mkcert
+    ];
+    casks = [
+      "1password-cli"
+      "discord"
+      "ghostty"
+      "obs"
+      "tailscale"
+      # "1password" # currently installed manually
+      # "obsidian" # currently installed manually
+    ];
+  };
+
+  environment.systemPackages = with pkgs; [
+    plistwatch
+    libplist
+  ];
+
+  ids.gids.nixbld = 30000;
+  nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
+
+  system.stateVersion = 5;
+
 }

@@ -1,4 +1,5 @@
 {
+  self,
   inputs,
   config,
   pkgs,
@@ -11,6 +12,7 @@ let
 in
 {
   imports = [
+    self.darwinModules.home-manager
     ./system.nix
     ./homebrew.nix
   ];

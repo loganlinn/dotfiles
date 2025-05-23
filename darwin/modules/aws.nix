@@ -1,12 +1,23 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 
 {
-  home-manager.sharedModules = [
+  imports = [
+    {
+      homebrew.taps = [ "aws/tap" ];
+      homebrew.brews = [ "aws/tap/copilot-cli" ];
+    }
+    # Utility for AWS CloudWatch Logs <https://github.com/TylerBrock/saw>
+    {
+      homebrew.taps = [ "TylerBrock/saw" ];
+      homebrew.brews = [ "TylerBrock/saw/saw" ];
+    }
+  ];
+  home-manager.sharedModules = lib.singleton (
+    { pkgs, ... }:
     {
       home.packages = with pkgs; [
         awscli2
@@ -18,5 +29,5 @@
         complete -C '${pkgs.awscli2}/bin/aws_completer' aws
       '';
     }
-  ];
+  );
 }

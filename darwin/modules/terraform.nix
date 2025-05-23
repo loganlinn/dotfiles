@@ -1,19 +1,22 @@
-{ pkgs, ... }:
+{ lib, ... }:
 {
   homebrew.taps = [ "hashicorp/tap" ];
   homebrew.brews = [
     "hashicorp/tap/terraform-ls"
   ];
-  home-manager.users.logan = {
-    home.packages = with pkgs; [
-      tenv # provides terraform binary
-      tflint
-      terraformer
-      # terraform-docs
-      # tf-summarize
-      # terraform-local # localstack
-      # tfsec
-      iam-policy-json-to-terraform # https://flosell.github.io/iam-policy-json-to-terraform/
-    ];
-  };
+  home-manager.sharedModules = lib.singleton (
+    { pkgs, ... }:
+    {
+      home.packages = with pkgs; [
+        # terraform-docs
+        # terraform-local # localstack
+        # tf-summarize
+        # tfsec
+        iam-policy-json-to-terraform # https://flosell.github.io/iam-policy-json-to-terraform/
+        tenv # provides terraform binary
+        terraformer
+        tflint
+      ];
+    }
+  );
 }
