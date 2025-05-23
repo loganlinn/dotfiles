@@ -18,7 +18,7 @@ in
       type = types.attrsOf toml.type;
       default = {
         api.url = "https://asciinema.org";
-        record.stdin = "yes";
+        record.stdin = true;
         record.idle_time_limit = 3;
         record.pause_key = "^1";
         record.add_marker_key = "^2";
