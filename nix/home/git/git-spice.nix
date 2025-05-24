@@ -5,22 +5,22 @@
   lib,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.programs.git.spice;
-in {
+in
+{
   options.programs.git.spice = {
-    enable =
-      mkEnableOption "git-spice"
-      // {
-        default = true;
-      };
+    enable = mkEnableOption "git-spice" // {
+      default = true;
+    };
     package = mkOption {
       type = types.package;
       default = self'.packages.git-spice;
     };
   };
   config = mkIf cfg.enable {
-    home.packages = [cfg.package];
+    home.packages = [ cfg.package ];
     home.shellAliases = {
       gsl = "${cfg.package}/bin/gs log long";
     };
@@ -30,6 +30,18 @@ in {
         spice.submit.publish = mkDefault false;
         spice.log.all = mkDefault false;
         spice.branchCreate.prefix = "logan/";
+        spice.shorthand.bottom = "trunk";
+        spice.shorthand.checkout = "branch checkout";
+        spice.shorthand.delete = "branch delete";
+        spice.shorthand.fixup = "commit amend --no-edit";
+        spice.shorthand.fold = "branch fold";
+        spice.shorthand.modify = "commit amend";
+        spice.shorthand.move = "upstack onto";
+        spice.shorthand.rename = "branch rename";
+        spice.shorthand.reorder = "downstack edit";
+        spice.shorthand.squash = "branch squash";
+        spice.shorthand.track = "branch track";
+        spice.shorthand.untrack = "branch untrack";
       };
     };
     programs.zsh = {
