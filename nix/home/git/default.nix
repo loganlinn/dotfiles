@@ -26,7 +26,8 @@ in
 
   home.packages = with pkgs; [
     delta
-    git-absorb
+    difftastic
+    # git-absorb
   ];
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
@@ -54,8 +55,8 @@ in
     enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
-      {path = privateConfigFile;}
-      {path = ./include/gitalias.txt;}
+      { path = privateConfigFile; }
+      { path = ./include/gitalias.txt; }
     ];
     aliases = {
       branch-name = "rev-parse --abbrev-ref HEAD";
