@@ -7,9 +7,7 @@
   home-manager.sharedModules = lib.singleton (
     { pkgs, ... }:
     let
-      shellInitExtra = ''
-        complete -C '${pkgs.awscli2}/bin/aws_completer' aws
-
+      bash-my-aws-shell-init = ''
         bash-my-aws() {
           export BMA_HOME=$${BMA_HOME:-${pkgs.bash-my-aws}}
           source "$BMA_HOME/aliases" &&
@@ -36,8 +34,14 @@
         copilot-cli # ECS like heroku/fly
         e1s # ECS like k9s
       ];
-      programs.bash.initExtra = shellInitExtra;
-      programs.zsh.initExtra = shellInitExtra;
+      programs.bash.initExtra = ''
+        ${bash-my-aws-shell-init}
+      '';
+      programs.zsh.initExtra = ''
+        complete -C '${pkgs.awscli2}/bin/aws_completer' aws
+
+        ${bash-my-aws-shell-init}
+      '';
     }
   );
 }
