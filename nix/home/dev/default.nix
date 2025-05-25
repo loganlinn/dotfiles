@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ../git
     ../java
@@ -33,12 +34,16 @@
     # hey              # http load generator
     # hyperfine        # cli benchmarking tool
     # process-compose  # process manager a la docker-compose
-    diskus # fast `du -sh`
+    curl
     du-dust # du replacement
     entr # similar to watchexec
+    fd
+    gh
     gum
     hyperfine
-    sops
+    jq
+    ripgrep
+    sad
     tree
     unzip
     xh # httpie alternative
