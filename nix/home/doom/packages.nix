@@ -2,8 +2,7 @@
 # These are derived from the "Installation" section from module READMEs.
 # See: https://github.com/doomemacs/doomemacs/tree/master/modules
 # TODO devise a way for this to be linked with init.el.
-pkgs:
-with pkgs; {
+pkgs: with pkgs; {
   default = [
     binutils # for native-comp
     emacs-all-the-icons-fonts
@@ -11,7 +10,7 @@ with pkgs; {
     ripgrep
   ];
 
-  ":app irc" = [gnutls];
+  ":app irc" = [ gnutls ];
 
   # ":checkers spell +aspell" = [
   #   (aspellWithDicts (
@@ -23,9 +22,9 @@ with pkgs; {
   #   ))
   # ];
 
-  ":checkers spell +hunspell" = [hunspell];
+  ":checkers spell +hunspell" = [ hunspell ];
 
-  ":editor format" = [nodePackages.prettier];
+  ":editor format" = [ nodePackages.prettier ];
 
   ":emacs dired" = [
     fd
@@ -37,13 +36,16 @@ with pkgs; {
     unzip
   ];
 
-  ":emacs undo" = [zstd];
+  ":emacs undo" = [ zstd ];
 
   # ":lang cc" = [ glslang ];
 
   # ":lang clojure" = [ cljfmt clojure-lsp ];
 
-  ":lang docker" = [dockfmt];
+  ":lang docker" = [
+    dockfmt
+    dockerfile-language-server-nodejs
+  ];
 
   # ":lang elixir +lsp" = [ elixir-ls ];
 
@@ -56,19 +58,19 @@ with pkgs; {
 
   # ":lang java +lsp" = [ java-language-server ];
 
-  ":lang javascript" = [nodePackages.prettier];
+  ":lang javascript" = [ nodePackages.prettier ];
 
-  ":lang latex" = [texlive.combined.scheme-medium];
+  ":lang latex" = [ texlive.combined.scheme-medium ];
 
-  ":lang markdown" = [python3Packages.grip];
+  ":lang markdown" = [ python3Packages.grip ];
 
-  ":lang org +gnuplot" = [gnuplot];
+  ":lang org +gnuplot" = [ gnuplot ];
 
-  ":lang org +pandoc" = [pandoc];
+  ":lang org +pandoc" = [ pandoc ];
 
-  ":lang org +roam" = [sqlite];
+  ":lang org +roam" = [ sqlite ];
 
-  ":lang sh +lsp" = [bash-language-server];
+  ":lang sh +lsp" = [ bash-language-server ];
 
   ":lang sh" = [
     shellcheck
@@ -83,11 +85,11 @@ with pkgs; {
   #   programs.emacs.extraPackages = epkgs: [ epkgs.vterm ];
   # };
 
-  ":tools direnv" = [direnv];
+  ":tools direnv" = [ direnv ];
 
-  ":tools editorconfig" = [editorconfig-core-c];
+  ":tools editorconfig" = [ editorconfig-core-c ];
 
-  ":tools just" = [just];
+  ":tools just" = [ just ];
 
   ":tools lookup" = [
     ripgrep
@@ -95,7 +97,7 @@ with pkgs; {
     wordnet
   ];
 
-  ":tools make" = [gnumake];
+  ":tools make" = [ gnumake ];
 
   ":tools pass" = [
     pass

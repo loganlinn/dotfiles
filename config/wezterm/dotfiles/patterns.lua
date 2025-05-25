@@ -23,6 +23,7 @@ end
 
 local function apply_to_config(config)
   config.quick_select_patterns = config.quick_select_patterns or {}
+  -- config.quick_select_remove_styling = true
   for _, pattern in pairs(patterns) do
     for _, regex in ipairs(pattern) do
       table.insert(config.quick_select_patterns, regex)

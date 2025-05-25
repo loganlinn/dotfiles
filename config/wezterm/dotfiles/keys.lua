@@ -153,6 +153,7 @@ function M.apply_to_config(config)
         "l",
         wezterm.action.QuickSelectArgs({
           patterns = {
+            -- TODO strip shell prompt and styling
             "^(?!\\s*$).+$", -- non-empty line
           },
         }),

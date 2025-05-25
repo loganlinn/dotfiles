@@ -2,29 +2,42 @@
   config,
   lib,
   ...
-}: {
-  imports = [
-    {
-      homebrew.taps = ["aws/tap"];
-      homebrew.brews = ["aws/tap/copilot-cli"];
-    }
-    # Utility for AWS CloudWatch Logs <https://github.com/TylerBrock/saw>
-    {
-      homebrew.taps = ["TylerBrock/saw"];
-      homebrew.brews = ["TylerBrock/saw/saw"];
-    }
-  ];
+}:
+{
   home-manager.sharedModules = lib.singleton (
-    {pkgs, ...}: {
+    { pkgs, ... }:
+    let
+      shellInitExtra = ''
+        complete -C '${pkgs.awscli2}/bin/aws_completer' aws
+
+        bash-my-aws() {
+          export BMA_HOME=$${BMA_HOME:-${pkgs.bash-my-aws}}
+          source "$BMA_HOME/aliases" &&
+          source "$BMA_HOME/bash_completion.sh" &&
+          echo "Loaded bash-my-aws"
+        }
+      '';
+    in
+    {
       home.packages = with pkgs; [
+        # aws-gate # Better AWS SSM Session manager CLI client
+        # aws-iam-authenticator # EKS auth
+        # aws-spend-summary
+        # aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
+        # aws-sso-util # https://github.com/benkehoe/aws-sso-util
+        # awsls
+        # awsrm
+        # awsume
+        amazon-ecr-credential-helper
+        aws-shell # https://github.com/awslabs/aws-shell
         awscli2
+        awslogs # CloudWatch logs for humans
+        bash-my-aws
+        copilot-cli # ECS like heroku/fly
+        e1s # ECS like k9s
       ];
-      programs.bash.initExtra = ''
-        complete -C '${pkgs.awscli2}/bin/aws_completer' aws
-      '';
-      programs.zsh.initExtra = ''
-        complete -C '${pkgs.awscli2}/bin/aws_completer' aws
-      '';
+      programs.bash.initExtra = shellInitExtra;
+      programs.zsh.initExtra = shellInitExtra;
     }
   );
 }

@@ -10,20 +10,7 @@ local log = require("hs.logger").new("init", "info")
 -- local timer = require "hs.timer"
 
 local config = {
-  mods = { "alt" },
-  -- NOTE: make sure these don't conflict with aerospace hotkeys!
-  keys = {
-    ["return"] = { app = "WezTerm" },
-    b = { app = "Google Chrome" },
-    e = { app = "Finder" },
-    m = { app = "Messages" },
-    n = { app = "Obsidian" },
-    p = { app = "Claude" },
-    s = { app = "Slack" },
-    -- f1 = { app = "System Information" },
-    -- f2 = { app = "Console" },
-    -- f4 = { app = "Activity Monitor" },
-  },
+  keybinds = {},
 }
 
 local pathlib = {}
@@ -80,7 +67,14 @@ local function activateWezterm()
   end
 end
 
-local function bindKey(key, opts)
+---@class BindKeyOpts
+---@field mods string[]
+---@field key string
+---@field app? string
+---@field message? string
+---@field release? string
+---@param opts BindKeyOpts
+local function bindKey(opts)
   if type(opts) == "function" then
     opts = { pressFn = opts }
   end
@@ -99,7 +93,7 @@ local function bindKey(key, opts)
     end
   end
 
-  local mods = opts.mods or config.mods
+  local mods = opts.mods
   local key = opts.key or key
   local message = opts.message
   local releaseFn = opts.releaseFn
@@ -108,8 +102,56 @@ local function bindKey(key, opts)
   hs.hotkey.bind(mods, key, message, pressFn, releaseFn, repeatFn)
 end
 
+--------------------------------------------------------------------------------
+
 hs.hotkey.bind({ "alt", "ctrl" }, "r", hs.reload)
-for key, opts in pairs(config.keys) do
-  bindKey(key, opts)
-end
+
+bindKey({
+  mods = { "alt" },
+  key = "return",
+  app = "WezTerm",
+})
+
+bindKey({
+  mods = { "alt", "shift" },
+  key = "return",
+  app = "Google Chrome",
+})
+
+bindKey({
+  mods = { "alt" },
+  key = "e",
+  app = "Emacs",
+})
+
+bindKey({
+  mods = { "alt" },
+  key = "m",
+  app = "Messages",
+})
+
+bindKey({
+  mods = { "alt" },
+  key = "n",
+  app = "Obsidian",
+})
+
+bindKey({
+  mods = { "alt" },
+  key = "o",
+  app = "Finder",
+})
+
+bindKey({
+  mods = { "alt" },
+  key = "p",
+  app = "Claude",
+})
+
+bindKey({
+  mods = { "alt" },
+  key = "s",
+  app = "Slack",
+})
+
 hs.alert.show("✅ Hammerspoon")
