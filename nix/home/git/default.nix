@@ -5,17 +5,20 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   privateConfigFile = "${config.xdg.configHome}/git/config.local";
   allowedSignersFile = "${pkgs.writeText "allowed_signers" ''
     ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
   ''}";
   gpg-ssh-program = (
-    if pkgs.stdenv.isDarwin
-    then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-    else "op-ssh-sign"
+    if pkgs.stdenv.isDarwin then
+      "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    else
+      "op-ssh-sign"
   );
-in {
+in
+{
   imports = [
     ./gh.nix
     ./git-spice.nix
