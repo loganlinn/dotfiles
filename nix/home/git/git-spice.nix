@@ -30,10 +30,11 @@ in
         spice.submit.publish = mkDefault false;
         spice.log.all = mkDefault false;
         spice.branchCreate.prefix = "logan/";
+        spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
+        spice.shorthand.can = "commit amend --no-edit";
         spice.shorthand.checkout = "branch checkout";
         spice.shorthand.delete = "branch delete";
-        spice.shorthand.fixup = "commit amend --no-edit";
         spice.shorthand.fold = "branch fold";
         spice.shorthand.modify = "commit amend";
         spice.shorthand.move = "upstack onto";
