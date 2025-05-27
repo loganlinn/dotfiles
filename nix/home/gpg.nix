@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   programs.gpg.enable = true;
 
   services.gpg-agent = {
@@ -13,7 +14,7 @@
     enableZshIntegration = true;
     defaultCacheTtl = lib.mkDefault 86400;
     maxCacheTtl = lib.mkDefault 86400;
-    pinentryPackage = pkgs.pinentry-tty;
+    pinentry.package = pkgs.pinentry-tty;
     extraConfig = ''
       allow-emacs-pinentry
       allow-loopback-pinentry

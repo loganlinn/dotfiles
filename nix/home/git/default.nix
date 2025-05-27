@@ -183,28 +183,6 @@ in
     userName = mkDefault "Logan Linn";
   };
 
-  programs.zsh = {
-    plugins = [
-      {
-        name = "forgit";
-        src = inputs.forgit;
-      }
-    ];
-    initExtra = ''
-      export PATH="$PATH:${inputs.forgit}/bin"
-
-      bindkey -s '^G^g' ' git status^M'
-      bindkey -s '^G^c' ' gh pr checks^M'
-      bindkey -s '^G^f' ' git fetch^M'
-      bindkey -s '^G^s' ' git snapshot^M'
-      bindkey -s '^G/' ' "$(git rev-parse --show-toplevel)"\t'
-      bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
-      bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
-
-      source "${inputs.fzf-git-sh}/fzf-git.sh" || true
-    '';
-  };
-
   programs.gpg.publicKeys = [
     {
       # source = pkgs.fetchurl { url = "https://github.com/web-flow.gpg"; };

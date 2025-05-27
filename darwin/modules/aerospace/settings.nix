@@ -3,7 +3,8 @@
   pkgs,
   lib,
 }:
-with lib; let
+with lib;
+let
   cfg = config.programs.aerospace;
   app-ids = import ./app-ids.nix;
 
@@ -181,68 +182,64 @@ with lib; let
 
     # https://nikitabobko.github.io/AeroSpace/commands#move-node-to-monitor
     # https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
-    monitor.binding =
-      prefix-mode-binding
-      // {
-        h = [
-          "move-node-to-monitor --wrap-around --focus-follows-window right"
-          "mode main"
-        ];
-        j = [
-          "move-node-to-monitor --wrap-around --focus-follows-window down"
-          "mode main"
-        ];
-        k = [
-          "move-node-to-monitor --wrap-around --focus-follows-window up"
-          "mode main"
-        ];
-        l = [
-          "move-node-to-monitor --wrap-around --focus-follows-window left"
-          "mode main"
-        ];
-        n = [
-          "move-workspace-to-monitor --wrap-around next"
-          "mode main"
-        ];
-        p = [
-          "move-workspace-to-monitor --wrap-around prev"
-          "mode main"
-        ];
-      };
+    monitor.binding = prefix-mode-binding // {
+      h = [
+        "move-node-to-monitor --wrap-around --focus-follows-window right"
+        "mode main"
+      ];
+      j = [
+        "move-node-to-monitor --wrap-around --focus-follows-window down"
+        "mode main"
+      ];
+      k = [
+        "move-node-to-monitor --wrap-around --focus-follows-window up"
+        "mode main"
+      ];
+      l = [
+        "move-node-to-monitor --wrap-around --focus-follows-window left"
+        "mode main"
+      ];
+      n = [
+        "move-workspace-to-monitor --wrap-around next"
+        "mode main"
+      ];
+      p = [
+        "move-workspace-to-monitor --wrap-around prev"
+        "mode main"
+      ];
+    };
 
     # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
-    service.binding =
-      prefix-mode-binding
-      // {
-        r = [
-          "flatten-workspace-tree"
-          "mode main"
-        ]; # reset layout
-        f = [
-          "layout floating tiling"
-          "mode main"
-        ]; # Toggle between floating and tiling layout
-        backspace = [
-          "close-all-windows-but-current"
-          "mode main"
-        ];
-        alt-shift-h = [
-          "join-with left"
-          "mode main"
-        ];
-        alt-shift-j = [
-          "join-with down"
-          "mode main"
-        ];
-        alt-shift-k = [
-          "join-with up"
-          "mode main"
-        ];
-        alt-shift-l = [
-          "join-with right"
-          "mode main"
-        ];
-      };
+    service.binding = prefix-mode-binding // {
+      r = [
+        "flatten-workspace-tree"
+        "mode main"
+      ]; # reset layout
+      f = [
+        "layout floating tiling"
+        "mode main"
+      ]; # Toggle between floating and tiling layout
+      backspace = [
+        "close-all-windows-but-current"
+        "mode main"
+      ];
+      alt-shift-h = [
+        "join-with left"
+        "mode main"
+      ];
+      alt-shift-j = [
+        "join-with down"
+        "mode main"
+      ];
+      alt-shift-k = [
+        "join-with up"
+        "mode main"
+      ];
+      alt-shift-l = [
+        "join-with right"
+        "mode main"
+      ];
+    };
   };
 
   prefix-mode-binding = {
@@ -250,25 +247,16 @@ with lib; let
     esc = "mode main";
     ctrl-c = "mode main";
   };
-
-  # utils
-  aerospace-summon-app = pkgs.writeShellScriptBin "aerospace-summon-app" (
-    builtin.readFile ./bin/aerospace-summon-app.sh
-  );
-in {
+in
+{
   after-startup-command = optional cfg.borders.enable "exec-and-forget ${config.homebrew.brewPrefix}/borders ${
     # https://github.com/FelixKratz/JankyBorders/wiki/Man-Page#options
     cli.toGNUCommandLineShell {
       mkBool = key: val: [
-        "--${key}=${
-          if v
-          then "on"
-          else "off"
-        }"
+        "--${key}=${if v then "on" else "off"}"
       ];
-      mkList = key: vals: ["--${key}=${concatStringsSep "," vals}"];
-    }
-    cfg.borders.settings
+      mkList = key: vals: [ "--${key}=${concatStringsSep "," vals}" ];
+    } cfg.borders.settings
   }";
 
   # Start AeroSpace at login
@@ -300,7 +288,7 @@ in {
   # See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
   # See https://nikitabobko.github.io/AeroSpace/commands#move-mouse
   # Fallback value (if you omit the key): on-focused-monitor-changed = []
-  on-focused-monitor-changed = ["move-mouse monitor-lazy-center"];
+  on-focused-monitor-changed = [ "move-mouse monitor-lazy-center" ];
 
   # https://nikitabobko.github.io/AeroSpace/guide#on-window-detected-callback
   # TODO process cfg.apps.*.layout
@@ -312,8 +300,7 @@ in {
   on-window-detected = concatLists [
     ## initial workspace assignment
     # by app-id
-    (
-      mapAttrsToList
+    (mapAttrsToList
       (app-id: workspace: {
         "if" = {
           inherit app-id;
@@ -330,8 +317,7 @@ in {
       }
     )
     # by app-name
-    (
-      mapAttrsToList
+    (mapAttrsToList
       (app-name-regex-substring: workspace: {
         "if" = {
           inherit app-name-regex-substring;
@@ -346,8 +332,7 @@ in {
     )
 
     ## floating layout
-    (
-      forEach
+    (forEach
       [
         "1Password"
         "Activity Monitor"
@@ -375,9 +360,11 @@ in {
       ]
       (app: {
         "if" =
-          if isString app
-          then {app-id = app-ids.${app};}
-          else assert isAttrs app; app;
+          if isString app then
+            { app-id = app-ids.${app}; }
+          else
+            assert isAttrs app;
+            app;
         run = "layout floating";
       })
     )

@@ -1,17 +1,12 @@
-# This file exists for legacy nix-shell
-# https://nixos.wiki/wiki/Flakes#Using_flakes_project_from_a_legacy_Nix
-# You generally do *not* have to modify this ever.
-(import
-  (
-    let
-      lock = builtins.fromJSON (builtins.readFile ./flake.lock);
-    in
-      fetchTarball {
-        url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
-        sha256 = lock.nodes.flake-compat.locked.narHash;
-      }
-  )
-  {
-    src = ./.;
-  })
-.shellNix
+(import (
+  let
+    lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+    nodeName = lock.nodes.root.inputs.flake-compat;
+  in
+  fetchTarball {
+    url =
+      lock.nodes.${nodeName}.locked.url
+        or "https://github.com/edolstra/flake-compat/archive/${lock.nodes.${nodeName}.locked.rev}.tar.gz";
+    sha256 = lock.nodes.${nodeName}.locked.narHash;
+  }
+) { src = ./.; }).shellNix

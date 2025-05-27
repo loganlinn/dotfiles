@@ -4,13 +4,20 @@
   lib,
   ...
 }:
-with lib; {
+with lib;
+{
   system = {
-    activationScripts.postUserActivation.text = ''
-      # activateSettings -u will reload the settings from the database and apply them to the current session,
-      # so we do not need to logout and login again to make the changes take effect.
-      /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
-    '';
+    primaryUser = config.my.user.name or "logan";
+
+    # > The `system.activationScripts.postUserActivation` option has
+    # > been removed, as all activation now takes place as `root`. Please
+    # > restructure your custom activation scripts appropriately,
+    # > potentially using `sudo` if you need to run commands as a user.
+    # activationScripts.postUserActivation.text = ''
+    #   # activateSettings -u will reload the settings from the database and apply them to the current session,
+    #   # so we do not need to logout and login again to make the changes take effect.
+    #   /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+    # '';
 
     activationScripts.postActivation.text = ''
       if ! test -f /etc/nix-darwin/flake.nix; then

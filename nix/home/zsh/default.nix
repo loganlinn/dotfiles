@@ -6,7 +6,12 @@
   ...
 }:
 with builtins;
-with lib; {
+with lib;
+{
+  imports = [
+    ./options.nix
+  ];
+
   home.packages = [
     (pkgs.writeScriptBin "zshi" (builtins.readFile ./bin/zshi))
   ];
@@ -42,28 +47,27 @@ with lib; {
       "....." = "../../../..";
       "......" = "../../../../..";
       # https://github.com/sharkdp/bat/blob/master/README.md#highlighting---help-messages
-      "--help" = ''--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
+      "-?" = ''--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain'';
       "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
     };
-
-    sessionVariables = mkOptionDefault config.home.sessionVariables;
 
     dirHashes = mergeAttrsList [
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
       (filterAttrs (_: value: value != null) config.my.userDirs)
       rec {
+        doom = ''''${DOOMDIR:-${cfg}/doom}'';
+        dot = ''''${DOTFILES_DIR:-$HOME/.dotfiles}'';
+        emacs = ''''${EMACSDIR:-${cfg}/emacs}'';
+        gh = ''${src}/github.com'';
+        nvim = ''${cfg}/nvim''${NVIM_APPNAME:+"_$NVIM_APPNAME"}'';
+        src = ''''${SRC_HOME:-$HOME/src}'';
+        wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
+        # xdg
         cfg = ''''${XDG_CONFIG_HOME:-$HOME/.config}'';
         cache = ''''${XDG_CACHE_HOME:-$HOME/.cache}'';
         data = ''''${XDG_DATA_HOME:-$HOME/.local/share}'';
+        dl = ''''${XDG_DOWNLOADS_DIR:-$HOME/Downloads}'';
         state = ''''${XDG_DATA_HOME:-$HOME/.local/state}'';
-
-        dot = ''''${DOTFILES_DIR:-$HOME/.dotfiles}'';
-        src = ''''${SRC_HOME:-$HOME/src}'';
-        gh = ''${src}/github.com'';
-        nvim = ''${cfg}/nvim''${NVIM_APPNAME:+"_$NVIM_APPNAME"}'';
-        emacs = ''''${EMACSDIR:-${cfg}/emacs}'';
-        doom = ''''${DOOMDIR:-${cfg}/doom}'';
-        wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
       }
       (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin rec {
         apps = ''$HOME/Applications'';
@@ -73,21 +77,38 @@ with lib; {
       })
     ];
 
-    plugins = [
-      {
-        name = "fzf-tab";
-        src = inputs.fzf-tab;
-      }
-      {
-        name = "colored-man-pages";
-        src = ./plugins/colored-man-pages;
-      }
-      {
-        name = "nvim-appname";
-        src = ./plugins/nvim-appname;
-      }
-    ];
+    ## Replaced by antidote
+    # plugins = [
+    #   { name = "fzf-tab"; src = inputs.fzf-tab; }
+    #   { name = "colored-man-pages"; src = ./plugins/colored-man-pages; }
+    #   { name = "nvim-appname"; src = ./plugins/nvim-appname; }
+    # ];
+
+    antidote = {
+      enable = true;
+      plugins = [
+        "aloxaf/fzf-tab"
+        "junegunn/fzf-git.sh"
+        "mehalter/zsh-nvim-appname" # nvapp
+        "wfxr/forgit"
+        ## Things to look into from https://github.com/getantidote/zdotdir/blob/main/.zsh_plugins.txt
+        # "belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup"
+        # "belak/zsh-utils path:editor"
+        # "belak/zsh-utils path:history"
+        # "belak/zsh-utils path:utility"
+        # "mattmc3/ez-compinit"
+        # "ohmyzsh/ohmyzsh path:plugins/extract"
+        # "romkatv/zsh-bench kind:path"
+        # "zsh-users/zsh-completions kind:fpath path:src"
+        # zdharma-continuum/fast-syntax-highlighting
+        # zsh-users/zsh-history-substring-search
+      ];
+    };
+
     envExtra = ''
+      # Ensure path arrays do not contain duplicates.
+      typeset -gU path fpath
+
       [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
     '';
 
@@ -104,41 +125,23 @@ with lib; {
       ${readFile ./initExtraBeforeCompInit.zsh}
     '';
 
-    initExtra = let
-      functionsDir = toString ./functions;
-      functionNames = attrNames (builtins.readDir functionsDir);
-    in ''
-      if [[ -r ~/.znap/znap.zsh ]] || git clone --quiet --depth 1 --no-tags --filter=blob:none --revision=909e3842dc301ad3588cdb505f8ed9003a34d2bb https://github.com/marlonrichert/zsh-snap.git ~/.znap >/dev/null; then
-       source ~/.znap/znap.zsh
-      fi
-      # znap function _hist hist "znap source marlonrichert/zsh-hist"
-      # compctl -K    _hist hist
+    initExtra =
+      let
+        functionsDir = toString ./functions;
+        functionNames = attrNames (builtins.readDir functionsDir);
+      in
+      ''
+        autoload -Uz ${concatStringsSep " " functionNames}
 
-      : "''${DOTFILES_DIR:=$HOME/.dotfiles}"
+        ## nixpkgs.zsh
+        ${readFile ./nixpkgs.zsh}
 
-      fpath+=(
-        "$DOTFILES_DIR/nix/home/zsh/functions"
-        "''${XDG_DATA_HOME:-$HOME/.local/share}/zsh/functions"
-      )
+        ## wezterm.zsh
+        ${readFile ./wezterm.zsh}
 
-      autoload -Uz ${concatStringsSep " " functionNames}
-
-      bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
-      bindkey -s '^G^S' ' git snapshot^M'
-      bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
-      bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
-      bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
-
-      ${readFile ./nixpkgs.zsh}
-
-      ${readFile ./initExtra.zsh}
-
-      ${readFile ./wezterm.zsh}
-
-      wezterm::init
-
-      [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
-    '';
+        ## initExtra.zsh
+        ${readFile ./initExtra.zsh}
+      '';
 
     loginExtra = ''
       [[ ! -f ~/.zlogin.local ]] || source ~/.zlogin.local
@@ -147,5 +150,7 @@ with lib; {
     logoutExtra = ''
       [[ ! -f ~/.zlogout.local ]] || source ~/.zlogout.local
     '';
+
+    sessionVariables = mkOptionDefault config.home.sessionVariables;
   };
 }

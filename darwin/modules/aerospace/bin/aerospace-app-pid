@@ -2,18 +2,18 @@
 
 set -euo pipefail
 
+[[ -z ${TRACE:-} ]] || set -x
+
 usage() {
   script_name=$(basename "$0")
   echo "usage: $script_name [-h|--help] [-0] [-n|--name <app-name>] [-b|--bundle-id <app-bundle-id>]"
 }
 
-error() {
+usage_error() {
   echo >&2 "$*"
   usage >&2
-  exit 1
+  exit 22 # EINVAL
 }
-
-[[ -z ${TRACE:-} ]] || set -x
 
 jq_expr=''
 jq_argv=()
@@ -22,13 +22,13 @@ jq_output_flag='--raw-output'
 while (($#)); do
   case ${1-} in
   -b | --bundle-id)
-    [[ -n ${2:-} ]] || error "missing operand: $1"
+    [[ -n ${2:-} ]] || usage_error "missing operand: $1"
     jq_expr="${jq_expr:+"$jq_expr or "}.[\"app-bundle-id\"] == \$ARGS.positional[${#jq_argv[@]}]"
     jq_argv+=("$2")
     shift 2
     ;;
   -n | --name)
-    [[ -n ${2:-} ]] || error "missing operand: $1"
+    [[ -n ${2:-} ]] || usage_error "missing operand: $1"
     jq_expr="${jq_expr:+"$jq_expr or "}.[\"app-name\"] | test(\$ARGS.positional[${#jq_argv[@]}]; \"i\")"
     jq_argv+=("$2")
     shift 2
@@ -41,8 +41,8 @@ while (($#)); do
     usage
     exit 0
     ;;
-  -*) error "invalid option -- $1" ;;
-  *) error "extra operand  ‘$1’" ;;
+  -*) usage_error "invalid option -- $1" ;;
+  *) usage_error "extra operand  ‘$1’" ;;
   esac
 done
 

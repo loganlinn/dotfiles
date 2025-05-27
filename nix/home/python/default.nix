@@ -9,8 +9,6 @@ let
   cfg = config.my.python;
 in
 {
-  imports = [ ../uv.nix ];
-
   options.my.python = {
     package = mkOption {
       type = types.package;
