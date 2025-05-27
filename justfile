@@ -42,7 +42,7 @@ bootstrap:
 [group('nix')]
 [macos]
 @switch *args:
-    just rebuild switch "$@"
+    sudo just rebuild switch "$@"
 
 # Build and activate system flake
 [group('nix')]
