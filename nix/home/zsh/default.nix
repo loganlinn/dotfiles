@@ -116,22 +116,17 @@ with lib;
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
 
-    initExtraFirst = ''
-      ${readFile ./initExtraFirst.zsh}
-    '';
-
-    initExtraBeforeCompInit = ''
-      ${readFile ./line-editor.zsh}
-      ${readFile ./initExtraBeforeCompInit.zsh}
-    '';
-
-    initExtra =
-      let
-        functionsDir = toString ./functions;
-        functionNames = attrNames (builtins.readDir functionsDir);
-      in
-      ''
-        autoload -Uz ${concatStringsSep " " functionNames}
+    # - 500 (mkBefore: Early initialization (replaces initExtraFirst)
+    # - 550: Before completion initialization (replaces initExtraBeforeCompInit)
+    # - 1000 (default: General configuration (replaces initExtra)
+    # - 1500 (mkAfter: Last to run configuration)
+    initContent = mkMerge [
+      (mkOrder 550 ''
+        ${readFile ./line-editor.zsh}
+        ${readFile ./initExtraBeforeCompInit.zsh}
+      '')
+      (mkOrder 1200 ''
+        autoload -Uz ${concatStringsSep " " (readDir (toString ./functions))}
 
         ## nixpkgs.zsh
         ${readFile ./nixpkgs.zsh}
@@ -141,7 +136,8 @@ with lib;
 
         ## initExtra.zsh
         ${readFile ./initExtra.zsh}
-      '';
+      '')
+    ];
 
     loginExtra = ''
       [[ ! -f ~/.zlogin.local ]] || source ~/.zlogin.local
