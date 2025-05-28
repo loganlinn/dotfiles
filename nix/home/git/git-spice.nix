@@ -29,7 +29,6 @@ in
       extraConfig = {
         spice.submit.publish = mkDefault false;
         spice.log.all = mkDefault false;
-        spice.branchCreate.prefix = "logan/";
         spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
         spice.shorthand.can = "commit amend --no-edit";
