@@ -1,6 +1,6 @@
+# TODO: cleanup module organization
 [
   ../../nix/home/common
-  ../../nix/home/dev
   ../../nix/home/dunst
   ../../nix/home/emacs
   ../../nix/home/eww
