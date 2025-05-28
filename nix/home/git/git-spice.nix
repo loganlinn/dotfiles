@@ -44,18 +44,16 @@ in
         spice.shorthand.untrack = "branch untrack";
       };
     };
-    programs.zsh = {
-      initExtra = ''
-        function gs() {
-          if (( $# )); then
-            # Remember that time you created PR as your coworker?
-            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
-          else
-            git status
-          fi
-        }
-        complete -C ${cfg.package}/bin/gs gs
-      '';
-    };
+    programs.zsh.initContent = ''
+      function gs() {
+        if (( $# )); then
+          # Remember that time you created PR as your coworker?
+          env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
+        else
+          git status
+        fi
+      }
+      complete -C ${cfg.package}/bin/gs gs
+    '';
   };
 }

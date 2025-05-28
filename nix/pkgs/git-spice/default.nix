@@ -9,12 +9,12 @@
 }:
 buildGo124Module rec {
   pname = "git-spice";
-  version = "73c5fd2cf8906736c7597cb1a0691e25a4313cfc";
+  version = "0.14.0";
 
   src = fetchFromGitHub {
-    owner = "loganlinn";
+    owner = "abhinav";
     repo = "git-spice";
-    rev = "73c5fd2cf8906736c7597cb1a0691e25a4313cfc";
+    rev = "4fec4747d879716a0a1db354d53685648dbee21b";
     hash = "sha256-ew0ehaYXJgc1ePdQCxxfahBdTs5zsiHDfB4SdS2WZ8A=";
   };
 

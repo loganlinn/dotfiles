@@ -41,7 +41,7 @@ in {
       bun
     ];
 
-    programs.zsh.initExtra = ''
+    programs.zsh.initContent = ''
       # initialize fnm (node.js version manager)
       eval "$(fnm env --shell zsh ${
         concatStringsSep " " (cli.toGNUCommandLine {} config.programs.fnm.settings)

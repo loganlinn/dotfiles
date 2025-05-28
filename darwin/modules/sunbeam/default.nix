@@ -37,11 +37,11 @@ in {
           eval "$(${config.homebrew.brewPrefix}/sunbeam completion bash)"
         fi
       '';
-      programs.zsh.initExtra = mkIf cfg.enableZshIntegration ''
+      programs.zsh.initContent = mkIf cfg.enableZshIntegration (mkBefore ''
         if [[ $TERM != "dumb" ]]; then
           eval "$(${config.homebrew.brewPrefix}/sunbeam completion zsh)"
         fi
-      '';
+      '');
       programs.fish.interactiveShellInit = mkIf cfg.enableFishIntegration ''
         if test "$TERM" != "dumb"
           eval "$(${config.homebrew.brewPrefix}/sunbeam completion fish)"

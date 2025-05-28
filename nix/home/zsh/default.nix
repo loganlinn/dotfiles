@@ -88,9 +88,9 @@ with lib;
       enable = true;
       plugins = [
         "aloxaf/fzf-tab"
-        "junegunn/fzf-git.sh"
         "mehalter/zsh-nvim-appname" # nvapp
         "wfxr/forgit"
+
         ## Things to look into from https://github.com/getantidote/zdotdir/blob/main/.zsh_plugins.txt
         # "belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup"
         # "belak/zsh-utils path:editor"
@@ -116,17 +116,13 @@ with lib;
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
 
-    # - 500 (mkBefore: Early initialization (replaces initExtraFirst)
-    # - 550: Before completion initialization (replaces initExtraBeforeCompInit)
-    # - 1000 (default: General configuration (replaces initExtra)
-    # - 1500 (mkAfter: Last to run configuration)
     initContent = mkMerge [
-      (mkOrder 550 ''
+      (mkBefore ''
         ${readFile ./line-editor.zsh}
         ${readFile ./initExtraBeforeCompInit.zsh}
       '')
-      (mkOrder 1200 ''
-        autoload -Uz ${concatStringsSep " " (readDir (toString ./functions))}
+      (mkAfter ''
+        autoload -Uz ${concatStringsSep " " (attrNames (readDir (toString ./functions)))}
 
         ## nixpkgs.zsh
         ${readFile ./nixpkgs.zsh}

@@ -18,10 +18,8 @@ in
   };
 
   config = {
-    programs.zsh = {
-      initExtra = ''
-        ${concatLines (mapAttrsToList (name: value: ''bindkey -s '${name}' '${value}'') cfg.bindkeys)}
-      '';
-    };
+    programs.zsh.initContent = ''
+      ${concatLines (mapAttrsToList (name: value: ''bindkey -s '${name}' '${value}'') cfg.bindkeys)}
+    '';
   };
 }

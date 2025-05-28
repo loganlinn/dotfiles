@@ -12,7 +12,7 @@
       J = "just --justfile '${config.home.homeDirectory}/.dotfiles/justfile'";
     };
 
-    programs.zsh.initExtra = ''
+    programs.zsh.initContent = lib.mkBefore ''
       compdef _just j
       compdef _just J
     '';

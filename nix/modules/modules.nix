@@ -19,7 +19,6 @@
   ../../nix/home/x11.nix
   ../../nix/home/yt-dlp.nix
   ../../nix/home/yubikey.nix
-  ../../nix/modules/programs/the-way
   ../../nix/modules/services
   ../../nix/modules/spellcheck.nix
   ../../nix/modules/desktop

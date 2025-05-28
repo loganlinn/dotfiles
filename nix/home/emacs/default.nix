@@ -40,7 +40,7 @@ with lib; {
       (pkgs.writeShellScriptBin "magit" (readFile ../../../bin/magit))
     ];
 
-    programs.zsh.initExtra = ''
+    programs.zsh.initContent = ''
       vterm_printf() {
           if [ -n "$TMUX" ] \
               && { [ "$${TERM%%-*}" = "tmux" ] \

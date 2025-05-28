@@ -42,7 +42,7 @@ in {
 
     programs.bash.initExtra = cfg.shellInitExtra;
 
-    programs.zsh.initExtra = cfg.shellInitExtra;
+    programs.zsh.initContent = cfg.shellInitExtra;
 
     my.shellScripts = {
       prunedir.text = ''
