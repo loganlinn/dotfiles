@@ -46,7 +46,7 @@ in
     };
     programs.zsh.initContent = ''
       function gs() {
-        if (( $# )); then
+        if (( $# )) && [[ ! -e $1 ]]; then
           # Remember that time you created PR as your coworker?
           env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
         else
