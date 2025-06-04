@@ -249,7 +249,7 @@ end
 
 -- Applies function to current value of window config overrides, then
 -- sets configu overrides to returned value.
----@param f fun(current_config_overides: Config|nil): Config|nil
+---@param f fun(current_config_overrides: Config|nil): Config|nil
 ---@param window Window
 ---@return Config|nil updated
 local function apply_to_config_overrides(f, window)
@@ -291,23 +291,22 @@ M.quick_open = wezterm.action.QuickSelectArgs({
   patterns = patterns.union(patterns.FILE, patterns.URL),
   action = wezterm.action_callback(function(window, pane)
     local selection = window:get_selection_text_for_pane(pane)
-    window:perform_action(wezterm.action.ClearSelection, pane)
     if selection then
-      log.info("quick_open:", selection)
       local uri
       if pcall(wezterm.url.parse, selection) then
         uri = selection
       else
+        -- TODO verify path exists?
         if string.match(selection, "^/") then
           uri = "file://" .. selection
         else
           uri = "file://" .. pane:get_current_working_dir().file_path .. selection
         end
       end
-      log.info("opening", uri)
       wezterm.emit("open-uri", window, pane, uri)
-      -- wezterm.open_with(uri)
     end
+
+    window:perform_action(wezterm.action.ClearSelection, pane)
   end),
 })
 

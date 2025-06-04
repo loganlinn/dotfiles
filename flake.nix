@@ -17,6 +17,7 @@
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     nixvim.url = "github:nix-community/nixvim";
     agenix.url = "github:ryantm/agenix";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
     globset.url = "github:pdtpartners/globset";
