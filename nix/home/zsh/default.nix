@@ -10,6 +10,7 @@ with lib;
 {
   imports = [
     ./options.nix
+    ./plugins.nix
   ];
 
   home.packages = [
@@ -18,10 +19,52 @@ with lib;
 
   programs.zsh = {
     enable = true;
+
     enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
+
     defaultKeymap = "emacs";
+
+    dotDir = null; # ".config/zsh";
+
+    sessionVariables = config.home.sessionVariables;
+
+    localVariables = { };
+
+    autosuggestion = {
+      enable = true;
+      strategy = [
+        "completion"
+        "history"
+      ];
+    };
+
+    # syntaxHighlighting = {
+    #   enable = true;
+    #   # https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
+    #   highlighters = [
+    #     "main"
+    #     "brackets"
+    #     "pattern"
+    #     "regexp"
+    #     "cursor"
+    #     "root"
+    #     "line"
+    #   ];
+    #   patterns = {
+    #     # "rm -rf *" = "fg=white,bold,bg=red";
+    #   };
+    #   styles = {
+    #     # comment = "fg=black,bold";
+    #   };
+    # };
+
+    # zprof = {
+    #   enable = true;
+    # };
+
+    # historySubstringSearch = {
+    #   enable = true;
+    # };
 
     history = {
       expireDuplicatesFirst = true;
@@ -77,34 +120,6 @@ with lib;
       })
     ];
 
-    ## Replaced by antidote
-    # plugins = [
-    #   { name = "fzf-tab"; src = inputs.fzf-tab; }
-    #   { name = "colored-man-pages"; src = ./plugins/colored-man-pages; }
-    #   { name = "nvim-appname"; src = ./plugins/nvim-appname; }
-    # ];
-
-    antidote = {
-      enable = true;
-      plugins = [
-        "aloxaf/fzf-tab"
-        "mehalter/zsh-nvim-appname" # nvapp
-        "wfxr/forgit"
-
-        ## Things to look into from https://github.com/getantidote/zdotdir/blob/main/.zsh_plugins.txt
-        # "belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup"
-        # "belak/zsh-utils path:editor"
-        # "belak/zsh-utils path:history"
-        # "belak/zsh-utils path:utility"
-        # "mattmc3/ez-compinit"
-        # "ohmyzsh/ohmyzsh path:plugins/extract"
-        # "romkatv/zsh-bench kind:path"
-        # "zsh-users/zsh-completions kind:fpath path:src"
-        # zdharma-continuum/fast-syntax-highlighting
-        # zsh-users/zsh-history-substring-search
-      ];
-    };
-
     envExtra = ''
       # Ensure path arrays do not contain duplicates.
       typeset -gU path fpath
@@ -116,22 +131,65 @@ with lib;
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
 
+    completionInit = ''
+      # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
+      stty -ixon
+    '';
+
     initContent = mkMerge [
       (mkBefore ''
         ${readFile ./line-editor.zsh}
-        ${readFile ./initExtraBeforeCompInit.zsh}
       '')
       (mkAfter ''
-        autoload -Uz ${concatStringsSep " " (attrNames (readDir (toString ./functions)))}
-
         ## nixpkgs.zsh
-        ${readFile ./nixpkgs.zsh}
+        ${
+          # readFile ./nixpkgs.zsh
+          ""
+        }
 
         ## wezterm.zsh
-        ${readFile ./wezterm.zsh}
+        ${
+          # readFile ./wezterm.zsh
+          ""
+        }
+        # wezterm::init
 
-        ## initExtra.zsh
-        ${readFile ./initExtra.zsh}
+        unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
+        setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
+        setopt EQUALS               # Expansion of =command expands into full pathname of command
+        setopt LONG_LIST_JOBS       # List jobs in the long format by default.
+        setopt AUTO_RESUME          # Attempt to resume existing job before creating a new process.
+        setopt NOTIFY               # Report status of background jobs immediately.
+        unsetopt BG_NICE            # Don't run all background jobs at a lower priority.
+        unsetopt HUP                # Don't kill jobs on shell exit.
+        setopt AUTO_PUSHD           # Push the old directory onto the stack on cd.
+        setopt PUSHD_IGNORE_DUPS    # Do not store duplicates in the stack.
+        setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
+
+        DIRSTACKSIZE=9
+
+        [[ ! -v XDG_DATA_HOME ]] ||
+          fpath+=("$XDG_DATA_HOME/zsh/functions")
+
+        bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
+        bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
+        bindkey -s '^G~' ' "$(git rev-parse --show-toplevel)"\t'
+        bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
+        bindkey -s '^G^S' ' git snapshot^M'
+        bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
+        bindkey -s '^G^c' ' gh pr checks^M'
+        bindkey -s '^G^f' ' git fetch^M'
+        bindkey -s '^G^g' ' git status^M'
+        bindkey -s '^G^s' ' git snapshot^M'
+
+        if (( $+commands[bat] )); then
+          alias d='batdiff'
+          alias g='batgrep'
+          eval "$(batman --export-env)"
+          eval "$(batpipe)"
+        fi
+
+        [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '')
     ];
 
@@ -142,7 +200,5 @@ with lib;
     logoutExtra = ''
       [[ ! -f ~/.zlogout.local ]] || source ~/.zlogout.local
     '';
-
-    sessionVariables = mkOptionDefault config.home.sessionVariables;
   };
 }

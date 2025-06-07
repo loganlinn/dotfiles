@@ -2,9 +2,11 @@
   config,
   lib,
   ...
-}: {
+}:
+{
   home-manager.sharedModules = lib.singleton (
-    {pkgs, ...}: let
+    { pkgs, ... }:
+    let
       bash-my-aws-shell-init = ''
         bash-my-aws() {
           export BMA_HOME=$${BMA_HOME:-${pkgs.bash-my-aws}}
@@ -13,7 +15,8 @@
           echo "Loaded bash-my-aws"
         }
       '';
-    in {
+    in
+    {
       home.packages = with pkgs; [
         # aws-gate # Better AWS SSM Session manager CLI client
         # aws-iam-authenticator # EKS auth
@@ -34,14 +37,14 @@
       programs.bash.initExtra = ''
         ${bash-my-aws-shell-init}
       '';
-      programs.zsh.initContent = lib.mkMerge [
-        (lib.mkBefore ''
+      programs.zsh = {
+        completionInit = ''
           complete -C '${pkgs.awscli2}/bin/aws_completer' aws
-        '')
-        ''
+        '';
+        initContent = ''
           ${bash-my-aws-shell-init}
-        ''
-      ];
+        '';
+      };
     }
   );
 }

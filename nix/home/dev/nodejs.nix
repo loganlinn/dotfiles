@@ -4,25 +4,30 @@
   pkgs,
   ...
 }:
-with lib; let
-  npmrcFormat = let
-    ini = pkgs.formats.iniWithGlobalSection {};
-  in {
-    type = (ini.type.getSubOptions []).globalSection.type;
-    generate = name: value: ini.generate name {globalSection = value;};
-  };
-in {
+with lib;
+let
+  npmrcFormat =
+    let
+      ini = pkgs.formats.iniWithGlobalSection { };
+    in
+    {
+      type = (ini.type.getSubOptions [ ]).globalSection.type;
+      generate = name: value: ini.generate name { globalSection = value; };
+    };
+in
+{
   options = {
     programs.npm = {
       settings = mkOption {
         # use same type constraints as global section of INI format,
         type = npmrcFormat.type;
-        default = {};
+        default = { };
       };
     };
 
     programs.fnm = {
-      # enable = mkEnableOption "fnm (node.js version manager)"; # TODO
+      # enable = mkEnableOption "fnm (node.js version manager)";
+      package = mkPackageOption pkgs "fnm" { };
       settings = mkOption {
         type = types.attrs;
         default = {
@@ -37,21 +42,33 @@ in {
   config = {
     home.packages = with pkgs; [
       # nodejs
-      fnm
+      config.programs.fnm.package
       bun
     ];
 
-    programs.zsh.initContent = ''
-      # initialize fnm (node.js version manager)
-      eval "$(fnm env --shell zsh ${
-        concatStringsSep " " (cli.toGNUCommandLine {} config.programs.fnm.settings)
-      })"
-    '';
+    programs.zsh = {
+      initContent = ''
+        # initialize fnm (node.js version manager)
+        eval "$(fnm env --shell zsh ${
+          concatStringsSep " " (cli.toGNUCommandLine { } config.programs.fnm.settings)
+        })"
+
+        # If the completion file doesn't exist yet, we need to autoload it and
+        # bind it to `fnm`. Otherwise, compinit will have already done that.
+        if ! [[ -f $${XDG_CACHE_HOME:=$HOME/.cache}/zsh/functions/_fnm ]]; then
+          typeset -g -A _comps
+          autoload -Uz _fnm
+          _comps[fnm]=_fnm
+        fi
+        mkdir -p "$XDG_CACHE_HOME/zsh/functions"
+        fnm completions --shell=zsh >| "$XDG_CACHE_HOME/zsh/functions/_fnm" &|
+      '';
+    };
 
     programs.bash.initExtra = ''
       # initialize fnm (node.js version manager)
       eval "$(fnm env --shell bash ${
-        concatStringsSep " " (cli.toGNUCommandLine {} config.programs.fnm.settings)
+        concatStringsSep " " (cli.toGNUCommandLine { } config.programs.fnm.settings)
       })"
     '';
 

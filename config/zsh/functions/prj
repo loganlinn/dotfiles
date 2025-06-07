@@ -1,0 +1,58 @@
+#!/usr/bin/env zsh
+##? prj - project jumper
+
+if ! (( $+commands[fzf] + $+commands[zf] )); then
+  echo >&2 "prj: requires fzf or zf"
+  return 2
+fi
+
+local query=()
+local usage=(
+  "prj [-h|--help]"
+  "prj [-d|--directory=<project_dir>] [--] [query...]"
+)
+local project_dir=${PRJ_DIR:-$XDG_PROJECTS_DIR}
+if [[ -z $project_dir ]]; then
+  if [[ -d $HOME/src ]]; then
+    project_dir=$HOME/src
+  fi
+fi
+
+while (( $# )); do
+  case $1 in
+    --)                  shift; query+=("$@"); break ;;
+    -h|--help)           printf "%s\n" "$usage"; return ;;
+    -d|--directory)      project_dir=${2?"missing operand for '$1'"}; shift 2 ;;
+    -d=*|--directory=*)  project_dir="${1#*=}" ; shift ;;
+    -*)                  echo >&2 "prj: Invalid argument: '$1'"; return 22 ;;
+    *)                   query+=("$1"); shift ;;
+  esac
+done
+
+if [[ $project_dir = '~/'* ]]; then
+  project_dir=${project_dir:s/~/$HOME}
+fi
+
+if [[ ! -d $project_dir ]]; then
+  echo >&2 "prj: no such directory: '$project_dir'"
+  return 2
+fi
+
+local projects=(
+  $project_dir/*/.git(DN:h)
+  $project_dir/*/*/.git(DN:h)
+  $project_dir/*/*/*/.git(DN:h)
+)
+
+# absolute path with project dir prefix stripped
+projects=(${${projects:A}#*$project_dir/})
+
+local selection=$(
+  echo "${(j:\0:)projects}" |
+    fzf --layout=reverse-list --height=~'50%' --tiebreak=pathname ${PRJ_FZF_OPTS-} --read0 --query="${query[*]}"
+)
+
+# cd to the selected project
+if [[ -n $selection ]] && [[ -d $project_dir/$selection ]]; then
+  cd "$project_dir/$selection"
+fi

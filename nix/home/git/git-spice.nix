@@ -7,13 +7,11 @@
 }:
 with lib;
 let
-  cfg = config.programs.git.spice;
+  cfg = config.programs.git.git-spice;
 in
 {
-  options.programs.git.spice = {
-    enable = mkEnableOption "git-spice" // {
-      default = true;
-    };
+  options.programs.git.git-spice = {
+    enable = mkEnableOption "git-spice";
     package = mkOption {
       type = types.package;
       default = self'.packages.git-spice;
@@ -44,16 +42,28 @@ in
         spice.shorthand.untrack = "branch untrack";
       };
     };
-    programs.zsh.initContent = ''
-      function gs() {
-        if (( $# )) && [[ ! -e $1 ]]; then
-          # Remember that time you created PR as your coworker?
-          env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
-        else
-          git status
-        fi
-      }
-      complete -C ${cfg.package}/bin/gs gs
-    '';
+    programs.zsh = {
+      completionInit = ''
+        complete -C ${cfg.package}/bin/gs gs
+      '';
+      initContent = mkBefore ''
+        gs2() {
+          if (( $# )) && [[ ! -e $1 ]]; then
+            # Remember that time you created PR as your coworker?
+            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
+          else
+            git status
+          fi
+        }
+        gs() {
+          if (( $# )) && [[ ! -e $1 ]]; then
+            # Remember that time you created PR as your coworker?
+            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
+          else
+            git status
+          fi
+        }
+      '';
+    };
   };
 }

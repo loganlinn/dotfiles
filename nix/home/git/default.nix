@@ -53,6 +53,7 @@ in
 
   programs.git = {
     enable = true;
+    git-spice.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
       { path = privateConfigFile; }

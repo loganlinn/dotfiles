@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 function nixpkgs() {
-  case ${1=repl} in
+  case ${1:-repl} in
     -h|--help)
       echo "Usage: nixpkgs <command> [options]"
       echo
