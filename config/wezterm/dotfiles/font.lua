@@ -8,11 +8,13 @@ function M.apply_to_config(config)
     "ss02", -- Slashed zero, variant 1
     "ss07", -- Straighter 6 and 9
   }
+
   local font = wezterm.font({
     family = family,
     style = "Normal",
     harfbuzz_features = harfbuzz_features,
   })
+
   local font_rules = {}
   for intensity, weight in pairs({ Normal = "Regular", Bold = "DemiBold", Half = "ExtraLight" }) do
     table.insert(font_rules, {
@@ -26,6 +28,7 @@ function M.apply_to_config(config)
       }),
     })
   end
+
   local font_size = 14
 
   config.font = font
@@ -38,6 +41,7 @@ function M.apply_to_config(config)
   config.window_frame.font = font
   config.window_frame.font_size = font_size
   config.command_palette_font_size = font_size
+  config.warn_about_missing_glyphs = false
 
   return config
 end
