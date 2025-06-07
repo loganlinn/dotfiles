@@ -16,24 +16,25 @@ with lib;
         "mattmc3/zman"
         "mattmc3/zsh-safe-rm"
         "mehalter/zsh-nvim-appname" # nvapp
-        "ohmyzsh/ohmyzsh path:plugins/colored-man-pages"
-        "ohmyzsh/ohmyzsh path:plugins/copybuffer" # ctrl-o
-        "ohmyzsh/ohmyzsh path:plugins/copyfile"
-        "ohmyzsh/ohmyzsh path:plugins/copypath"
-        "ohmyzsh/ohmyzsh path:plugins/extract"
-        "olets/zsh-abbr kind:defer"
         "romkatv/zsh-bench kind:path"
         "wfxr/forgit"
         "zdharma-continuum/fast-syntax-highlighting kind:defer"
         "zsh-users/zsh-history-substring-search"
 
-        ## Things to look into from https://github.com/getantidote/zdotdir/blob/main/.zsh_plugins.txt
+        "getantidote/use-omz" # handle OMZ dependencies
+        "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
+        "ohmyzsh/ohmyzsh path:plugins/colored-man-pages"
+        "ohmyzsh/ohmyzsh path:plugins/copybuffer" # ctrl-o
+        "ohmyzsh/ohmyzsh path:plugins/copyfile"
+        "ohmyzsh/ohmyzsh path:plugins/copypath"
+        "ohmyzsh/ohmyzsh path:plugins/extract"
+
+        # "olets/zsh-abbr kind:defer"
         # "belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup"
         # "belak/zsh-utils path:editor"
         # "belak/zsh-utils path:history"
         # "belak/zsh-utils path:prompt"
         # "belak/zsh-utils path:utility"
-
         # "zsh-users/zsh-completions kind:fpath path:src"
       ];
     };
