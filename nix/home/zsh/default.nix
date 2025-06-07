@@ -32,10 +32,6 @@ with lib;
 
     autosuggestion = {
       enable = true;
-      strategy = [
-        "completion"
-        "history"
-      ];
     };
 
     # syntaxHighlighting = {
