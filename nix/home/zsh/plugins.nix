@@ -42,7 +42,7 @@ with lib;
     localVariables = {
       # ABBR_AUTOLOAD = null;
       # ABBR_DEBUG = null;
-      ABBR_DEFAULT_BINDINGS = 0;
+      # ABBR_DEFAULT_BINDINGS = 0;
       # ABBR_DRY_RUN = null;
       # ABBR_EXPAND_AND_ACCEPT_PUSH_ABBREVIATED_LINE_TO_HISTORY = null;
       # ABBR_EXPAND_PUSH_ABBREVIATION_TO_HISTORY = null;
