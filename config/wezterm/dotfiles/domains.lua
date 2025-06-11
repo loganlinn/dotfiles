@@ -32,6 +32,12 @@ return {
       "SSH_CLIENT",
       "SSH_CONNECTION",
     }
+
+    -- -- This causes `wezterm` to act as though it was started as
+    -- -- `wezterm connect unix` by default, connecting to the unix
+    -- -- domain on startup.
+    -- config.default_gui_startup_args = { 'connect', 'unix' }
+
     return config
   end,
 }
