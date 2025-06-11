@@ -78,7 +78,13 @@ function M.apply_to_config(config)
     },
     { MOD, "9", wezterm.action.SwitchWorkspaceRelative(-1) },
     { MOD, "0", wezterm.action.SwitchWorkspaceRelative(1) },
-    { LEADER, "Space", workspace_switcher.switch_workspace() },
+    {
+      LEADER,
+      "Space",
+      workspace_switcher.switch_workspace({
+        extra_args = " | rg -x -e ~'/src/([^/]+/?){3}'",
+      }),
+    },
     { LEADER, "Tab", workspace_switcher.switch_to_prev_workspace() },
     { LEADER, ":", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|LAUNCH_MENU_ITEMS" }) },
     { LEADER, "?", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|KEY_ASSIGNMENTS" }) },
