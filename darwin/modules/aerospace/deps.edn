@@ -1,0 +1,4 @@
+{:paths ["src"]
+ :deps {org.tomlj/tomlj {:mvn/version "1.1.1"}
+        cheshire/cheshire {:mvn/version "6.0.0"}
+        babashka/fs {:mvn/version "0.5.26"}}}
