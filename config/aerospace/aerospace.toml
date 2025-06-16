@@ -12,7 +12,17 @@ default-root-container-orientation = "auto"
 
 automatically-unhide-macos-hidden-apps = true
 
-on-focused-monitor-changed = []
+after-startup-command = [
+    # 'exec-and-forget borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=5.0'
+]
+
+on-focused-monitor-changed = [
+    # 'move-mouse monitor-lazy-center'
+]
+
+# exec-on-workspace-change = [
+#   '/bin/bash', '-c', 'printenv > /tmp/aerospace.on-workspace-change.env'
+# ]
 
 [exec]
 inherit-env-vars = true
@@ -23,20 +33,36 @@ PATH = '/opt/homebrew/bin:/opt/homebrew/sbin:${HOME}/.local/bin:${HOME}/.nix-pro
 [gaps.inner]
 horizontal = [
   { monitor."Built-in Retina Display" = 0 },
-  { monitor."DELL U2723QE" = -5 },
+  { monitor."DELL U2723QE" = 0 },
   5,
 ]
 vertical = [
   { monitor."Built-in Retina Display" = 0 },
-  # { monitor."DELL U2723QE" = -5 },
-  -5,
+  { monitor."DELL U2723QE" = 0 },
+  5,
 ]
 
 [gaps.outer]
-top = [{ monitor."LG SDQHD" = 10 }, 0]
-right = [{ monitor."LG SDQHD" = 10 }, 0]
-bottom = [{ monitor."LG SDQHD" = 10 }, 0]
-left = [{ monitor."LG SDQHD" = 10 }, 0]
+top = [
+  { monitor."LG SDQHD" = 10 },
+  { monitor."DELL U2723QE" = 0 },
+  2,
+]
+right = [
+  { monitor."LG SDQHD" = 10 },
+  { monitor."DELL U2723QE" = 0 },
+  2,
+]
+bottom = [
+  { monitor."LG SDQHD" = 10 },
+  { monitor."DELL U2723QE" = 0 },
+  2,
+]
+left = [
+  { monitor."LG SDQHD" = 10 },
+  { monitor."DELL U2723QE" = 0 },
+  2,
+]
 
 [key-mapping]
 preset = "qwerty"
@@ -276,3 +302,7 @@ run = "layout floating"
 if.app-id = "com.mitchellh.ghostty"
 if.window-title-regex-substring = "Configuration Errors"
 run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.tinyspeck.slackmacgap"
+run = ["move-node-to-workspace S"]

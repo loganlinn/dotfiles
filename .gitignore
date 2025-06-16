@@ -27,6 +27,7 @@ TAGS
 .calva
 .classpath
 .cpcache
+.conform.*
 .devenv*
 .dir-locals-2
 .direnv

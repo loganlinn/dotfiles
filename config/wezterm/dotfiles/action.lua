@@ -67,6 +67,22 @@ local OPPOSITE_DIRECTION = setmetatable({
 })
 local POPUP_DIRECTION = "Right"
 
+local function vim_direction(direction, silent)
+  direction = direction:lower()
+  if direction == "left" then
+    return "h"
+  elseif direction == "right" then
+    return "l"
+  elseif direction == "up" then
+    return "k"
+  elseif direction == "down" then
+    return "j"
+  end
+  if not silent then
+    error("invalid direction: " .. tostring(direction))
+  end
+end
+
 local function activate_pane(window, pane, from_pane)
   assert(pane and pane.pane_id and pane.activate)
   wezterm.emit(ACTIVATE_PANE_EVENT, window, pane, from_pane)
@@ -149,17 +165,33 @@ M.activate_direction = function(direction)
     local tab = pane:tab() or window:active_tab()
     local panes = tab:panes()
     local target_pane = tab:get_pane_direction(direction)
+
     if target_pane then
       activate_pane(window, target_pane, pane)
-    elseif is_same_pane(pane, panes[1]) then
-      if direction == POPUP_DIRECTION or #panes == 1 then
-        spawn_popup(window, pane)
-      elseif direction == "Left" then
-        activate_pane(window, tab:get_pane_direction("Prev"), pane)
-      end
     else
-      activate_pane(window, panes[1], pane)
-      set_zoomed(tab, true)
+      -- -- TODO decouple via events
+      -- if util.is_darwin() then
+      --   local mod = "alt"
+      --   local cmd = {
+      --     "/opt/homebrew/bin/aerospace",
+      --     "trigger-binding",
+      --     "--mode",
+      --     "main",
+      --     ("alt-" .. vim_direction(direction)),
+      --   }
+      --   log.info(cmd)
+      --   wezterm.background_child_process(cmd)
+      -- end
+      if is_same_pane(pane, panes[1]) then
+        if direction == POPUP_DIRECTION or #panes == 1 then
+          spawn_popup(window, pane)
+        elseif direction == "Left" then
+          activate_pane(window, tab:get_pane_direction("Prev"), pane)
+        end
+      else
+        activate_pane(window, panes[1], pane)
+        set_zoomed(tab, true)
+      end
     end
   end)
 end

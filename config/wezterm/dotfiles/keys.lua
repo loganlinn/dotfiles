@@ -1,31 +1,40 @@
 local wezterm = require("wezterm")
-local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
+
 local action = require("dotfiles.action")
+
 local NONE = [[NONE]]
 local SHIFT = [[SHIFT]]
 local SUPER = [[SUPER]]
 local LEADER = [[LEADER]]
 local MOD = [[CTRL|SHIFT]]
+local MOD2 = [[CTRL|SHIFT|SUPER]]
 
-local M = {}
+local M = {
+  NONE = NONE,
+  SHIFT = SHIFT,
+  SUPER = SUPER,
+  LEADER = LEADER,
+  MOD = MOD,
+}
 
 ---@alias KeySpec Key|[string, string, KeyAssignment]
 
 ---@param config Config
 ---@return Config
 function M.apply_to_config(config)
-  workspace_switcher.apply_to_config(config)
-
   config.debug_key_events = "1" == os.getenv("WEZTERM_DEBUG_KEY_EVENTS")
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
+  config.leader = {
+    mods = [[CTRL|SHIFT]],
+    key = "Space",
+    timeout_milliseconds = math.maxinteger,
+  }
 
-  config.leader = { mods = [[CTRL|SHIFT]], key = "Space", timeout_milliseconds = math.maxinteger }
-
-  M.bind(config, {
+  local bindings = {
     { MOD, "H", action.activate_direction("Left") },
     { MOD, "J", action.activate_direction("Down") },
     { MOD, "K", action.activate_direction("Up") },
@@ -38,7 +47,7 @@ function M.apply_to_config(config)
     { SUPER, "w", wezterm.action.CloseCurrentPane({ confirm = false }) },
     { SUPER, "q", action.quit_input_selector },
     { MOD, "Enter", action.split_pane() },
-    { MOD, "~", action.toggle_popup_pane },
+    { MOD, "~", wezterm.action.ShowDebugOverlay },
     { MOD, "R", wezterm.action.RotatePanes("CounterClockwise") },
     { MOD, "S", wezterm.action.PaneSelect({ mode = "SwapWithActive" }) },
     { MOD, "Z", wezterm.action.TogglePaneZoomState },
@@ -65,27 +74,8 @@ function M.apply_to_config(config)
     { SUPER, "PageUp", wezterm.action.ToggleAlwaysOnTop },
     -- TODO use global justfile
     { MOD, "&", action.just({ args = { "--choose" } }) },
-    {
-      MOD,
-      "*",
-      action.just({
-        args = {
-          "--justfile",
-          wezterm.home_dir .. "/.dotfiles/justfile",
-          "switch",
-        },
-      }),
-    },
     { MOD, "9", wezterm.action.SwitchWorkspaceRelative(-1) },
     { MOD, "0", wezterm.action.SwitchWorkspaceRelative(1) },
-    {
-      LEADER,
-      "Space",
-      workspace_switcher.switch_workspace({
-        extra_args = " | rg -x -e ~'/src/([^/]+/?){3}'",
-      }),
-    },
-    { LEADER, "Tab", workspace_switcher.switch_to_prev_workspace() },
     { LEADER, ":", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|LAUNCH_MENU_ITEMS" }) },
     { LEADER, "?", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|KEY_ASSIGNMENTS" }) },
     { LEADER, ".", action.rename_workspace },
@@ -148,8 +138,6 @@ function M.apply_to_config(config)
     { LEADER, "k", wezterm.action.SplitPane({ direction = "Up", size = { Cells = 20 } }) },
     { LEADER, "l", wezterm.action.SplitPane({ direction = "Right", size = { Cells = 100 } }) },
 
-    { LEADER, "r", require("dotfiles.action.yarn-run").input_selector },
-
     { MOD, "p", wezterm.action.ActivateKeyTable({ name = "Select" }) },
     Select = {
       { NONE, "e", action.quick_open },
@@ -180,7 +168,16 @@ function M.apply_to_config(config)
       { NONE, "k", wezterm.action.SplitPane({ top_level = true, direction = "Up" }) },
       { NONE, "l", wezterm.action.SplitPane({ top_level = true, direction = "Right" }) },
     },
-  })
+  }
+  for i = 1, 8 do
+    table.insert(bindings, {
+      key = tostring(i),
+      mods = MOD,
+      action = wezterm.action.ActivateWindow(i - 1),
+    })
+  end
+
+  M.bind(config, bindings)
 
   -- Mouse bindings
   if wezterm.gui then

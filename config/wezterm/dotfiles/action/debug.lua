@@ -12,10 +12,10 @@ M.DumpPane = wezterm.action_callback(function(window, pane)
 end)
 
 M.ToggleDebugKeyEvents = wezterm.action_callback(function(window, _)
-  apply_to_config_overrides(function(overrides)
-    overrides.debug_key_events = not overrides.debug_key_events
-    return overrides
-  end, window)
+  local overrides = window:get_config_overrides()
+  window:set_config_overrides({
+    debug_key_events = not overrides.debug_key_events,
+  })
 end)
 
 return M
