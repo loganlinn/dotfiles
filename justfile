@@ -58,9 +58,10 @@ rebuild *args:
     set -eo pipefail
     cmd=(darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "$@")
     echo -e "{{ style("command") }}${cmd[*]}{{ NORMAL }}"
-    "${cmd[@]}" | tee "$0.log"
-    rev=$(just snapshot "darwin-rebuild ${args[*]}")
-    git notes add --allow-empty -F "$0.log" "${rev?}"
+    "${cmd[@]}"
+    # "${cmd[@]}" | tee "$0.log"
+    # rev=$(just snapshot "darwin-rebuild ${args[*]}")
+    # git notes add --allow-empty -F "$0.log" "${rev?}"
 
 # Build system flake
 [group('nix')]
@@ -70,9 +71,10 @@ rebuild *args:
     set -eo pipefail
     cmd=(nixos-rebuild "$@")
     echo -e "{{ style("command") }}${cmd[*]}{{ NORMAL }}"
-    "${cmd[@]}" | tee "$0.log"
-    rev=$(just snapshot "darwin-rebuild {{ args }}")
-    git notes add --allow-empty -F "$0.log" "${rev?}"
+    "${cmd[@]}"
+    # "${cmd[@]}" | tee "$0.log"
+    # rev=$(just snapshot "darwin-rebuild {{ args }}")
+    # git notes add --allow-empty -F "$0.log" "${rev?}"
 
 [group('nix')]
 [macos]
