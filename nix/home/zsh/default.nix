@@ -167,6 +167,8 @@ with lib;
         [[ ! -v XDG_DATA_HOME ]] ||
           fpath+=("$XDG_DATA_HOME/zsh/functions")
 
+        bindkey "^[[1;3C" forward-word
+        bindkey "^[[1;3D" backward-word
         bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
         bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
         bindkey -s '^G~' ' "$(git rev-parse --show-toplevel)"\t'
