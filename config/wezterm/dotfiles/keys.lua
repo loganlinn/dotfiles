@@ -2,12 +2,18 @@ local wezterm = require("wezterm")
 
 local action = require("dotfiles.action")
 
+local function join_mods(mods)
+  return table.concat(mods, "|")
+end
+
 local NONE = [[NONE]]
+local CTRL = [[CTRL]]
 local SHIFT = [[SHIFT]]
-local SUPER = [[SUPER]]
 local LEADER = [[LEADER]]
-local MOD = [[CTRL|SHIFT]]
-local MOD2 = [[CTRL|SHIFT|SUPER]]
+local SUPER = [[SUPER]]
+local MOD = join_mods({ CTRL, SHIFT })
+local SHIFT_SUPER = join_mods({ SHIFT, SUPER })
+local SHIFT_LEADER = join_mods({ SHIFT, LEADER })
 
 local M = {
   NONE = NONE,
@@ -29,7 +35,7 @@ function M.apply_to_config(config)
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
   config.leader = {
-    mods = [[CTRL|SHIFT]],
+    mods = MOD,
     key = "Space",
     timeout_milliseconds = math.maxinteger,
   }
@@ -51,7 +57,7 @@ function M.apply_to_config(config)
     { MOD, "R", wezterm.action.RotatePanes("CounterClockwise") },
     { MOD, "S", wezterm.action.PaneSelect({ mode = "SwapWithActive" }) },
     { MOD, "Z", wezterm.action.TogglePaneZoomState },
-    { [[LEADER|SHIFT]], "T", action.move_pane_to_new_tab({ activate = true }) },
+    { SHIFT_LEADER, "T", action.move_pane_to_new_tab({ activate = true }) },
     { MOD, "B", wezterm.action.PaneSelect({ mode = "MoveToNewWindow" }) },
     { SUPER, "1", wezterm.action.ActivateTab(0) },
     { SUPER, "2", wezterm.action.ActivateTab(1) },
@@ -62,6 +68,7 @@ function M.apply_to_config(config)
     { SUPER, "7", wezterm.action.ActivateTab(6) },
     { SUPER, "8", wezterm.action.ActivateTab(7) },
     { SUPER, "9", wezterm.action.ActivateTab(8) },
+    { SUPER, "0", wezterm.action.ActivateTab(9) },
     { MOD, "T", wezterm.action.SpawnTab("CurrentPaneDomain") },
     { MOD, "<", wezterm.action.MoveTabRelative(-1) },
     { MOD, ">", wezterm.action.MoveTabRelative(1) },
@@ -87,15 +94,15 @@ function M.apply_to_config(config)
     { MOD, "F", wezterm.action.QuickSelect },
     { MOD, "E", action.quick_open }, -- https://loganlinn.com
     { MOD, "o", wezterm.action.ActivateCommandPalette },
-    { [[SUPER|SHIFT]], "E", action.browse_current_working_dir },
+    { SHIFT_SUPER, "E", action.browse_current_working_dir },
     { MOD, "Home", wezterm.action.ScrollToTop },
     { MOD, "PageDown", wezterm.action.ScrollToPrompt(1) },
     { MOD, "PageUp", wezterm.action.ScrollToPrompt(0) },
     { MOD, "End", wezterm.action.ScrollToBottom },
     { SUPER, "f", wezterm.action.Search({ CaseSensitiveString = "" }) },
-    { SUPER, "0", wezterm.action.ResetFontSize },
-    { SUPER, "-", wezterm.action.DecreaseFontSize },
-    { SUPER, "=", wezterm.action.IncreaseFontSize },
+    { SHIFT_SUPER, "0", wezterm.action.ResetFontSize },
+    { SHIFT_SUPER, "-", wezterm.action.DecreaseFontSize },
+    { SHIFT_SUPER, "=", wezterm.action.IncreaseFontSize },
     { SUPER, "DownArrow", wezterm.action.AdjustPaneSize({ "Down", 15 }) },
     { SUPER, "UpArrow", wezterm.action.AdjustPaneSize({ "Up", 15 }) },
     { SUPER, "Home", wezterm.action.ScrollToTop },
