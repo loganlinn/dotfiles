@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: create-wrapper [OPTIONS] <executable> <wrapper-output-path>
+
+Create a wrapper script using nixpkgs makeWrapper.
+
+ARGUMENTS:
+    <executable>         Path to the executable to wrap
+    <wrapper-output-path> Path where the wrapper script will be created
+
+OPTIONS:
+    --prefix NAME VALUE       Prefix environment variable NAME with VALUE
+    --suffix NAME VALUE       Suffix environment variable NAME with VALUE  
+    --set NAME VALUE          Set environment variable NAME to VALUE
+    --set-default NAME VALUE  Set environment variable NAME to VALUE if unset
+    --unset NAME              Unset environment variable NAME
+    --run COMMAND             Run COMMAND before the executable
+    --add-flags FLAGS         Add FLAGS to the executable command line
+    --append-flags FLAGS      Append FLAGS to the executable command line
+    --help, -h                Show this help message
+
+EXAMPLES:
+    create-wrapper /usr/bin/node ./my-node-wrapper --set NODE_ENV production
+    create-wrapper ./app ./wrapped-app --prefix PATH : /opt/bin --add-flags "--verbose"
+EOF
+}
+
+cleanup() {
+  if [[ -n "${TMPDIR_WRAPPER:-}" && -d "$TMPDIR_WRAPPER" ]]; then
+    rm -rf "$TMPDIR_WRAPPER"
+  fi
+}
+
+trap cleanup EXIT INT TERM
+
+main() {
+  local executable=""
+  local output_path=""
+  local wrapper_args=()
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    --help | -h)
+      usage
+      exit 0
+      ;;
+    --prefix | --suffix | --set | --set-default)
+      if [[ $# -lt 3 ]]; then
+        echo "Error: $1 requires NAME and VALUE arguments" >&2
+        exit 1
+      fi
+      wrapper_args+=("$1" "$2" "$3")
+      shift 3
+      ;;
+    --unset | --run | --add-flags | --append-flags)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: $1 requires an argument" >&2
+        exit 1
+      fi
+      wrapper_args+=("$1" "$2")
+      shift 2
+      ;;
+    -*)
+      echo "Error: Unknown option $1" >&2
+      usage >&2
+      exit 1
+      ;;
+    *)
+      if [[ -z "$executable" ]]; then
+        executable="$1"
+      elif [[ -z "$output_path" ]]; then
+        output_path="$1"
+      else
+        echo "Error: Too many positional arguments" >&2
+        usage >&2
+        exit 1
+      fi
+      shift
+      ;;
+    esac
+  done
+
+  if [[ -z "$executable" || -z "$output_path" ]]; then
+    echo "Error: Both executable and output path are required" >&2
+    usage >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$executable" ]]; then
+    echo "Error: Executable '$executable' does not exist" >&2
+    exit 1
+  fi
+
+  if [[ ! -x "$executable" ]]; then
+    echo "Error: '$executable' is not executable" >&2
+    exit 1
+  fi
+
+  create_wrapper_with_nix "$executable" "$output_path" "${wrapper_args[@]}"
+}
+
+create_wrapper_with_nix() {
+  local executable="$1"
+  local output_path="$2"
+  shift 2
+  local wrapper_args=("$@")
+
+  TMPDIR_WRAPPER=$(mktemp -d)
+  local nix_file="$TMPDIR_WRAPPER/wrapper.nix"
+  local result_path="$TMPDIR_WRAPPER/result"
+
+  local executable_abs
+  executable_abs=$(realpath "$executable")
+
+  local output_abs
+  output_abs=$(realpath -m "$output_path")
+  local output_dir
+  output_dir=$(dirname "$output_abs")
+
+  if [[ ! -d "$output_dir" ]]; then
+    mkdir -p "$output_dir"
+  fi
+
+  cat >"$nix_file" <<'EOF'
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  executable = builtins.getEnv "WRAPPER_EXECUTABLE";
+  wrapperArgs = builtins.fromJSON (builtins.getEnv "WRAPPER_ARGS");
+in
+
+pkgs.stdenv.mkDerivation {
+  name = "wrapper-generator";
+  
+  buildInputs = [ pkgs.makeWrapper ];
+  
+  phases = [ "buildPhase" ];
+  
+  buildPhase = ''
+    mkdir -p $out/bin
+    makeWrapper ${pkgs.lib.escapeShellArg executable} $out/bin/wrapper ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}
+  '';
+}
+EOF
+
+  local wrapper_args_json
+  wrapper_args_json=$(printf '%s\n' "${wrapper_args[@]}" | jq -R . | jq -s .)
+
+  WRAPPER_EXECUTABLE="$executable_abs" \
+    WRAPPER_ARGS="$wrapper_args_json" \
+    nix-build "$nix_file" -o "$result_path" --no-out-link
+
+  if [[ ! -f "$result_path/bin/wrapper" ]]; then
+    echo "Error: Failed to generate wrapper" >&2
+    exit 1
+  fi
+
+  cp "$result_path/bin/wrapper" "$output_path"
+  chmod +x "$output_path"
+
+  echo "Wrapper created: $output_path"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi

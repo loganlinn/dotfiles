@@ -1,10 +1,13 @@
 {
+  self,
   config,
   pkgs,
   ...
-}: let
+}:
+let
   inherit (config.home) homeDirectory;
-in {
+in
+{
   imports = [
     ./passage.nix
     ./age-op.nix

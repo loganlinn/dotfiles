@@ -13,6 +13,7 @@
     ../modules/emacs-plus
     ../modules/hammerspoon
     ../modules/kanata
+    ../modules/opnix
     ../modules/podman.nix
     ../modules/sunbeam
     ../modules/terraform.nix
@@ -25,6 +26,7 @@
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
+        self.homeModules.opnix
         ../../nix/home/aider.nix
         ../../nix/home/asciinema.nix
         ../../nix/home/dev
@@ -90,6 +92,12 @@
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
 
+  services.onepassword-secrets = {
+    enable = true;
+    users = [ "logan" ];
+    # configFile = ./secrets.json;
+    configFile = "${config.my.flakeDirectory}/darwin/logamma/secrets.json";
+  };
   services.kanata.enable = false;
   services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
 
@@ -99,23 +107,25 @@
       "yugabyte/tap"
     ];
     brews = [
-      "abhinav/tap/restack"
       "alt"
       "borders"
+      "copilot-cli"
       "duti"
       "kanata"
+      "lazyjournal"
       "ldcli"
       "localstack-cli"
       "nss" # used by mkcert
       "pngpaste"
+      "podlet"
+      "podman"
       "podman-compose"
-      "podman-desktop"
+      "podman-tui"
+      "restack"
       "sketchybar"
       "sunbeam"
       "terraform-ls"
-      "yugabyte/tap/ybm"
-      "copilot-cli"
-      "ddcctrl"
+      "ybm"
     ];
     casks = [
       "1password-cli"
@@ -123,9 +133,9 @@
       "ghostty"
       "hiddenbar"
       "obs"
+      "podman-desktop"
       "tailscale"
       # "1password" # currently installed manually
-      # "obsidian" # currently installed manually
     ];
   };
 
