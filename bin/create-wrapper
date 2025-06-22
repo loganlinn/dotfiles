@@ -23,13 +23,15 @@ OPTIONS:
     --run COMMAND             Run COMMAND before the executable
     --add-flags FLAGS         Add FLAGS to the executable command line
     --append-flags FLAGS      Append FLAGS to the executable command line
+    --impure                  Allow executable to be resolved from PATH at runtime
     --help, -h                Show this help message
 
 EXAMPLES:
     create-wrapper /usr/bin/node ./my-node-wrapper --set NODE_ENV production
     create-wrapper ./app ./wrapped-app --prefix PATH : /opt/bin --add-flags "--verbose"
     create-wrapper /usr/bin/app ./secure-app --set-from-op API_KEY "op://Private/API Keys/api_key"
-    create-wrapper /usr/bin/app ./secure-app --set-default-from-op DB_PASSWORD "op://Private/Database/password"
+    create-wrapper node ./my-node-wrapper --impure --set NODE_ENV production
+    create-wrapper git ./my-git --impure --set-from-op GH_TOKEN "op://Private/GitHub/token"
 EOF
 }
 
@@ -46,12 +48,17 @@ main() {
   local output_path=""
   local wrapper_args=()
   local op_secrets=()
+  local impure_mode=false
 
   while [[ $# -gt 0 ]]; do
     case $1 in
     --help | -h)
       usage
       exit 0
+      ;;
+    --impure)
+      impure_mode=true
+      shift
       ;;
     --prefix | --suffix | --set | --set-default)
       if [[ $# -lt 3 ]]; then
@@ -107,23 +114,32 @@ main() {
     exit 1
   fi
 
-  if [[ ! -f "$executable" ]]; then
-    echo "Error: Executable '$executable' does not exist" >&2
-    exit 1
+  if [[ "$impure_mode" == "true" ]]; then
+    # In impure mode, allow command names that will be resolved from PATH at runtime
+    if ! command -v "$executable" >/dev/null 2>&1; then
+      echo "Warning: Command '$executable' not found in current PATH. Wrapper will attempt to resolve at runtime." >&2
+    fi
+  else
+    # Default strict mode: require absolute path to existing executable
+    if [[ ! -f "$executable" ]]; then
+      echo "Error: Executable '$executable' does not exist" >&2
+      echo "Use --impure flag to allow runtime PATH resolution" >&2
+      exit 1
+    fi
+    if [[ ! -x "$executable" ]]; then
+      echo "Error: '$executable' is not executable" >&2
+      exit 1
+    fi
   fi
 
-  if [[ ! -x "$executable" ]]; then
-    echo "Error: '$executable' is not executable" >&2
-    exit 1
-  fi
-
-  create_wrapper_with_nix "$executable" "$output_path" "${wrapper_args[@]}" "${op_secrets[@]}"
+  create_wrapper_with_nix "$executable" "$output_path" "$impure_mode" "${wrapper_args[@]}" "${op_secrets[@]}"
 }
 
 create_wrapper_with_nix() {
   local executable="$1"
   local output_path="$2"
-  shift 2
+  local impure_mode="$3"
+  shift 3
 
   local wrapper_args=()
   local op_secrets=()
@@ -144,8 +160,12 @@ create_wrapper_with_nix() {
   local nix_file="$TMPDIR_WRAPPER/wrapper.nix"
   local result_path="$TMPDIR_WRAPPER/result"
 
-  local executable_abs
-  executable_abs=$(realpath "$executable")
+  local executable_for_nix
+  if [[ "$impure_mode" == "true" ]]; then
+    executable_for_nix="$executable"
+  else
+    executable_for_nix=$(realpath "$executable")
+  fi
 
   local output_abs
   output_abs=$(realpath -m "$output_path")
@@ -161,6 +181,7 @@ create_wrapper_with_nix() {
 
 let
   executable = builtins.getEnv "WRAPPER_EXECUTABLE";
+  impureMode = builtins.getEnv "WRAPPER_IMPURE" == "true";
   wrapperArgs = builtins.fromJSON (builtins.getEnv "WRAPPER_ARGS");
   opSecrets = builtins.fromJSON (builtins.getEnv "OP_SECRETS");
   
@@ -187,7 +208,11 @@ pkgs.stdenv.mkDerivation {
   
   buildPhase = ''
     mkdir -p $out/bin
-    makeWrapper ${pkgs.lib.escapeShellArg executable} $out/bin/wrapper ${opCommands} ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}
+    ${if impureMode then 
+      "makeWrapper ${pkgs.lib.escapeShellArg "$(command -v ${pkgs.lib.escapeShellArg executable} || echo ${pkgs.lib.escapeShellArg executable})"} $out/bin/wrapper ${opCommands} ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}"
+    else
+      "makeWrapper ${pkgs.lib.escapeShellArg executable} $out/bin/wrapper ${opCommands} ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}"
+    }
   '';
 }
 EOF
@@ -201,7 +226,8 @@ EOF
     op_secrets_json='[]'
   fi
 
-  WRAPPER_EXECUTABLE="$executable_abs" \
+  WRAPPER_EXECUTABLE="$executable_for_nix" \
+    WRAPPER_IMPURE="$impure_mode" \
     WRAPPER_ARGS="$wrapper_args_json" \
     OP_SECRETS="$op_secrets_json" \
     nix-build "$nix_file" -o "$result_path" --no-out-link
