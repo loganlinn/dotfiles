@@ -17,6 +17,8 @@ OPTIONS:
     --suffix NAME VALUE       Suffix environment variable NAME with VALUE  
     --set NAME VALUE          Set environment variable NAME to VALUE
     --set-default NAME VALUE  Set environment variable NAME to VALUE if unset
+    --set-from-op NAME OPREF  Set environment variable NAME from 1Password reference
+    --set-default-from-op NAME OPREF  Set environment variable NAME from 1Password reference if unset
     --unset NAME              Unset environment variable NAME
     --run COMMAND             Run COMMAND before the executable
     --add-flags FLAGS         Add FLAGS to the executable command line
@@ -26,6 +28,8 @@ OPTIONS:
 EXAMPLES:
     create-wrapper /usr/bin/node ./my-node-wrapper --set NODE_ENV production
     create-wrapper ./app ./wrapped-app --prefix PATH : /opt/bin --add-flags "--verbose"
+    create-wrapper /usr/bin/app ./secure-app --set-from-op API_KEY "op://Private/API Keys/api_key"
+    create-wrapper /usr/bin/app ./secure-app --set-default-from-op DB_PASSWORD "op://Private/Database/password"
 EOF
 }
 
@@ -41,6 +45,7 @@ main() {
   local executable=""
   local output_path=""
   local wrapper_args=()
+  local op_secrets=()
 
   while [[ $# -gt 0 ]]; do
     case $1 in
@@ -54,6 +59,18 @@ main() {
         exit 1
       fi
       wrapper_args+=("$1" "$2" "$3")
+      shift 3
+      ;;
+    --set-from-op | --set-default-from-op)
+      if [[ $# -lt 3 ]]; then
+        echo "Error: $1 requires NAME and 1PASSWORD_REFERENCE arguments" >&2
+        exit 1
+      fi
+      if [[ ! "$3" =~ ^op:// ]]; then
+        echo "Error: 1Password reference must start with 'op://'" >&2
+        exit 1
+      fi
+      op_secrets+=("$1" "$2" "$3")
       shift 3
       ;;
     --unset | --run | --add-flags | --append-flags)
@@ -100,14 +117,28 @@ main() {
     exit 1
   fi
 
-  create_wrapper_with_nix "$executable" "$output_path" "${wrapper_args[@]}"
+  create_wrapper_with_nix "$executable" "$output_path" "${wrapper_args[@]}" "${op_secrets[@]}"
 }
 
 create_wrapper_with_nix() {
   local executable="$1"
   local output_path="$2"
   shift 2
-  local wrapper_args=("$@")
+
+  local wrapper_args=()
+  local op_secrets=()
+  local parsing_secrets=false
+
+  for arg in "$@"; do
+    if [[ "$arg" == "--set-from-op" || "$arg" == "--set-default-from-op" ]]; then
+      parsing_secrets=true
+      op_secrets+=("$arg")
+    elif [[ "$parsing_secrets" == true ]]; then
+      op_secrets+=("$arg")
+    else
+      wrapper_args+=("$arg")
+    fi
+  done
 
   TMPDIR_WRAPPER=$(mktemp -d)
   local nix_file="$TMPDIR_WRAPPER/wrapper.nix"
@@ -131,6 +162,20 @@ create_wrapper_with_nix() {
 let
   executable = builtins.getEnv "WRAPPER_EXECUTABLE";
   wrapperArgs = builtins.fromJSON (builtins.getEnv "WRAPPER_ARGS");
+  opSecrets = builtins.fromJSON (builtins.getEnv "OP_SECRETS");
+  
+  # Generate --run commands for 1Password secret resolution
+  opCommands = builtins.concatStringsSep " " (
+    pkgs.lib.imap0 (i: secret: 
+      let
+        flag = builtins.elemAt secret 0;
+        varName = builtins.elemAt secret 1;
+        opRef = builtins.elemAt secret 2;
+        setType = if flag == "--set-from-op" then "--set" else "--set-default";
+      in
+        "--run ${pkgs.lib.escapeShellArg "export ${varName}=$(op read ${pkgs.lib.escapeShellArg opRef})"}"
+    ) opSecrets
+  );
 in
 
 pkgs.stdenv.mkDerivation {
@@ -142,16 +187,23 @@ pkgs.stdenv.mkDerivation {
   
   buildPhase = ''
     mkdir -p $out/bin
-    makeWrapper ${pkgs.lib.escapeShellArg executable} $out/bin/wrapper ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}
+    makeWrapper ${pkgs.lib.escapeShellArg executable} $out/bin/wrapper ${opCommands} ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}
   '';
 }
 EOF
 
-  local wrapper_args_json
+  local wrapper_args_json op_secrets_json
   wrapper_args_json=$(printf '%s\n' "${wrapper_args[@]}" | jq -R . | jq -s .)
+
+  if [[ ${#op_secrets[@]} -gt 0 ]]; then
+    op_secrets_json=$(printf '%s\n' "${op_secrets[@]}" | jq -R . | jq -s . | jq '[. as $arr | range(0; length; 3) | [$arr[.], $arr[.+1], $arr[.+2]]]')
+  else
+    op_secrets_json='[]'
+  fi
 
   WRAPPER_EXECUTABLE="$executable_abs" \
     WRAPPER_ARGS="$wrapper_args_json" \
+    OP_SECRETS="$op_secrets_json" \
     nix-build "$nix_file" -o "$result_path" --no-out-link
 
   if [[ ! -f "$result_path/bin/wrapper" ]]; then
