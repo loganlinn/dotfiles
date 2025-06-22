@@ -26,6 +26,7 @@ TAGS
 .cache
 .calva
 .classpath
+.claude/*.local.*
 .cpcache
 .conform.*
 .devenv*
