@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+[[ -z "${TRACE-}" ]] || set -x
 
 usage() {
   cat <<'EOF'
@@ -177,62 +178,68 @@ create_wrapper_with_nix() {
   fi
 
   cat >"$nix_file" <<'EOF'
-{ pkgs ? import <nixpkgs> {}
-, executable
-, impureMode ? false
-, wrapperArgs ? []
-, opSecrets ? []
+{
+  pkgs ? import <nixpkgs> { },
+  executable,
+  impureMode ? false,
+  wrapperArgsJson ? "[]",
+  opSecretsJson ? "[]",
 }:
-
 let
-  # Generate --run commands for 1Password secret resolution
-  opCommands = builtins.concatStringsSep " " (
-    pkgs.lib.imap0 (i: secret: 
+  inherit (builtins) elemAt fromJSON;
+  inherit (pkgs.lib) concatStringsSep escapeShellArg imap0;
+  wrapperArgs = fromJSON wrapperArgsJson;
+  opSecrets = fromJSON opSecretsJson;
+  opCommands = concatStringsSep " " (
+    imap0 (
+      i: secret:
       let
-        flag = builtins.elemAt secret 0;
-        varName = builtins.elemAt secret 1;
-        opRef = builtins.elemAt secret 2;
+        flag = elemAt secret 0;
+        varName = elemAt secret 1;
+        opRef = elemAt secret 2;
         setType = if flag == "--set-from-op" then "--set" else "--set-default";
       in
-        "--run ${pkgs.lib.escapeShellArg "export ${varName}=$(op read ${pkgs.lib.escapeShellArg opRef})"}"
+      "--run ${escapeShellArg "export ${varName}=$(op read ${escapeShellArg opRef})"}"
     ) opSecrets
   );
+  makeWrapperCommand =
+    if impureMode then
+      "makeWrapper ${escapeShellArg "$(command -v ${escapeShellArg executable} || echo ${escapeShellArg executable})"} $out/bin/wrapper ${opCommands} ${concatStringsSep " " (map escapeShellArg wrapperArgs)}"
+    else
+      "makeWrapper ${escapeShellArg executable} $out/bin/wrapper ${opCommands} ${concatStringsSep " " (map escapeShellArg wrapperArgs)}";
 in
-
 pkgs.stdenv.mkDerivation {
   name = "wrapper-generator";
-  
+
   buildInputs = [ pkgs.makeWrapper ];
-  
+
   phases = [ "buildPhase" ];
-  
+
   buildPhase = ''
     mkdir -p $out/bin
-    ${if impureMode then 
-      "makeWrapper ${pkgs.lib.escapeShellArg "$(command -v ${pkgs.lib.escapeShellArg executable} || echo ${pkgs.lib.escapeShellArg executable})"} $out/bin/wrapper ${opCommands} ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}"
-    else
-      "makeWrapper ${pkgs.lib.escapeShellArg executable} $out/bin/wrapper ${opCommands} ${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg wrapperArgs)}"
-    }
+    ${makeWrapperCommand}
   '';
 }
 EOF
 
   local wrapper_args_json op_secrets_json
-  wrapper_args_json=$(printf '%s\n' "${wrapper_args[@]}" | jq -R . | jq -s .)
+  wrapper_args_json=$(printf '%s\n' "${wrapper_args[@]}" | jq -R . | jq -sc .)
 
   if [[ ${#op_secrets[@]} -gt 0 ]]; then
-    op_secrets_json=$(printf '%s\n' "${op_secrets[@]}" | jq -R . | jq -s . | jq '[. as $arr | range(0; length; 3) | [$arr[.], $arr[.+1], $arr[.+2]]]')
+    op_secrets_json=$(printf '%s\n' "${op_secrets[@]}" | jq -R . | jq -s . | jq -c '[. as $arr | range(0; length; 3) | [$arr[.], $arr[.+1], $arr[.+2]]]')
   else
     op_secrets_json='[]'
   fi
 
+  cat >&2 "$nix_file"
+
   nix build \
     --file "$nix_file" \
     --out-link "$result_link" \
-    --arg executable "\"$executable_for_nix\"" \
+    --argstr executable "$executable_for_nix" \
     --arg impureMode "$impure_mode" \
-    --arg wrapperArgs "$wrapper_args_json" \
-    --arg opSecrets "$op_secrets_json"
+    --argstr wrapperArgsJson "$wrapper_args_json" \
+    --argstr opSecretsJson "$op_secrets_json"
 
   if [[ ! -f "$result_link/bin/wrapper" ]]; then
     echo "Error: Failed to generate wrapper" >&2

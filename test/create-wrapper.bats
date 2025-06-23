@@ -109,25 +109,25 @@ check_jq() {
 }
 
 @test "create-wrapper validates --set requires name and value" {
-    run "$CREATE_WRAPPER" --set NAME "/bin/echo" "$TEST_TEMP_DIR/wrapper"
+    run "$CREATE_WRAPPER" "/bin/echo" "$TEST_TEMP_DIR/wrapper" --set NAME
     [ "$status" -eq 1 ]
     [[ "$output" =~ "Error: --set requires NAME and VALUE arguments" ]]
 }
 
 @test "create-wrapper validates --prefix requires name and value" {
-    run "$CREATE_WRAPPER" --prefix NAME "/bin/echo" "$TEST_TEMP_DIR/wrapper"
+    run "$CREATE_WRAPPER" "/bin/echo" "$TEST_TEMP_DIR/wrapper" --prefix NAME
     [ "$status" -eq 1 ]
     [[ "$output" =~ "Error: --prefix requires NAME and VALUE arguments" ]]
 }
 
 @test "create-wrapper validates --run requires argument" {
-    run "$CREATE_WRAPPER" --run "/bin/echo" "$TEST_TEMP_DIR/wrapper"
+    run "$CREATE_WRAPPER" "/bin/echo" "$TEST_TEMP_DIR/wrapper" --run
     [ "$status" -eq 1 ]
     [[ "$output" =~ "Error: --run requires an argument" ]]
 }
 
 @test "create-wrapper validates --set-from-op requires name and reference" {
-    run "$CREATE_WRAPPER" --set-from-op NAME "/bin/echo" "$TEST_TEMP_DIR/wrapper"
+    run "$CREATE_WRAPPER" "/bin/echo" "$TEST_TEMP_DIR/wrapper" --set-from-op NAME
     [ "$status" -eq 1 ]
     [[ "$output" =~ "Error: --set-from-op requires NAME and 1PASSWORD_REFERENCE arguments" ]]
 }
