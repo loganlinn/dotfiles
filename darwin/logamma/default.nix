@@ -15,6 +15,7 @@
     ../modules/kanata
     ../modules/opnix
     ../modules/podman.nix
+    ../modules/sketchybar.nix
     ../modules/sunbeam
     ../modules/terraform.nix
     ../modules/xcode.nix
@@ -49,6 +50,7 @@
       programs.passage.enable = true;
       programs.age-op.enable = true;
       programs.kitty.enable = true;
+      programs.sketchybar.enable = true;
       programs.nixvim = {
         enable = true;
         defaultEditor = true;
@@ -125,7 +127,6 @@
       "podman"
       "podman-compose"
       "podman-tui"
-      "sketchybar"
       "sunbeam"
       "terraform-ls"
       "yugabyte/tap/ybm"
