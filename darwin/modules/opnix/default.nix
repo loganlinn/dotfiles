@@ -6,6 +6,19 @@
   ...
 }:
 let
+  inherit (lib)
+    mkIf
+    mkEnableOption
+    mkDefault
+    mkOption
+    concatStringsSep
+    escapeShellArg
+    getExe'
+    ;
+  chown = getExe' pkgs.coreutils "chown";
+  mkdir = getExe' pkgs.coreutils "mkdir";
+  chmod = getExe' pkgs.coreutils "mkdir";
+
   cfg = config.services.onepassword-secrets;
 
   # Create a new pkgs instance with our overlay
@@ -14,46 +27,45 @@ let
     overlays = [ inputs.opnix.overlays.default ];
   };
 
-  # Create a system group for opnix token access
-  opnixGroup = "onepassword-secrets";
+  userName = "_opnix";
+  groupName = "_opnix";
 in
 {
   options.services.onepassword-secrets = {
-    enable = lib.mkEnableOption "1Password secrets integration";
+    enable = mkEnableOption "1Password secrets integration";
 
-    package = lib.mkOption {
+    package = mkOption {
       type = lib.types.package;
       default = pkgsWithOverlay.opnix;
     };
 
-    tokenFile = lib.mkOption {
+    tokenFile = mkOption {
       type = lib.types.path;
       default = "/etc/opnix-token";
       description = ''
         Path to file containing the 1Password service account token.
-        The file should contain only the token and should have appropriate permissions (640).
-        Will be readable by members of the ${opnixGroup} group.
+        The file should be owned by ${userName}:${groupName} and contain only the token and should have appropriate permissions (640).
 
-        You can set up the token using the opnix CLI:
+        You can set up the token using the 'opnix' CLI:
           opnix token set
           # or with a custom path:
           opnix token set -path /path/to/token
       '';
     };
 
-    configFile = lib.mkOption {
+    configFile = mkOption {
       type = lib.types.path;
       description = "Path to secrets configuration file";
     };
 
-    outputDir = lib.mkOption {
+    outputDir = mkOption {
       type = lib.types.str;
-      default = "/var/lib/opnix/secrets";
+      default = "/run/opnix/secrets";
       description = "Directory to store retrieved secrets";
     };
 
     # New option for users that should have access to the token
-    users = lib.mkOption {
+    users = mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Users that should have access to the 1Password token through group membership";
@@ -64,63 +76,32 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    # Create the opnix group
-    users.groups.${opnixGroup} = {
-      gid = 20000; # Use a high GID to avoid conflicts on macOS
-      description = "1Password secrets access group";
-      members = cfg.users;
+  config = mkIf cfg.enable {
+    users = {
+      users.${userName} = {
+        createHome = false;
+        description = "opnix service user";
+        gid = config.users.groups.${groupName}.gid;
+        home = "/var/lib/opnix";
+        shell = "/bin/bash";
+        uid = mkDefault 544;
+      };
+      groups.${groupName} = {
+        gid = mkDefault 544;
+        description = "opnix service user group";
+        members = cfg.users;
+      };
+      knownUsers = [ userName ];
+      knownGroups = [ groupName ];
     };
 
     environment.systemPackages = [ cfg.package ];
 
-    system.activationScripts.postActivation.text = ''
-      echo "Setting up 1Password secrets..." >&2
-
-      # Ensure output directory exists with correct permissions
-      mkdir -p ${cfg.outputDir}
-      chmod 750 ${cfg.outputDir}
-
-      # Set up token file with correct group permissions if it exists
-      if [ -f ${cfg.tokenFile} ]; then
-        # Ensure token file has correct ownership and permissions
-        chown root:${opnixGroup} ${cfg.tokenFile}
-        chmod 640 ${cfg.tokenFile}
-      fi
-
-      # Validate token file existence and permissions
-      if [ ! -f ${cfg.tokenFile} ]; then
-        echo "Error: Token file ${cfg.tokenFile} does not exist!" >&2
-        echo "Please create it first using: opnix token set -path ${cfg.tokenFile}" >&2
-        exit 1
-      fi
-
-      if [ ! -r ${cfg.tokenFile} ]; then
-        echo "Error: Token file ${cfg.tokenFile} is not readable!" >&2
-        echo "You may need to add your user to the ${opnixGroup} group" >&2
-        exit 1
-      fi
-
-      # Validate token is not empty
-      if [ ! -s ${cfg.tokenFile} ]; then
-        echo "Error: Token file is empty!" >&2
-        exit 1
-      fi
-
-      # Run the secrets retrieval tool
-      ${cfg.package}/bin/opnix secret \
-        -token-file ${cfg.tokenFile} \
-        -config ${cfg.configFile} \
-        -output ${cfg.outputDir} || {
-        echo "Error: Failed to retrieve secrets" >&2
-        exit 1
-      }
-
-      echo "1Password secrets setup completed successfully" >&2
-    '';
-
     launchd.daemons.onepassword-secrets-refresh = {
       serviceConfig = {
+        UserName = userName;
+        GroupName = groupName;
+        EnvironmentVariables.PATH = "${cfg.package}/bin:${config.environment.systemPath}";
         ProgramArguments = [
           "${cfg.package}/bin/opnix"
           "secret"
@@ -131,16 +112,30 @@ in
           "-output"
           (toString cfg.outputDir)
         ];
+        ProcessType = "Interactive";
         StartInterval = 3600;
         RunAtLoad = true;
-        EnvironmentVariables = {
-          PATH = "${cfg.package}/bin:${config.environment.systemPath}";
-        };
-        UserName = "root";
-        GroupName = opnixGroup;
-        StandardOutPath = "/var/log/onepassword-secrets.log";
-        StandardErrorPath = "/var/log/onepassword-secrets.error.log";
+        StandardOutPath = "/var/log/opnix-stdout.log";
+        StandardErrorPath = "/var/log/opnix-stderr.log";
+        WatchPaths = [
+          (toString cfg.tokenFile)
+          (toString cfg.configFile)
+        ];
+        WorkingDirectory = toString cfg.outputDir;
       };
+    };
+
+    system.activationScripts.postActivation = {
+      text = ''
+        echo >&2 "Activating opnix secrets"
+        mkdir -p ${escapeShellArg cfg.outputDir}
+        chown 750 ${escapeShellArg cfg.outputDir}
+        chown ${userName}:${groupName} ${escapeShellArg cfg.tokenFile}
+        chmod 640 ${escapeShellArg cfg.tokenFile}
+        ${concatStringsSep " " (
+          map escapeShellArg config.launchd.daemons.onepassword-secrets-refresh.serviceConfig.ProgramArguments
+        )}
+      '';
     };
   };
 }

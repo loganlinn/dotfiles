@@ -22,6 +22,7 @@
     flake-root.url = "github:srid/flake-root";
     globset.url = "github:pdtpartners/globset";
     nix-colors.url = "github:misterio77/nix-colors";
+    opnix.url = "github:brizzbuzz/opnix";
     wezterm.url = "github:wez/wezterm?dir=nix&rev=4accc376f3411f2cbf4f92ca46f79f7bc47688a1";
 
     hyprland.url = "github:hyprwm/Hyprland";
@@ -93,13 +94,13 @@
             overlays = [
               self.overlays.default
               inputs.emacs-overlay.overlays.default
-              # (_: super: let pkgs = inputs.fenix.inputs.nixpkgs.legacyPackages.${super.system}; in inputs.fenix.overlays.default pkgs pkgs)
             ];
           };
 
           packages = import ./nix/pkgs { inherit pkgs; } // {
             home-manager = inputs'.home-manager.packages.home-manager;
             home-manager-docs-html = inputs'.home-manager.packages.docs-html;
+            opnix = inputs'.opnix.packages.default;
           };
 
           overlayAttrs = {
