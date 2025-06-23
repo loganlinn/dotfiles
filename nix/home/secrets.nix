@@ -1,12 +1,8 @@
 {
-  self,
   config,
   pkgs,
   ...
 }:
-let
-  inherit (config.home) homeDirectory;
-in
 {
   imports = [
     ./passage.nix
@@ -16,6 +12,5 @@ in
   home.packages = with pkgs; [
     age
     age-plugin-yubikey
-    # pass
   ];
 }

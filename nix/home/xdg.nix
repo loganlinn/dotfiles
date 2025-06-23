@@ -1,9 +1,12 @@
 {
+  pkgs,
   config,
   lib,
   ...
 }:
-with lib; let
+with lib;
+let
+  inherit (pkgs.stdenv.targetPlatform) isLinux;
   images = [
     "image/bmp"
     "image/gif"
@@ -303,18 +306,14 @@ with lib; let
     "vim.desktop"
     # "code.desktop"
   ];
-  viewer =
-    [
-      "viewnior.desktop"
-      "imv.desktop"
-    ]
-    ++ browser;
-  player =
-    [
-      "vlc.desktop"
-      "mpv.desktop"
-    ]
-    ++ browser;
+  viewer = [
+    "viewnior.desktop"
+    "imv.desktop"
+  ] ++ browser;
+  player = [
+    "vlc.desktop"
+    "mpv.desktop"
+  ] ++ browser;
   filemanager = [
     "thunar.desktop"
     "dolphin.desktop"
@@ -324,48 +323,65 @@ with lib; let
     "kitty-open.desktop"
     "emacs.desktop"
   ];
-in {
+in
+{
   options.xdg = {
     # a la  https://www.pathname.com/fhs/pub/fhs-2.3.html#USRSRCSOURCECODE2
     userDirs.sourceCode = mkOption {
       type = with types; nullOr (coercedTo path toString str);
       default = "${config.home.homeDirectory}/src";
-      defaultText =
-        literalExpression ''"''${config.home.homeDirectory}/Code"'';
+      defaultText = literalExpression ''"''${config.home.homeDirectory}/Code"'';
       description = "The source code directory.";
     };
   };
 
   config = {
-    xdg.enable = true;
-    xdg.userDirs = {
-      enable = true;
-      extraConfig = {
-        "XDG_SOURCECODE_DIR" = config.xdg.userDirs.sourceCode;
+    xdg = {
+      enable = mkDefault true;
+      dataFile = lib.my.files.sourceSet {
+        dir = ../../local/share/icons/hicolor;
+        base = ../../local/share;
       };
-    };
-    xdg.mimeApps = {
-      enable = true;
-      defaultApplications =
-        (genAttrs urls (_: browser))
-        // (genAttrs code (_: editor))
-        // (genAttrs images (_: viewer))
-        // (genAttrs audioVideo (_: player))
-        // {"inode/directory" = filemanager;}
-        // {
-          "x-scheme-handler/jetbrains" = "jetbrains-toolbox.desktop";
-          "x-scheme-handler/slack" = "slack.desktop";
-          "x-scheme-handler/obsidian" = "obsidian.desktop";
-          "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
+      userDirs = optionalAttrs isLinux {
+        enable = true;
+        createDirectories = true;
+        inherit (config.my.userDIrs)
+          desktop
+          documents
+          download
+          music
+          pictures
+          publicShare
+          templates
+          videos
+          ;
+        extraConfig = {
+          XDG_CODE_DIR = config.my.userDirs.code;
+          XDG_NOTES_DIR = config.my.userDirs.notes;
+          XDG_SCREENSHOTS_DIR = config.my.userDirs.screenshots;
+          XDG_SOURCECODE_DIR = config.xdg.userDirs.sourceCode;
         };
-      associations.removed = {
-        "inode/directory" = ["code.desktop"];
       };
-    };
-
-    xdg.dataFile = lib.my.files.sourceSet {
-      dir = ../../local/share/icons/hicolor;
-      base = ../../local/share;
+      mimeApps = optionalAttrs isLinux {
+        enable = true;
+        defaultApplications =
+          (genAttrs urls (_: browser))
+          // (genAttrs code (_: editor))
+          // (genAttrs images (_: viewer))
+          // (genAttrs audioVideo (_: player))
+          // {
+            "inode/directory" = filemanager;
+          }
+          // {
+            "x-scheme-handler/jetbrains" = "jetbrains-toolbox.desktop";
+            "x-scheme-handler/slack" = "slack.desktop";
+            "x-scheme-handler/obsidian" = "obsidian.desktop";
+            "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
+          };
+        associations.removed = {
+          "inode/directory" = [ "code.desktop" ];
+        };
+      };
     };
   };
 }

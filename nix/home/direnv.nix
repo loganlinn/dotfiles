@@ -12,9 +12,7 @@
     nix-direnv.enable = true;
     mise.enable = true;
     silent = false;
-    stdlib = ''
-      echo "direnv custom stdlib loaded!"
-    '';
+    stdlib = '''';
     # https://github.com/direnv/direnv/blob/master/man/direnv.toml.1.md
     config = {
       global = {
