@@ -106,10 +106,13 @@
     taps = [
       "abhinav/tap"
       "yugabyte/tap"
+      "bridgecrewio/tap"
     ];
     brews = [
+      "abhinav/tap/restack"
       "alt"
       "borders"
+      "bridgecrewio/tap/yor"
       "copilot-cli"
       "duti"
       "kanata"
@@ -122,11 +125,10 @@
       "podman"
       "podman-compose"
       "podman-tui"
-      "restack"
       "sketchybar"
       "sunbeam"
       "terraform-ls"
-      "ybm"
+      "yugabyte/tap/ybm"
     ];
     casks = [
       "1password-cli"
