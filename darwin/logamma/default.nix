@@ -72,6 +72,7 @@
         flyctl
         go-task
         google-cloud-sdk
+        ipcalc
         kcat
         mkcert
         pinact
