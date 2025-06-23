@@ -25,6 +25,7 @@ OPTIONS:
     --add-flags FLAGS         Add FLAGS to the executable command line
     --append-flags FLAGS      Append FLAGS to the executable command line
     --impure                  Allow executable to be resolved from PATH at runtime
+    -f, --force               Overwrite destination file if it exists
     --help, -h                Show this help message
 
 EXAMPLES:
@@ -45,11 +46,11 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 main() {
-  local executable=""
-  local output_path=""
+  local positional_args=()
   local wrapper_args=()
   local op_secrets=()
   local impure_mode=false
+  local force_overwrite=false
 
   while [[ $# -gt 0 ]]; do
     case $1 in
@@ -59,6 +60,10 @@ main() {
       ;;
     --impure)
       impure_mode=true
+      shift
+      ;;
+    --force | -f)
+      force_overwrite=true
       shift
       ;;
     --prefix | --suffix | --set | --set-default)
@@ -89,26 +94,27 @@ main() {
       wrapper_args+=("$1" "$2")
       shift 2
       ;;
-    -*)
+    --)
+      break
+      ;;
+    -+)
       echo "Error: Unknown option $1" >&2
       usage >&2
       exit 1
       ;;
     *)
-      if [[ -z "$executable" ]]; then
-        executable="$1"
-      elif [[ -z "$output_path" ]]; then
-        output_path="$1"
-      else
-        echo "Error: Too many positional arguments" >&2
-        usage >&2
-        exit 1
-      fi
+      positional_args+=("$1")
       shift
       ;;
     esac
   done
-
+  if [[ ${#positional_args[@]} -gt 2 ]]; then
+    echo "Error: Too many positional arguments" >&2
+    usage >&2
+    exit 1
+  fi
+  executable=${positional_args[0]}
+  output_path=${positional_args[1]}
   if [[ -z "$executable" || -z "$output_path" ]]; then
     echo "Error: Both executable and output path are required" >&2
     usage >&2
@@ -133,14 +139,15 @@ main() {
     fi
   fi
 
-  create_wrapper_with_nix "$executable" "$output_path" "$impure_mode" "${wrapper_args[@]}" "${op_secrets[@]}"
+  create_wrapper_with_nix "$executable" "$output_path" "$impure_mode" "$force_overwrite" "${wrapper_args[@]}" "${op_secrets[@]}"
 }
 
 create_wrapper_with_nix() {
   local executable="$1"
   local output_path="$2"
   local impure_mode="$3"
-  shift 3
+  local force_overwrite="$4"
+  shift 4
 
   local wrapper_args=()
   local op_secrets=()
@@ -173,8 +180,8 @@ create_wrapper_with_nix() {
     output_abs=$(realpath -m "$output_path")
     output_dir=$(dirname "$output_abs")
 
-    if [[ -e "$output_abs" ]]; then
-      echo "Error: Output path '$output_path' already exists" >&2
+    if [[ -e "$output_abs" && "$force_overwrite" != "true" ]]; then
+      echo "Error: Output path '$output_path' already exists (use -f to overwrite)" >&2
       exit 1
     fi
 
@@ -236,8 +243,6 @@ EOF
   else
     op_secrets_json='[]'
   fi
-
-  cat >&2 "$nix_file"
 
   nix build \
     --file "$nix_file" \
