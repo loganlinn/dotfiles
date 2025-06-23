@@ -261,8 +261,8 @@ EOF
     cat "$result_link/bin/wrapper"
   else
     cp "$result_link/bin/wrapper" "$output_path"
-    chmod +x "$output_path"
-    echo "Wrapper created: $output_path"
+    chmod 755 "$output_path"
+    echo "created: $output_path"
   fi
 }
 
