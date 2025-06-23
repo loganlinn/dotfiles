@@ -34,8 +34,9 @@ PATH = '/opt/homebrew/bin:/opt/homebrew/sbin:${HOME}/.local/bin:${HOME}/.nix-pro
 
 [gaps.inner]
 horizontal = [
-  { monitor."Built-in Retina Display" = 0 },
+  { monitor."built-in" = 0 },
   { monitor."DELL U2723QE" = 0 },
+  { monitor."built-in" = 0 },
   5,
 ]
 vertical = [
@@ -45,10 +46,10 @@ vertical = [
 ]
 
 [gaps.outer]
-top = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, 2]
-right = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, 2]
-bottom = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, 2]
-left = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, 2]
+top = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, { monitor."built-in" = 0 }, 2]
+right = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, { monitor."built-in" = 0 }, 2]
+bottom = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, { monitor."built-in" = 0 }, 2]
+left = [{ monitor."LG SDQHD" = 10 }, { monitor."DELL U2723QE" = 0 }, { monitor."built-in" = 0 }, 2]
 
 [key-mapping]
 preset = "qwerty"
