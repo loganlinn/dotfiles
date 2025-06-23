@@ -185,6 +185,28 @@ check_jq() {
     [ -d "$wrapper_dir" ]
 }
 
+@test "create-wrapper fails if output path already exists" {
+    local existing_file="$TEST_TEMP_DIR/existing-wrapper"
+    echo "existing content" > "$existing_file"
+    
+    run "$CREATE_WRAPPER" "$TEST_EXECUTABLE" "$existing_file"
+    [ "$status" -eq 1 ]
+    [[ "$output" =~ "Error: Output path '$existing_file' already exists" ]]
+}
+
+@test "create-wrapper outputs to stdout when output path is dash" {
+    check_nix
+    check_jq
+    
+    run "$CREATE_WRAPPER" "$TEST_EXECUTABLE" "-"
+    
+    [ "$status" -eq 0 ]
+    # Output should contain the wrapper script content
+    [[ "$output" =~ "#!/nix/store" ]]
+    # Should not contain "Wrapper created" message since we're outputting to stdout
+    [[ ! "$output" =~ "Wrapper created:" ]]
+}
+
 # Integration tests that require nix to work
 @test "create-wrapper creates basic wrapper" {
     check_nix
