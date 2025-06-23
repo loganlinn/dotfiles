@@ -1,17 +1,8 @@
 require("hs.ipc") -- enables `hc` CLI
 
-local log = require("hs.logger").new("init", "info")
--- local hotkey = require "hs.hotkey"
--- local application = require "hs.application"
--- local mouse = require "hs.mouse"
--- local screen = require "hs.screen"
--- local geometry = require "hs.geometry"
--- local spaces = require "hs.spaces"
--- local timer = require "hs.timer"
+local logger = require("hs.logger")
 
-local config = {
-  keybinds = {},
-}
+local log = logger.new("hammerspoon.init", "info")
 
 local pathlib = {}
 
@@ -55,6 +46,12 @@ function pathlib.findNixApp(name)
   }, name .. ".app")
 end
 
+local function launchOrFocusFn(app)
+  return function()
+    hs.application.launchOrFocus(app)
+  end
+end
+
 local function activateWezterm()
   log.d("activateWezterm")
   local app = hs.application.get("com.github.wez.wezterm")
@@ -67,91 +64,13 @@ local function activateWezterm()
   end
 end
 
----@class BindKeyOpts
----@field mods string[]
----@field key string
----@field app? string
----@field message? string
----@field release? string
----@param opts BindKeyOpts
-local function bindKey(opts)
-  if type(opts) == "function" then
-    opts = { pressFn = opts }
-  end
-  local pressFn = opts.pressFn
-
-  if opts.app then
-    assert(not pressFn)
-    local app = opts.app
-    if app == "WezTerm" then
-      pressFn = activateWezterm
-    else
-      pressFn = function()
-        log.d("launchOrFocus", app)
-        hs.application.launchOrFocus(app)
-      end
-    end
-  end
-
-  local mods = opts.mods
-  local key = opts.key or key
-  local message = opts.message
-  local releaseFn = opts.releaseFn
-  local repeatFn = opts.repeatFn
-  log.d("hs.hotkey.bind <-", mods, key, message, pressFn, releaseFn, repeatFn)
-  hs.hotkey.bind(mods, key, message, pressFn, releaseFn, repeatFn)
-end
-
---------------------------------------------------------------------------------
-
-hs.hotkey.bind({ "alt", "ctrl" }, "r", hs.reload)
-
-bindKey({
-  mods = { "alt" },
-  key = "return",
-  app = "WezTerm",
-})
-
-bindKey({
-  mods = { "alt", "shift" },
-  key = "return",
-  app = "Google Chrome",
-})
-
-bindKey({
-  mods = { "alt" },
-  key = "e",
-  app = "Emacs",
-})
-
-bindKey({
-  mods = { "alt" },
-  key = "m",
-  app = "Messages",
-})
-
-bindKey({
-  mods = { "alt" },
-  key = "n",
-  app = "Obsidian",
-})
-
-bindKey({
-  mods = { "alt" },
-  key = "o",
-  app = "Finder",
-})
-
-bindKey({
-  mods = { "alt" },
-  key = "p",
-  app = "Claude",
-})
-
-bindKey({
-  mods = { "alt" },
-  key = "s",
-  app = "Slack",
-})
+hs.hotkey.bind("⌥", "return", activateWezterm)
+hs.hotkey.bind("⌃⌥", "r", hs.reload)
+hs.hotkey.bind("⇧⌥", "return", launchOrFocusFn("Google Chrome"))
+hs.hotkey.bind("⌥", "e", launchOrFocusFn("Emacs"))
+hs.hotkey.bind("⌥", "m", launchOrFocusFn("Messages"))
+hs.hotkey.bind("⌥", "o", launchOrFocusFn("Finder"))
+hs.hotkey.bind("⌥", "p", launchOrFocusFn("Claude"))
+hs.hotkey.bind("⌥", "s", launchOrFocusFn("Slack"))
 
 hs.alert.show("✅ Hammerspoon")
