@@ -158,7 +158,7 @@ create_wrapper_with_nix() {
 
   TMPDIR_WRAPPER=$(mktemp -d)
   local nix_file="$TMPDIR_WRAPPER/wrapper.nix"
-  local result_path="$TMPDIR_WRAPPER/result"
+  local result_link="$TMPDIR_WRAPPER/result"
 
   local executable_for_nix
   if [[ "$impure_mode" == "true" ]]; then
@@ -177,14 +177,14 @@ create_wrapper_with_nix() {
   fi
 
   cat >"$nix_file" <<'EOF'
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> {}
+, executable
+, impureMode ? false
+, wrapperArgs ? []
+, opSecrets ? []
+}:
 
 let
-  executable = builtins.getEnv "WRAPPER_EXECUTABLE";
-  impureMode = builtins.getEnv "WRAPPER_IMPURE" == "true";
-  wrapperArgs = builtins.fromJSON (builtins.getEnv "WRAPPER_ARGS");
-  opSecrets = builtins.fromJSON (builtins.getEnv "OP_SECRETS");
-  
   # Generate --run commands for 1Password secret resolution
   opCommands = builtins.concatStringsSep " " (
     pkgs.lib.imap0 (i: secret: 
@@ -226,18 +226,20 @@ EOF
     op_secrets_json='[]'
   fi
 
-  WRAPPER_EXECUTABLE="$executable_for_nix" \
-    WRAPPER_IMPURE="$impure_mode" \
-    WRAPPER_ARGS="$wrapper_args_json" \
-    OP_SECRETS="$op_secrets_json" \
-    nix-build "$nix_file" -o "$result_path" --no-out-link
+  nix build \
+    --file "$nix_file" \
+    --out-link "$result_link" \
+    --arg executable "\"$executable_for_nix\"" \
+    --arg impureMode "$impure_mode" \
+    --arg wrapperArgs "$wrapper_args_json" \
+    --arg opSecrets "$op_secrets_json"
 
-  if [[ ! -f "$result_path/bin/wrapper" ]]; then
+  if [[ ! -f "$result_link/bin/wrapper" ]]; then
     echo "Error: Failed to generate wrapper" >&2
     exit 1
   fi
 
-  cp "$result_path/bin/wrapper" "$output_path"
+  cp "$result_link/bin/wrapper" "$output_path"
   chmod +x "$output_path"
 
   echo "Wrapper created: $output_path"
