@@ -50,7 +50,6 @@
       programs.passage.enable = true;
       programs.age-op.enable = true;
       programs.kitty.enable = true;
-      programs.sketchybar.enable = true;
       programs.nixvim = {
         enable = true;
         defaultEditor = true;
@@ -95,14 +94,15 @@
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
 
+  services.kanata.enable = false;
+  services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
+  services.sketchybar.enable = true;
   services.onepassword-secrets = {
     enable = true;
     users = [ "logan" ];
     # configFile = ./secrets.json;
     configFile = "${config.my.flakeDirectory}/darwin/logamma/secrets.json";
   };
-  services.kanata.enable = false;
-  services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
 
   homebrew = {
     taps = [

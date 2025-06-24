@@ -164,8 +164,10 @@ with lib;
 
         DIRSTACKSIZE=9
 
-        [[ ! -v XDG_DATA_HOME ]] ||
-          fpath+=("$XDG_DATA_HOME/zsh/functions")
+        fpath+=(
+          "${config.my.flakeDirectory}/config/zsh/functions"
+          "$XDG_DATA_HOME/zsh/functions"
+        )
 
         bindkey "^[[1;3C" forward-word
         bindkey "^[[1;3D" backward-word

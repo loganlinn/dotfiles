@@ -5,39 +5,24 @@
   ...
 }:
 with lib;
-let
-  cfg = config.programs.sketchybar;
-in
 {
   options = {
-    programs.sketchybar = {
-      enable = mkEnableOption "sketchybar";
-    };
-    services.sketchybar = {
-      enable = mkEnableOption "sketchybar";
-    };
   };
 
-  config = mkIf cfg.enable {
+  config = {
     homebrew = {
-      taps = [ "FelixKratz/formulae" ];
-      brews = [
-        (
-          {
-            name = "FelixKratz/formulae/sketchybar";
-          }
-          // optionalAttrs config.services.sketchybar.enable {
-            start_service = true;
-            restart_service = true;
-          }
-        )
-      ];
       casks = [
         "sf-symbols"
       ];
     };
 
-    # sketchybar's default font
+    home-manager.users.${config.my.user.name} =
+      { config, ... }:
+      {
+        xdg.configFile."sketchybar/sketchybarrc".source =
+          config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/sketchybar/sketchybarrc";
+      };
+
     fonts.packages = with pkgs; [
       hack-font
     ];

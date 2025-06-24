@@ -2,13 +2,16 @@
   self,
   inputs,
   config,
+  system,
   pkgs,
   lib,
   ...
 }:
-with lib; let
+with lib;
+let
   inherit (config) my;
-in {
+in
+{
   imports = [
     self.darwinModules.home-manager
     ./system.nix
@@ -24,8 +27,7 @@ in {
     ];
 
     users.users.${my.user.name} = {
-      inherit
-        (my.user)
+      inherit (my.user)
         description
         shell
         home
@@ -63,24 +65,23 @@ in {
 
     environment.etc = listToAttrs (
       forEach
-      [
-        "nixpkgs"
-        "nix-darwin"
-      ]
-      (input: {
-        name = "nix/inputs/${input}";
-        value = {
-          source = "${inputs.${input}}";
-        };
-      })
+        [
+          "nixpkgs"
+          "nix-darwin"
+        ]
+        (input: {
+          name = "nix/inputs/${input}";
+          value = {
+            source = "${inputs.${input}}";
+          };
+        })
     );
 
-    nix.settings =
-      my.nix.settings
-      // {
-        keep-derivations = false;
-        auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
-      };
+    nix.settings = my.nix.settings // {
+      keep-derivations = false;
+      auto-optimise-store = false; # https://github.com/NixOS/nix/issues/7273
+    };
+
     nix.registry = my.nix.registry;
   };
 }

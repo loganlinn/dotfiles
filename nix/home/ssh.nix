@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   programs.ssh = {
     hashKnownHosts = true;
     forwardAgent = true;
@@ -11,7 +12,7 @@
     controlPath = "~/.ssh/%C";
     controlPersist = "60m";
     serverAliveInterval = 120;
-    includes = ["${config.home.homeDirectory}/.ssh/config.local"];
+    includes = [ "${config.home.homeDirectory}/.ssh/config.local" ];
     matchBlocks = {
       # https://help.firewalla.com/hc/en-us/articles/115004397274-How-to-access-Firewalla-using-SSH-
       "fire.walla" = {
@@ -35,8 +36,15 @@
       };
     };
     extraConfig = ''
+      ConnectionAttempts 3
+      ConnectTimeout 10
       TCPKeepAlive yes
+      GSSAPIAuthentication no
+      VisualHostKey yes
       IdentityAgent ~/.1password/agent.sock
     '';
   };
+  home.packages = with pkgs; [
+    (writeShellScriptBin "ssh-i" ''exec ssh -o IdentitiesOnly=yes -i "$@"'')
+  ];
 }

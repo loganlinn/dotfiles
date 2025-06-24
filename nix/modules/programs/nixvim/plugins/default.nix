@@ -3,11 +3,14 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   cfg = config.programs.nixvim;
-in {
+in
+{
   imports = [
     ./auto-session.nix
+    ./claude-code.nix
     ./bufferline.nix
     ./cmp.nix
     ./comment.nix
@@ -58,16 +61,17 @@ in {
       web-devicons.enable = true;
       wezterm.enable = true;
     };
-    extraPlugins = with pkgs.vimPlugins;
+    extraPlugins =
+      with pkgs.vimPlugins;
       [
-        {plugin = fennel-vim;}
-        {plugin = nfnl;}
-        {plugin = vim-abolish;} # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
-        {plugin = vim-just;}
-        {plugin = vim-lion;} # alignment operators
-        {plugin = vim-rsi;} # readline style insertion
-        {plugin = zoxide-vim;}
+        { plugin = fennel-vim; }
+        { plugin = nfnl; }
+        { plugin = vim-abolish; } # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
+        { plugin = vim-just; }
+        { plugin = vim-lion; } # alignment operators
+        { plugin = vim-rsi; } # readline style insertion
+        { plugin = zoxide-vim; }
       ]
-      ++ (lib.optional config.programs.aider.enable {plugin = aider-nvim;});
+      ++ (lib.optional config.programs.aider.enable { plugin = aider-nvim; });
   };
 }

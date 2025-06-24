@@ -7,6 +7,8 @@ set shell := ["bash", "-e", "-u", "-o", "pipefail", "-c"]
 set positional-arguments := true
 set dotenv-load := true
 
+alias S := switch
+
 [private]
 [script]
 default:
