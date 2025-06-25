@@ -43,7 +43,6 @@
         ../../nix/home/yazi
         ../../nix/home/yt-dlp.nix
       ];
-      programs.aider.enable = true;
       programs.asciinema.enable = true;
       programs.passage.enable = true;
       programs.age-op.enable = true;
