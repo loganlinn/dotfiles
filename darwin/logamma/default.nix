@@ -27,10 +27,8 @@
         self.homeModules.common
         self.homeModules.nix-colors
         self.homeModules.opnix
-        ../../nix/home/aider.nix
         ../../nix/home/asciinema.nix
         ../../nix/home/dev
-        ../../nix/home/dev/crystal.nix
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
         ../../nix/home/doom
