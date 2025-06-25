@@ -114,6 +114,15 @@ let
     assert hostname != null;
     assert user != null;
     let
+      extractFlakeAttr =
+        arg:
+        let
+          xs = builtins.split "#" arg;
+        in
+        if builtins.length xs >= 3 then builtins.elemAt xs 2 else null;
+
+      darwinFlakeAttr = extractFlakeAttr (builtins.getEnv "NIX_DARWIN_FLAKE");
+
       perSys =
         if system == null then
           self.currentSystem
@@ -121,8 +130,10 @@ let
           getSystem system
         else
           system;
+
       nixos = self.nixosConfigurations.${hostname} or null;
-      darwin = self.darwinConfigurations.${hostname} or null;
+      darwin =
+        self.darwinConfigurations.${if darwinFlakeAttr != null then darwinFlakeAttr else hostname} or null;
       hm =
         let
           standalone =
