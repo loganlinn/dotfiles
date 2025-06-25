@@ -4,13 +4,11 @@
   pkgs,
   ...
 }:
-
 {
   programs.direnv = {
     enableZshIntegration = true;
     enableBashIntegration = true;
     nix-direnv.enable = true;
-    mise.enable = true;
     silent = false;
     stdlib = '''';
     # https://github.com/direnv/direnv/blob/master/man/direnv.toml.1.md
@@ -26,5 +24,4 @@
       };
     };
   };
-
 }
