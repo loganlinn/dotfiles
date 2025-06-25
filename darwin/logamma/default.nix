@@ -17,7 +17,6 @@
     ../modules/podman.nix
     ../modules/sketchybar.nix
     ../modules/sunbeam
-    ../modules/terraform.nix
     ../modules/xcode.nix
   ];
 
@@ -31,15 +30,16 @@
         ../../nix/home/aider.nix
         ../../nix/home/asciinema.nix
         ../../nix/home/dev
+        ../../nix/home/dev/crystal.nix
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
-        ../../nix/home/dev/crystal.nix
         ../../nix/home/doom
         ../../nix/home/just
         ../../nix/home/kitty
-        ../../nix/home/nixvim
         ../../nix/home/neovide.nix
+        ../../nix/home/nixvim
         ../../nix/home/pretty.nix
+        ../../nix/home/terraform.nix
         ../../nix/home/tmux.nix
         ../../nix/home/wezterm
         ../../nix/home/yazi
