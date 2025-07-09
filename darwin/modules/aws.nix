@@ -23,13 +23,13 @@
         # aws-spend-summary
         # aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
         # aws-sso-util # https://github.com/benkehoe/aws-sso-util
-        # awsls
-        # awsrm
         # awsume
         amazon-ecr-credential-helper
         aws-shell # https://github.com/awslabs/aws-shell
         awscli2
         awslogs # CloudWatch logs for humans
+        awsls
+        awsrm
         bash-my-aws
         copilot-cli # ECS like heroku/fly
         e1s # ECS like k9s
