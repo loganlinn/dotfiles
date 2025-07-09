@@ -72,6 +72,6 @@ in
         { plugin = vim-rsi; } # readline style insertion
         { plugin = zoxide-vim; }
       ]
-      ++ (lib.optional config.programs.aider.enable { plugin = aider-nvim; });
+      ++ (lib.optional (config.programs.aider.enable or false) { plugin = aider-nvim; });
   };
 }

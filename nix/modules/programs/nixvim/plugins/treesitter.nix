@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   programs.nixvim = {
     # highlighting embedded languages contained in strings of home-manager config using treesitter. how niche.
     plugins.hmts.enable = true;
@@ -12,6 +13,7 @@
         json
         just
         lua
+        kdl
         make
         markdown
         mermaid
@@ -27,7 +29,7 @@
         yaml
       ];
       languageRegister = {
-        terraform = ["hcl"];
+        terraform = [ "hcl" ];
       };
       settings = {
         auto_install = false;

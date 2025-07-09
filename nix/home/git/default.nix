@@ -138,9 +138,16 @@ in
           gh api /repos/{owner}/{repo} --jq '.default_branch'
         }; f'';
     };
+
     lfs.enable = true;
-    delta = {
+
+    difftastic = {
       enable = true;
+      background = "dark";
+    };
+
+    delta = {
+      # enable = true;
       options = {
         hunk-header-style = "omit";
         theme = "zenburn";

@@ -39,7 +39,6 @@
       duf # df alternative
       envsubst
       file
-      flake-root # nb: via overlay
       gawk
       gnugrep
       gnumake

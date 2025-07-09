@@ -58,7 +58,7 @@ bootstrap:
 [script]
 rebuild *args:
     set -eo pipefail
-    cmd=(darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "$@")
+    cmd=(darwin-rebuild --flake "${NIX_DARWIN_FLAKE:-.}" "${@-"--verbose"}")
     echo -e "{{ style("command") }}${cmd[*]}{{ NORMAL }}"
     "${cmd[@]}"
     # "${cmd[@]}" | tee "$0.log"

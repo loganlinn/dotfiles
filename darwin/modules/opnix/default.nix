@@ -13,11 +13,7 @@ let
     mkOption
     concatStringsSep
     escapeShellArg
-    getExe'
     ;
-  chown = getExe' pkgs.coreutils "chown";
-  mkdir = getExe' pkgs.coreutils "mkdir";
-  chmod = getExe' pkgs.coreutils "mkdir";
 
   cfg = config.services.onepassword-secrets;
 

@@ -13,7 +13,7 @@
     ../modules/emacs-plus
     ../modules/hammerspoon
     ../modules/kanata
-    ../modules/opnix
+    # ../modules/opnix
     ../modules/podman.nix
     ../modules/sketchybar.nix
     ../modules/sunbeam
@@ -26,11 +26,12 @@
       imports = [
         self.homeModules.common
         self.homeModules.nix-colors
-        self.homeModules.opnix
+        # self.homeModules.opnix
         ../../nix/home/asciinema.nix
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
+        ../../nix/home/docker.nix
         ../../nix/home/doom
         ../../nix/home/just
         ../../nix/home/kitty
@@ -67,6 +68,7 @@
         checkov
         deno
         dive
+        dry
         flyctl
         go-task
         google-cloud-sdk
@@ -93,13 +95,13 @@
 
   services.kanata.enable = false;
   services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
-  services.sketchybar.enable = true;
-  services.onepassword-secrets = {
-    enable = true;
-    users = [ "logan" ];
-    # configFile = ./secrets.json;
-    configFile = "${config.my.flakeDirectory}/darwin/logamma/secrets.json";
-  };
+  services.sketchybar.enable = false;
+  # services.onepassword-secrets = {
+  #   enable = true;
+  #   users = [ "logan" ];
+  #   # configFile = ./secrets.json;
+  #   configFile = "${config.my.flakeDirectory}/darwin/logamma/secrets.json";
+  # };
 
   homebrew = {
     taps = [

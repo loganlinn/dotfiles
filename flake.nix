@@ -1,28 +1,29 @@
 {
-  description = "loganlinn's systems";
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixos-hardware.url = "github:nixos/nixos-hardware";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-darwin = {
-      url = "github:lnl7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager.url = "github:nix-community/home-manager";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:lnl7/nix-darwin";
+    nixos-hardware.url = "github:nixos/nixos-hardware";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    emacs-overlay.url = "github:nix-community/emacs-overlay";
-    nixvim.url = "github:nix-community/nixvim";
+    # claude-desktop.inputs.flake-utils.follows = "flake-utils";
+    # claude-desktop.inputs.nixpkgs.follows = "nixpkgs";
+    # claude-desktop.url = "github:k3d3/claude-desktop-linux-flake";
     agenix.url = "github:ryantm/agenix";
+    emacs-overlay.url = "github:nix-community/emacs-overlay";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
     globset.url = "github:pdtpartners/globset";
     nix-colors.url = "github:misterio77/nix-colors";
+    nixvim.url = "github:nix-community/nixvim";
+    opnix.inputs.nixpkgs.follows = "nixpkgs";
     opnix.url = "github:brizzbuzz/opnix";
+    supermaven-nvim.flake = false;
+    supermaven-nvim.url = "github:supermaven-inc/supermaven-nvim";
+    wezterm.inputs.nixpkgs.follows = "nixpkgs";
     wezterm.url = "github:wez/wezterm?dir=nix&rev=4accc376f3411f2cbf4f92ca46f79f7bc47688a1";
 
     hyprland.url = "github:hyprwm/Hyprland";
@@ -49,11 +50,6 @@
     hyprpaper.inputs.systems.follows = "hyprland/systems";
     quickshell.url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
     quickshell.inputs.nixpkgs.follows = "nixpkgs";
-
-    supermaven-nvim = {
-      url = "github:supermaven-inc/supermaven-nvim";
-      flake = false;
-    };
   };
 
   outputs =
@@ -97,18 +93,12 @@
             ];
           };
 
-          packages = import ./nix/pkgs { inherit pkgs; } // {
-            home-manager = inputs'.home-manager.packages.home-manager;
-            home-manager-docs-html = inputs'.home-manager.packages.docs-html;
-            opnix = inputs'.opnix.packages.default;
-          };
+          packages = import ./nix/pkgs { inherit pkgs; };
 
           overlayAttrs = {
             inherit (inputs'.home-manager.packages) home-manager;
             inherit (inputs'.emacs.packages) emacs-unstable;
             inherit (inputs'.agenix.packages) agenix;
-            wezterm = inputs'.wezterm.packages.default;
-            flake-root = config.flake-root.package;
             fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
               version = inputs.fzf-git-sh.shortRev;
               src = inputs.fzf-git-sh;
@@ -124,10 +114,12 @@
             nativeBuildInputs = [
               config.formatter
               inputs'.agenix.packages.agenix
-              pkgs.just
+              inputs'.home-manager.packages.home-manager
+              inputs'.opnix.packages.default
               pkgs.age
-              pkgs.ssh-to-age
+              pkgs.just
               pkgs.sops
+              pkgs.ssh-to-age
             ];
           };
         };
@@ -137,14 +129,34 @@
           inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
         in
         {
-          nixosConfigurations.framework = mkNixosSystem "x86_64-linux" ./nixos/framework/configuration.nix;
-          nixosConfigurations.nijusan = mkNixosSystem "x86_64-linux" ./nixos/nijusan/configuration.nix;
+          nixosConfigurations.framework = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [ ./nixos/framework/configuration.nix ];
+          };
 
-          darwinConfigurations.patchbook = mkDarwinSystem "aarch64-darwin" ./darwin/patchbook.nix;
-          darwinConfigurations.logamma = mkDarwinSystem "aarch64-darwin" ./darwin/logamma;
+          nixosConfigurations.nijusan = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [ ./nixos/nijusan/configuration.nix ];
+          };
 
-          homeConfigurations."logan@nijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/nijusan.nix;
-          homeConfigurations."logan@wijusan" = mkHomeConfiguration "x86_64-linux" ./home-manager/wijusan.nix;
+          darwinConfigurations.patchbook = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [ ./darwin/patchbook.nix ];
+          };
+
+          darwinConfigurations.logamma = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [ ./darwin/logamma ];
+          };
+
+          homeConfigurations."logan@nijusan" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [ ./home-manager/nijusan.nix ];
+          };
+          homeConfigurations."logan@wijusan" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [ ./home-manager/wijusan.nix ];
+          };
         };
 
       debug = true; # used by mkReplAttrs

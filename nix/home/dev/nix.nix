@@ -3,11 +3,13 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   home.packages = with pkgs; [
     alejandra
     deadnix
     comma
+    fh
     nix-init
     # nix-melt # ranger-like flake.lock viewer
     nix-output-monitor # get additional information while building packages
@@ -21,7 +23,7 @@
     toml2nix
     (writeShellApplication {
       name = "nix-env-print";
-      runtimeInputs = [direnv];
+      runtimeInputs = [ direnv ];
       text = ''
         direnv apply_dump <(nix shell --impure "$@" --command "$(command -v direnv)" dump)
       '';

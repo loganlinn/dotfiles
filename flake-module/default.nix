@@ -31,7 +31,10 @@ let
     };
 
   mkNixosSystem =
-    system: modules:
+    {
+      system,
+      modules,
+    }:
     withSystem system (
       systemArgs@{
         self,
@@ -56,7 +59,10 @@ let
 
   # Home Manager "Standalone" setup
   mkHomeConfiguration =
-    system: modules:
+    {
+      system,
+      modules,
+    }:
     withSystem system (
       ctx@{
         options,
@@ -74,7 +80,10 @@ let
     );
 
   mkDarwinSystem =
-    system: modules:
+    {
+      system,
+      modules,
+    }:
     withSystem system (
       systemArgs@{
         self,
