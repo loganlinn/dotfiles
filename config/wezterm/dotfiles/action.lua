@@ -159,6 +159,12 @@ M.toggle_popup_pane = wezterm.action_callback(function(window, pane)
   end
 end)
 
+local ACTIVATE_DIRECTION_EVENT = "activate-direction"
+-- wezterm.on(ACTIVATE_DIRECTION_EVENT, function(window, pane, direction)
+--   log.info("ON", ACTIVATE_DIRECTION_EVENT, direction, window, pane)
+--   return true
+-- end)
+
 ---@param direction Direction
 M.activate_direction = function(direction)
   return wezterm.action_callback(function(window, pane)
@@ -169,18 +175,19 @@ M.activate_direction = function(direction)
     if target_pane then
       activate_pane(window, target_pane, pane)
     else
-      -- -- TODO decouple via events
-      -- if util.is_darwin() then
-      --   local mod = "alt"
-      --   local cmd = {
-      --     "/opt/homebrew/bin/aerospace",
-      --     "trigger-binding",
-      --     "--mode",
-      --     "main",
-      --     ("alt-" .. vim_direction(direction)),
-      --   }
-      --   log.info(cmd)
-      --   wezterm.background_child_process(cmd)
+      -- if is_same_pane(pane, panes[1]) then
+      --   if direction == POPUP_DIRECTION or #panes == 1 then
+      --     spawn_popup(window, pane)
+      --   -- elseif direction == "Left" then
+      --   --   activate_pane(window, tab:get_pane_direction("Prev"), pane)
+      --   else
+      --     wezterm.emit(ACTIVATE_DIRECTION_EVENT, window, pane, direction)
+      --   end
+      -- else
+      --   if not wezterm.emit(ACTIVATE_DIRECTION_EVENT, window, pane, direction) then
+      --     activate_pane(window, panes[1], pane)
+      --     set_zoomed(tab, true)
+      --   end
       -- end
       if is_same_pane(pane, panes[1]) then
         if direction == POPUP_DIRECTION or #panes == 1 then
