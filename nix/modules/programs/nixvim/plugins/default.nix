@@ -9,24 +9,26 @@ let
 in
 {
   imports = [
+    # ./notify.nix # replaced with snacks.nix
+    # ./nvim-tree.nix # have never gotten this to play nice with auto-session
+    # ./zen-mode.nix # replaced with snacks.nix
     ./auto-session.nix
-    ./claude-code.nix
     ./bufferline.nix
+    ./claude-code.nix
     ./cmp.nix
     ./comment.nix
     ./conform.nix
-    # ./dadbod.nix
     ./early-retirement.nix
+    ./fold-preview
     ./git
     ./harpoon.nix
     ./lazydev.nix
     ./lsp
     ./lualine.nix
+    ./lz-n
     ./mini.nix
     ./neorepl.nix
     ./neotest.nix
-    # ./notify.nix # replaced with snacks.nix
-    # ./nvim-tree.nix # have never gotten this to play nice with auto-session
     ./obsidian.nix
     ./oil.nix
     ./project.nix
@@ -34,16 +36,13 @@ in
     ./supermaven
     ./telescope.nix
     ./treesitter.nix
+    ./trouble
     ./ts-actions.nix
     ./typescript-tools.nix
     ./which-key.nix
-    # ./zen-mode.nix # replaced with snacks.nix
   ];
   programs.nixvim = {
     plugins = {
-      # qmk.enable = false;
-      # sniprun.enable = true;
-      # spectre.enable = true;
       colorizer.enable = true;
       direnv.enable = true;
       firenvim.enable = true;

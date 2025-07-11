@@ -56,8 +56,14 @@ in
     git-spice.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
-      { path = privateConfigFile; }
       { path = ./include/gitalias.txt; }
+      {
+        path = pkgs.fetchurl {
+          url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
+          sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
+        };
+      }
+      { path = privateConfigFile; }
     ];
     aliases = {
       branch-name = "rev-parse --abbrev-ref HEAD";
@@ -67,7 +73,7 @@ in
       prefix = "rev-parse --show-prefix";
       fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
       rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
-      commit-empty = "commit --allow-empty-message -m ''";
+      new = "commit --allow-empty-message -m ''";
       stash-search = ''
         !f() {
           if ! (( $# )); then
@@ -142,18 +148,22 @@ in
     lfs.enable = true;
 
     difftastic = {
-      enable = true;
+      enable = false;
       background = "dark";
     };
 
     delta = {
-      # enable = true;
+      enable = true;
       options = {
-        hunk-header-style = "omit";
-        theme = "zenburn";
-        navigate = "true";
-        side-by-side = "true";
-        line-numbers = "true";
+        features = "arctic-fox"; # from included themes.gitconfig
+        zero-style = "dim syntax auto";
+        minus-style = "omit syntax auto";
+        plus-style = "omit syntax auto";
+        syntax-theme = "base16";
+
+        navigate = 1; # seems to specifically want a number
+        hyperlinks = true;
+        line-numbers = true;
       };
     };
     extraConfig = {
