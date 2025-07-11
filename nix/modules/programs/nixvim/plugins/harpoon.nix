@@ -35,7 +35,7 @@ in
 
       which-key.settings.spec = lib.optionals cfg.plugins.harpoon.enable [
         {
-          __unkeyed-1 = "<leader>h";
+          __unkeyed-1 = "<leader>j";
           group = "Harpoon";
           icon = "󱡀 ";
         }
@@ -45,37 +45,37 @@ in
     keymaps = lib.mkIf cfg.plugins.harpoon.enable [
       {
         mode = "n";
-        key = "<leader>ha";
+        key = "<leader>ja";
         options.desc = "Add file";
         action.__raw = "function() require'harpoon':list():add() end";
       }
       {
         mode = "n";
-        key = "<leader>he";
+        key = "<leader>je";
         options.desc = "Quick Menu";
         action.__raw = "function() require'harpoon'.ui:toggle_quick_menu(require'harpoon':list()) end";
       }
       {
         mode = "n";
-        key = "<leader>hj";
+        key = "<leader>jj";
         options.desc = "1";
         action.__raw = "function() require'harpoon':list():select(1) end";
       }
       {
         mode = "n";
-        key = "<leader>hk";
+        key = "<leader>jk";
         options.desc = "2";
         action.__raw = "function() require'harpoon':list():select(2) end";
       }
       {
         mode = "n";
-        key = "<leader>hl";
+        key = "<leader>jl";
         options.desc = "3";
         action.__raw = "function() require'harpoon':list():select(3) end";
       }
       {
         mode = "n";
-        key = "<leader>hm";
+        key = "<leader>jm";
         options.desc = "4";
         action.__raw = "function() require'harpoon':list():select(4) end";
       }

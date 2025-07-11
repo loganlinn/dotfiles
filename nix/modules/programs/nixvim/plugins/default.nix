@@ -21,6 +21,7 @@ in
     ./early-retirement.nix
     ./fold-preview
     ./git
+    ./git-worktree
     ./harpoon.nix
     ./lazydev.nix
     ./lsp

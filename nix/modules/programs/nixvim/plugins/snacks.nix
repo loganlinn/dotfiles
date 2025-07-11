@@ -50,7 +50,7 @@
         options.desc = "";
       }
       {
-        key = "<leader>ft";
+        key = "<leader>f/";
         action.__raw = ''function() Snacks.picker.files({ cwd = Snacks.git.get_root() }) end'';
         options.desc = "Top-level Files";
       }
