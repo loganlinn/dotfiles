@@ -19,6 +19,7 @@ with lib.my;
         pss = "pr status";
         prz = ''gh prl "$@" | fzf --ansi --color --accept-nth=1'';
         prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}' "$@"'';
+        diff = "pr diff";
 
         checks = "pr checks";
         # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';

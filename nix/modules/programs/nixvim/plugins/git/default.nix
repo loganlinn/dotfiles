@@ -104,6 +104,14 @@ in
       # }
       {
         mode = "n";
+        key = "<leader>gS"; # doomemacs style
+        action = "<cmd>Gwrite<cr>";
+        options = {
+          desc = "Stage file";
+        };
+      }
+      {
+        mode = "n";
         key = "<leader>gW";
         action = "<cmd>Gwrite<cr>";
         options.desc = "Stage file";

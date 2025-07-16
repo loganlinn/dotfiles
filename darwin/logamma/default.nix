@@ -70,6 +70,7 @@
         dive
         dry
         flyctl
+        # gemini-cli
         go-task
         google-cloud-sdk
         ipcalc
@@ -80,6 +81,11 @@
         uv
         self'.packages.everything-fzf
         self'.packages.chrome-cli
+
+        jujutsu
+        jjui
+        jj-fzf
+        lazyjj
       ];
       xdg.enable = true;
       manual.html.enable = true;
