@@ -58,11 +58,13 @@
       programs.wezterm.enable = true;
       programs.zsh = {
         dirHashes = {
+          g = "~/src/github.com/gamma-app";
           gamma = "~/src/github.com/gamma-app/gamma";
         };
       };
       home.sessionVariables = { };
       home.packages = with pkgs; [
+        # gemini-cli
         act
         actionlint
         checkov
@@ -70,7 +72,6 @@
         dive
         dry
         flyctl
-        # gemini-cli
         go-task
         google-cloud-sdk
         ipcalc
@@ -78,9 +79,10 @@
         mkcert
         pinact
         process-compose
-        uv
-        self'.packages.everything-fzf
         self'.packages.chrome-cli
+        self'.packages.everything-fzf
+        step-cli
+        uv
 
         jujutsu
         jjui

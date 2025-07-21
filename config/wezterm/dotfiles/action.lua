@@ -65,6 +65,18 @@ local OPPOSITE_DIRECTION = setmetatable({
     error("invalid direction: " .. tostring(k))
   end,
 })
+local SPLIT_DIRECTION = setmetatable({
+  Left = "Left",
+  Right = "Right",
+  Up = "Top",
+  Down = "Bottom",
+  Bottom = "Bottom",
+  Top = "Top",
+}, {
+  __index = function(_, k)
+    error("invalid direction: " .. tostring(k))
+  end,
+})
 local POPUP_DIRECTION = "Right"
 
 local function vim_direction(direction, silent)
@@ -108,25 +120,37 @@ end
 
 ---@param window Window
 ---@param pane Pane
----@param spawn_args? {direction: Direction, top_level: boolean, size: number, args?: string[], set_environment_variables?: {[string]: string}}
+---@param split? {direction: Direction, top_level: boolean, size: number, args?: string[], set_environment_variables?: {[string]: string}}
 ---@return Pane popup_pane
-local function spawn_popup(window, pane, spawn_args)
-  pane = pane or window:active_tab():active_pane()
-  spawn_args = spawn_args or {}
-  spawn_args.direction = spawn_args.direction or POPUP_DIRECTION
-  spawn_args.top_level = spawn_args.top_level or true
-  spawn_args.size = spawn_args.size or 0.333
-  spawn_args.args = spawn_args.args or { SHELL, "-l" }
-  spawn_args.set_environment_variables = with_user_var_envs(spawn_args.set_environment_variables or {}, {
+local function spawn_popup(window, pane, split)
+  local tab = window:active_tab()
+  pane = pane or tab:active_pane()
+
+  split = split or {}
+  split.top_level = split.top_level or true
+  split.args = split.args or { SHELL, "-l" }
+  split.size = split.size or 100
+  split.set_environment_variables = with_user_var_envs(split.set_environment_variables or {}, {
     PANE_ROLE = PANE_ROLE_POPUP,
     PANE_ID_ORIGIN = tostring(pane:pane_id()),
   })
 
+  local direction = split.direction or POPUP_DIRECTION
+  split.direction = direction
+
+  if not split.size then
+    if direction == "Left" or direction == "Right" then
+      split.size = 100
+    else
+      split.size = 50
+    end
+  end
+
   -- cannot spawn from zoomed pane
   set_zoomed(pane:tab(), false)
 
-  log.info("splitting", pane, spawn_args)
-  local new_pane = pane:split(spawn_args)
+  log.info("splitting", pane, split)
+  local new_pane = pane:split(split)
 
   activate_pane(window, new_pane, pane)
   return new_pane
@@ -190,8 +214,9 @@ M.activate_direction = function(direction)
       --   end
       -- end
       if is_same_pane(pane, panes[1]) then
-        if direction == POPUP_DIRECTION or #panes == 1 then
-          spawn_popup(window, pane)
+        local should_spawn_popup = direction == POPUP_DIRECTION or #panes == 1
+        if should_spawn_popup then
+          spawn_popup(window, pane, { direction = direction })
         elseif direction == "Left" then
           activate_pane(window, tab:get_pane_direction("Prev"), pane)
         end

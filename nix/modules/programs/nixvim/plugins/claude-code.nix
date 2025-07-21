@@ -23,8 +23,36 @@ in
         "ClaudeCodeVerbose"
       ];
       settings = {
-        window = {
-          position = "vertical";
+        # window_navigation = true;
+        # scrolling = true;
+        # window = {
+        #   position = "float";
+        #   float = {
+        #     width = "90%";
+        #     height = "90%";
+        #     row = "center";
+        #     col = "center";
+        #     relative = "editor";
+        #     border = "rounded";
+        #     # border = "single";
+        #     # border = "double";
+        #   };
+        #   enter_insert = true;
+        #   hide_numbers = true;
+        #   hide_signcolumn = true;
+        # };
+        #
+        # # File refresh settings
+        # refresh = {
+        #   enable = true;
+        #   updatetime = 100;
+        #   timer_interval = 1000;
+        #   show_notifications = true;
+        # };
+        #
+        # Git project settings
+        git = {
+          use_git_root = false;
         };
       };
     };

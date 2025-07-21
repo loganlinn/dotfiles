@@ -20,6 +20,8 @@ with lib;
         "wfxr/forgit"
         "zdharma-continuum/fast-syntax-highlighting kind:defer"
         "zsh-users/zsh-history-substring-search"
+        "marlonrichert/zsh-edit"
+        "marlonrichert/zcolors"
 
         "getantidote/use-omz" # handle OMZ dependencies
         "ohmyzsh/ohmyzsh path:lib" # load OMZ's library

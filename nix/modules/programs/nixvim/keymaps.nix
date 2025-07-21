@@ -939,6 +939,11 @@ in
       options.desc = "Open file in Emacs";
     }
     {
+      key = "<leader>oT";
+      action = ''<cmd>Repl'';
+      options.desc = "Open REPL";
+    }
+    {
       mode = "n";
       key = "<leader>xcf";
       action = "<cmd>%!clickhouse format --comment --multiline<cr>";

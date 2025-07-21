@@ -111,6 +111,11 @@ with lib;
       (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin rec {
         apps = ''$HOME/Applications'';
         appdata = ''$HOME/Library/Application Support'';
+        appscripts = ''$HOME/Library/Application Scripts'';
+        launch = ''$HOME/Library/LaunchAgents'';
+        logs = ''$HOME/Library/Logs'';
+        lib = ''$HOME/Library/Logs'';
+        prefs = ''$HOME/Library/Preferences'';
         chromedata = ''${appdata}/Google/Chrome'';
         firefoxdata = ''${appdata}/Firefox'';
       })
@@ -121,6 +126,11 @@ with lib;
       typeset -gU path fpath
 
       [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
+
+      ${optionalString pkgs.stdenv.targetPlatform.isDarwin ''
+        # Prevent /etc/zshrc_Apple_Terminal from running some unnecessary code for session persistence.
+        export SHELL_SESSIONS_DISABLE=1
+      ''}
     '';
 
     profileExtra = ''
@@ -169,6 +179,7 @@ with lib;
           "$XDG_DATA_HOME/zsh/functions"
         )
 
+
         bindkey "^[[1;3C" forward-word
         bindkey "^[[1;3D" backward-word
         bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
@@ -181,6 +192,12 @@ with lib;
         bindkey -s '^G^f' ' git fetch^M'
         bindkey -s '^G^g' ' git status^M'
         bindkey -s '^G^s' ' git snapshot^M'
+
+        copy-line-to-clipboard() {
+          printf '%s' "$EDITOR" | clipcopy
+        }
+        zle -N copy-to-clipboard
+        bindkey '^Y' copy-to-clipboard
 
         if (( $+commands[bat] )); then
           alias d='batdiff'
