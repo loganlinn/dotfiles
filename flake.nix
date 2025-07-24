@@ -1,17 +1,17 @@
 {
   inputs = {
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nix-darwin.url = "github:lnl7/nix-darwin";
-    nixos-hardware.url = "github:nixos/nixos-hardware";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nixos-hardware.url = "github:nixos/nixos-hardware";
 
     # claude-desktop.inputs.flake-utils.follows = "flake-utils";
     # claude-desktop.inputs.nixpkgs.follows = "nixpkgs";
     # claude-desktop.url = "github:k3d3/claude-desktop-linux-flake";
     agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -23,8 +23,8 @@
     opnix.url = "github:brizzbuzz/opnix";
     supermaven-nvim.flake = false;
     supermaven-nvim.url = "github:supermaven-inc/supermaven-nvim";
-    wezterm.inputs.nixpkgs.follows = "nixpkgs";
-    wezterm.url = "github:wez/wezterm?dir=nix&rev=4accc376f3411f2cbf4f92ca46f79f7bc47688a1";
+    # wezterm.inputs.nixpkgs.follows = "nixpkgs";
+    # wezterm.url = "github:wez/wezterm?dir=nix&rev=4accc376f3411f2cbf4f92ca46f79f7bc47688a1";
 
     hyprland.url = "github:hyprwm/Hyprland";
     hyprland-contrib.url = "github:hyprwm/contrib";

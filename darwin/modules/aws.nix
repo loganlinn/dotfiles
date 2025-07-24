@@ -24,8 +24,8 @@
         # aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
         # aws-sso-util # https://github.com/benkehoe/aws-sso-util
         # awsume
-        amazon-ecr-credential-helper
-        aws-shell # https://github.com/awslabs/aws-shell
+        # amazon-ecr-credential-helper
+        # aws-shell # https://github.com/awslabs/aws-shell
         awscli2
         awslogs # CloudWatch logs for humans
         awsls

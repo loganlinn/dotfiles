@@ -31,7 +31,7 @@ in
 {
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {
-      package = inputs'.wezterm.packages.default;
+      # package = inputs'.wezterm.packages.default;
 
       enableBashIntegration = mkDefault true;
       enableZshIntegration = mkDefault true;

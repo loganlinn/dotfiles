@@ -4,10 +4,12 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.my;
-  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix {};
-in {
+  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix { };
+in
+{
   imports = [
     ../bash
     ../zsh
@@ -46,25 +48,7 @@ in {
 
     my.shellScripts = {
       prunedir.text = ''
-        # finds and destroy empty directories (of empty directories)
-        #
-        # notes:
-        # - not using rmdir --verbose flag to avoid confusing output about
-        #   already-deleted paths not found, or soon-to-be-deleted paths not being empty.
-        # - print to stdout *after* deleting to check if directory is still there
-        #   after rmdir --parents does its thing.
-        # - use null-delimited output to avoid issues with filenames containing
-        #
-        fd --type directory \
-           --type empty \
-           --absolute-path \
-           --exec-batch rmdir --ignore-fail-on-non-empty --parents \; \
-           --exec-batch printf '%s\0' \; \
-         | while IFS= read -r -d $'\0' dir; do
-           if [[ ! -d "$dir" ]]; then
-             printf 'removed empty directory: '%s'\n' "$(realpath --relative-to=. --canonicalize-missing "$dir")"
-           fi
-         done
+        ${pkgs.fd}/bin/fd "$${1-.}" -td -te -a -x ${pkgs.coreutils}/bin/rmdir -v
       '';
       today.text = ''
         # shellcheck disable=SC2145

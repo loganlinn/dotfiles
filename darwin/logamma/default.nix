@@ -31,10 +31,11 @@
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/nodejs.nix
+        # ../../nix/home/dev/elixir.nix
         ../../nix/home/docker.nix
         ../../nix/home/doom
         ../../nix/home/just
-        ../../nix/home/kitty
+        # ../../nix/home/kitty
         ../../nix/home/neovide.nix
         ../../nix/home/nixvim
         ../../nix/home/pretty.nix
@@ -62,7 +63,6 @@
           gamma = "~/src/github.com/gamma-app/gamma";
         };
       };
-      home.sessionVariables = { };
       home.packages = with pkgs; [
         # gemini-cli
         act
@@ -81,14 +81,17 @@
         process-compose
         self'.packages.chrome-cli
         self'.packages.everything-fzf
-        step-cli
+        # step-cli
         uv
 
-        jujutsu
-        jjui
-        jj-fzf
-        lazyjj
+        # jujutsu
+        # jjui
+        # jj-fzf
+        # lazyjj
       ];
+      home.sessionVariables = {
+        UV_VENV_SEED = "1"; # `uv venv` seed with pip by default
+      };
       xdg.enable = true;
       manual.html.enable = true;
       home.stateVersion = "22.11";
@@ -125,6 +128,7 @@
       "copilot-cli"
       "duti"
       "kanata"
+      # "kitty"
       "lazyjournal"
       "ldcli"
       "localstack-cli"

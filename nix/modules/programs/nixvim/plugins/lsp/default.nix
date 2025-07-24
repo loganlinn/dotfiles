@@ -43,6 +43,7 @@ in
         bashls.enable = true;
         buf_ls.enable = true;
         eslint.enable = true;
+        # elixirls.enable = true;
         fennel_ls.enable = true;
         gopls.enable = true;
         html.enable = true;
@@ -60,7 +61,6 @@ in
           # https://github.com/oxalica/nil/blob/main/docs/configuration.md
           extraOptions = {
             nix.formatting = "alejandra";
-
           };
         };
         nixd = {

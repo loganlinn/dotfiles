@@ -167,24 +167,24 @@ in
         };
 
         packages = with pkgs; [
-          cfg.fonts.mono.package
-          cfg.fonts.sans.package
-          cfg.fonts.serif.package
-          cfg.fonts.terminal.package
-
-          cascadia-code
-          dejavu_fonts
-          monaspace
-          nerd-fonts.dejavu-sans-mono
-          nerd-fonts.fira-code
-          nerd-fonts.fira-mono
-          nerd-fonts.jetbrains-mono
-          nerd-fonts.symbols-only
+          # cfg.fonts.mono.package
+          # cfg.fonts.sans.package
+          # cfg.fonts.serif.package
+          # cfg.fonts.terminal.package
+          #
+          # cascadia-code
+          # dejavu_fonts
+          # monaspace
+          # nerd-fonts.dejavu-sans-mono
+          # nerd-fonts.fira-code
+          # nerd-fonts.fira-mono
+          # nerd-fonts.jetbrains-mono
+          # nerd-fonts.symbols-only
           nerd-fonts.victor-mono
-          noto-fonts
-          noto-fonts-emoji
-          open-sans
-          recursive
+          # noto-fonts
+          # noto-fonts-emoji
+          # open-sans
+          # recursive
           victor-mono
         ];
       };
