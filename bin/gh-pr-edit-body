@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e
+
+body=$(gh pr view --json body --template '{{.body}}')
+updated_body=$(<<<"$body" vipe)
+
+if gum confirm "$(delta <(<<<"$body" cat) <(<<<"$updated_body" cat))"; then
+  gh pr edit --body "$updated_body"
+else
+  status=$?
+  echo "Aborted!"
+  exit $status
+fi
