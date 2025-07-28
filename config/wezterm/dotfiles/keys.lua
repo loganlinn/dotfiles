@@ -32,6 +32,8 @@ function M.apply_to_config(config)
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
+  -- config.send_composed_key_when_left_alt_is_pressed = false
+  -- config.send_composed_key_when_right_alt_is_pressed = true
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
   config.leader = {
@@ -90,8 +92,8 @@ function M.apply_to_config(config)
     { MOD, "v", wezterm.action.PasteFrom("Clipboard") },
     { LEADER, "v", wezterm.action.ActivateCopyMode },
     { MOD, "F", wezterm.action.QuickSelect },
-    { MOD, "E", action.quick_open }, -- https://loganlinn.com
-    { MOD, "o", wezterm.action.ActivateCommandPalette },
+    { MOD, "E", action.quick_select_open }, -- https://loganlinn.com
+    { SHIFT_SUPER, "P", wezterm.action.ActivateCommandPalette },
     { SHIFT_SUPER, "E", action.browse_current_working_dir },
     { MOD, "Home", wezterm.action.ScrollToTop },
     { MOD, "PageDown", wezterm.action.ScrollToPrompt(1) },
@@ -101,23 +103,21 @@ function M.apply_to_config(config)
     { SHIFT_SUPER, "0", wezterm.action.ResetFontSize },
     { SHIFT_SUPER, "-", wezterm.action.DecreaseFontSize },
     { SHIFT_SUPER, "=", wezterm.action.IncreaseFontSize },
-    { SUPER, "DownArrow", wezterm.action.AdjustPaneSize({ "Down", 15 }) },
-    { SUPER, "UpArrow", wezterm.action.AdjustPaneSize({ "Up", 15 }) },
+    { SHIFT_SUPER, "Q", wezterm.action.QuitApplication },
+    { SUPER, "UpArrow", wezterm.action.ScrollToPrompt(-1) },
+    { SUPER, "DownArrow", wezterm.action.ScrollToPrompt(1) },
     { SUPER, "Home", wezterm.action.ScrollToTop },
     { SUPER, "PageDown", wezterm.action.ScrollByPage(1) },
     { SUPER, "PageUp", wezterm.action.ScrollByPage(-1) },
     { SUPER, "End", wezterm.action.ScrollToBottom },
-    { SUPER, "UpArrow", wezterm.action.ScrollToPrompt(-1) },
-    { SUPER, "DownArrow", wezterm.action.ScrollToPrompt(1) },
-    { LEADER, "q", wezterm.action.QuitApplication },
-    { LEADER, ":", wezterm.action.ShowDebugOverlay },
+    { SUPER, "d", wezterm.action.ShowDebugOverlay },
     {
       SUPER,
       "F2",
       wezterm.action.SpawnCommandInNewTab({
-        args = { "zsh", "-c", [[
+        args = { "zsh", "-lc", [[
         trap 'echo "Quit"; exit 0' INT
-        hs -A
+        exec hs -A
       ]] },
       }),
     },
@@ -145,7 +145,7 @@ function M.apply_to_config(config)
 
     { MOD, "p", wezterm.action.ActivateKeyTable({ name = "Select" }) },
     Select = {
-      { NONE, "e", action.quick_open },
+      { NONE, "e", action.quick_select_open },
       { NONE, "f", wezterm.action.QuickSelect },
       {
         NONE,

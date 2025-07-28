@@ -2,82 +2,52 @@ local wezterm = require("wezterm")
 local patterns = require("dotfiles.patterns")
 local util = require("dotfiles.util")
 local log = require("dotfiles.util.logger")("action.lua")
+local action_callback = wezterm.action_callback
 
 local M = {}
-
-local SHELL = os.getenv("SHELL") or "zsh"
-
----@return string[]
-local function shell_args(command, options)
-  local args = { options.shell or SHELL }
-  if options.login ~= false then
-    table.insert(args, "-l")
-  end
-  if options.interactive then
-    table.insert(args, "-i")
-  end
-  if command ~= nil then
-    if type(command) ~= "string" then
-      command = wezterm.shell_join_args(command)
-    end
-    table.insert(args, "-c")
-    table.insert(args, command)
-    table.insert(args, SHELL)
-    for _, arg in ipairs(options.args or {}) do
-      if type(arg) == "string" then
-        table.insert(args, arg)
-      elseif type(arg) == "table" then
-        for _, v in ipairs(arg) do
-          table.insert(args, tostring(v))
-        end
-      elseif arg ~= nil then
-        error("expected string or table, got: " .. type(arg))
-      end
-    end
-  end
-  return args
-end
-
-setmetatable(M, {
-  __index = function(t, k)
-    return rawget(t, k) or wezterm.action[k] -- will error if not found
-  end,
-  __newindex = function(t, k, v)
-    if rawget(t, k) or wezterm.has_action(k) then
-      error("attempt to override existing action: " .. tostring(k))
-    end
-    rawset(t, k, v)
-  end,
-})
-
 local ACTIVATE_PANE_EVENT = "activate-pane"
 local ACTIVATE_TAB_EVENT = "activate-tab"
-local PANE_ROLE_POPUP = "Popup"
-local OPPOSITE_DIRECTION = setmetatable({
+local POPUP_PANE_ROLE = "Popup"
+local POPUP_DIRECTION = "Right"
+local OPPOSITE_DIRECTION = {
   Left = "Right",
   Right = "Left",
   Up = "Down",
   Down = "Up",
   Bottom = "Top",
   Top = "Bottom",
-}, {
-  __index = function(_, k)
-    error("invalid direction: " .. tostring(k))
-  end,
-})
-local SPLIT_DIRECTION = setmetatable({
+}
+local SPLIT_DIRECTION = {
   Left = "Left",
   Right = "Right",
   Up = "Top",
   Down = "Bottom",
   Bottom = "Bottom",
   Top = "Top",
-}, {
-  __index = function(_, k)
-    error("invalid direction: " .. tostring(k))
-  end,
-})
-local POPUP_DIRECTION = "Right"
+}
+
+local SHELL = os.getenv("SHELL") or "zsh"
+
+-- coerce input to wezterm.url.Url object
+local function tourl(input, window, pane)
+  input = tostring(input)
+  pane = pane or window and window:active_pane()
+  -- resolve protocol-less input. detect file otherwise assume http
+  if not string.match(input, "://") then
+    if string.sub(input, 1, 1) == "/" then
+      input = "file://" .. input
+    elseif string.sub(input, 1, 2) == "~/" then
+      local home_dir = wezterm.home_dir -- no trailing /
+      input = "file://" .. wezterm.home_dir .. string.sub(input, 2)
+    elseif string.sub(input, 1, 2) == "./" then
+      if not pane then
+        error("cannot resolve relative path without a pane/window argument")
+      end
+      input = tostring(pane:get_current_working_dir()) .. string.sub(input, 3)
+    end
+  end
+  return wezterm.url.parse(input)
+end
 
 local function vim_direction(direction, silent)
   direction = direction:lower()
@@ -109,8 +79,8 @@ local function with_user_var_envs(env_vars, user_vars)
   return env_vars
 end
 
+-- don't zoom when there's no effect
 local function set_zoomed(tab, enable)
-  -- don't zoom when there's no effect
   if enable and next(tab:panes()) ~= nil then
     tab:set_zoomed(true)
   else
@@ -123,37 +93,30 @@ end
 ---@param split? {direction: Direction, top_level: boolean, size: number, args?: string[], set_environment_variables?: {[string]: string}}
 ---@return Pane popup_pane
 local function spawn_popup(window, pane, split)
-  local tab = window:active_tab()
-  pane = pane or tab:active_pane()
+  pane = pane or window:active_pane()
 
   split = split or {}
   split.top_level = split.top_level or true
   split.args = split.args or { SHELL, "-l" }
   split.size = split.size or 100
   split.set_environment_variables = with_user_var_envs(split.set_environment_variables or {}, {
-    PANE_ROLE = PANE_ROLE_POPUP,
+    PANE_ROLE = POPUP_PANE_ROLE,
     PANE_ID_ORIGIN = tostring(pane:pane_id()),
   })
-
-  local direction = split.direction or POPUP_DIRECTION
-  split.direction = direction
-
+  split.direction = split.direction or POPUP_DIRECTION
   if not split.size then
-    if direction == "Left" or direction == "Right" then
+    if split.direction == "Left" or split.direction == "Right" then
       split.size = 100
     else
       split.size = 50
     end
   end
 
-  -- cannot spawn from zoomed pane
-  set_zoomed(pane:tab(), false)
-
-  log.info("splitting", pane, split)
-  local new_pane = pane:split(split)
-
-  activate_pane(window, new_pane, pane)
-  return new_pane
+  log.info("spawn_popup", split)
+  set_zoomed(pane:tab(), false) -- cannot spawn from zoomed pane
+  local popup_pane = pane:split(split)
+  activate_pane(window, popup_pane, pane)
+  return popup_pane
 end
 
 local function open_popup(window, pane, spawn_args)
@@ -169,7 +132,7 @@ local function is_same_pane(pane, other)
   return pane:pane_id() == other:pane_id()
 end
 
-M.toggle_popup_pane = wezterm.action_callback(function(window, pane)
+M.toggle_popup_pane = action_callback(function(window, pane)
   local direction = POPUP_DIRECTION
   local tab = window:active_tab()
   local panes_with_info = tab:panes_with_info()
@@ -191,7 +154,7 @@ local ACTIVATE_DIRECTION_EVENT = "activate-direction"
 
 ---@param direction Direction
 M.activate_direction = function(direction)
-  return wezterm.action_callback(function(window, pane)
+  return action_callback(function(window, pane)
     local tab = pane:tab() or window:active_tab()
     local panes = tab:panes()
     local target_pane = tab:get_pane_direction(direction)
@@ -237,12 +200,12 @@ local format_prompt_description = function(description)
   })
 end
 
-M.rename_tab = wezterm.action_callback(function(window, pane)
+M.rename_tab = action_callback(function(window, pane)
   window:perform_action(
     wezterm.action.PromptInputLine({
       description = format_prompt_description("Rename tab:"),
       initial_value = window:active_tab():get_title(),
-      action = wezterm.action_callback(function(window, _, input)
+      action = action_callback(function(window, _, input)
         if input and input ~= "" then
           window:active_tab():set_title(input)
         end
@@ -256,29 +219,29 @@ M.rename_workspace = wezterm.action.Nop
 -- M.rename_workspace = wezterm.action.PromptInputLine({
 --   description = format_prompt_description("Rename workspace:"),
 --   initial_value = wezterm.mux.get_active_workspace(),
---   action = wezterm.action_callback(function(_, _, input)
+--   action = action_callback(function(_, _, input)
 --     if input and input ~= "" then
 --       wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
 --     end
 --   end),
 -- })
 
-M.debug_window = wezterm.action_callback(function(window, _)
+M.debug_window = action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
   m.inspect(window, m.dump_window(window), tostring(window))
 end)
 
-M.debug_pane = wezterm.action_callback(function(window, pane)
+M.debug_pane = action_callback(function(window, pane)
   local m = require("dotfiles.util.debug")
   m.inspect(window, m.dump_pane(pane), tostring(pane))
 end)
 
-M.debug_globals = wezterm.action_callback(function(window, pane)
+M.debug_globals = action_callback(function(window, pane)
   local m = require("dotfiles.util.debug")
   m.inspect(window, { GLOBAL = wezterm.GLOBAL }, "wezterm")
 end)
 
-M.show_config = wezterm.action_callback(function(window, _)
+M.show_config = action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
   m.inspect(window, window:effective_config(), tostring(window) .. ".effective_config")
 end)
@@ -286,7 +249,7 @@ end)
 M.split_pane = function(args)
   args = args or {}
 
-  return wezterm.action_callback(function(_, pane)
+  return action_callback(function(_, pane)
     local pane_dimensions = pane:get_dimensions()
     if 0.6 > ((pane_dimensions.pixel_height or 1) / (pane_dimensions.pixel_width or 1)) then
       args.direction = "Right"
@@ -303,7 +266,7 @@ end
 
 M.move_pane_to_new_tab = function(opts)
   opts = opts or {}
-  return wezterm.action_callback(function(_, pane)
+  return action_callback(function(_, pane)
     local tab = pane:move_to_new_tab()
     if opts.activate then
       tab:activate()
@@ -326,11 +289,11 @@ end
 ---@param config_key?
 M.UpdateConfigOverrides = function(param)
   if type(param) == "function" then
-    return wezterm.action_callback(function(window, _)
+    return action_callback(function(window, _)
       window:set_config_overrides(param(window:get_config_overrides()))
     end)
   elseif type(param) == "table" then
-    return wezterm.action_callback(function(window, _)
+    return action_callback(function(window, _)
       local overrides = window:get_config_overrides() or {}
       for config_key, f in pairs(param) do
         overrides[config_key] = f(overrides[config_key])
@@ -342,7 +305,7 @@ M.UpdateConfigOverrides = function(param)
   end
 end
 
-M.toggle_debug_key_events = wezterm.action_callback(function(window, _)
+M.toggle_debug_key_events = action_callback(function(window, _)
   apply_to_config_overrides(function(overrides)
     overrides = overrides or {}
     overrides.debug_key_events = not overrides.debug_key_events
@@ -351,30 +314,19 @@ M.toggle_debug_key_events = wezterm.action_callback(function(window, _)
 end)
 
 -- Open either URLs or paths
-M.quick_open = wezterm.action.QuickSelectArgs({
+M.quick_select_open = wezterm.action.QuickSelectArgs({
   patterns = patterns.union(patterns.FILE, patterns.URL),
-  action = wezterm.action_callback(function(window, pane)
+  action = action_callback(function(window, pane)
     local selection = window:get_selection_text_for_pane(pane)
     if selection then
-      local uri
-      if pcall(wezterm.url.parse, selection) then
-        uri = selection
-      else
-        -- TODO verify path exists?
-        if string.match(selection, "^/") then
-          uri = "file://" .. selection
-        else
-          uri = "file://" .. pane:get_current_working_dir().file_path .. selection
-        end
-      end
-      wezterm.emit("open-uri", window, pane, uri)
+      local url = tourl(selection, window, pane)
+      wezterm.emit("open-uri", window, pane, tostring(url))
     end
-
     window:perform_action(wezterm.action.ClearSelection, pane)
   end),
 })
 
-M.switch_workspace = wezterm.action_callback(function(window, pane)
+M.switch_workspace = action_callback(function(window, pane)
   -- TODO generate, cache complete list
   local workspaces = {
     {
@@ -392,7 +344,7 @@ M.switch_workspace = wezterm.action_callback(function(window, pane)
       title = "Switch to workspace",
       choices = workspaces,
       fuzzy = true,
-      action = wezterm.action_callback(function(inner_window, inner_pane, choice_id, choice_label)
+      action = action_callback(function(inner_window, inner_pane, choice_id, choice_label)
         if not choice_id and not choice_label then
           log.info("input selector cancelled")
           return
@@ -410,7 +362,7 @@ M.switch_workspace = wezterm.action_callback(function(window, pane)
   )
 end)
 
-M.browse_current_working_dir = wezterm.action_callback(function(window, pane)
+M.browse_current_working_dir = action_callback(function(window, pane)
   local application = nil
   if util.is_darwin() then
     application = "Finder"
@@ -439,7 +391,7 @@ M.quit_input_selector = wezterm.action.InputSelector({
       }),
     },
   },
-  action = wezterm.action_callback(function(window, pane, id, label)
+  action = action_callback(function(window, pane, id, label)
     local action
     if id == "CloseCurrentPane" then
       action = wezterm.action.CloseCurrentPane({ confirm = false })
@@ -458,26 +410,55 @@ M.quit_input_selector = wezterm.action.InputSelector({
 })
 
 M.just = function(options)
-  local direction = options.direction or "Bottom"
-  local size = options.size or 0.3
-  local cwd = options.cwd
-  local args = shell_args(
-    [[
-      if ! just "$@"; then
-        echo Exited with "$?" status
-      fi
-      read -s -k '?Press any key to continue.'
-    ]],
-    { interactive = true, args = options.args }
-  )
-  return wezterm.action_callback(function(window, pane)
+  return action_callback(function(window, pane)
     pane:split(log.info({
-      direction = direction,
-      cwd = cwd,
-      args = args,
-      size = size,
+      direction = options.direction or "Bottom",
+      cwd = options.cwd,
+      args = {
+        SHELL,
+        "-l",
+        "-c",
+        [[ just "$@" || echo "Exited with $? status." || true; read -s -k '?Press any key to continue.' ]],
+        "-s",
+        table.unpack(options.args or {}),
+      },
+      size = options.size or 0.3,
     }))
   end)
 end
+
+---@param callback fun(input: string): string|string
+---@param application? string
+M.quick_link_open = function(callback, application)
+  -- passed a string pattern
+  if type(callback) == "string" then
+    callback = function(input)
+      if input then
+        return string.format(callback, input)
+      end
+    end
+  end
+
+  return action_callback(function(window, pane)
+    local selection = window:get_selection_text_for_pane(pane)
+    local url = callback(selection)
+    log.info("quick_link_open", { url = url, selection = selection })
+    if url then
+      wezterm.open_with(tostring(url), application)
+    end
+  end)
+end
+
+setmetatable(M, {
+  __index = function(t, k)
+    return rawget(t, k) or wezterm.action[k] -- will error if not found
+  end,
+  __newindex = function(t, k, v)
+    if rawget(t, k) or wezterm.has_action(k) then
+      error("attempt to override existing action: " .. tostring(k))
+    end
+    rawset(t, k, v)
+  end,
+})
 
 return M
