@@ -8,12 +8,13 @@
       enable = true;
       grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [
         bash
+        caddy
         fennel
         graphql
         json
         just
-        lua
         kdl
+        lua
         make
         markdown
         mermaid

@@ -130,10 +130,10 @@ end
 
 local options = {
   icons_enabled = false,
-  -- section_separators = {
-  --   left = nerdfonts.pl_left_hard_divider,
-  --   right = nerdfonts.pl_right_hard_divider,
-  -- },
+  section_separators = {
+    --   left = nerdfonts.pl_left_hard_divider,
+    --   right = nerdfonts.pl_right_hard_divider,
+  },
   -- component_separators = { left = "", right = "" },
   -- tab_separators = { left = "", right = "" },
   padding = 1,
@@ -161,7 +161,12 @@ tabline.setup({
       { "mode", padding = 2 },
     },
     tabline_b = {
-      { "workspace", padding = 2 },
+      function(window)
+        if window and window.window_id then
+          return " " .. window:window_id() .. " "
+        end
+      end,
+      { "workspace", padding = 1 },
     },
     tabline_c = {
       "    ",

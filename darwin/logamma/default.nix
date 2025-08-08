@@ -68,7 +68,7 @@
         act
         actionlint
         checkov
-        deno
+        # deno
         dive
         dry
         flyctl

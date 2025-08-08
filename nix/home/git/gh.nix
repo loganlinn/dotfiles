@@ -13,13 +13,12 @@ with lib.my;
     settings = {
       aliases = {
         o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" .'';
-        pco = "!gh prz | ifne xargs -n1 gh pr checkout";
-        prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
-        pro = "pr view --web";
-        pss = "pr status";
-        prz = ''gh prl "$@" | fzf --ansi --color --accept-nth=1'';
-        prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName --template '{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") (.title | autocolor "white+h") (.headRefName | autocolor "blue")}}{{end}}' "$@"'';
         diff = "pr diff";
+        pco = "!gh prz | ifne xargs -n1 gh pr checkout";
+        prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
+        prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
+        pro = ''!gh pr view --web "$@"'';
+        prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
 
         checks = "pr checks";
         # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';
@@ -29,7 +28,36 @@ with lib.my;
 
         markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
 
-        my-org = "api /orgs/{owner}/members --jq '.[].login'";
+        my-org = ''
+          !gh api graphql -F owner='{owner}' -F name='{repo}' -f query='
+            query($name: String!, $owner: String!) {
+              repository(owner: $owner, name: $name) {
+                owner {
+                  ... on Organization {
+                    login
+                    teams(first: 100) {
+                      nodes {
+                        slug
+                      }
+                    }
+                    membersWithRole(first: 100) {
+                      nodes {
+                        login
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ' | jq -r '
+            .data.repository.owner
+            | .login as $org
+            | (.teams.nodes|map("\($org)/\(.slug)")) as $teams
+            | (.membersWithRole.nodes|map(.login)) as $users
+            | ($teams | sort) + ($users | sort_by(ascii_downcase))
+            | .[]'
+        '';
+
         my-team = "!gh my-org | sed '/loganlinn/d'";
         my-prs = "pr list --author @me";
         my-runs = "run list --user loganlinn";

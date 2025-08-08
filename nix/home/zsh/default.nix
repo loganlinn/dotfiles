@@ -19,21 +19,13 @@ with lib;
 
   programs.zsh = {
     enable = true;
-
     enableCompletion = true;
-
     defaultKeymap = "emacs";
-
-    dotDir = null; # ".config/zsh";
-
     sessionVariables = config.home.sessionVariables;
-
     localVariables = { };
-
     autosuggestion = {
       enable = true;
     };
-
     # syntaxHighlighting = {
     #   enable = true;
     #   # https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
@@ -72,14 +64,12 @@ with lib;
       size = 100000;
       save = 100000;
     };
-
     shellAliases = {
       sudo = "sudo ";
       commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
       commandz = ''commands | fzf'';
       aliasez = ''alias | fzf'';
     };
-
     shellGlobalAliases = {
       "..." = "../..";
       "...." = "../../..";
@@ -89,7 +79,6 @@ with lib;
       "-?" = ''--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain'';
       "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
     };
-
     dirHashes = mergeAttrsList [
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
       (filterAttrs (_: value: value != null) config.my.userDirs)
@@ -120,7 +109,6 @@ with lib;
         firefoxdata = ''${appdata}/Firefox'';
       })
     ];
-
     envExtra = ''
       # Ensure path arrays do not contain duplicates.
       typeset -gU path fpath
@@ -214,11 +202,9 @@ with lib;
           if [[ $${ZPROF_ENABLE-} == "true" ]]; then zprof; fi
         '')
       ];
-
     loginExtra = ''
       [[ ! -f ~/.zlogin.local ]] || source ~/.zlogin.local
     '';
-
     logoutExtra = ''
       [[ ! -f ~/.zlogout.local ]] || source ~/.zlogout.local
     '';

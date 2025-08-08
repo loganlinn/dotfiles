@@ -29,9 +29,15 @@ on-focused-monitor-changed = [
   # 'move-mouse monitor-lazy-center'
 ]
 
-exec-on-workspace-change = ['/bin/zsh', '-c', '''
+exec-on-workspace-change = [
+  '/usr/bin/env',
+  'bash',
+  '-c',
+  '''
     
-  ''']
+  /opt/homebrew/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE || true
+  ''',
+]
 
 [exec]
 inherit-env-vars = true

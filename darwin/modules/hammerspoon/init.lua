@@ -40,21 +40,14 @@ local HYPER = CTRL .. SHIFT .. ALT .. GUI
 
 local launchOrFocusFn = partial(partial, hs.application.launchOrFocus)
 
-local weztermActivate = function()
+local executeFn = partial(partial, hs.execute)
+
+local launchOrFocusWezTerm = function()
   return hs.application.launchOrFocus("com.github.wez.wezterm") -- compiled from source
     or hs.application.launchOrFocus("WezTerm") -- signed release
 end
 
-local aerospaceReload = function()
-  hs.execute("aerospace reload-config", true)
-  hs.alert("✅ Aerospace")
-end
-
-local lockScreen = function()
-  hs.caffeinate.lockScreen()
-end
-
-closeNotifications = function()
+local closeNotifications = function()
   log.i("Closing notifications")
   hs.osascript.javascript([===[
     function run() {
@@ -116,7 +109,7 @@ end
 local modes = {}
 modes.main = hs.hotkey.modal
   .new(HYPER, "k")
-  :bind(ALT, "return", weztermActivate)
+  :bind(ALT, "return", launchOrFocusWezTerm)
   :bind(SHIFT .. ALT, "return", launchOrFocusFn("Google Chrome"))
   :bind(ALT, "e", launchOrFocusFn("Emacs"))
   :bind(ALT, "i", launchOrFocusFn("Linear"))
@@ -124,19 +117,44 @@ modes.main = hs.hotkey.modal
   :bind(ALT, "o", launchOrFocusFn("Finder"))
   :bind(ALT, "p", launchOrFocusFn("Claude"))
   :bind(ALT, "s", launchOrFocusFn("Slack"))
-  :bind(HYPER, "a", aerospaceReload)
+  :bind(HYPER, "a", executeFn("zsh -lc 'aerospace reload-config'"))
   :bind(HYPER, "d", hs.toggleConsole)
-  :bind(HYPER, "l", lockScreen)
+  :bind(HYPER, "l", hs.caffeinate.lockScreen)
   :bind(HYPER, "r", hs.reload)
-  :bind(HYPER, "b", closeNotifications)
-  :bind(HYPER, "s", function()
-    -- hs.hints.style = "vimperator"
-    hs.hints.windowHints()
+  :bind(HYPER, "s", hs.hints.windowHints)
+  :bind(HYPER, "x", closeNotifications)
+  :bind(HYPER, "F1", function()
+    hs.execute("zsh -lc 'wezterm cli spawn --new-window e1s'")
   end)
-  :bind(HYPER, "k", function()
+  :bind(HYPER, "F2", function()
+    hs.alert("F2")
+  end)
+  :bind(HYPER, "F3", function()
+    hs.alert("F3")
+  end)
+  :bind(HYPER, "F4", function()
+    hs.alert("F4")
+  end)
+  :bind(HYPER, "F5", function()
+    hs.alert("F5")
+  end)
+  :bind(HYPER, "F6", function()
+    hs.alert("F6")
+  end)
+  :bind(HYPER, "F7", function()
+    hs.alert("F7")
+  end)
+  :bind(HYPER, "F8", function()
+    hs.alert("F8")
+  end)
+  :bind(HYPER, "F9", function()
+    hs.alert("F9")
+  end)
+  :bind(HYPER, "k", function() -- toggles mode
     modes.main:exit()
   end)
   :enter()
+
 function modes.main:entered()
   hs.alert("+main")
 end

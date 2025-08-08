@@ -62,15 +62,34 @@ in
       wezterm.enable = true;
     };
     extraPlugins =
+      let
+        inherit (pkgs) fetchFromGitHub;
+        inherit (pkgs.vimUtils) buildVimPlugin;
+      in
       with pkgs.vimPlugins;
       [
-        { plugin = fennel-vim; }
-        { plugin = nfnl; }
-        { plugin = vim-abolish; } # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
-        { plugin = vim-just; }
-        { plugin = vim-lion; } # alignment operators
-        { plugin = vim-rsi; } # readline style insertion
-        { plugin = zoxide-vim; }
+        fennel-vim
+        nfnl
+        vim-abolish # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
+        vim-caddyfile
+        vim-just
+        vim-lion # alignment operators
+        vim-rsi # readline style insertion
+        zoxide-vim
+        (buildVimPlugin {
+          name = "terraform-nvim";
+          src = fetchFromGitHub {
+            owner = "mvaldes14";
+            repo = "terraform.nvim";
+            rev = "0e690df48ac55e6b2794f2aa26fd080d21629216";
+            hash = "sha256-O6jhKVuUfzmgK3J4vQ62sytAHus2FvCUAh8bNbkgeKQ=";
+          };
+          dependencies = [
+            config.programs.nixvim.plugins.telescope.package
+            nui-nvim
+            plenary-nvim
+          ];
+        })
       ]
       ++ (lib.optional (config.programs.aider.enable or false) { plugin = aider-nvim; });
   };

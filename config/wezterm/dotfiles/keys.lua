@@ -32,8 +32,6 @@ function M.apply_to_config(config)
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
-  -- config.send_composed_key_when_left_alt_is_pressed = false
-  -- config.send_composed_key_when_right_alt_is_pressed = true
   config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
   config.leader = {
@@ -173,6 +171,13 @@ function M.apply_to_config(config)
       { NONE, "k", wezterm.action.SplitPane({ top_level = true, direction = "Up" }) },
       { NONE, "l", wezterm.action.SplitPane({ top_level = true, direction = "Right" }) },
     },
+
+    -- { LEADER, "h", wezterm.action.ActivateKeyTable({ name = "Help" }) },
+    -- Help = {
+    --   { NONE, "k", wezterm.action.Multiple({
+    --     wezterm.action.ActivateKeyTable({ name = "Keybinds" }),
+    --   }) },
+    -- },
   }
   for i = 1, 8 do
     table.insert(bindings, {
