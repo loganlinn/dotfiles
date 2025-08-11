@@ -5,14 +5,15 @@
   lib,
   nix-colors,
   ...
-}: {
+}:
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
     self.homeModules.secrets
     ../nix/home/dev/lua.nix
     ../nix/home/dev/nix.nix
-    ../nix/home/dev/nodejs.nix
+    ../nix/home/dev/javascript.nix
     ../nix/home/dev/shell.nix
     ../nix/home/emacs
     ../nix/home/doom
@@ -99,8 +100,8 @@
   xdg.enable = true;
   xdg.mimeApps.enable = true;
   xdg.portal.enable = true;
-  xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
-  xdg.portal.config.common.default = ["*"];
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  xdg.portal.config.common.default = [ "*" ];
 
   home.packages = with pkgs; [
     wslu

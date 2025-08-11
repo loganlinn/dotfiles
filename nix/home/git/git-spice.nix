@@ -25,8 +25,12 @@ in
     programs.git = {
       aliases.spice = "!${cfg.package}/bin/gs";
       extraConfig = {
-        spice.submit.publish = mkDefault false;
-        spice.log.all = mkDefault false;
+        spice.branchPrompt.sort = "comitteddate";
+        spice.log.all = false;
+        spice.log.crFormat = "url";
+        spice.log.pushStatusFormat = "aheadBehind";
+        spice.logShort.crFormat = "id";
+        spice.rebaseContinue.edit = "false";
         spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
         spice.shorthand.can = "commit amend --no-edit";
@@ -40,6 +44,7 @@ in
         spice.shorthand.squash = "branch squash";
         spice.shorthand.track = "branch track";
         spice.shorthand.untrack = "branch untrack";
+        spice.submit.publish = false;
       };
     };
     programs.zsh = {

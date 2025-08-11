@@ -9,7 +9,7 @@ let
 in
 {
   imports = [
-    inputs.nixvim.homeManagerModules.nixvim
+    inputs.nixvim.homeModules.nixvim
     ../../modules/programs/nixvim
   ];
   xdg.configFile = {

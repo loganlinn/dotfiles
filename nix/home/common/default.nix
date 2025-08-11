@@ -28,6 +28,7 @@
   home.packages =
     with pkgs;
     [
+      as-tree
       bc
       binutils
       cmake
@@ -35,10 +36,13 @@
       curl
       dig
       dogdns # dig on steroids
+      dua
+      dsyk
       du-dust # du alternative
       duf # df alternative
       envsubst
       file
+      gh
       gawk
       gnugrep
       gnumake

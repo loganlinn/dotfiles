@@ -19,6 +19,7 @@
     globset.url = "github:pdtpartners/globset";
     nix-colors.url = "github:misterio77/nix-colors";
     nixvim.url = "github:nix-community/nixvim";
+    nixvim.inputs.nixpkgs.follows = "nixpkgs";
     opnix.inputs.nixpkgs.follows = "nixpkgs";
     opnix.url = "github:brizzbuzz/opnix";
     supermaven-nvim.flake = false;
@@ -103,6 +104,15 @@
               version = inputs.fzf-git-sh.shortRev;
               src = inputs.fzf-git-sh;
             });
+            # vimPlugins = pkgs.vimPlugins // {
+            #   nvim-notify = pkgs.vimPlugins.nvim-notify.overrideAttrs (prev: {
+            #     nvimSkipModules = lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+            #       #FIXME: https://github.com/NixOS/nixpkgs/issues/431458
+            #       # fzf-lua throws `address already in use` on darwin
+            #       "notify.integrations.fzf"
+            #     ];
+            #   });
+            # };
           };
 
           formatter = pkgs.alejandra;

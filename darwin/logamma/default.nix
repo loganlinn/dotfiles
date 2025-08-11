@@ -30,7 +30,7 @@
         ../../nix/home/asciinema.nix
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
-        ../../nix/home/dev/nodejs.nix
+        ../../nix/home/dev/javascript.nix
         # ../../nix/home/dev/elixir.nix
         ../../nix/home/docker.nix
         ../../nix/home/doom
@@ -68,17 +68,16 @@
         act
         actionlint
         checkov
-        # deno
         dive
         dry
         flyctl
         go-task
         google-cloud-sdk
         ipcalc
+        jc
         kcat
         mkcert
-        pinact
-        process-compose
+        # process-compose
         self'.packages.chrome-cli
         self'.packages.everything-fzf
         # step-cli

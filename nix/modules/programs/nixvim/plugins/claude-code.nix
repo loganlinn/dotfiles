@@ -12,7 +12,7 @@ in
   programs.nixvim = {
     nixpkgs.config.allowUnfree = true;
     dependencies = {
-      claude-code.enable = true;
+      claude-code.enable = false;
     };
     plugins.claude-code = {
       enable = true;
