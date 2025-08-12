@@ -5,9 +5,20 @@ require("supermaven-nvim").setup({
     clear_suggestion = "<C-e>",
   },
 
-  ignore_filetypes = {
-    "envrc",
-  },
+  condition = function()
+    local current_file_name = vim.fn.expand("%:t")
+    local negative_patterns = {
+      ".envrc",
+      ".pgpass",
+      "pg_service.conf",
+    }
+    for _, pattern in ipairs(negative_patterns) do
+      if string.match(current_file_name, pattern) then
+        return false
+      end
+    end
+    return true
+  end,
 
   color = {
     suggestion_color = vim.api.nvim_get_hl(0, { name = "NonText" }).fg,

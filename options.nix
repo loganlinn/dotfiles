@@ -109,9 +109,7 @@ in
   config = {
     my = {
       pubkeys.ssh.ed25519 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGpyxX1xNYCJHLpTQAEorumej3kyNWlknnhQ/QqkhdN ${cfg.email}";
-
       pubkeys.ssh.rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/IGTiUT57yPpsCHcSo0FUUBY7uTZL87vdr7EqE+fS+6FQFZbhXuzy63Y13+ssN1Cbwy7hE3I4u0HgaXnhe8Ogr+buvBYqcSCajbN8j2vVVy/WUuGRPKyczk0bZpL1V7LUt98jBMnctirVeY0YoBgEk9POWHZ4NTTK0Bsr2WAwpWUkdYPcHpEIW+ABNX4YqxZdq7ETMy18ELfE/IJz04/+9rGHvpsDLL2SXDJCj+hxofW28SaqncOv/GvTN9gpkQGpUfHbxMyHz8Xj3faiguCN70dFEUb1FVL5ilxePSp/hOYx039idGT+K5oojutT6gH8p1K2uQ12rO+auvmKVSrh ${cfg.email}";
-
       user = {
         openssh.authorizedKeys.keys = attrValues cfg.pubkeys.ssh;
         packages = with pkgs; [
@@ -122,7 +120,6 @@ in
           gh
         ];
       };
-
       environment.variables =
         {
           DISABLE_TELEMETRY = "1";
@@ -140,32 +137,27 @@ in
           XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
           XDG_CODE_DIR = toString cfg.userDirs.code;
         };
-
       fonts = {
         serif = mkDefault {
           package = pkgs.dejavu_fonts;
           name = "DejaVu Serif";
           size = mkDefault (if isLinux then 10 else 12);
         };
-
         sans = mkDefault {
           package = pkgs.dejavu_fonts;
           name = "DejaVu Sans";
           size = mkDefault (if isLinux then 10 else 12);
         };
-
         mono = mkDefault {
           package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
           size = mkDefault (if isLinux then 10 else 12);
         };
-
         terminal = mkDefault {
           package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
           size = mkDefault (if isLinux then 11 else 12);
         };
-
         packages = with pkgs; [
           # cfg.fonts.mono.package
           # cfg.fonts.sans.package
@@ -188,7 +180,6 @@ in
           victor-mono
         ];
       };
-
       nix.settings = rec {
         warn-dirty = mkDefault false;
         show-trace = mkDefault true;

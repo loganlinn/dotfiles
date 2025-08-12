@@ -27,6 +27,7 @@ in
   home.packages = with pkgs; [
     delta
     difftastic
+    gitu
     # git-absorb
   ];
 

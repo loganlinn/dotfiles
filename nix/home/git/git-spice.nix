@@ -52,20 +52,12 @@ in
         complete -C ${cfg.package}/bin/gs gs
       '';
       initContent = mkBefore ''
-        gs2() {
-          if (( $# )) && [[ ! -e $1 ]]; then
-            # Remember that time you created PR as your coworker?
-            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
-          else
-            git status
-          fi
-        }
         gs() {
           if (( $# )) && [[ ! -e $1 ]]; then
             # Remember that time you created PR as your coworker?
-            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" gs "$@"
+            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" command gs "$@"
           else
-            git status
+            git status .
           fi
         }
       '';

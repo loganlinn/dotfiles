@@ -104,15 +104,6 @@
               version = inputs.fzf-git-sh.shortRev;
               src = inputs.fzf-git-sh;
             });
-            # vimPlugins = pkgs.vimPlugins // {
-            #   nvim-notify = pkgs.vimPlugins.nvim-notify.overrideAttrs (prev: {
-            #     nvimSkipModules = lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
-            #       #FIXME: https://github.com/NixOS/nixpkgs/issues/431458
-            #       # fzf-lua throws `address already in use` on darwin
-            #       "notify.integrations.fzf"
-            #     ];
-            #   });
-            # };
           };
 
           formatter = pkgs.alejandra;
@@ -143,22 +134,18 @@
             system = "x86_64-linux";
             modules = [ ./nixos/framework/configuration.nix ];
           };
-
           nixosConfigurations.nijusan = mkNixosSystem {
             system = "x86_64-linux";
             modules = [ ./nixos/nijusan/configuration.nix ];
           };
-
           darwinConfigurations.patchbook = mkDarwinSystem {
             system = "aarch64-darwin";
             modules = [ ./darwin/patchbook.nix ];
           };
-
           darwinConfigurations.logamma = mkDarwinSystem {
             system = "aarch64-darwin";
             modules = [ ./darwin/logamma ];
           };
-
           homeConfigurations."logan@nijusan" = mkHomeConfiguration {
             system = "x86_64-linux";
             modules = [ ./home-manager/nijusan.nix ];
