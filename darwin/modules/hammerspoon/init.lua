@@ -1,80 +1,86 @@
-pcall(require, "hs.ipc")
+local homedir = os.getenv("HOME")
+package.path = package.path .. ";" .. homedir .. "/.dotfiles/darwin/modules/hammerspoon/?.lua"
+package.path = package.path .. ";" .. homedir .. "/.dotfiles/darwin/modules/hammerspoon/?/init.lua"
+package.cpath = package.cpath .. ";" .. homedir .. "/.dotfiles/darwin/modules/hammerspoon/?.so"
+package.path = package.path
+  .. ";"
+  .. homedir
+  .. "/.luarocks/share/lua/5.4/?.lua;"
+  .. homedir
+  .. "/.luarocks/share/lua/5.4/?/init.lua"
+package.cpath = package.cpath .. ";" .. homedir .. "/.luarocks/lib/lua/5.4/?.so"
+package.path = package.path
+  .. ";"
+  .. homedir
+  .. "/.luarocks/share/lua/5.3/?.lua;"
+  .. homedir
+  .. "/.luarocks/share/lua/5.3/?/init.lua"
+package.cpath = package.cpath .. ";" .. homedir .. "/.luarocks/lib/lua/5.3/?.so"
 
-local hs = _G["hs"]
+local fennel = require("fennel")
+table.insert(package.loaders or package.searchers, fennel.searcher)
 
-local log = hs.logger.new("init.lua", "info")
+hs.ipc.cliInstall()
 
-local partial = hs.fnutils.partial
+hs.hints.style = "vimperator"
+hs.hints.showTitleThresh = 4
+hs.hints.titleMaxSize = 10
+hs.hints.fontSize = 30
+hs.window.animationDuration = 0.2
+
+local log = hs.logger.new("init.lua", "debug")
 
 local config_watcher
 config_watcher = hs.pathwatcher
-	.new(hs.configdir .. "/init.lua", function(paths, flagTables)
-		if config_watcher then
-			hs.reload()
-		end
-	end)
-	:start()
+  .new(hs.configdir .. "/init.lua", function()
+    if config_watcher then
+      hs.reload()
+    end
+  end)
+  :start()
 
-pcall(function()
-	local fs = hs.fs
-	local configdir = fs.pathToAbsolute(hs.configdir)
-	local initdir = fs.pathToAbsolute(configdir .. "/init.lua"):match("(.*/)")
-	if configdir ~= initdir then
-		package.path = initdir .. "/?.lua;" .. package.path
-		log.i("Added", initdir, "to package.path")
-	end
+local aws_menubar = hs.menubar.new(true, "aws"):setClickCallback(function(mods)
+  log.i("menubar clicked", hs.inspect(mods))
 end)
 
-local menubar = hs.menubar.new(true, "usr")
-
-local refreshMenubar = function()
-	local stdout, ok = hs.execute(os.getenv("HOME") .. "/.dotfiles/bin/aws-sso-timeout")
-	if ok then
-		local title = ""
-		local seconds = tonumber(stdout)
-		local hours = seconds // 3600
-		if hours > 0 then
-			title = hours .. "h "
-		end
-		local minutes = math.fmod(seconds, 3600) // 60
-		if minutes > 0 then
-			title = title .. minutes .. "m"
-		end
-		menubar:setTitle(title)
-	end
-end
-
-hs.timer.doEvery(60, refreshMenubar):start()
-
-refreshMenubar()
+hs.timer
+  .doEvery(60, function()
+    local title = "aws"
+    local stdout, ok = hs.execute(homedir .. "/.dotfiles/bin/aws-sso-timeout")
+    if ok then
+      local seconds = tonumber(stdout)
+      if seconds then
+        local hours = math.floor(seconds / 3600)
+        local minutes = math.floor(math.fmod(seconds, 3600) / 60)
+        title = title .. string.format("[%02d:%02d]", hours, minutes)
+      end
+    end
+    aws_menubar:setTitle(title)
+  end)
+  :start()
+  :fire()
 
 -- Keybindings
 local CTRL = "⌃"
-
 local ALT = "⌥"
-
 local SHIFT = "⇧"
-
 local GUI = "⌘"
-
 local MEH = CTRL .. SHIFT .. ALT
-
 local HYPER = CTRL .. SHIFT .. ALT .. GUI
 
+local partial = hs.fnutils.partial
 local executeFn = partial(partial, hs.execute)
-
 local launchOrFocus = hs.application.launchOrFocus
-
 local launchOrFocusFn = partial(partial, launchOrFocus)
 
 local launchOrFocusWezTerm = function()
-	return launchOrFocus("com.github.wez.wezterm") -- compiled from source
-		or launchOrFocus("WezTerm") -- signed release
+  return launchOrFocus("com.github.wez.wezterm") -- compiled from source
+    or launchOrFocus("WezTerm") -- signed release
 end
 
 local closeNotifications = function()
-	log.i("Closing notifications")
-	hs.osascript.javascript([===[
+  log.i("Closing notifications")
+  hs.osascript.javascript([===[
     function run() {
       const SystemEvents = Application("System Events");
 
@@ -132,62 +138,63 @@ local closeNotifications = function()
 end
 
 local modes = setmetatable({}, {
-	__newindex = function(self, name, mode)
-		log.i("Registering mode", name)
-		mode.entered = mode.entered or partial(hs.alert, "+" .. name)
-		mode.exited = mode.exited or partial(hs.alert, "-" .. name)
-		rawset(self, name, mode)
-	end,
+  __newindex = function(self, name, mode)
+    log.i("Registering mode", name)
+    mode.entered = mode.entered or partial(hs.alert, "+" .. name)
+    mode.exited = mode.exited or partial(hs.alert, "-" .. name)
+    rawset(self, name, mode)
+  end,
 })
 
 modes.main = hs.hotkey.modal
-	.new(HYPER, "k")
-	:bind(ALT, "return", launchOrFocusWezTerm)
-	:bind(SHIFT .. ALT, "return", launchOrFocusFn("Google Chrome"))
-	:bind(ALT, "e", launchOrFocusFn("Emacs"))
-	:bind(ALT, "i", launchOrFocusFn("Linear"))
-	:bind(ALT, "m", launchOrFocusFn("Messages"))
-	:bind(ALT, "o", launchOrFocusFn("Finder"))
-	:bind(ALT, "p", launchOrFocusFn("Claude"))
-	:bind(ALT, "s", launchOrFocusFn("Slack"))
-	:bind(HYPER, "a", executeFn("zsh -lc 'aerospace reload-config'"))
-	:bind(HYPER, "d", hs.toggleConsole)
-	:bind(HYPER, "l", hs.caffeinate.lockScreen)
-	:bind(HYPER, "r", hs.reload)
-	:bind(HYPER, "s", hs.hints.windowHints)
-	:bind(HYPER, "x", closeNotifications)
-	:bind(HYPER, "F1", function()
-		hs.execute("zsh -lc 'wezterm cli spawn --new-window e1s'")
-	end)
-	:bind(HYPER, "F2", function()
-		hs.alert("F2")
-	end)
-	:bind(HYPER, "F3", function()
-		hs.alert("F3")
-	end)
-	:bind(HYPER, "F4", function()
-		hs.alert("F4")
-	end)
-	:bind(HYPER, "F5", function()
-		hs.alert("F5")
-	end)
-	:bind(HYPER, "F6", function()
-		hs.alert("F6")
-	end)
-	:bind(HYPER, "F7", function()
-		hs.alert("F7")
-	end)
-	:bind(HYPER, "F8", function()
-		hs.alert("F8")
-	end)
-	:bind(HYPER, "F9", function()
-		hs.alert("F9")
-	end)
-	:bind(HYPER, "k", function() -- toggles mode
-		modes.main:exit()
-	end)
-	:enter()
+  .new(HYPER, "k")
+  :bind(ALT, "return", launchOrFocusWezTerm)
+  :bind(SHIFT .. ALT, "return", launchOrFocusFn("Google Chrome"))
+  :bind(ALT, "e", launchOrFocusFn("Emacs"))
+  :bind(ALT, "i", launchOrFocusFn("Linear"))
+  :bind(ALT, "m", launchOrFocusFn("Messages"))
+  :bind(ALT, "o", launchOrFocusFn("Finder"))
+  :bind(ALT, "p", launchOrFocusFn("Claude"))
+  :bind(ALT, "s", launchOrFocusFn("Slack"))
+  :bind(HYPER, "a", executeFn("zsh -lc 'aerospace reload-config'"))
+  :bind(HYPER, "d", hs.toggleConsole)
+  :bind(HYPER, "l", hs.caffeinate.lockScreen)
+  :bind(HYPER, "r", hs.reload)
+  :bind(HYPER, "s", hs.hints.windowHints)
+  :bind(HYPER, "x", closeNotifications)
+  :bind(HYPER, "F1", function()
+    hs.alert("F2")
+  end)
+  :bind(HYPER, "F2", function()
+    hs.alert("F2")
+  end)
+  :bind(HYPER, "F3", function()
+    hs.alert("F3")
+  end)
+  :bind(HYPER, "F4", function()
+    hs.alert("F4")
+  end)
+  :bind(HYPER, "F5", function()
+    hs.alert("F5")
+  end)
+  :bind(HYPER, "F6", function()
+    hs.alert("F6")
+  end)
+  :bind(HYPER, "F7", function()
+    hs.alert("F7")
+  end)
+  :bind(HYPER, "F8", function()
+    hs.alert("F8")
+  end)
+  :bind(HYPER, "F9", function()
+    hs.alert("F9")
+  end)
+  :bind(HYPER, "k", function() -- toggles mode
+    modes.main:exit()
+  end)
+  :enter()
 
 --- }}
 
+-- hs.loadSpoon("EmmyLua")
 hs.alert("✅ Hammerspoon")
