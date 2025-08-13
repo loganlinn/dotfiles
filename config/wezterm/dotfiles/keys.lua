@@ -91,7 +91,7 @@ function M.apply_to_config(config)
     { LEADER, "v", wezterm.action.ActivateCopyMode },
     { MOD, "F", wezterm.action.QuickSelect },
     { MOD, "E", action.quick_select_open }, -- https://loganlinn.com
-    { SHIFT_SUPER, "P", wezterm.action.ActivateCommandPalette },
+    { LEADER, "Space", wezterm.action.ActivateCommandPalette },
     { SHIFT_SUPER, "E", action.browse_current_working_dir },
     { MOD, "Home", wezterm.action.ScrollToTop },
     { MOD, "PageDown", wezterm.action.ScrollToPrompt(1) },
