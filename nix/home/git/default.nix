@@ -21,7 +21,7 @@ let
 in
 {
   imports = [
-    self.homeHodules.common
+    self.homeModules.common
     ./gh.nix
     ./git-spice.nix
   ];
