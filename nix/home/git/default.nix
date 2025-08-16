@@ -21,7 +21,6 @@ let
 in
 {
   imports = [
-    self.homeModules.common
     ./gh.nix
     ./git-spice.nix
   ];
