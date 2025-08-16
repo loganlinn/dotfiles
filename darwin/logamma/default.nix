@@ -31,11 +31,10 @@
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/javascript.nix
-        # ../../nix/home/dev/elixir.nix
         ../../nix/home/docker.nix
         ../../nix/home/doom
         ../../nix/home/just
-        # ../../nix/home/kitty
+        ../../nix/home/kitty
         ../../nix/home/neovide.nix
         ../../nix/home/nixvim
         ../../nix/home/pretty.nix

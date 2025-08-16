@@ -8,7 +8,7 @@
   imports = [
     # ./kube.nix
     ../git
-    ../java
+    # ../java
     ../just
     ../python
     ./clang.nix
