@@ -81,16 +81,12 @@
         self'.packages.chrome-cli
         self'.packages.everything-fzf
         # step-cli
-        uv
 
         # jujutsu
         # jjui
         # jj-fzf
         # lazyjj
       ];
-      home.sessionVariables = {
-        UV_VENV_SEED = "1"; # `uv venv` seed with pip by default
-      };
       xdg.enable = true;
       manual.html.enable = true;
       home.stateVersion = "22.11";
