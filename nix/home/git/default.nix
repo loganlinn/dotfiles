@@ -1,5 +1,4 @@
 {
-  self,
   inputs,
   config,
   lib,
@@ -21,6 +20,7 @@ let
 in
 {
   imports = [
+    ../shell
     ./gh.nix
     ./git-spice.nix
   ];
@@ -53,7 +53,10 @@ in
   };
 
   my.shellScripts = {
-    gsw = ''git stash show -p stash@{$(($${1:-0}))}'';
+    gsw = ''
+      declare -i n=''${1:-0}
+      git stash show -p "stash@{$n}"
+    '';
   };
 
   programs.git = {

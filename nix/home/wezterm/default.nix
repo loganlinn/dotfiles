@@ -30,7 +30,7 @@ let
   };
 in
 {
-  imports = [ self.homeModules.common ]; # shellScripts
+  imports = [ ../shell ];
 
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {

@@ -8,6 +8,7 @@ with lib;
 let
   cfg = config.my;
   shellScriptModule = pkgs.callPackage ./shellScriptModule.nix { };
+  shellScriptType = types.coercedTo types.str (text: { inherit text; }) shellScriptModule;
 in
 {
   imports = [
@@ -25,7 +26,7 @@ in
       description = ''
         See https://nixos.org/manual/nixpkgs/unstable/#trivial-builder-writeShellApplication
       '';
-      type = types.attrsOf shellScriptModule;
+      type = types.attrsOf shellScriptType;
     };
   };
 
