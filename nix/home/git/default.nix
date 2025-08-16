@@ -1,4 +1,5 @@
 {
+  self,
   inputs,
   config,
   lib,
@@ -20,6 +21,7 @@ let
 in
 {
   imports = [
+    self.homeHodules.common
     ./gh.nix
     ./git-spice.nix
   ];
@@ -47,9 +49,12 @@ in
     gp = "git push";
     gtl = ''git rev-parse --show-toplevel'';
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
-    gg = "git status";
+    st = "git status";
     gw = "git show";
-    gsw = "git stash show -p";
+  };
+
+  my.shellScripts = {
+    gsw = ''git stash show -p stash@{$(($${1:-0}))}'';
   };
 
   programs.git = {

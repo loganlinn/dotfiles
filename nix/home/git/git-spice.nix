@@ -1,4 +1,5 @@
 {
+  self,
   self',
   config,
   pkgs,
@@ -17,11 +18,9 @@ in
       default = self'.packages.git-spice;
     };
   };
+
   config = mkIf cfg.enable {
     home.packages = [ cfg.package ];
-    home.shellAliases = {
-      gsl = "${cfg.package}/bin/gs log long";
-    };
     programs.git = {
       aliases.spice = "!${cfg.package}/bin/gs";
       extraConfig = {
@@ -39,12 +38,16 @@ in
         spice.shorthand.fold = "branch fold";
         spice.shorthand.modify = "commit amend";
         spice.shorthand.move = "upstack onto";
+        spice.shorthand.publish = "stack submit --publish";
         spice.shorthand.rename = "branch rename";
         spice.shorthand.reorder = "downstack edit";
+        spice.shorthand.rsr = "repo sync --restack";
         spice.shorthand.squash = "branch squash";
         spice.shorthand.track = "branch track";
         spice.shorthand.untrack = "branch untrack";
         spice.submit.publish = false;
+        spice.submit.web = "create"; # open a web browser only for newly created
+        spice.submit.draft = "false";
       };
     };
     programs.zsh = {
