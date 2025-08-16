@@ -14,7 +14,7 @@
     ./clang.nix
     ./data.nix
     ./golang.nix
-    ./images.nix
+    ./graphics.nix
     ./javascript.nix
     ./markdown.nix
     ./nix.nix
