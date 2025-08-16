@@ -150,8 +150,8 @@
   };
 
   environment.systemPackages = with pkgs; [
-    plistwatch
-    libplist
+    # plistwatch
+    # libplist
   ];
 
   ids.gids.nixbld = 30000;
