@@ -1,4 +1,5 @@
 {
+  self,
   inputs',
   config,
   lib,
@@ -29,6 +30,8 @@ let
   };
 in
 {
+  imports = [ self.homeModules.common ]; # shellScripts
+
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {
       # package = inputs'.wezterm.packages.default or pkgs.wezterm;
