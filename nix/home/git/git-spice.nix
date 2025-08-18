@@ -46,7 +46,7 @@ in
         spice.shorthand.track = "branch track";
         spice.shorthand.untrack = "branch untrack";
         spice.submit.publish = false;
-        spice.submit.web = "create"; # open a web browser only for newly created
+        spice.submit.web = "false";
         spice.submit.draft = "false";
       };
     };

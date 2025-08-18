@@ -1,6 +1,7 @@
 local wezterm = require("wezterm")
 local nerdfonts = wezterm.nerdfonts
 local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
+local foreground_process_name = ""
 
 local util = require("dotfiles.util")
 local basename = util.basename
@@ -42,20 +43,20 @@ local function active_key_table(window)
       { Background = { Color = ansi[6] } },
       { Foreground = { Color = ansi[1] } },
       { Attribute = { Intensity = "Bold" } },
-      { Text = pad(key_table .. " " .. wezterm.nerdfonts.cod_layers_dot) },
+      { Text = pad(key_table .. " " .. nerdfonts.cod_layers_dot) },
       "ResetAttributes",
     })
   else
     return wezterm.format({
       { Foreground = { Color = inactive_fg_color } },
-      { Text = " " .. wezterm.nerdfonts.cod_layers .. "  " },
+      { Text = " " .. nerdfonts.cod_layers .. "  " },
       "ResetAttributes",
     })
   end
 end
 
 local function leader_key()
-  local leader_text = pad(wezterm.nerdfonts.md_home_floor_l)
+  local leader_text = pad(nerdfonts.md_home_floor_l)
   -- cache static text formats
   local leader_active = util.delay(function()
     local scheme = tabline.get_colors().scheme
@@ -84,13 +85,128 @@ local function leader_key()
   end
 end
 
-local tab_label = function(tab)
-  local title = tab.tab_title
-  local insert = table.insert
-  if title ~= "" and title ~= "default" then
-    return wezterm.format({ { Foreground = { Color = C.Pink } }, { Text = pad(title) }, "ResetAttributes" })
+-- local process_to_icon = {
+--   -- ["air"] = { nerdfonts.md_language_go, color = { fg = colors.brights[5] } },
+--   -- ["apt"] = { nerdfonts.dev_debian, color = { fg = colors.ansi[2] } },
+--   -- ["bacon"] = { nerdfonts.dev_rust, color = { fg = colors.ansi[2] } },
+--   ["bash"] = { nerdfonts.cod_terminal_bash, color = { fg = colors.cursor_bg or nil } },
+--   ["bat"] = { nerdfonts.md_bat, color = { fg = colors.ansi[5] } },
+--   ["btm"] = { nerdfonts.md_chart_donut_variant, color = { fg = colors.ansi[2] } },
+--   ["btop"] = { nerdfonts.md_chart_areaspline, color = { fg = colors.ansi[2] } },
+--   -- ["btop4win++"] = { nerdfonts.md_chart_areaspline, color = { fg = colors.ansi[2] } },
+--   ["bun"] = { nerdfonts.md_hamburger, color = { fg = colors.cursor_bg or nil } },
+--   ["cargo"] = { nerdfonts.dev_rust, color = { fg = colors.ansi[2] } },
+--   ["chezmoi"] = { nerdfonts.md_home_plus_outline, color = { fg = colors.brights[5] } },
+--   ["cmd.exe"] = { nerdfonts.md_console_line, color = { fg = colors.cursor_bg or nil } },
+--   ["curl"] = nerdfonts.md_flattr,
+--   ["debug"] = { nerdfonts.cod_debug, color = { fg = colors.ansi[5] } },
+--   ["default"] = nerdfonts.md_application,
+--   ["docker"] = { nerdfonts.md_docker, color = { fg = colors.ansi[5] } },
+--   ["docker-compose"] = { nerdfonts.md_docker, color = { fg = colors.ansi[5] } },
+--   ["dpkg"] = { nerdfonts.dev_debian, color = { fg = colors.ansi[2] } },
+--   ["fish"] = { nerdfonts.md_fish, color = { fg = colors.cursor_bg or nil } },
+--   ["gh"] = { nerdfonts.dev_github_badge, color = { fg = colors.brights[4] or nil } },
+--   ["git"] = { nerdfonts.dev_git, color = { fg = colors.brights[4] or nil } },
+--   ["go"] = { nerdfonts.md_language_go, color = { fg = colors.brights[5] } },
+--   ["htop"] = { nerdfonts.md_chart_areaspline, color = { fg = colors.ansi[2] } },
+--   ["kubectl"] = { nerdfonts.md_docker, color = { fg = colors.ansi[5] } },
+--   ["kuberlr"] = { nerdfonts.md_docker, color = { fg = colors.ansi[5] } },
+--   ["lazydocker"] = { nerdfonts.md_docker, color = { fg = colors.ansi[5] } },
+--   ["lazygit"] = { nerdfonts.cod_github, color = { fg = colors.brights[4] or nil } },
+--   ["lua"] = { nerdfonts.seti_lua, color = { fg = colors.ansi[5] } },
+--   ["make"] = nerdfonts.seti_makefile,
+--   ["nix"] = { nerdfonts.linux_nixos, color = { fg = colors.ansi[5] } },
+--   ["node"] = { nerdfonts.md_nodejs, color = { fg = colors.brights[2] } },
+--   ["npm"] = { nerdfonts.md_npm, color = { fg = colors.brights[2] } },
+--   ["nvim"] = { nerdfonts.custom_neovim, color = { fg = colors.ansi[3] } },
+--   ["pacman"] = { nerdfonts.md_pac_man, color = { fg = colors.ansi[4] } },
+--   ["paru"] = { nerdfonts.md_pac_man, color = { fg = colors.ansi[4] } },
+--   ["pnpm"] = { nerdfonts.md_npm, color = { fg = colors.brights[4] } },
+--   ["postgresql"] = { nerdfonts.dev_postgresql, color = { fg = colors.ansi[5] } },
+--   ["powershell.exe"] = { nerdfonts.md_console, color = { fg = colors.cursor_bg or nil } },
+--   ["psql"] = { nerdfonts.dev_postgresql, color = { fg = colors.ansi[5] } },
+--   ["pwsh.exe"] = { nerdfonts.md_console, color = { fg = colors.cursor_bg or nil } },
+--   ["rpm"] = { nerdfonts.dev_redhat, color = { fg = colors.ansi[2] } },
+--   ["redis"] = { nerdfonts.dev_redis, color = { fg = colors.ansi[5] } },
+--   ["ruby"] = { nerdfonts.cod_ruby, color = { fg = colors.brights[2] } },
+--   ["rust"] = { nerdfonts.dev_rust, color = { fg = colors.ansi[2] } },
+--   ["serial"] = nerdfonts.md_serial_port,
+--   ["ssh"] = nerdfonts.md_ssh,
+--   ["sudo"] = nerdfonts.fa_hashtag,
+--   ["tls"] = nerdfonts.md_power_socket,
+--   ["topgrade"] = { nerdfonts.md_rocket_launch, color = { fg = colors.ansi[5] } },
+--   ["unix"] = nerdfonts.md_bash,
+--   ["valkey"] = { nerdfonts.dev_redis, color = { fg = colors.brights[5] } },
+--   ["vim"] = { nerdfonts.dev_vim, color = { fg = colors.ansi[3] } },
+--   ["wget"] = nerdfonts.md_arrow_down_box,
+--   ["yarn"] = { nerdfonts.seti_yarn, color = { fg = colors.ansi[5] } },
+--   ["yay"] = { nerdfonts.md_pac_man, color = { fg = colors.ansi[4] } },
+--   ["yazi"] = { nerdfonts.md_duck, color = { fg = colors.brights[4] or nil } },
+--   ["yum"] = { nerdfonts.dev_redhat, color = { fg = colors.ansi[2] } },
+--   ["zsh"] = { nerdfonts.dev_terminal, color = { fg = colors.cursor_bg or nil } },
+-- }
+
+-- special behavior for certain processes
+---@type table<string, string | fun(tab): string>
+local tab_label_by_foreground_process_name = {
+  psql = function()
+    return wezterm.format({
+      { Foreground = { Color = C.Comment } },
+      { Text = nerdfonts.dev_postgresql .. " " },
+      { Foreground = { Color = C.Foreground } },
+      { Text = " psql" },
+    })
+  end,
+  ssh = "ssh",
+  clickhouse = "clickhouse",
+}
+
+local tab_label = function(tab, opts)
+  opts = opts or {}
+
+  -- get the foreground process name if available
+  if tab.active_pane and tab.active_pane.foreground_process_name then
+    foreground_process_name = tab.active_pane.foreground_process_name
+    foreground_process_name = basename(foreground_process_name) or foreground_process_name
   end
 
+  -- fallback to the title if the foreground process name is unavailable
+  -- Wezterm uses OSC 1/2 escape sequences to guess the process name and set the title
+  -- see https://wezfurlong.org/wezterm/config/lua/pane/get_title.html
+  -- title defaults to 'wezterm' if another name is unavailable
+  -- Also, when running under WSL, try to use the OSC 1/2 escape sequences as well
+  if foreground_process_name == "" or foreground_process_name == "wslhost.exe" then
+    foreground_process_name = (tab.tab_title and #tab.tab_title > 0) and tab.tab_title or tab.active_pane.title
+  end
+
+  -- if the tab active pane contains a non-local domain, use the domain name
+  if foreground_process_name == "wezterm" then
+    foreground_process_name = tab.active_pane.domain_name ~= "local" and tab.active_pane.domain_name or "wezterm"
+  end
+
+  local title = tab.tab_title
+  if title == "" or title == "default" then
+    local process_title = tab_label_by_foreground_process_name[foreground_process_name]
+    if type(process_title) == "string" then
+      title = process_title
+    elseif type(process_title) == "boolean" then
+      if process_title then
+        title = foreground_process_name
+      end
+    elseif process_title then
+      title = process_title(tab)
+    end
+  end
+
+  if title ~= "" and title ~= "default" then
+    return wezterm.format({
+      { Foreground = { Color = C.Pink } },
+      { Text = pad(title) },
+      "ResetAttributes",
+    })
+  end
+
+  local insert = table.insert
   local fmt = {}
   if tab.active_pane.current_working_dir then
     local cwd = tab.active_pane.current_working_dir.file_path
@@ -193,11 +309,11 @@ tabline.setup({
         icons_enabled = false,
         padding = 2,
         domain_to_icon = {
-          default = wezterm.nerdfonts.md_monitor,
-          ssh = wezterm.nerdfonts.md_ssh,
-          wsl = wezterm.nerdfonts.md_microsoft_windows,
-          docker = wezterm.nerdfonts.md_docker,
-          unix = wezterm.nerdfonts.cod_terminal_linux,
+          default = nerdfonts.md_monitor,
+          ssh = nerdfonts.md_ssh,
+          wsl = nerdfonts.md_microsoft_windows,
+          docker = nerdfonts.md_docker,
+          unix = nerdfonts.cod_terminal_linux,
         },
       },
     },

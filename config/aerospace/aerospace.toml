@@ -45,38 +45,7 @@ inherit-env-vars = true
 [exec.env-vars]
 # echo 'PATH = """"\\\n  '${(pj.:\\\n  .)path/$HOME/\$HOME}'\\\n  """'
 PATH = """"\
-  $HOME/.dotfiles/bin:\
-  $HOME/.dotfiles/test/bats/bin:\
-  /nix/store/8c5jbmzjykkjswmzy81rdbv21aldg0sf-alejandra-4.0.0/bin:\
-  /nix/store/ck98gmb5hwgwjxqzd62nq09qcdrq190n-agenix-0.15.0/bin:\
-  /nix/store/4v1457kd3dgip17z1ihdbmz75iw2pjr4-just-1.40.0/bin:\
-  /nix/store/zghwarp578vac44jvy9qsq5imfvgkqs8-age-1.2.1/bin:\
-  /nix/store/if2dyn5w4pxfj13a6di2z06jsdd2jjl1-ssh-to-age-1.1.11/bin:\
-  /nix/store/f8msmw8xv2zvf85510y6rcgs4hasx8y5-sops-3.10.2/bin:\
-  /nix/store/1g645wydyvns7dy8gy27dq0n3rbkd712-clang-wrapper-19.1.7/bin:\
-  /nix/store/702wr5c2h7z8r6nhl7sjrw5d0af9xbdv-clang-19.1.7/bin:\
-  /nix/store/bcdc67d3d3jkbl35ccxmvyan5kmic9lc-coreutils-9.7/bin:\
-  /nix/store/i11z47x31pkhxbz54fq8jxhmz2psh1nb-cctools-binutils-darwin-wrapper-1010.6/bin:\
-  /nix/store/y027c8mz3c24xgm3p7q3y6mxc3bdw5n8-cctools-binutils-darwin-1010.6/bin:\
-  /nix/store/8rpckbz34ja92cpjlng3pv486zrdj10l-xcbuild-0.1.1-unstable-2019-11-20-xcrun/bin:\
-  /nix/store/vh87hyvf719ma4nv00blnx4sxm4wd58g-libiconv-109/bin:\
-  /nix/store/bcdc67d3d3jkbl35ccxmvyan5kmic9lc-coreutils-9.7/bin:\
-  /nix/store/0y9h913azlk672va24i34l204hv16aj6-findutils-4.10.0/bin:\
-  /nix/store/ixcmx66430yb3y5g0gn8qgiwsfks87k0-diffutils-3.12/bin:\
-  /nix/store/s61pik234nad4ijzlk6y2681xlcxnln7-gnused-4.9/bin:\
-  /nix/store/lxdrljxbda4gh4i93kp861ljrl0jixvg-gnugrep-3.12/bin:\
-  /nix/store/kdfkv0klzis9jaaba1g0gf0cgllpjnbz-gawk-5.3.2/bin:\
-  /nix/store/lpxsvgscb0i36hfp3q6m87ppcnin966i-gnutar-1.35/bin:\
-  /nix/store/ggkhsn2jdqxv525pxbm4p2hqyxmzyck1-gzip-1.14/bin:\
-  /nix/store/7ikfpqpxyl3pz4s30r33cvp2wfvwrcdm-bzip2-1.0.8-bin/bin:\
-  /nix/store/r7m07s173xa5nlii49999m0666i4sh27-gnumake-4.4.1/bin:\
-  /nix/store/nravshvfviv75plf26nwfwzg8ldl3z8s-bash-5.2p37/bin:\
-  /nix/store/83qyi69c7sq3vx7zvah1pimbwvsa66ya-patch-2.8/bin:\
-  /nix/store/hkxz64h72j6fhbdcms0jhmzz1d8lnrak-xz-5.8.1-bin/bin:\
-  /nix/store/am9yccjybn4hlp7vy4ld2iafqp70n68i-file-5.45/bin:\
-  $HOME/.dotfiles/.direnv/bin:\
-  $HOME/.local/state/fnm_multishells/59649_1750788925048/bin:\
-  $HOME/.cache/antidote/https-COLON--SLASH--SLASH-github.com-SLASH-romkatv-SLASH-zsh-bench:\
+  $HOME/.local/state/fnm_multishells/82965_1755416753951/bin:\
   $HOME/.config/emacs/bin:\
   /opt/homebrew/bin:\
   /opt/homebrew/sbin:\
@@ -213,16 +182,16 @@ alt-semicolon = "mode service"
 alt-u = "mode summon"
 
 [mode.service.binding]
-alt-shift-h = ["join-with left", "mode main"]
-alt-shift-j = ["join-with down", "mode main"]
-alt-shift-k = ["join-with up", "mode main"]
-alt-shift-l = ["join-with right", "mode main"]
+shift-h = ["join-with left", "mode main"]
+shift-j = ["join-with down", "mode main"]
+shift-k = ["join-with up", "mode main"]
+shift-l = ["join-with right", "mode main"]
 r = ["reload-config", "exec-and-forget hs -c 'hs.reload()'", "mode main"]
 c = ["exec-and-forget hs -c 'hs.toggleConsole()'", "mode main"]
-d = [
-  "exec-and-forget zsh -lc 'aerospace debug-windows | logger -i'",
-  "mode main",
-]
+# d = [
+#   "exec-and-forget zsh -lc 'aerospace debug-windows | logger -i'",
+#   "mode main",
+# ]
 t = ["mode main", "enable toggle"]
 f = ["flatten-workspace-tree", "mode main"]
 q = "mode main"
@@ -369,6 +338,10 @@ run = "layout floating"
 if.app-id = "com.mitchellh.ghostty"
 if.window-title-regex-substring = "Configuration Errors"
 run = "layout floating"
+
+[[on-window-detected]]
+if.app-id = "com.mitchellh.ghostty"
+run = "layout tiling"
 
 [[on-window-detected]]
 if.app-id = "com.tinyspeck.slackmacgap"

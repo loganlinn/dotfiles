@@ -33,10 +33,12 @@
         ../../nix/home/dev/javascript.nix
         ../../nix/home/docker.nix
         ../../nix/home/doom
+        ../../nix/home/ghostty.nix
         ../../nix/home/just
         ../../nix/home/kitty
         ../../nix/home/neovide.nix
         ../../nix/home/nixvim
+        ../../nix/home/pet.nix
         ../../nix/home/pretty.nix
         ../../nix/home/terraform.nix
         ../../nix/home/tmux.nix
@@ -47,6 +49,7 @@
       programs.asciinema.enable = true;
       programs.passage.enable = true;
       programs.age-op.enable = true;
+      programs.ghostty.enable = true;
       programs.kitty.enable = true;
       programs.nixvim = {
         enable = true;
@@ -54,6 +57,9 @@
         plugins.lsp.servers.nixd.settings.options = {
           darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
         };
+      };
+      programs.pet = {
+        enable = true;
       };
       programs.wezterm.enable = true;
       programs.zsh = {
@@ -87,17 +93,16 @@
         # lazyjj
       ];
       xdg.enable = true;
-      manual.html.enable = true;
+      # manual.html.enable = true;
       home.stateVersion = "22.11";
     };
 
   programs.aerospace.enable = true;
   programs.emacs-plus.enable = true;
   programs.hammerspoon.enable = true;
-  programs.podman-desktop.enable = true;
+  programs.podman-desktop.enable = false;
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
-
   services.kanata.enable = false;
   services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
