@@ -43,13 +43,10 @@ in
     gdc = "gd --cached";
     gfo = "git fetch --all";
     glg = "git log --oneline --decorate";
-    gl = "git pull";
-    glr = "git pull --rebase";
-    gp = "git push";
-    gtl = ''git rev-parse --show-toplevel'';
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
-    st = "git status";
+    gtl = ''git rev-parse --show-toplevel'';
     gw = "git show";
+    st = "git status";
   };
 
   my.shellScripts = {

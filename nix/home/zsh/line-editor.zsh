@@ -55,7 +55,7 @@ key_info=(
   'Insert'       "$terminfo[kich1]"
   'Home'         "$terminfo[khome]"
   'PageUp'       "$terminfo[kpp]"
-  'End'          "$terminfo[kend]"
+  'End'          "$terminfo[kind]"
   'PageDown'     "$terminfo[knp]"
   'Up'           "$terminfo[kcuu1]"
   'Left'         "$terminfo[kcub1]"
@@ -220,7 +220,7 @@ function expand-or-complete-with-indicator {
     zle expand-or-complete
     return
   fi
-  print -Pn "$indicator"
+  print -On "$indicator"
   zle expand-or-complete
   zle redisplay
 }

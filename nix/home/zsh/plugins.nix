@@ -12,24 +12,24 @@ with lib;
       enable = true;
       plugins = [
         "aloxaf/fzf-tab"
-        "mattmc3/zfunctions" # $ZDOTDIR/functions (see below)
-        "mattmc3/zman"
-        "mattmc3/zsh-safe-rm"
-        "mehalter/zsh-nvim-appname" # nvapp
-        "romkatv/zsh-bench kind:path"
+        # "mattmc3/zfunctions" # $ZDOTDIR/functions (see below)
+        # "mattmc3/zman"
+        # "mattmc3/zsh-safe-rm"
+        # "mehalter/zsh-nvim-appname" # nvapp
+        # "romkatv/zsh-bench kind:path"
         "wfxr/forgit"
         "zdharma-continuum/fast-syntax-highlighting kind:defer"
-        "zsh-users/zsh-history-substring-search"
-        "marlonrichert/zsh-edit"
-        "marlonrichert/zcolors"
+        # "zsh-users/zsh-history-substring-search"
+        # "marlonrichert/zsh-edit"
+        # "marlonrichert/zcolors"
 
-        "getantidote/use-omz" # handle OMZ dependencies
-        "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
-        "ohmyzsh/ohmyzsh path:plugins/colored-man-pages"
-        "ohmyzsh/ohmyzsh path:plugins/copybuffer" # ctrl-o
-        "ohmyzsh/ohmyzsh path:plugins/copyfile"
-        "ohmyzsh/ohmyzsh path:plugins/copypath"
-        "ohmyzsh/ohmyzsh path:plugins/extract"
+        # "getantidote/use-omz" # handle OMZ dependencies
+        # "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
+        # "ohmyzsh/ohmyzsh path:plugins/colored-man-pages"
+        # "ohmyzsh/ohmyzsh path:plugins/copybuffer" # ctrl-o
+        # "ohmyzsh/ohmyzsh path:plugins/copyfile"
+        # "ohmyzsh/ohmyzsh path:plugins/copypath"
+        # "ohmyzsh/ohmyzsh path:plugins/extract"
 
         # "olets/zsh-abbr kind:defer"
         # "belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup"

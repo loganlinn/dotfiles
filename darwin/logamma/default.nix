@@ -27,6 +27,7 @@
         self.homeModules.common
         self.homeModules.nix-colors
         # self.homeModules.opnix
+        ../../nix/home/atuin.nix
         ../../nix/home/asciinema.nix
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
@@ -60,6 +61,8 @@
       };
       programs.pet = {
         enable = true;
+        snippets = [
+        ];
       };
       programs.wezterm.enable = true;
       programs.zsh = {
@@ -80,6 +83,7 @@
         google-cloud-sdk
         ipcalc
         jc
+        jnv
         kcat
         mkcert
         # process-compose

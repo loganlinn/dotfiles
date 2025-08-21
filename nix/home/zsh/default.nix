@@ -163,8 +163,8 @@ with lib;
           ''
         ))
         # (mkAfter (section "nixpkgs.zsh" (readFile ./nixpkgs.zsh)))
+        (mkAfter (section "line-editor.zsh" (readFile ./line-editor.zsh))) # this file is doing too much
         # (mkAfter (section "wezterm.zsh" (readFile ./wezterm.zsh)))
-        (mkAfter (section "line-editor.zsh" (readFile ./line-editor.zsh)))
         (mkAfter (
           section "Keys" ''
             bindkey "^[[1;3C" forward-word
@@ -172,13 +172,14 @@ with lib;
             bindkey -s '^G,' ' $(git rev-parse --show-cdup)\t'
             bindkey -s '^G.' ' "$(git rev-parse --show-prefix)"\t'
             bindkey -s '^G~' ' "$(git rev-parse --show-toplevel)"\t'
-            bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
-            bindkey -s '^G^S' ' git snapshot^M'
             bindkey -s '^G^_' ' "$(git rev-parse --show-toplevel)"\t' # i.e. C-g C-/
-            bindkey -s '^G^c' ' gh pr checks^M'
-            bindkey -s '^G^f' ' git fetch^M'
-            bindkey -s '^G^g' ' git status^M'
-            bindkey -s '^G^s' ' git snapshot^M'
+            # bindkey -s '^G^G' ' git status^M' # ctrl-space (^M is accept line)
+            # bindkey -s '^G^c' ' gh pr checks^M'
+            # bindkey -s '^G^f' ' git fetch^M'
+            # bindkey -s '^G^g' ' git status^M'
+            # bindkey -s '^G^s' ' git snapshot^M'
+            # bindkey -s '^G^S' ' git snapshot^M'
+
             copy-line-to-clipboard() { <<<"$EDITOR" clipcopy; }
             zle -N copy-to-clipboard
             bindkey '^Y' copy-to-clipboard
