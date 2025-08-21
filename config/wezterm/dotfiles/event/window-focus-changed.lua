@@ -6,12 +6,12 @@ wezterm.on("window-focus-changed", function(window, pane)
   local workspace = mux_window:get_workspace()
   local domain = pane:get_domain_name()
 
-  log.info(
-    "window=" .. tostring(window),
-    "pane=" .. tostring(pane),
-    "workspace=" .. tostring(workspace),
-    "domain=" .. tostring(domain)
-  )
+  -- log.info(
+  --   "window=" .. tostring(window),
+  --   "pane=" .. tostring(pane),
+  --   "workspace=" .. tostring(workspace),
+  --   "domain=" .. tostring(domain)
+  -- )
 
   -- if domain == "TermWizTerminalDomain" then
   --   log.info("detected wezterm configuration error window")

@@ -6,16 +6,27 @@ local foreground_process_name = ""
 local util = require("dotfiles.util")
 local basename = util.basename
 local dirname = util.dirname
-local lpad = function(txt, s)
-  s = s or " "
-  return s .. txt
+local str = wezterm.to_string
+local lpad, rpad = wezterm.pad_left, wezterm.pad_right
+local ltrunc, rtrunc = wezterm.truncate_left, wezterm.truncate_right
+local lmargin = function(s, n)
+  n = n or 1
+  while n > 0 do
+    s = " " .. s
+    n = n - 1
+  end
+  return s
 end
-local rpad = function(txt, s)
-  s = s or " "
-  return txt .. s
+local rmargin = function(s, n)
+  n = n or 1
+  while n > 0 do
+    s = s .. " "
+    n = n - 1
+  end
+  return s
 end
-local pad = function(txt, l, r)
-  return lpad(rpad(txt, r), l)
+local margin = function(s, n1, n2)
+  return lmargin(rmargin(s, n1), n2 or n1)
 end
 
 -- https://wezfurlong.org/wezterm/config/lua/color/index.html#available-methods
@@ -43,7 +54,7 @@ local function active_key_table(window)
       { Background = { Color = ansi[6] } },
       { Foreground = { Color = ansi[1] } },
       { Attribute = { Intensity = "Bold" } },
-      { Text = pad(key_table .. " " .. nerdfonts.cod_layers_dot) },
+      { Text = margin(key_table .. " " .. nerdfonts.cod_layers_dot) },
       "ResetAttributes",
     })
   else
@@ -56,7 +67,7 @@ local function active_key_table(window)
 end
 
 local function leader_key()
-  local leader_text = pad(nerdfonts.md_home_floor_l)
+  local leader_text = margin(nerdfonts.md_home_floor_l, 1)
   -- cache static text formats
   local leader_active = util.delay(function()
     local scheme = tabline.get_colors().scheme
@@ -201,7 +212,7 @@ local tab_label = function(tab, opts)
   if title ~= "" and title ~= "default" then
     return wezterm.format({
       { Foreground = { Color = C.Pink } },
-      { Text = pad(title) },
+      { Text = margin(title, 1) },
       "ResetAttributes",
     })
   end
@@ -246,10 +257,7 @@ end
 
 local options = {
   icons_enabled = false,
-  section_separators = {
-    --   left = nerdfonts.pl_left_hard_divider,
-    --   right = nerdfonts.pl_right_hard_divider,
-  },
+  -- section_separators = { left = nerdfonts.pl_left_hard_divider, right = nerdfonts.pl_right_hard_divider },
   -- component_separators = { left = "", right = "" },
   -- tab_separators = { left = "", right = "" },
   padding = 1,
@@ -257,7 +265,8 @@ local options = {
   theme_overrides = {
     normal_mode = {
       -- different color workspace name (prob a better place to set this)
-      b = { bg = C.Background:darken(0.2), fg = C.Foreground },
+      -- b = { bg = C.Background:darken(0.2), fg = C.Foreground },
+      b = { bg = C.CurrentLine, fg = C.Foreground },
     },
     copy_mode = {},
     search_mode = {},
@@ -270,6 +279,21 @@ local options = {
   },
 }
 
+local function pane_title(window)
+  local tabs = window:mux_window():tabs()
+  if #tabs > 5 then
+    return ""
+  end
+
+  local tab = window and window:active_tab()
+  local pane = tab and tab:active_pane()
+  local title = pane and pane:get_title() or ""
+  if #title > 42 then
+    title = rtrunc(title, 39) .. "..."
+  end
+  return margin(title, 1)
+end
+
 tabline.setup({
   options = options,
   sections = {
@@ -277,15 +301,10 @@ tabline.setup({
       { "mode", padding = 2 },
     },
     tabline_b = {
-      function(window)
-        if window and window.window_id then
-          return " " .. window:window_id() .. " "
-        end
-      end,
-      { "workspace", padding = 1 },
+      { "workspace", padding = 2 },
     },
     tabline_c = {
-      "    ",
+      -- "    ",
     },
     tab_active = tab_section(true),
     tab_inactive = tab_section(false),
@@ -295,26 +314,41 @@ tabline.setup({
       -- leader_key(),
     },
     tabline_y = {
-      {
-        "window",
-        padding = 2,
-        cond = function(window)
-          return window:mux_window():get_title() == "default"
-        end,
-      },
+      pane_title,
+
+      -- function(window)
+      --   return string.format(
+      --     " %s, %s, %s ",
+      --     window:window_id(),
+      --     window:active_tab():tab_id(),
+      --     window:active_pane():pane_id()
+      --   )
+      -- end,
+
+      -- {
+      --   "window",
+      --   padding = 2,
+      --   cond = function(window)
+      --     return window:mux_window():get_title() == "default"
+      --   end,
+      -- },
+      -- {
+      --   "domain",
+      --   icons_enabled = false,
+      --   padding = 2,
+      --   domain_to_icon = {
+      --     default = nerdfonts.md_monitor,
+      --     ssh = nerdfonts.md_ssh,
+      --     wsl = nerdfonts.md_microsoft_windows,
+      --     docker = nerdfonts.md_docker,
+      --     unix = nerdfonts.cod_terminal_linux,
+      --   },
+      -- },
     },
     tabline_z = {
       {
-        "domain",
-        icons_enabled = false,
-        padding = 2,
-        domain_to_icon = {
-          default = nerdfonts.md_monitor,
-          ssh = nerdfonts.md_ssh,
-          wsl = nerdfonts.md_microsoft_windows,
-          docker = nerdfonts.md_docker,
-          unix = nerdfonts.cod_terminal_linux,
-        },
+        "datetime",
+        style = "%F %I:%M%P", -- 2025-08-20 01:23pm
       },
     },
   },

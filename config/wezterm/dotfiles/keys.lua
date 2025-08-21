@@ -1,4 +1,10 @@
 local wezterm = require("wezterm")
+local str = wezterm.to_string
+local info, warn = wezterm.log_info, wezterm.log_warn
+local lpad, rpad = wezterm.pad_left, wezterm.pad_right
+local pad = function(s, n)
+  return lpad(rpad(s, n), n)
+end
 
 local action = require("dotfiles.action")
 
@@ -12,8 +18,8 @@ local SHIFT = [[SHIFT]]
 local LEADER = [[LEADER]]
 local SUPER = [[SUPER]]
 local MOD = join_mods({ CTRL, SHIFT })
-local SHIFT_SUPER = join_mods({ SHIFT, SUPER })
-local SHIFT_LEADER = join_mods({ SHIFT, LEADER })
+local SUPER_SHIFT = join_mods({ SHIFT, SUPER })
+local LEADER_SHIFT = join_mods({ SHIFT, LEADER })
 
 local M = {
   NONE = NONE,
@@ -56,7 +62,7 @@ function M.apply_to_config(config)
     { MOD, "R", wezterm.action.RotatePanes("CounterClockwise") },
     { MOD, "S", wezterm.action.PaneSelect({ mode = "SwapWithActive" }) },
     { MOD, "Z", wezterm.action.TogglePaneZoomState },
-    { SHIFT_LEADER, "T", action.move_pane_to_new_tab({ activate = true }) },
+    { LEADER_SHIFT, "T", action.move_pane_to_new_tab({ activate = true }) },
     { MOD, "B", wezterm.action.PaneSelect({ mode = "MoveToNewWindow" }) },
     { SUPER, "1", wezterm.action.ActivateTab(0) },
     { SUPER, "2", wezterm.action.ActivateTab(1) },
@@ -78,58 +84,98 @@ function M.apply_to_config(config)
     { SUPER, "n", wezterm.action.SpawnWindow },
     { SUPER, "PageDown", wezterm.action.ToggleAlwaysOnBottom },
     { SUPER, "PageUp", wezterm.action.ToggleAlwaysOnTop },
-    -- TODO use global justfile
-    { MOD, "&", action.just({ args = { "--choose" } }) },
-    { MOD, "9", wezterm.action.SwitchWorkspaceRelative(-1) },
-    { MOD, "0", wezterm.action.SwitchWorkspaceRelative(1) },
+    {
+      MOD,
+      "!",
+      action.switch_to_workspace({
+        name = "gamma", -- pad("🧠", 2),
+        spawn = {
+          cwd = wezterm.home_dir .. "/src/github.com/gamma-app",
+          set_environment_variables = {
+            -- ZDOTDIR = os.getenv("ZDOTDIR"),
+            -- EDITOR = os.getenv("EDITOR"),
+          },
+          domain = "DefaultDomain",
+        },
+      }),
+    },
+    {
+      MOD,
+      "@",
+      action.switch_to_workspace({
+        name = "dotfiles", -- pad("🏠", 2),
+        spawn = {
+          cwd = wezterm.home_dir .. "/.dotfiles",
+          set_environment_variables = {
+            -- ZDOTDIR = os.getenv("ZDOTDIR"),
+            -- EDITOR = os.getenv("EDITOR"),
+          },
+          domain = "CurrentPaneDomain",
+        },
+      }),
+    },
+    {
+      MOD,
+      "#",
+      action.switch_to_workspace({
+        name = pad("🚀", 2),
+        spawn = {
+          args = { os.getenv("SHELL"), "-lic", "container-use terminal" },
+          set_environment_variables = {
+            -- PATH = os.getenv("PATH"),
+            -- ZDOTDIR = os.getenv("ZDOTDIR"),
+            -- EDITOR = os.getenv("EDITOR"),
+            DAGGER_NO_NAG = "1",
+          },
+          domain = "CurrentPaneDomain",
+        },
+      }),
+    },
+    { MOD, "$", action.edit_last_output },
+    { MOD, "%", action.edit_last_output },
+    { MOD, "^", action.edit_selection_text },
+    { MOD, "&", action.edit_pane_text },
+    { MOD, "*", action.edit_scrollback_text },
+    { MOD, "(", wezterm.action.SwitchWorkspaceRelative(-1) },
+    { MOD, ")", wezterm.action.SwitchWorkspaceRelative(1) },
+    { LEADER, "1", action.switch_to_workspace({ index = 1 }) },
+    { LEADER, "2", action.switch_to_workspace({ index = 2 }) },
+    { LEADER, "3", action.switch_to_workspace({ index = 3 }) },
+    { LEADER, "4", action.switch_to_workspace({ index = 4 }) },
+    { LEADER, "5", action.switch_to_workspace({ index = 5 }) },
+    { LEADER, "6", action.switch_to_workspace({ index = 6 }) },
+    { LEADER, "7", action.switch_to_workspace({ index = 7 }) },
+    { LEADER, "8", action.switch_to_workspace({ index = 8 }) },
     { LEADER, "?", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|KEY_ASSIGNMENTS" }) },
-    { LEADER, ".", action.rename_workspace },
-    { LEADER, ",", action.rename_tab },
-    { LEADER, "p", action.switch_workspace },
+    { SUPER, ".", action.rename_workspace },
+    { SUPER_SHIFT, ">", action.rename_tab },
     { MOD, "c", wezterm.action.CopyTo("Clipboard") },
     { MOD, "v", wezterm.action.PasteFrom("Clipboard") },
     { LEADER, "v", wezterm.action.ActivateCopyMode },
     { MOD, "F", wezterm.action.QuickSelect },
     { MOD, "E", action.quick_select_open }, -- https://loganlinn.com
     { LEADER, "Space", wezterm.action.ActivateCommandPalette },
-    { SHIFT_SUPER, "E", action.browse_current_working_dir },
+    { SUPER_SHIFT, "E", action.browse_current_working_dir },
     { MOD, "Home", wezterm.action.ScrollToTop },
     { MOD, "PageDown", wezterm.action.ScrollToPrompt(1) },
     { MOD, "PageUp", wezterm.action.ScrollToPrompt(0) },
     { MOD, "End", wezterm.action.ScrollToBottom },
     { SUPER, "f", wezterm.action.Search({ CaseSensitiveString = "" }) },
-    { SHIFT_SUPER, "0", wezterm.action.ResetFontSize },
-    { SHIFT_SUPER, "-", wezterm.action.DecreaseFontSize },
-    { SHIFT_SUPER, "=", wezterm.action.IncreaseFontSize },
-    { SHIFT_SUPER, "Q", wezterm.action.QuitApplication },
+    { SUPER_SHIFT, "-", wezterm.action.DecreaseFontSize },
+    { SUPER_SHIFT, "0", wezterm.action.ResetFontSize },
+    { SUPER_SHIFT, "=", wezterm.action.IncreaseFontSize },
+    { SUPER_SHIFT, "I", wezterm.action.ShowDebugOverlay },
+    { SUPER_SHIFT, "D", action.show_hammerspoon_repl },
+    { SUPER_SHIFT, "Q", wezterm.action.QuitApplication },
+    { SUPER_SHIFT, "R", wezterm.action.ReloadConfiguration },
+    { SUPER_SHIFT, ",", action.show_config },
+    { SUPER_SHIFT, "?", action.show_keys },
     { SUPER, "UpArrow", wezterm.action.ScrollToPrompt(-1) },
     { SUPER, "DownArrow", wezterm.action.ScrollToPrompt(1) },
     { SUPER, "Home", wezterm.action.ScrollToTop },
     { SUPER, "PageDown", wezterm.action.ScrollByPage(1) },
     { SUPER, "PageUp", wezterm.action.ScrollByPage(-1) },
     { SUPER, "End", wezterm.action.ScrollToBottom },
-    { SUPER, "d", wezterm.action.ShowDebugOverlay },
-    {
-      SUPER,
-      "F2",
-      wezterm.action.SpawnCommandInNewTab({
-        args = { "zsh", "-lc", [[
-        trap 'echo "Quit"; exit 0' INT
-        exec hs -A
-      ]] },
-      }),
-    },
-    { SUPER, "F3", action.show_config },
-    {
-      SUPER,
-      "F5",
-      wezterm.action.Multiple({
-        wezterm.action.ReloadConfiguration,
-        wezterm.action_callback(function(window, pane)
-          -- TODO show visual notification
-        end),
-      }),
-    },
     { SUPER, "F6", action.debug_window },
     { SUPER, "F7", action.debug_pane },
     { SUPER, "F8", action.debug_globals },
@@ -140,6 +186,11 @@ function M.apply_to_config(config)
     { LEADER, "j", wezterm.action.SplitPane({ direction = "Down", size = { Cells = 20 } }) },
     { LEADER, "k", wezterm.action.SplitPane({ direction = "Up", size = { Cells = 20 } }) },
     { LEADER, "l", wezterm.action.SplitPane({ direction = "Right", size = { Cells = 100 } }) },
+
+    { SUPER, "h", wezterm.action.SplitPane({ direction = "Left", size = { Cells = 100 } }) },
+    { SUPER, "j", wezterm.action.SplitPane({ direction = "Down", size = { Cells = 20 } }) },
+    { SUPER, "k", wezterm.action.SplitPane({ direction = "Up", size = { Cells = 20 } }) },
+    { SUPER, "l", wezterm.action.SplitPane({ direction = "Right", size = { Cells = 100 } }) },
 
     { MOD, "p", wezterm.action.ActivateKeyTable({ name = "Select" }) },
     Select = {
@@ -179,13 +230,6 @@ function M.apply_to_config(config)
     --   }) },
     -- },
   }
-  for i = 1, 8 do
-    table.insert(bindings, {
-      key = tostring(i),
-      mods = MOD,
-      action = wezterm.action.ActivateWindow(i - 1),
-    })
-  end
 
   M.bind(config, bindings)
 

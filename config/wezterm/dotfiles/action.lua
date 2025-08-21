@@ -203,7 +203,7 @@ end
 M.rename_tab = action_callback(function(window, pane)
   window:perform_action(
     wezterm.action.PromptInputLine({
-      description = format_prompt_description("Rename tab:"),
+      description = format_prompt_description("Tab name:"),
       initial_value = window:active_tab():get_title(),
       action = action_callback(function(window, _, input)
         if input and input ~= "" then
@@ -215,16 +215,20 @@ M.rename_tab = action_callback(function(window, pane)
   )
 end)
 
-M.rename_workspace = wezterm.action.Nop
--- M.rename_workspace = wezterm.action.PromptInputLine({
---   description = format_prompt_description("Rename workspace:"),
---   initial_value = wezterm.mux.get_active_workspace(),
---   action = action_callback(function(_, _, input)
---     if input and input ~= "" then
---       wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
---     end
---   end),
--- })
+M.rename_workspace = action_callback(function(window, pane)
+  window:perform_action(
+    wezterm.action.PromptInputLine({
+      description = format_prompt_description("Workspace name:"),
+      initial_value = wezterm.mux.get_active_workspace(),
+      action = wezterm.action_callback(function(window, pane, input)
+        if input and input ~= "" then
+          wezterm.mux.rename_workspace(wezterm.mux.get_active_workspace(), input)
+        end
+      end),
+    }),
+    pane
+  )
+end)
 
 M.debug_window = action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
@@ -245,6 +249,27 @@ M.show_config = action_callback(function(window, _)
   local m = require("dotfiles.util.debug")
   m.inspect(window, window:effective_config(), tostring(window) .. ".effective_config")
 end)
+
+M.show_config = action_callback(function(window, _)
+  local m = require("dotfiles.util.debug")
+  m.inspect(window, window:effective_config(), tostring(window) .. ".effective_config")
+end)
+
+M.show_keys = wezterm.action.SpawnCommandInNewTab({
+  args = {
+    os.getenv("SHELL"),
+    "-lc",
+    [[ wezterm show-keys | bat --file-name 'wezterm show-keys' --set-terminal-title --squeeze-blank --force-colorization ]],
+  },
+})
+
+M.show_hammerspoon_repl = wezterm.action.SpawnCommandInNewTab({
+  args = {
+    os.getenv("SHELL"),
+    "-lc",
+    [[ trap 'echo Interrupted; exit 0' INT; exec hs -A ]],
+  },
+})
 
 M.split_pane = function(args)
   args = args or {}
@@ -325,6 +350,30 @@ M.quick_select_open = wezterm.action.QuickSelectArgs({
     window:perform_action(wezterm.action.ClearSelection, pane)
   end),
 })
+
+---@param options {index: number, spawn?: table}|{name: string, spawn?: table}
+M.switch_to_workspace = function(options)
+  assert(type(options) == "table", "options must be table")
+  assert(options.name or options.index, "index or name required")
+  if options.name then
+    return wezterm.action.SwitchToWorkspace(options)
+  else
+    local index = options.index
+    assert(type(index) == "number" and index >= 1, "index must positive number")
+    return action_callback(function(window, pane)
+      local workspaces = wezterm.mux.get_workspace_names()
+      if index <= #workspaces then
+        window:perform_action(
+          wezterm.action.SwitchToWorkspace({
+            name = workspaces[index],
+            spawn = options.spawn,
+          }),
+          pane
+        )
+      end
+    end)
+  end
+end
 
 M.switch_workspace = action_callback(function(window, pane)
   -- TODO generate, cache complete list
@@ -448,6 +497,62 @@ M.quick_link_open = function(callback, application)
     end
   end)
 end
+
+local function get_last_output(pane)
+  local cursor = pane:get_cursor_position()
+  -- skip up 2 rows to skip shell prompt
+  local zone = pane:get_semantic_zone_at(0, cursor.y - 2)
+  if zone then
+    return pane:get_text_from_semantic_zone(zone)
+  end
+  return nil
+end
+
+local function edit_in_new_tab(window, pane, text)
+  if not text then
+    return nil
+  end
+  local path = os.tmpname()
+  local f = io.open(path, "w+")
+  if not f then
+    wezterm.log_error("could not open temp file for writing")
+    return
+  end
+  f:write(text)
+  f:flush()
+  f:close()
+  local args = {
+    "zsh",
+    "-ic",
+    'vi "$0"; ' .. 'wezterm cli activate-pane --pane-id "$1"',
+    path,
+    tostring(pane:pane_id()),
+  }
+  window:perform_action(wezterm.action.SpawnCommandInNewTab({ args = args }), pane)
+  wezterm.sleep_ms(1000)
+  os.remove(path)
+end
+
+M.edit_pane_text = action_callback(function(window, pane)
+  local scrollback = pane:get_lines_as_text()
+  edit_in_new_tab(window, pane, scrollback)
+end)
+
+M.edit_scrollback_text = action_callback(function(window, pane)
+  local scrollback_lines = window:get_effective_config()["scrollback_lines"]
+  local scrollback = pane:get_lines_as_text(scrollback_lines)
+  edit_in_new_tab(window, pane, scrollback)
+end)
+
+M.edit_selection_text = action_callback(function(window, pane)
+  local selection = window:get_selection_text_for_pane(pane)
+  edit_in_new_tab(window, pane, selection)
+end)
+
+M.edit_last_output = action_callback(function(window, pane)
+  local selection = get_last_output(pane)
+  edit_in_new_tab(window, pane, selection)
+end)
 
 setmetatable(M, {
   __index = function(t, k)
