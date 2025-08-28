@@ -8,14 +8,14 @@
     { pkgs, ... }:
     {
       home.packages = with pkgs; [
+        # amazon-ecr-credential-helper
         # aws-gate # Better AWS SSM Session manager CLI client
         # aws-iam-authenticator # EKS auth
+        # aws-shell # https://github.com/awslabs/aws-shell
         # aws-spend-summary
-        # aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
         # aws-sso-util # https://github.com/benkehoe/aws-sso-util
         # awsume
-        # amazon-ecr-credential-helper
-        # aws-shell # https://github.com/awslabs/aws-shell
+        aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
         awscli2
         awslogs # CloudWatch logs for humans
         awsls

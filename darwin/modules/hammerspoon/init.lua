@@ -53,7 +53,7 @@ local partial = hs.fnutils.partial
 local contains = hs.fnutils.contains
 local launchOrFocus = hs.application.launchOrFocus
 local launchOrFocusFn = partial(partial, launchOrFocus)
-local appSwitcher = function(hints)
+local appSwitcher = function(hints, focusCallback)
   if type(hints) == "string" then
     hints = { hints }
   end
@@ -73,6 +73,9 @@ local appSwitcher = function(hints)
     end
     for _, hint in ipairs(hints) do
       if launchOrFocus(hint) then
+        if focusCallback then
+          focusCallback(hs.window.focusedWindow())
+        end
         return
       end
     end
@@ -172,7 +175,9 @@ local modes = setmetatable({}, {
   end,
 })
 
-modes.main = hs.hotkey.modal
+modes.main = hs
+  .hotkey
+  .modal
   .new(HYPER, "k")
   :bind(HYPER, "k", function() -- toggle all hotkeys
     modes.main:exit()
@@ -192,7 +197,7 @@ modes.main = hs.hotkey.modal
   :bind(HYPER, "d", hs.toggleConsole)
   :bind(HYPER, "l", hs.caffeinate.lockScreen)
   :bind(HYPER, "r", hs.reload)
-  :bind(HYPER, "s", hs.hints.windowHints)
+  -- :bind(HYPER, "s", hs.hints.windowHints)
   :bind(HYPER, "x", closeNotifications)
   :bind(HYPER, "F1", function()
     hs.alert("F1")

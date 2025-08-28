@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Generates an animated version of image that shakes.
+# Based on https://gist.github.com/alisdair/ffc7c884ee36ac132131f37e3803a1fe
 
 set -euo pipefail
 [[ -z ${TRACE-} ]] || set -x

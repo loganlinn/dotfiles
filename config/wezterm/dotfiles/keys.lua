@@ -8,18 +8,14 @@ end
 
 local action = require("dotfiles.action")
 
-local function join_mods(mods)
-  return table.concat(mods, "|")
-end
-
 local NONE = [[NONE]]
 local CTRL = [[CTRL]]
 local SHIFT = [[SHIFT]]
 local LEADER = [[LEADER]]
 local SUPER = [[SUPER]]
-local MOD = join_mods({ CTRL, SHIFT })
-local SUPER_SHIFT = join_mods({ SHIFT, SUPER })
-local LEADER_SHIFT = join_mods({ SHIFT, LEADER })
+local MOD = [[CTRL|SHIFT]]
+local SUPER_SHIFT = [[SUPER|SHIFT]]
+local LEADER_SHIFT = [[LEADER|SHIFT]]
 
 local M = {
   NONE = NONE,
@@ -34,11 +30,12 @@ local M = {
 ---@param config Config
 ---@return Config
 function M.apply_to_config(config)
-  config.debug_key_events = "1" == os.getenv("WEZTERM_DEBUG_KEY_EVENTS")
+  -- config.debug_key_events = "1" == os.getenv("WEZTERM_DEBUG_KEY_EVENTS")
+  -- config.debug_key_events = true
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
-  config.keys = config.keys or {}
+  -- config.keys = config.keys or {}
   config.key_tables = config.key_tables or {}
   config.leader = {
     mods = MOD,
@@ -88,7 +85,7 @@ function M.apply_to_config(config)
       MOD,
       "!",
       action.switch_to_workspace({
-        name = "gamma", -- pad("🧠", 2),
+        name = " 🧠 ",
         spawn = {
           cwd = wezterm.home_dir .. "/src/github.com/gamma-app",
           set_environment_variables = {
@@ -103,7 +100,7 @@ function M.apply_to_config(config)
       MOD,
       "@",
       action.switch_to_workspace({
-        name = "dotfiles", -- pad("🏠", 2),
+        name = " 🏠 ",
         spawn = {
           cwd = wezterm.home_dir .. "/.dotfiles",
           set_environment_variables = {
@@ -118,7 +115,7 @@ function M.apply_to_config(config)
       MOD,
       "#",
       action.switch_to_workspace({
-        name = pad("🚀", 2),
+        name = " 🚀 ",
         spawn = {
           args = { os.getenv("SHELL"), "-lic", "container-use terminal" },
           set_environment_variables = {
@@ -131,6 +128,7 @@ function M.apply_to_config(config)
         },
       }),
     },
+    -- { SHIFT, "Return"} -- claude code
     { MOD, "$", action.edit_last_output },
     { MOD, "%", action.edit_last_output },
     { MOD, "^", action.edit_selection_text },
@@ -147,6 +145,7 @@ function M.apply_to_config(config)
     { LEADER, "7", action.switch_to_workspace({ index = 7 }) },
     { LEADER, "8", action.switch_to_workspace({ index = 8 }) },
     { LEADER, "?", wezterm.action.ShowLauncherArgs({ flags = "FUZZY|KEY_ASSIGNMENTS" }) },
+    { LEADER, "d", wezterm.action.ShowLauncherArgs({ flags = "DOMAINS" }) },
     { SUPER, ".", action.rename_workspace },
     { SUPER_SHIFT, ">", action.rename_tab },
     { MOD, "c", wezterm.action.CopyTo("Clipboard") },
@@ -165,6 +164,14 @@ function M.apply_to_config(config)
     { SUPER_SHIFT, "0", wezterm.action.ResetFontSize },
     { SUPER_SHIFT, "=", wezterm.action.IncreaseFontSize },
     { SUPER_SHIFT, "I", wezterm.action.ShowDebugOverlay },
+    {
+      [[SUPER|CTRL|SHIFT|]],
+      "I",
+      wezterm.action.Multiple({
+        action.enable_debug_key_events,
+        wezterm.action.ShowDebugOverlay,
+      }),
+    },
     { SUPER_SHIFT, "D", action.show_hammerspoon_repl },
     { SUPER_SHIFT, "Q", wezterm.action.QuitApplication },
     { SUPER_SHIFT, "R", wezterm.action.ReloadConfiguration },
@@ -179,7 +186,7 @@ function M.apply_to_config(config)
     { SUPER, "F6", action.debug_window },
     { SUPER, "F7", action.debug_pane },
     { SUPER, "F8", action.debug_globals },
-    -- { SUPER, "F9", action.toggle_debug_key_events },
+    { SUPER, "F9", action.toggle_debug_key_events },
     -- { SUPER, "F10" },
 
     { LEADER, "h", wezterm.action.SplitPane({ direction = "Left", size = { Cells = 100 } }) },
@@ -196,17 +203,24 @@ function M.apply_to_config(config)
     Select = {
       { NONE, "e", action.quick_select_open },
       { NONE, "f", wezterm.action.QuickSelect },
-      {
-        NONE,
-        "l",
-        wezterm.action.QuickSelectArgs({
-          patterns = {
-            -- TODO strip shell prompt and styling
-            "^(?!\\s*$).+$", -- non-empty line
-          },
-        }),
-      },
+      { NONE, "y", wezterm.action.QuickSelectArgs({ patterns = { "\\S+://\\S+" } }) },
+      { NONE, "l", wezterm.action.QuickSelectArgs({ patterns = { "^(?!\\s*$).+$" } }) },
+      { NONE, "w", wezterm.action.QuickSelectArgs({ patterns = { "\\w+" } }) },
+      { NONE, "d", wezterm.action.QuickSelectArgs({ patterns = { "\\d+" } }) },
+      { NONE, "h", wezterm.action.QuickSelectArgs({ patterns = { "\\h+" } }) },
+      { NONE, "c", wezterm.action.QuickSelectArgs({ patterns = { "[A-Z-_]+" } }) },
+      { NONE, "q", wezterm.action.QuickSelectArgs({ patterns = { [[(?<=["'])[^"']+(?=["'])]] } }) },
+      -- {
+      --   NONE,
+      --   "v",
+      --   wezterm.action.QuickSelectArgs({
+      --     patterns = {
+      --       [[(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:?:-(?:(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?:[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?]],
+      --     },
+      --   }),
+      -- },
     },
+    -- 1.2.3
 
     { LEADER, "i", wezterm.action.ActivateKeyTable({ name = "Insert" }) },
     Insert = {

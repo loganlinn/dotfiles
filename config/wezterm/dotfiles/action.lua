@@ -299,12 +299,15 @@ M.move_pane_to_new_tab = function(opts)
   end)
 end
 
--- Applies function to current value of window config overrides, then
--- sets configu overrides to returned value.
----@param f fun(current_config_overrides: Config|nil): Config|nil
----@param window Window
----@return Config|nil updated
-local function apply_to_config_overrides(f, window)
+local function merge_config_overrides(window, new_overrides)
+  local overrides = window:get_config_overrides() or {}
+  for k, v in pairs(new_overrides) do
+    overrides[k] = v
+  end
+  window:set_config_overrides(overrides)
+end
+
+local function update_config_overrides(f, window)
   local result = f(window:get_config_overrides())
   window:set_config_overrides(result)
   return result
@@ -330,12 +333,20 @@ M.UpdateConfigOverrides = function(param)
   end
 end
 
+M.enable_debug_key_events = action_callback(function(window, _)
+  merge_config_overrides(window, {
+    debug_key_events = true,
+  })
+end)
+
 M.toggle_debug_key_events = action_callback(function(window, _)
-  apply_to_config_overrides(function(overrides)
+  local enabled
+  update_config_overrides(function(overrides)
     overrides = overrides or {}
     overrides.debug_key_events = not overrides.debug_key_events
     return overrides
   end, window)
+  wezterm.log_info((enabled and "Enabled" or "Disabled") .. " debug key events")
 end)
 
 -- Open either URLs or paths
@@ -539,7 +550,7 @@ M.edit_pane_text = action_callback(function(window, pane)
 end)
 
 M.edit_scrollback_text = action_callback(function(window, pane)
-  local scrollback_lines = window:get_effective_config()["scrollback_lines"]
+  local scrollback_lines = window:get_effective_config().scrollback_lines
   local scrollback = pane:get_lines_as_text(scrollback_lines)
   edit_in_new_tab(window, pane, scrollback)
 end)
@@ -553,6 +564,41 @@ M.edit_last_output = action_callback(function(window, pane)
   local selection = get_last_output(pane)
   edit_in_new_tab(window, pane, selection)
 end)
+
+-- M.ssh = action_callback(function(window, pane)
+--   local ssh_hosts = wezterm.enumerate_ssh_hosts()
+--   local choices = {}
+--   for name, ssh_host in pairs(ssh_hosts) do
+--     table.insert(choices, {
+--       id = name,
+--       label = wezterm.format {
+--         {Attribute={Intensity="Bold"}},
+--         name,
+--         'ResetAttributes',
+--         wezterm.to_string(ssh_host)
+--       }
+--     })
+--   end
+--
+--   window:perform_action(
+--     wezterm.action.InputSelector({
+--       title = "SSH Hosts",
+--       description = "Choose wisely",
+--       choices = choices,
+--       fuzzy = true,
+--       action = action_callback(function(window, pane, choice_id, choice_label)
+--         window:perform_action(wezterm.action.Spawn({
+--           name = choice_label,
+--           spawn = {
+--             label = "Workspace: " .. choice_label,
+--             cwd = choice_id,
+--           },
+--         }, pane))
+--       end),
+--     }),
+--     pane
+--   )
+-- end)
 
 setmetatable(M, {
   __index = function(t, k)

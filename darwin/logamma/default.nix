@@ -67,8 +67,8 @@
       programs.wezterm.enable = true;
       programs.zsh = {
         dirHashes = {
-          g = "~/src/github.com/gamma-app";
-          gamma = "~/src/github.com/gamma-app/gamma";
+          gamma-app = "$HOME/src/github.com/gamma-app";
+          gamma = "$HOME/src/github.com/gamma-app/gamma";
         };
       };
       home.packages = with pkgs; [
