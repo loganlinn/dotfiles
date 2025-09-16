@@ -30,20 +30,45 @@ local M = {
 ---@param config Config
 ---@return Config
 function M.apply_to_config(config)
-  -- config.debug_key_events = "1" == os.getenv("WEZTERM_DEBUG_KEY_EVENTS")
-  -- config.debug_key_events = true
+  config.debug_key_events = "1" == os.getenv("WEZTERM_DEBUG_KEY_EVENTS")
   config.disable_default_key_bindings = true
   config.enable_kitty_keyboard = true
   config.enable_csi_u_key_encoding = false
-  -- config.keys = config.keys or {}
-  config.key_tables = config.key_tables or {}
   config.leader = {
     mods = MOD,
     key = "Space",
-    timeout_milliseconds = math.maxinteger,
+    timeout_milliseconds = 9223372036854775807,
   }
+  config.keys = config.keys or {}
+  config.key_tables = config.key_tables or {}
 
-  local bindings = {
+  if wezterm.gui then
+    -- Inherit default key tables (e.g. copy_mode, search_mode)
+    for k, v in pairs(wezterm.gui.default_key_tables()) do
+      config.key_tables[k] = v
+    end
+
+    -- Mouse bindings
+    config.disable_default_mouse_bindings = false
+    config.mouse_bindings = config.mouse_bindings or {}
+    table.insert(config.mouse_bindings, {
+      mods = SUPER,
+      event = { Up = { streak = 1, button = "Left" } },
+      action = wezterm.action.OpenLinkAtMouseCursor,
+    })
+    table.insert(config.mouse_bindings, {
+      mods = NONE,
+      event = { Up = { streak = 1, button = "Middle" } },
+      action = wezterm.action.OpenLinkAtMouseCursor,
+    })
+    table.insert(config.mouse_bindings, {
+      mods = NONE,
+      event = { Down = { streak = 4, button = "Left" } },
+      action = wezterm.action.SelectTextAtMouseCursor("SemanticZone"),
+    })
+  end
+
+  M.bind(config, {
     { MOD, "H", action.activate_direction("Left") },
     { MOD, "J", action.activate_direction("Down") },
     { MOD, "K", action.activate_direction("Up") },
@@ -81,54 +106,9 @@ function M.apply_to_config(config)
     { SUPER, "n", wezterm.action.SpawnWindow },
     { SUPER, "PageDown", wezterm.action.ToggleAlwaysOnBottom },
     { SUPER, "PageUp", wezterm.action.ToggleAlwaysOnTop },
-    {
-      MOD,
-      "!",
-      action.switch_to_workspace({
-        name = " 🧠 ",
-        spawn = {
-          cwd = wezterm.home_dir .. "/src/github.com/gamma-app",
-          set_environment_variables = {
-            -- ZDOTDIR = os.getenv("ZDOTDIR"),
-            -- EDITOR = os.getenv("EDITOR"),
-          },
-          domain = "DefaultDomain",
-        },
-      }),
-    },
-    {
-      MOD,
-      "@",
-      action.switch_to_workspace({
-        name = " 🏠 ",
-        spawn = {
-          cwd = wezterm.home_dir .. "/.dotfiles",
-          set_environment_variables = {
-            -- ZDOTDIR = os.getenv("ZDOTDIR"),
-            -- EDITOR = os.getenv("EDITOR"),
-          },
-          domain = "CurrentPaneDomain",
-        },
-      }),
-    },
-    {
-      MOD,
-      "#",
-      action.switch_to_workspace({
-        name = " 🚀 ",
-        spawn = {
-          args = { os.getenv("SHELL"), "-lic", "container-use terminal" },
-          set_environment_variables = {
-            -- PATH = os.getenv("PATH"),
-            -- ZDOTDIR = os.getenv("ZDOTDIR"),
-            -- EDITOR = os.getenv("EDITOR"),
-            DAGGER_NO_NAG = "1",
-          },
-          domain = "CurrentPaneDomain",
-        },
-      }),
-    },
-    -- { SHIFT, "Return"} -- claude code
+    { MOD, "!", action.switch_to_workspace_1 },
+    { MOD, "@", action.switch_to_workspace_2 },
+    { MOD, "#", action.switch_to_workspace_3 },
     { MOD, "$", action.edit_last_output },
     { MOD, "%", action.edit_last_output },
     { MOD, "^", action.edit_selection_text },
@@ -164,14 +144,6 @@ function M.apply_to_config(config)
     { SUPER_SHIFT, "0", wezterm.action.ResetFontSize },
     { SUPER_SHIFT, "=", wezterm.action.IncreaseFontSize },
     { SUPER_SHIFT, "I", wezterm.action.ShowDebugOverlay },
-    {
-      [[SUPER|CTRL|SHIFT|]],
-      "I",
-      wezterm.action.Multiple({
-        action.enable_debug_key_events,
-        wezterm.action.ShowDebugOverlay,
-      }),
-    },
     { SUPER_SHIFT, "D", action.show_hammerspoon_repl },
     { SUPER_SHIFT, "Q", wezterm.action.QuitApplication },
     { SUPER_SHIFT, "R", wezterm.action.ReloadConfiguration },
@@ -187,7 +159,6 @@ function M.apply_to_config(config)
     { SUPER, "F7", action.debug_pane },
     { SUPER, "F8", action.debug_globals },
     { SUPER, "F9", action.toggle_debug_key_events },
-    -- { SUPER, "F10" },
 
     { LEADER, "h", wezterm.action.SplitPane({ direction = "Left", size = { Cells = 100 } }) },
     { LEADER, "j", wezterm.action.SplitPane({ direction = "Down", size = { Cells = 20 } }) },
@@ -205,12 +176,12 @@ function M.apply_to_config(config)
       { NONE, "f", wezterm.action.QuickSelect },
       { NONE, "y", wezterm.action.QuickSelectArgs({ patterns = { "\\S+://\\S+" } }) },
       { NONE, "l", wezterm.action.QuickSelectArgs({ patterns = { "^(?!\\s*$).+$" } }) },
-      { NONE, "w", wezterm.action.QuickSelectArgs({ patterns = { "\\w+" } }) },
+      { NONE, "w", wezterm.action.QuickSelectArgs({ patterns = { "\\S+" } }) },
       { NONE, "d", wezterm.action.QuickSelectArgs({ patterns = { "\\d+" } }) },
       { NONE, "h", wezterm.action.QuickSelectArgs({ patterns = { "\\h+" } }) },
       { NONE, "c", wezterm.action.QuickSelectArgs({ patterns = { "[A-Z-_]+" } }) },
       { NONE, "q", wezterm.action.QuickSelectArgs({ patterns = { [[(?<=["'])[^"']+(?=["'])]] } }) },
-      -- {
+      -- { -- 1.2.3
       --   NONE,
       --   "v",
       --   wezterm.action.QuickSelectArgs({
@@ -220,7 +191,6 @@ function M.apply_to_config(config)
       --   }),
       -- },
     },
-    -- 1.2.3
 
     { LEADER, "i", wezterm.action.ActivateKeyTable({ name = "Insert" }) },
     Insert = {
@@ -237,30 +207,20 @@ function M.apply_to_config(config)
       { NONE, "l", wezterm.action.SplitPane({ top_level = true, direction = "Right" }) },
     },
 
-    -- { LEADER, "h", wezterm.action.ActivateKeyTable({ name = "Help" }) },
-    -- Help = {
-    --   { NONE, "k", wezterm.action.Multiple({
-    --     wezterm.action.ActivateKeyTable({ name = "Keybinds" }),
-    --   }) },
-    -- },
-  }
-
-  M.bind(config, bindings)
-
-  -- Mouse bindings
-  if wezterm.gui then
-    config.mouse_bindings = config.mouse_bindings or {}
-    table.insert(config.mouse_bindings, {
-      event = { Up = { streak = 1, button = "Left" } },
-      mods = SUPER,
-      action = wezterm.action.OpenLinkAtMouseCursor,
-    })
-    table.insert(config.mouse_bindings, {
-      event = { Up = { streak = 1, button = "Middle" } },
-      mods = NONE,
-      action = wezterm.action.OpenLinkAtMouseCursor,
-    })
-  end
+    { MOD, "X", wezterm.action.ActivateCopyMode },
+    { SUPER, "c", wezterm.action.ActivateCopyMode },
+    copy_mode = { -- NOTE: these extend the defaults via `wezterm.gui.default_key_tables()` above
+      { NONE, "s", wezterm.action.CopyMode({ SetSelectionMode = "SemanticZone" }) },
+      { CTRL, "p", wezterm.action.CopyMode({ MoveBackwardZoneOfType = "Prompt" }) },
+      { CTRL, "n", wezterm.action.CopyMode({ MoveForwardZoneOfType = "Prompt" }) },
+      { CTRL, "p", wezterm.action.CopyMode({ MoveBackwardZoneOfType = "Prompt" }) },
+      { CTRL, "P", wezterm.action.CopyMode({ MoveForwardZoneOfType = "Prompt" }) },
+      { CTRL, "i", wezterm.action.CopyMode({ MoveBackwardZoneOfType = "Input" }) },
+      { CTRL, "I", wezterm.action.CopyMode({ MoveForwardZoneOfType = "Input" }) },
+      { CTRL, "o", wezterm.action.CopyMode({ MoveBackwardZoneOfType = "Output" }) },
+      { CTRL, "O", wezterm.action.CopyMode({ MoveForwardZoneOfType = "Output" }) },
+    },
+  })
 
   return config
 end

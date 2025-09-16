@@ -14,7 +14,7 @@
     ../modules/hammerspoon
     ../modules/kanata
     # ../modules/opnix
-    ../modules/podman.nix
+    # ../modules/podman.nix
     ../modules/sketchybar.nix
     ../modules/sunbeam
     ../modules/xcode.nix
@@ -104,7 +104,6 @@
   programs.aerospace.enable = true;
   programs.emacs-plus.enable = true;
   programs.hammerspoon.enable = true;
-  programs.podman-desktop.enable = false;
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
   services.kanata.enable = false;
@@ -120,39 +119,84 @@
   homebrew = {
     taps = [
       "abhinav/tap"
-      "yugabyte/tap"
       "bridgecrewio/tap"
+      "pulumi/tap"
+      "yugabyte/tap"
+      "dagger/tap"
     ];
     brews = [
-      "abhinav/tap/restack"
-      "alt"
-      "borders"
-      "bridgecrewio/tap/yor"
-      "copilot-cli"
+      "aspell"
+      "caddy"
+      "cmake"
+      "curl"
+      "ddcctl"
+      "direnv"
       "duti"
+      "gcc"
+      "gh"
+      "git"
+      "gnu-getopt"
+      "grafana"
+      "hcledit"
+      "inframap"
+      "jq"
+      "just"
       "kanata"
-      # "kitty"
       "lazyjournal"
       "ldcli"
-      "localstack-cli"
-      "nss" # used by mkcert
+      "libgccjit"
+      "libtool"
+      "libvterm"
+      "luarocks"
+      "mas"
+      "mkcert"
+      "nss"
       "pngpaste"
-      "podlet"
-      "podman"
-      "podman-compose"
-      "podman-tui"
-      "sunbeam"
-      "terraform-ls"
+      "postgresql@16"
+      "redis"
+      "ripgrep"
+      "temporal"
+      "terminal-notifier"
+      "tfenv"
+      "abhinav/tap/restack"
+      "aws/tap/copilot-cli"
+      "bridgecrewio/tap/yor"
+      "d12frosted/emacs-plus/emacs-plus@31"
+      "drewdeponte/oss/git-ps-rs"
+      "felixkratz/formulae/borders"
+      "felixkratz/formulae/sketchybar"
+      "hashicorp/tap/terraform-ls"
+      "keith/formulae/zap"
+      "localstack/tap/localstack-cli"
+      "pomdtr/tap/sunbeam"
+      "pulumi/tap/esc"
+      "pulumi/tap/pulumi"
+      "tofuutils/tap/tofuenv"
       "yugabyte/tap/ybm"
+      # "dagger/tap/container-use"
+      # "dagger/tap/dagger"
+      # "drewdeponte/oss/alt:"
+      # "podlet"
+      # "podman"
+      # "podman-tui"
     ];
     casks = [
       "1password-cli"
+      "dbeaver-community"
       "discord"
       "ghostty"
+      "gimp"
+      "hammerspoon"
       "hiddenbar"
+      "karabiner-elements"
+      "keybase"
+      "kitty"
       "obs"
-      "podman-desktop"
-      "tailscale"
+      "sf-symbols"
+      "snowflake-snowsql"
+      "tailscale-app"
+      "dagger/tap/container-use"
+      "nikitabobko/tap/aerospace"
       # "1password" # currently installed manually
     ];
   };

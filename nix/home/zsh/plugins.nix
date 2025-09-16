@@ -19,7 +19,7 @@ with lib;
         # "romkatv/zsh-bench kind:path"
         "wfxr/forgit"
         "zdharma-continuum/fast-syntax-highlighting kind:defer"
-        # "zsh-users/zsh-history-substring-search"
+        "zsh-users/zsh-history-substring-search"
         # "marlonrichert/zsh-edit"
         # "marlonrichert/zcolors"
 

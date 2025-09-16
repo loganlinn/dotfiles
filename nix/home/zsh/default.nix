@@ -162,8 +162,11 @@ with lib;
             DIRSTACKSIZE=9
           ''
         ))
+
+        # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
+        (mkOrder 900 (section "line-editor.zsh" (readFile ./line-editor.zsh))) # this file is doing too much
+
         # (mkAfter (section "nixpkgs.zsh" (readFile ./nixpkgs.zsh)))
-        (mkAfter (section "line-editor.zsh" (readFile ./line-editor.zsh))) # this file is doing too much
         # (mkAfter (section "wezterm.zsh" (readFile ./wezterm.zsh)))
         (mkAfter (
           section "Keys" ''

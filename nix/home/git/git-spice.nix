@@ -28,7 +28,7 @@ in
       aliases.spice = "!${cfg.package}/bin/gs";
       extraConfig = {
         spice.branchPrompt.sort = "comitteddate";
-        spice.log.all = false;
+        spice.log.all = "false";
         spice.log.crFormat = "url";
         spice.log.pushStatusFormat = "aheadBehind";
         spice.logShort.crFormat = "id";
@@ -41,6 +41,8 @@ in
         spice.shorthand.fold = "branch fold";
         spice.shorthand.modify = "commit amend";
         spice.shorthand.move = "upstack onto";
+        spice.shorthand.pr = "!gh pr";
+        spice.shorthand.pro = "!gh pr view --web";
         spice.shorthand.publish = "stack submit --publish";
         spice.shorthand.rename = "branch rename";
         spice.shorthand.reorder = "downstack edit";
@@ -48,11 +50,9 @@ in
         spice.shorthand.squash = "branch squash";
         spice.shorthand.track = "branch track";
         spice.shorthand.untrack = "branch untrack";
-        spice.shorthand.pr = "!gh pr";
-        spice.shorthand.pro = "!gh pr view --web";
-        spice.submit.publish = false;
-        spice.submit.web = "false";
         spice.submit.draft = "false";
+        spice.submit.navigationComment = "multiple";
+        spice.submit.web = "false";
       };
     };
     programs.zsh = {

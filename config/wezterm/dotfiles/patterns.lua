@@ -16,6 +16,11 @@ patterns.NIX = {
   "sha256-.{44,128}", -- SHA256 hashes in Base64, used often in getting hashes for Nix packaging.
   "sha512-.{44,128}", -- SHA512 hashes in Base64, used often in getting hashes for Nix packaging.
 }
+patterns.CLI = {
+  "❯\\s+([^|;]+)(?=\\s*)",
+  -- "❯\\s+((?:(?<!\\|)\\||[^|])+)(?=\\s*)",
+  "\\|\\s*([^|]+)(?=\\s*)", -- TODO ||
+}
 patterns.URL = {}
 for _, rule in ipairs(wezterm.default_hyperlink_rules()) do
   table.insert(patterns.URL, rule.regex)

@@ -385,6 +385,43 @@ M.switch_to_workspace = function(options)
     end)
   end
 end
+M.switch_to_workspace_1 = M.switch_to_workspace({
+  name = " 🧠 ",
+  spawn = {
+    cwd = wezterm.home_dir .. "/src/github.com/gamma-app",
+    set_environment_variables = {
+      -- ZDOTDIR = os.getenv("ZDOTDIR"),
+      -- EDITOR = os.getenv("EDITOR"),
+    },
+    domain = "DefaultDomain",
+  },
+})
+
+M.switch_to_workspace_2 = M.switch_to_workspace({
+  name = " 🏠 ",
+  spawn = {
+    cwd = wezterm.home_dir .. "/.dotfiles",
+    set_environment_variables = {
+      -- ZDOTDIR = os.getenv("ZDOTDIR"),
+      -- EDITOR = os.getenv("EDITOR"),
+    },
+    domain = "CurrentPaneDomain",
+  },
+})
+
+M.switch_to_workspace_3 = M.switch_to_workspace({
+  name = " 🚀 ",
+  spawn = {
+    args = { os.getenv("SHELL"), "-lic", "container-use terminal" },
+    set_environment_variables = {
+      -- PATH = os.getenv("PATH"),
+      -- ZDOTDIR = os.getenv("ZDOTDIR"),
+      -- EDITOR = os.getenv("EDITOR"),
+      DAGGER_NO_NAG = "1",
+    },
+    domain = "CurrentPaneDomain",
+  },
+})
 
 M.switch_workspace = action_callback(function(window, pane)
   -- TODO generate, cache complete list
@@ -564,6 +601,8 @@ M.edit_last_output = action_callback(function(window, pane)
   local selection = get_last_output(pane)
   edit_in_new_tab(window, pane, selection)
 end)
+
+M.semantic_zone_copy_mode = wezterm.action.Multiple({})
 
 -- M.ssh = action_callback(function(window, pane)
 --   local ssh_hosts = wezterm.enumerate_ssh_hosts()
