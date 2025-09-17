@@ -11,6 +11,7 @@
         caddy
         fennel
         graphql
+        javascript
         json
         just
         kdl
@@ -23,6 +24,8 @@
         regex
         sql
         terraform
+        typescript
+        tsx
         toml
         vim
         vimdoc

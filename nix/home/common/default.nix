@@ -60,6 +60,7 @@
       rlwrap
       sd # sed alternative
       sops
+      tre-command
       tree
       trurl
       unzip

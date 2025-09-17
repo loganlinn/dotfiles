@@ -40,6 +40,7 @@ in
     gcob = "git switch -c";
     gcop = "git checkout -p";
     gd = "git diff --color";
+    gdn = "git diff --name-only";
     gdc = "gd --cached";
     gfo = "git fetch --all";
     glg = "git log --oneline --decorate";
