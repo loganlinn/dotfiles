@@ -12,7 +12,7 @@
     ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/hammerspoon
-    ../modules/kanata
+    # ../modules/kanata
     # ../modules/opnix
     # ../modules/podman.nix
     ../modules/sketchybar.nix
@@ -106,8 +106,8 @@
   programs.hammerspoon.enable = true;
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
-  services.kanata.enable = false;
-  services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
+  # services.kanata.enable = false;
+  # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
   # services.onepassword-secrets = {
   #   enable = true;
@@ -145,7 +145,6 @@
       "inframap"
       "jq"
       "just"
-      "kanata"
       "lazyjournal"
       "ldcli"
       "libgccjit"
@@ -172,7 +171,6 @@
       "bridgecrewio/tap/yor"
       "d12frosted/emacs-plus/emacs-plus@31"
       "drewdeponte/oss/git-ps-rs"
-      "felixkratz/formulae/borders"
       "felixkratz/formulae/sketchybar"
       "hashicorp/tap/terraform-ls"
       "keith/formulae/zap"

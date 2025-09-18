@@ -39,6 +39,26 @@ config_watcher = hs.pathwatcher
   end)
   :start()
 
+local split = hs.fnutils.split
+local partial = hs.fnutils.partial
+local contains = hs.fnutils.contains
+local launchOrFocus = hs.application.launchOrFocus
+
+-- local getUserEnvs = function(names)
+--   local env = {}
+--   local output, ok = hs.execute([[zsh -l -c 'printenv --null "$@"' -s ]] .. table.concat(names, " "))
+--   if ok then
+--     local values = split(output, "\0")
+--     for i = 1, #names do
+--       env[names[i]] = values[i]
+--     end
+--   end
+--   return env
+-- end
+-- for k, v in pairs(getUserEnvs({ "HOME", "PATH" })) do
+--   log.i(k, v)
+-- end
+
 ---------------------------------------------------------------------------------------------------
 -- Keybindings
 ---------------------------------------------------------------------------------------------------
@@ -49,9 +69,6 @@ local GUI = "⌘"
 local HYPER = CTRL .. SHIFT .. ALT .. GUI
 -- local MEH = CTRL .. SHIFT .. ALT
 
-local partial = hs.fnutils.partial
-local contains = hs.fnutils.contains
-local launchOrFocus = hs.application.launchOrFocus
 local launchOrFocusFn = partial(partial, launchOrFocus)
 local appSwitcher = function(hints, focusCallback)
   if type(hints) == "string" then
@@ -162,9 +179,20 @@ local closeNotifications = function()
     }
 ]===])
 end
-local aerospaceReloadConfig = function()
-  hs.execute("zsh -lc 'aerospace reload-config'")
+
+local function findExe(name)
+  local output, ok = hs.execute([[zsh -l -c 'command -v "$1"' -s ]] .. name)
+  return ok and split(output or "", "%s+", 1)[1] or nil
 end
+
+local aerospaceExe = findExe("aerospace")
+
+local aerospace = function(command)
+  local cmdline = [[/bin/sh -c '"]] .. (aerospaceExe or "aerospace") .. [[" $@' -s ]] .. tostring(command)
+  log.i("Executing", cmdline)
+  return hs.execute(cmdline)
+end
+-- log.i(aerospace("--version"))
 
 local modes = setmetatable({}, {
   __newindex = function(self, name, mode)
@@ -184,6 +212,7 @@ modes.main = hs
   end)
   :bind(ALT, "return", appSwitcher({ "com.github.wez.wezterm", "WezTerm" }))
   :bind(SHIFT .. ALT, "return", appSwitcher("Google Chrome"))
+  :bind(ALT, "'", appSwitcher("Google Chrome"))
   :bind(ALT, "e", appSwitcher("Emacs"))
   :bind(ALT, "i", appSwitcher("Linear"))
   :bind(ALT, "m", appSwitcher("Messages"))
@@ -192,7 +221,7 @@ modes.main = hs
   :bind(ALT, "s", appSwitcher("Slack"))
   :bind(HYPER, "space", appSwitcher("Google Chrome"))
   :bind(HYPER, "return", appSwitcher("Ghostty"))
-  :bind(HYPER, "a", aerospaceReloadConfig)
+  :bind(HYPER, "a", partial(aerospace, "reload-config"))
   :bind(HYPER, "o", appSwitcher("Finder"))
   :bind(HYPER, "d", hs.toggleConsole)
   :bind(HYPER, "l", hs.caffeinate.lockScreen)

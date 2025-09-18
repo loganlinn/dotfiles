@@ -20,9 +20,11 @@
         awslogs # CloudWatch logs for humans
         awsls
         awsrm
-        copilot-cli # ECS like heroku/fly
         e1s # ECS like k9s
       ];
+      home.sessionVariables = lib.optionalAttrs config.programs.bat.enable {
+        AWS_PAGER = "bat";
+      };
     }
   );
 }
