@@ -44,6 +44,7 @@ in
         spice.shorthand.pr = "!gh pr";
         spice.shorthand.pro = "!gh pr view --web";
         spice.shorthand.publish = "stack submit --publish";
+        spice.shorthand.pull = "repo sync --restack";
         spice.shorthand.rename = "branch rename";
         spice.shorthand.reorder = "downstack edit";
         spice.shorthand.rsr = "repo sync --restack";

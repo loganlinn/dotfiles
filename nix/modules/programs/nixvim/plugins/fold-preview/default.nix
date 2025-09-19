@@ -19,23 +19,23 @@
       })
     ];
     extraConfigLua = ''
-       local keymap = vim.keymap
-       keymap.amend = require('keymap-amend')
+      local keymap = vim.keymap
+      keymap.amend = require('keymap-amend')
 
-       local fold_preview = require('fold-preview')
+      local fold_preview = require('fold-preview')
 
-       fold_preview.setup({
-          default_keybindings = false,
-       })
+      fold_preview.setup({
+         default_keybindings = false,
+      })
 
-       keymap.amend('n', 'K', function(original) if not fp.toggle_preview() then original() end end)
-       keymap.amend('n', 'h',  fold_preview.mapping.close_preview_open_fold)
-       keymap.amend('n', 'l',  fold_preview.mapping.close_preview_open_fold)
-       keymap.amend('n', 'zo', fold_preview.mapping.close_preview)
-       keymap.amend('n', 'zO', fold_preview.mapping.close_preview)
-       keymap.amend('n', 'zc', fold_preview.mapping.close_preview_without_defer)
-       keymap.amend('n', 'zR', fold_preview.mapping.close_preview)
-       keymap.amend('n', 'zM', fold_preview.mapping.close_preview_without_defer)
+      keymap.amend('n', 'K', function(original) if not fold_preview.toggle_preview() then original() end end)
+      keymap.amend('n', 'h',  fold_preview.mapping.close_preview_open_fold)
+      keymap.amend('n', 'l',  fold_preview.mapping.close_preview_open_fold)
+      keymap.amend('n', 'zo', fold_preview.mapping.close_preview)
+      keymap.amend('n', 'zO', fold_preview.mapping.close_preview)
+      keymap.amend('n', 'zc', fold_preview.mapping.close_preview_without_defer)
+      keymap.amend('n', 'zR', fold_preview.mapping.close_preview)
+      keymap.amend('n', 'zM', fold_preview.mapping.close_preview_without_defer)
     '';
   };
 }

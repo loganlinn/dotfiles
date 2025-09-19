@@ -22,9 +22,6 @@
         awsrm
         e1s # ECS like k9s
       ];
-      home.sessionVariables = lib.optionalAttrs config.programs.bat.enable {
-        AWS_PAGER = "bat";
-      };
     }
   );
 }

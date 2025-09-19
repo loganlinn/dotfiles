@@ -118,6 +118,7 @@
 
   homebrew = {
     taps = [
+      "aws/tap"
       "abhinav/tap"
       "bridgecrewio/tap"
       "pulumi/tap"
@@ -129,6 +130,7 @@
       "minamijoyo/tfupdate"
     ];
     brews = [
+      "aws/tap/eksctl"
       "aspell"
       "caddy"
       "cmake"
@@ -145,6 +147,7 @@
       "inframap"
       "jq"
       "just"
+      "kubernetes-cli"
       "lazyjournal"
       "ldcli"
       "libgccjit"
