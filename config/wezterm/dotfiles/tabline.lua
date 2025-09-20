@@ -222,13 +222,16 @@ local tab_label = function(tab, opts)
   if tab.active_pane.current_working_dir then
     local cwd = tab.active_pane.current_working_dir.file_path
     local label = basename(cwd)
-    local parent = basename(dirname(cwd))
-    if parent ~= "." and parent ~= "/" then
-      insert(fmt, { Foreground = { Color = "#909090" } })
-      insert(fmt, { Text = parent })
-      insert(fmt, { Foreground = { AnsiColor = "Grey" } })
-      insert(fmt, { Text = "/" })
-      insert(fmt, "ResetAttributes")
+
+    if #(wezterm.mux.get_window(tab.window_id):tabs()) < 8 then
+      local parent = basename(dirname(cwd))
+      if parent and parent ~= "." and parent ~= "/" then
+        insert(fmt, { Foreground = { Color = "#909090" } })
+        insert(fmt, { Text = parent })
+        insert(fmt, { Foreground = { AnsiColor = "Grey" } })
+        insert(fmt, { Text = "/" })
+        insert(fmt, "ResetAttributes")
+      end
     end
     insert(fmt, { Foreground = { AnsiColor = "White" } })
     insert(fmt, { Text = label })
