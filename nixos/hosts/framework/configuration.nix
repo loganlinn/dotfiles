@@ -1,9 +1,9 @@
 {
+  inputs',
   self,
   inputs,
   pkgs,
   hostname,
-  editor,
   ...
 }:
 {
@@ -19,16 +19,12 @@
     ../../modules/hardware/drives
     ../../modules/desktop/hyprland
     #../../modules/programs/games
-    ../../modules/programs/browser/floorp
     ../../modules/programs/cli/tmux
-    # ../../modules/programs/cli/direnv
-    # ../../modules/programs/cli/lazygit
+    ../../modules/programs/cli/direnv
     ../../modules/programs/cli/cava
     ../../modules/programs/cli/btop
     #../../modules/programs/media/discord
-    # ../../modules/programs/media/spicetify
     # ../../modules/programs/media/youtube-music
-    # ../../modules/programs/media/thunderbird
     # ../../modules/programs/media/obs-studio
     ../../modules/programs/media/mpv
     ../../modules/programs/misc/tlp
@@ -39,6 +35,10 @@
   ];
 
   networking.hostName = hostname;
+
+  my.hyprland = {
+    terminal = "${inputs'.wezterm.packages.default}/bin/wezterm";
+  };
 
   # home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
   home-manager.sharedModules = [
