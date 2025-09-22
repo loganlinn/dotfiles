@@ -157,6 +157,7 @@ in
             follow_mouse = 1;
             force_no_accel = true;
             kb_layout = "us";
+            kb_options = "ctrl:nocaps";
             repeat_delay = 300;
             repeat_rate = 30;
             sensitivity = 0; # -1.0 - 1.0, 0 means no modification.
