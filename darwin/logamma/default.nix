@@ -118,18 +118,23 @@
 
   homebrew = {
     taps = [
-      "aws/tap"
       "abhinav/tap"
+      "aws/tap"
       "bridgecrewio/tap"
-      "pulumi/tap"
-      "yugabyte/tap"
       "dagger/tap"
       "minamijoyo/hcledit"
       "minamijoyo/tfmigrate"
       "minamijoyo/tfschema"
       "minamijoyo/tfupdate"
+      "pulumi/tap"
+      "yugabyte/tap"
+      # "minio/stable"
     ];
     brews = [
+      {
+        name = "postgresql@16";
+        link = true;
+      }
       "aws/tap/eksctl"
       "aspell"
       "caddy"
@@ -155,6 +160,7 @@
       "libvterm"
       "luarocks"
       "mas"
+      # "minio/stable/mc"
       "minamijoyo/hcledit/hcledit"
       "minamijoyo/tfmigrate/tfmigrate"
       "minamijoyo/tfschema/tfschema"
@@ -162,7 +168,6 @@
       "mkcert"
       "nss"
       "pngpaste"
-      "postgresql@16"
       "redis"
       "ripgrep"
       "temporal"

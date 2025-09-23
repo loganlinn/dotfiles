@@ -41,6 +41,7 @@ in
       woman = "man";
       termkeys = "infocmp -L1";
       envz = "printenv | fzf ";
+      fd = "fd --hyperlink";
     };
 
     programs.bash.initExtra = cfg.shellInitExtra;

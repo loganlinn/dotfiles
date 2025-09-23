@@ -147,7 +147,7 @@ end
 -- end
 local closeNotifications = function()
   log.i("Closing notifications")
-  hs.osascript.javascript([===[
+  local ok, output, descriptor = hs.osascript.javascript([===[
     function run() {
       const SystemEvents = Application("System Events");
       const NotificationCenter = SystemEvents.processes.byName("NotificationCenter");
@@ -178,6 +178,7 @@ local closeNotifications = function()
       });
     }
 ]===])
+  log.i(ok, output, hs.inspect.inspect(descriptor))
 end
 
 local function findExe(name)
