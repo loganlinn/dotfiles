@@ -120,23 +120,23 @@ in
           gh
         ];
       };
-      environment.variables =
-        {
-          DISABLE_TELEMETRY = "1";
-          DOCKER_SCAN_SUGGEST = "false";
-          DOTFILES_DIR = cfg.flakeDirectory;
-          DOTNET_CLI_TELEMETRY_OPTOUT = "true";
-          DO_NOT_TRACK = "1";
-          FLAKE_CHECKER_NO_TELEMETRY = "true";
-          NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
-          TELEMETRY_DISABLED = "1";
-        }
-        // optionalAttrs isDarwin {
-          # Since home-managers xdg-user-dirs module does not support darwin
-          XDG_NOTES_DIR = toString cfg.userDirs.notes;
-          XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
-          XDG_CODE_DIR = toString cfg.userDirs.code;
-        };
+      environment.variables = {
+        DISABLE_TELEMETRY = "1";
+        DOCKER_SCAN_SUGGEST = "false";
+        DOTFILES_DIR = cfg.flakeDirectory;
+        DOTNET_CLI_TELEMETRY_OPTOUT = "true";
+        DO_NOT_TRACK = "1";
+        FLAKE_CHECKER_NO_TELEMETRY = "true";
+        NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
+        TELEMETRY_DISABLED = "1";
+        SUDO_PROMPT = "$'\e[34m'[$'\e[0m'sudo$'\e[34m']$'\e[0m'' password for '$'\e[1;34m''%p'$'\e[0m'': '";
+      }
+      // optionalAttrs isDarwin {
+        # Since home-managers xdg-user-dirs module does not support darwin
+        XDG_NOTES_DIR = toString cfg.userDirs.notes;
+        XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
+        XDG_CODE_DIR = toString cfg.userDirs.code;
+      };
       fonts = {
         serif = mkDefault {
           package = pkgs.dejavu_fonts;
