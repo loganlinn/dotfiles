@@ -129,7 +129,6 @@ in
         FLAKE_CHECKER_NO_TELEMETRY = "true";
         NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
         TELEMETRY_DISABLED = "1";
-        SUDO_PROMPT = "$'\e[34m'[$'\e[0m'sudo$'\e[34m']$'\e[0m'' password for '$'\e[1;34m''%p'$'\e[0m'': '";
       }
       // optionalAttrs isDarwin {
         # Since home-managers xdg-user-dirs module does not support darwin

@@ -34,9 +34,6 @@ in
         spice.logShort.crFormat = "id";
         spice.rebaseContinue.edit = "false";
         spice.repoSync.closedChanges = "ask";
-        spice.shorthand.LL = "log long --cr-status";
-        spice.shorthand.LS = "log short --cr-status";
-        spice.shorthand.RS = "repo sync --restack";
         spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
         spice.shorthand.can = "commit amend --no-edit";
@@ -44,6 +41,8 @@ in
         spice.shorthand.data = "!git log --patch refs/spice/data";
         spice.shorthand.delete = "branch delete";
         spice.shorthand.fold = "branch fold";
+        spice.shorthand.lls = "log long --cr-status";
+        spice.shorthand.lss = "log short --cr-status";
         spice.shorthand.modify = "commit amend";
         spice.shorthand.move = "upstack onto";
         spice.shorthand.pr = "!gh pr";
@@ -54,6 +53,7 @@ in
         spice.shorthand.reorder = "downstack edit";
         spice.shorthand.rsr = "repo sync --restack";
         spice.shorthand.squash = "branch squash";
+        spice.shorthand.sync = "repo sync --restack";
         spice.shorthand.track = "branch track";
         spice.shorthand.untrack = "branch untrack";
         spice.submit.draft = "false";
