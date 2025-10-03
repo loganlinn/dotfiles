@@ -49,6 +49,7 @@
       gnutar
       gnutls
       gzip
+      inetutils
       just
       lsof
       moreutils

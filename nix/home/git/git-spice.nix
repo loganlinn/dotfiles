@@ -33,10 +33,15 @@ in
         spice.log.pushStatusFormat = "aheadBehind";
         spice.logShort.crFormat = "id";
         spice.rebaseContinue.edit = "false";
+        spice.repoSync.closedChanges = "ask";
+        spice.shorthand.LL = "log long --cr-status";
+        spice.shorthand.LS = "log short --cr-status";
+        spice.shorthand.RS = "repo sync --restack";
         spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
         spice.shorthand.can = "commit amend --no-edit";
         spice.shorthand.checkout = "branch checkout";
+        spice.shorthand.data = "!git log --patch refs/spice/data";
         spice.shorthand.delete = "branch delete";
         spice.shorthand.fold = "branch fold";
         spice.shorthand.modify = "commit amend";
@@ -53,6 +58,8 @@ in
         spice.shorthand.untrack = "branch untrack";
         spice.submit.draft = "false";
         spice.submit.navigationComment = "multiple";
+        spice.submit.navigationCommentSync = "downstack";
+        spice.submit.publish = "false";
         spice.submit.web = "false";
       };
     };

@@ -2,7 +2,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   programs.nixvim = {
     plugins.nui.enable = true;
     extraPlugins = [
@@ -16,7 +17,7 @@
             rev = version;
             hash = "sha256-cGFPRBJoLXjbK+DiT8kpcU7w/PVok5VQDSOvbXy4ItA=";
           };
-          dependencies = [config.programs.nixvim.plugins.nui.package];
+          dependencies = [ config.programs.nixvim.plugins.nui.package ];
         };
       }
     ];
@@ -48,7 +49,7 @@
         { key = "f", pattern = "^add import", order = 101 },
         { key = "f", pattern = "^fix this", order = 101 },
         { key = "f", pattern = "^add async modifier", order = 100 },
-        { key = "f", pattern = "^change spelling", order = 100 },
+        -- { key = "f", pattern = "^change spelling", order = 100 },
         { key = "f", pattern = "^remove unused", order = 100 },
         { key = "f", pattern = "^prefix .* with an underscore", order = 100 },
         { key = "f", pattern = "^update the dependencies array", order = 100 },
