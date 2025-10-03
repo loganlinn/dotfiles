@@ -223,7 +223,7 @@ local tab_label = function(tab, opts)
     local cwd = tab.active_pane.current_working_dir.file_path
     local label = basename(cwd)
 
-    if #(wezterm.mux.get_window(tab.window_id):tabs()) < 8 then
+    if #(wezterm.mux.get_window(tab.window_id):tabs()) < 10 then
       local parent = basename(dirname(cwd))
       if parent and parent ~= "." and parent ~= "/" then
         insert(fmt, { Foreground = { Color = "#909090" } })
