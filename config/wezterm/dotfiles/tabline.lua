@@ -160,12 +160,20 @@ end
 -- special behavior for certain processes
 ---@type table<string, string | fun(tab): string>
 local tab_label_by_foreground_process_name = {
-  psql = function()
+  psql = function(tab_info)
     return wezterm.format({
       { Foreground = { Color = C.Comment } },
-      { Text = nerdfonts.dev_postgresql .. " " },
+      { Text = nerdfonts.dev_postgresql .. "  " },
       { Foreground = { Color = C.Foreground } },
-      { Text = " psql" },
+      { Text = "psql" },
+    })
+  end,
+  duckdb = function(tab_info)
+    return wezterm.format({
+      { Foreground = { Color = C.Comment } },
+      { Text = nerdfonts.md_duck .. "  " },
+      { Foreground = { Color = C.Foreground } },
+      { Text = "duckdb" },
     })
   end,
   ssh = "ssh",

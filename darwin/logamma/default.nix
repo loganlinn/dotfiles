@@ -9,7 +9,6 @@
   imports = [
     self.darwinModules.common
     ../modules/aerospace
-    ../modules/aws.nix
     ../modules/emacs-plus
     ../modules/hammerspoon
     # ../modules/kanata
@@ -27,8 +26,8 @@
         self.homeModules.common
         self.homeModules.nix-colors
         # self.homeModules.opnix
-        ../../nix/home/atuin.nix
         ../../nix/home/asciinema.nix
+        ../../nix/home/aws.nix
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/javascript.nix
