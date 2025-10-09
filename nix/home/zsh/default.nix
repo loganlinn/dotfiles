@@ -199,12 +199,12 @@ with lib;
             fi
           ''
         ))
-        (mkAfter "export SUDO_PROMPT=$'\e[34m'[$'\e[0m'sudo$'\e[34m']$'\e[0m'' password for '$'\e[1;34m''%p'$'\e[0m'': '")
+        (mkAfter (section "prompt.zsh" (readFile ./prompt.zsh)))
         (mkAfter ''
           if [[ -f ~/.zshrc.local ]]; then source ~/.zshrc.local; fi
         '')
         (mkAfter ''
-          if [[ $${ZPROF_ENABLE-} == "true" ]]; then zprof; fi
+          if [[ $${ZPROF_ENABLE-} == "true" ]]; then zprof; fi;
         '')
       ];
     loginExtra = ''
