@@ -6,11 +6,9 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.git.git-spice;
-in
-{
+in {
   options.programs.git.git-spice = {
     enable = mkEnableOption "git-spice";
     package = mkOption {
@@ -20,7 +18,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home.packages = [cfg.package];
     home.shellAliases = {
       grs = "command gs repo sync --restack";
     };
@@ -28,6 +26,7 @@ in
       aliases.spice = "!${cfg.package}/bin/gs";
       extraConfig = {
         spice.branchPrompt.sort = "comitteddate";
+        spice.experiment.commitFixup = "true";
         spice.log.all = "false";
         spice.log.crFormat = "url";
         spice.log.pushStatusFormat = "aheadBehind";
@@ -36,6 +35,7 @@ in
         spice.repoSync.closedChanges = "ask";
         spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
+        spice.shorthand.main = "trunk";
         spice.shorthand.can = "commit amend --no-edit";
         spice.shorthand.checkout = "branch checkout";
         spice.shorthand.data = "!git log --patch refs/spice/data";
@@ -59,8 +59,8 @@ in
         spice.submit.draft = "false";
         spice.submit.navigationComment = "multiple";
         spice.submit.navigationCommentSync = "downstack";
-        spice.submit.publish = "false";
-        spice.submit.web = "false";
+        spice.submit.publish = "true";
+        spice.submit.web = "created";
       };
     };
     programs.zsh = {

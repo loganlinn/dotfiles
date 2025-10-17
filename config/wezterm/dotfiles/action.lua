@@ -401,63 +401,52 @@ M.switch_to_workspace_2 = M.switch_to_workspace({
   name = " 🏠 ",
   spawn = {
     cwd = wezterm.home_dir .. "/.dotfiles",
-    set_environment_variables = {
-      -- ZDOTDIR = os.getenv("ZDOTDIR"),
-      -- EDITOR = os.getenv("EDITOR"),
-    },
+    set_environment_variables = {},
     domain = "CurrentPaneDomain",
   },
 })
 
-M.switch_to_workspace_3 = M.switch_to_workspace({
-  name = " 🚀 ",
-  spawn = {
-    args = { os.getenv("SHELL"), "-lic", "container-use terminal" },
-    set_environment_variables = {
-      -- PATH = os.getenv("PATH"),
-      -- ZDOTDIR = os.getenv("ZDOTDIR"),
-      -- EDITOR = os.getenv("EDITOR"),
-      DAGGER_NO_NAG = "1",
-    },
-    domain = "CurrentPaneDomain",
-  },
-})
+-- local function zoxide_query(limit)
+--   local success, stdout = wezterm.run_child_process({
+--     "/bin/zsh",
+--     "-l",
+--     "-c",
+--     [[zoxide query --list | head -n]] .. tonumber(limit or 20),
+--   })
+--   if success then
+--     return wezterm.split_by_newlines(stdout)
+--   end
+-- end
 
-M.switch_workspace = action_callback(function(window, pane)
-  -- TODO generate, cache complete list
-  local workspaces = {
-    {
-      id = wezterm.home_dir .. "/.dotfiles",
-      label = "loganlinn/dotfiles",
-    },
-    {
-      id = wezterm.home_dir .. "/src/github.com/gamma-app/gamma",
-      label = "gamma-app/gamma",
-    },
-  }
-
+M.switch_to_workspace_3 = action_callback(function(window, pane)
+  local cwd = pane:get_current_working_dir().path
+  local success, repo_root = wezterm.run_child_process({
+    "/usr/bin/git",
+    "-C",
+    cwd,
+    "rev-parse",
+    "--show-toplevel",
+  })
   window:perform_action(
-    wezterm.action.InputSelector({
-      title = "Switch to workspace",
-      choices = workspaces,
-      fuzzy = true,
-      action = action_callback(function(inner_window, inner_pane, choice_id, choice_label)
-        if not choice_id and not choice_label then
-          log.info("input selector cancelled")
-          return
-        end
-        inner_window:perform_action(wezterm.action.SwitchToWorkspace({
-          name = choice_label,
-          spawn = {
-            label = "Workspace: " .. choice_label,
-            cwd = choice_id,
-          },
-        }, inner_pane))
-      end),
+    M.switch_to_workspace({
+      name = " 🚀 ",
+      spawn = {
+        cwd = success and repo_root:gsub("\n$", "") or nil,
+        set_environment_variables = {},
+        domain = "CurrentPaneDomain",
+      },
     }),
     pane
   )
 end)
+
+M.switch_to_workspace_4 = M.switch_to_workspace({
+  name = " 🦾 ",
+  spawn = {
+    cwd = wezterm.home_dir,
+    domain = "DefaultDomain",
+  },
+})
 
 M.browse_current_working_dir = action_callback(function(window, pane)
   local application = nil

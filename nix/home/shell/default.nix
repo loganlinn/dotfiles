@@ -4,13 +4,11 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.my;
-  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix { };
-  shellScriptType = types.coercedTo types.str (text: { inherit text; }) shellScriptModule;
-in
-{
+  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix {};
+  shellScriptType = types.coercedTo types.str (text: {inherit text;}) shellScriptModule;
+in {
   imports = [
     ../bash
     ../zsh
@@ -50,7 +48,7 @@ in
 
     my.shellScripts = {
       prunedir.text = ''
-        ${pkgs.fd}/bin/fd "$${1-.}" -td -te -a -x ${pkgs.coreutils}/bin/rmdir -v
+        ${pkgs.fd}/bin/fd "''${1-.}" -td -te -a -x ${pkgs.coreutils}/bin/rmdir --parents --verbose --ignore-fail-on-non-empty
       '';
       today.text = ''
         # shellcheck disable=SC2145

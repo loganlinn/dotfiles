@@ -1,48 +1,68 @@
-local homedir = os.getenv("HOME")
-
-package.path = package.path .. ";" .. homedir .. "/.dotfiles/darwin/modules/hammerspoon/?.lua"
-package.path = package.path .. ";" .. homedir .. "/.dotfiles/darwin/modules/hammerspoon/?/init.lua"
-package.cpath = package.cpath .. ";" .. homedir .. "/.dotfiles/darwin/modules/hammerspoon/?.so"
+local HOME = os.getenv("HOME")
+package.path = package.path .. ";" .. HOME .. "/.dotfiles/darwin/modules/hammerspoon/?.lua"
+package.path = package.path .. ";" .. HOME .. "/.dotfiles/darwin/modules/hammerspoon/?/init.lua"
+package.cpath = package.cpath .. ";" .. HOME .. "/.dotfiles/darwin/modules/hammerspoon/?.so"
 -- package.path = package.path
 --     .. ";"
---     .. homedir
+--     .. HOME
 --     .. "/.luarocks/share/lua/5.4/?.lua;"
---     .. homedir
+--     .. HOME
 --     .. "/.luarocks/share/lua/5.4/?/init.lua"
--- package.cpath = package.cpath .. ";" .. homedir .. "/.luarocks/lib/lua/5.4/?.so"
+-- package.cpath = package.cpath .. ";" .. HOME .. "/.luarocks/lib/lua/5.4/?.so"
 -- package.path = package.path
 --     .. ";"
---     .. homedir
+--     .. HOME
 --     .. "/.luarocks/share/lua/5.3/?.lua;"
---     .. homedir
+--     .. HOME
 --     .. "/.luarocks/share/lua/5.3/?/init.lua"
--- package.cpath = package.cpath .. ";" .. homedir .. "/.luarocks/lib/lua/5.3/?.so"
+-- package.cpath = package.cpath .. ";" .. HOME .. "/.luarocks/lib/lua/5.3/?.so"
 
 -- local fennel = require("fennel")
 -- table.insert(package.loaders or package.searchers, fennel.searcher)
+----------------------------------------------------------------------------------------------------
+local alert = require("hs.alert")
+local application = require("hs.application")
+local eventtap = require("hs.eventtap")
+local fnutils = require("hs.fnutils")
+local hints = require("hs.hints")
+local inspect = require("hs.inspect")
+local ipc = require("hs.ipc")
+local logger = require("hs.logger")
+local pathwatcher = require("hs.pathwatcher")
+local window = require("hs.window")
+local osascript = require("hs.osascript")
 
-local log = hs.logger.new("init.lua", "debug")
+local CTRL = "⌃"
+local ALT = "⌥"
+local SHIFT = "⇧"
+local GUI = "⌘"
+local HYPER = CTRL .. SHIFT .. ALT .. GUI
+local MEH = CTRL .. SHIFT .. ALT
 
-hs.ipc.cliInstall()
-hs.hints.style = "vimperator"
-hs.hints.showTitleThresh = 4
-hs.hints.titleMaxSize = 10
-hs.hints.fontSize = 30
-hs.window.animationDuration = 0.2
+local contains = fnutils.contains
+local partial = fnutils.partial
+local split = fnutils.split
 
-local config_watcher
-config_watcher = hs.pathwatcher
-  .new(hs.configdir .. "/init.lua", function()
-    if config_watcher then
-      hs.reload()
-    end
-  end)
-  :start()
+ipc.cliInstall()
 
-local split = hs.fnutils.split
-local partial = hs.fnutils.partial
-local contains = hs.fnutils.contains
-local launchOrFocus = hs.application.launchOrFocus
+hints.style = "vimperator"
+hints.showTitleThresh = 4
+hints.titleMaxSize = 10
+hints.fontSize = 30
+
+window.animationDuration = 0.2
+
+local configpath = hs.configdir .. "/init.lua"
+
+local log = logger.new(configpath, "debug")
+
+local configwatcher
+configwatcher = pathwatcher.new(configpath, function()
+  if configwatcher then
+    hs.reload()
+  end
+end)
+configwatcher:start()
 
 -- local getUserEnvs = function(names)
 --   local env = {}
@@ -62,92 +82,71 @@ local launchOrFocus = hs.application.launchOrFocus
 ---------------------------------------------------------------------------------------------------
 -- Keybindings
 ---------------------------------------------------------------------------------------------------
-local CTRL = "⌃"
-local ALT = "⌥"
-local SHIFT = "⇧"
-local GUI = "⌘"
-local HYPER = CTRL .. SHIFT .. ALT .. GUI
--- local MEH = CTRL .. SHIFT .. ALT
 
-local launchOrFocusFn = partial(partial, launchOrFocus)
-local appSwitcher = function(hints, focusCallback)
-  if type(hints) == "string" then
-    hints = { hints }
+local lastWindow = function()
+  local _, previous = next(window.orderedWindows(), 1) -- ordered from front to back, starting with current
+  return previous
+end
+local launchOrFocus = function(name)
+  return application.launchOrFocus(name)
+end -- wrap to discard extra args (i.e. fnutils.some passes index)
+local launchOrFocusByBundleID = function(id)
+  return application.launchOrFocusByBundleID(id)
+end
+local appNameMatcher = function(name)
+  return function(app)
+    return app and app:name():find(name)
   end
-  return function()
-    local winFocus = hs.window.focusedWindow()
-    if winFocus then
-      local appFocus = winFocus:application()
-      -- Match bundle identifier or application name
-      local isFocus = contains(hints, appFocus:bundleID()) or contains(hints, appFocus:name())
-      if isFocus then
-        local _, winPrev = next(hs.window.orderedWindows(), 1) -- ordered from front to back, starting with current
-        if winPrev then
-          winPrev:raise():focus()
-        end
-        return
+end
+local appBundleIDMatcher = function(bundleID)
+  return function(app)
+    return app and app:bundleID():find(bundleID)
+  end
+end
+local appSwitcher = function(opts)
+  local bundleIDs = type(opts.bundleID) == "string" and { opts.bundleID } or opts.bundleID or {}
+  local names = type(opts.name) == "string" and { opts.name } or opts.name or {}
+
+  local matchers = fnutils.concat(fnutils.map(bundleIDs, appBundleIDMatcher), fnutils.map(names, appNameMatcher))
+
+  if #matchers == 0 then
+    error("appSwitcher requires at least one of 'name' or 'bundleID' in opts")
+  end
+
+  local currentlyFocused = function()
+    local win = window.focusedWindow()
+    if win then
+      local app = win:application()
+      if fnutils.some(matchers, function(f)
+        return f(app)
+      end) then
+        return true
       end
     end
-    for _, hint in ipairs(hints) do
-      if launchOrFocus(hint) then
-        if focusCallback then
-          focusCallback(hs.window.focusedWindow())
-        end
-        return
+    return false
+  end
+
+  local launch = function()
+    return (fnutils.some(bundleIDs, launchOrFocusByBundleID) or fnutils.some(names, launchOrFocus))
+  end
+
+  return function()
+    if currentlyFocused() then
+      local win = (opts[1] or lastWindow)()
+      if win then
+        win:raise():focus()
       end
+    else
+      launch()
+    end
+    if opts.callback then
+      opts.callback(opts)
     end
   end
 end
--- local windowMatches = function(window, selectors)
---   if type(selectors) == "string" then
---     selectors = { selectors }
---   end
---   local bundleID = window:application():bundleID()
---   if contains(selectors, bundleID) then
---     log.d("Matched window bundleID:", bundleID)
---     return true
---   end
---   local title = window:application():title()
---   for _, sel in pairs(selectors) do
---     if string.sub(title, 1, #sel) == sel then
---       log.d("Matched window title:", title, sel)
---       return true
---     end
---   end
---   return false
--- end
--- local focusGroupFn = function(selectors)
---   if type(selectors) == "string" then
---     selectors = { selectors }
---   end
---   return function()
---     local window = nil
---     if windowMatches(hs.window.focusedWindow(), selectors) then
---       -- app has focus, find last matching window
---       for _, w in pairs(hs.window.orderedWindows()) do
---         if windowMatches(w, selectors) then
---           window = w -- remember last match
---         end
---       end
---     else
---       -- app does not have focus, find first matching window
---       for _, w in pairs(hs.window.orderedWindows()) do
---         if windowMatches(w, selectors) then
---           window = w
---           break -- break on first match
---         end
---       end
---     end
---     if window then
---       window:raise():focus()
---     else
---       hs.alert.show("No window open for " .. hs.inspect(selectors))
---     end
---   end
--- end
 local closeNotifications = function()
   log.i("Closing notifications")
-  local ok, output, descriptor = hs.osascript.javascript([===[
+  local ok, output, descriptor = osascript.javascript([===[
     function run() {
       const SystemEvents = Application("System Events");
       const NotificationCenter = SystemEvents.processes.byName("NotificationCenter");
@@ -190,7 +189,7 @@ local aerospaceExe = findExe("aerospace")
 
 local aerospace = function(command)
   local cmdline = [[/bin/sh -c '"]] .. (aerospaceExe or "aerospace") .. [[" $@' -s ]] .. tostring(command)
-  log.i("Executing", cmdline)
+  log.i(cmdline)
   return hs.execute(cmdline)
 end
 -- log.i(aerospace("--version"))
@@ -198,90 +197,46 @@ end
 local modes = setmetatable({}, {
   __newindex = function(self, name, mode)
     log.i("Registering mode", name)
-    mode.entered = mode.entered or partial(hs.alert, "+" .. name)
-    mode.exited = mode.exited or partial(hs.alert, "-" .. name)
+    mode.entered = mode.entered or partial(alert, "+" .. name)
+    mode.exited = mode.exited or partial(alert, "-" .. name)
     rawset(self, name, mode)
   end,
 })
 
-modes.main = hs
-  .hotkey
-  .modal
+local switchTo = {
+  terminal = appSwitcher({ bundleID = "com.github.wez.wezterm", name = "WezTerm" }),
+  browser = appSwitcher({ name = "Google Chrome" }),
+  editor = appSwitcher({ name = "Emacs" }),
+  messenger = appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }),
+  explorer = appSwitcher({ name = "Finder" }),
+  chat = appSwitcher({ name = "Slack" }),
+}
+
+modes.main = hs.hotkey.modal
   .new(HYPER, "k")
   :bind(HYPER, "k", function() -- toggle all hotkeys
     modes.main:exit()
   end)
-  :bind(ALT, "return", appSwitcher({ "com.github.wez.wezterm", "WezTerm" }))
-  :bind(SHIFT .. ALT, "return", appSwitcher("Google Chrome"))
-  :bind(ALT, "'", appSwitcher("Google Chrome"))
-  :bind(ALT, "e", appSwitcher("Emacs"))
-  :bind(ALT, "i", appSwitcher("Linear"))
-  :bind(ALT, "m", appSwitcher("Messages"))
-  :bind(ALT, "o", appSwitcher("Finder"))
-  :bind(ALT, "p", appSwitcher("Claude"))
-  :bind(ALT, "s", appSwitcher("Slack"))
-  :bind(HYPER, "space", appSwitcher("Google Chrome"))
-  :bind(HYPER, "return", appSwitcher("Ghostty"))
+  :bind(ALT, "return", switchTo.terminal)
+  :bind(SHIFT .. ALT, "return", switchTo.browser)
+  :bind(ALT, "'", switchTo.browser)
+  :bind(ALT, "e", switchTo.editor)
+  :bind(ALT, "i", appSwitcher({ name = "Linear" }))
+  :bind(ALT, "m", switchTo.messenger)
+  :bind(ALT, "o", switchTo.explorer)
+  :bind(ALT, "p", appSwitcher({ name = "Claude" }))
+  :bind(ALT, "s", switchTo.chat)
+  :bind(HYPER, "return", switchTo.terminal)
+  :bind(HYPER, "space", switchTo.browser)
   :bind(HYPER, "a", partial(aerospace, "reload-config"))
-  :bind(HYPER, "o", appSwitcher("Finder"))
+  :bind(HYPER, "o", switchTo.explorer)
   :bind(HYPER, "d", hs.toggleConsole)
   :bind(HYPER, "l", hs.caffeinate.lockScreen)
   :bind(HYPER, "r", hs.reload)
-  -- :bind(HYPER, "s", hs.hints.windowHints)
   :bind(HYPER, "x", closeNotifications)
-  :bind(HYPER, "F1", function()
-    hs.alert("F1")
-  end)
-  :bind(HYPER, "F2", function()
-    log.i(hs.inspect(hs.eventtap.checkKeyboardModifiers(true)))
-    hs.alert("F2")
-  end)
-  :bind(HYPER, "F3", function()
-    hs.alert("F3")
-  end)
-  :bind(HYPER, "F4", function()
-    hs.alert("F4")
-  end)
-  :bind(HYPER, "F5", function()
-    hs.alert("F5")
-  end)
-  :bind(HYPER, "F6", function()
-    hs.alert("F6")
-  end)
-  :bind(HYPER, "F7", function()
-    hs.alert("F7")
-  end)
-  :bind(HYPER, "F8", function()
-    hs.alert("F8")
-  end)
-  :bind(HYPER, "F9", function()
-    hs.alert("F9")
-  end)
   :enter()
 
--- local aws_menubar = hs.menubar.new(true, "aws"):setClickCallback(function(mods)
---   log.i("menubar clicked", hs.inspect(mods))
--- end)
-
--- hs.timer
---     .doEvery(60, function()
---       local title = "aws"
---       local stdout, ok = hs.execute(homedir .. "/.dotfiles/bin/aws-sso-timeout")
---       if ok then
---         local seconds = tonumber(stdout)
---         if seconds then
---           local hours = math.floor(seconds / 3600)
---           local minutes = math.floor(math.fmod(seconds, 3600) / 60)
---           title = title .. string.format("[%02d:%02d]", hours, minutes)
---         end
---       end
---       aws_menubar:setTitle(title)
---     end)
---     :start()
---     :fire()
-
 --- Use Fn + `h/l/j/k` as arrow keys, `y/u/i/o` as mouse wheel, `,/.` as left/right click.
-
 -- hs.eventtap.new(
 --   { hs.eventtap.event.types.keyDown },
 --   function(event)
@@ -315,5 +270,27 @@ modes.main = hs
 --   end
 -- ):start()
 
+-- et = hs.eventtap.new(
+--   { eventtap.event.types.flagsChanged },
+--   function(e)
+--     local flags = e:rawFlags()
+--     if flags & eventtap.event.rawFlagMasks.deviceRightCommand > 0 then
+--       if not myKeysActive then
+--         for _, v in ipairs(myKeys) do
+--           v:enable()
+--         end
+--         myKeysActive = true
+--       end
+--     else
+--       if myKeysActive then
+--         for _, v in ipairs(myKeys) do
+--           v:disable()
+--         end
+--         myKeysActive = false
+--       end
+--     end
+--   end
+-- ):start()
+
 -- hs.loadSpoon("EmmyLua")
-hs.alert("✅ Hammerspoon")
+alert("✅ Hammerspoon")

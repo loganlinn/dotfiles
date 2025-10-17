@@ -2,8 +2,7 @@
   pkgs,
   lib,
   ...
-}:
-{
+}: {
   imports = [
     ./readline.nix
     ./shell/starship.nix
@@ -13,7 +12,7 @@
     enable = true;
     config = {
       theme = "TwoDark";
-      style = "auto,-numbers,-grid";
+      style = ["auto" "-numbers" "-grid"];
     };
   };
 

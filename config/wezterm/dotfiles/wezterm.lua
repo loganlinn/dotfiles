@@ -14,5 +14,7 @@ require("dotfiles.patterns").apply_to_config(config)
 -- require("dotfiles.plugins.smart_workspace_switcher").apply_to_config(config)
 require("dotfiles.plugins.pivot_panes").apply_to_config(config)
 require("dotfiles.command-palette").apply_to_config(config)
-
+config.skip_close_confirmation_for_processes_named = {
+  "tmux",
+}
 return config

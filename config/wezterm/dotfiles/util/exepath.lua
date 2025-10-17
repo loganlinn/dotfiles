@@ -22,7 +22,7 @@ return function(command_name, disable_cache)
   if not path then
     log.info("resolving executable path:", command_name)
 
-    local ok, stdout = log.info(wezterm.run_child_process({
+    local ok, stdout = wezterm.run_child_process({
       "/usr/bin/env",
       "zsh",
       "-l",
@@ -30,7 +30,7 @@ return function(command_name, disable_cache)
       [[command -v "$@"]],
       "-s",
       command_name,
-    }))
+    })
 
     if ok then
       path = string.gsub(stdout, "%s*$", "")
