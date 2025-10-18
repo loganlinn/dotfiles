@@ -95,10 +95,29 @@ src-dir() {
 #
 src-get() {
   local debug_flag=${DEBUG+true}
+  local depth=
   case $1 in
+  --depth)
+    depth=${2?'Missing operand'}
+    shift 2
+    ;;
+  --shallow)
+    depth=1
+    shift
+    ;;
+  --no-shallow)
+    depth=
+    shift
+    ;;
   -h | --help | help)
-    echo "Usage: src-get <repository>"
-    echo "       src-get <owner>/<repo>"
+    echo "Usage: src-get [options] <repository>"
+    echo "       src-get [options] <owner>/<repo>"
+    echo ""
+    echo "Options:"
+    echo "  --depth <depth>"
+    echo "      Create a shallow clone with a history truncated to the specified number of commits."
+    echo "  --[no-]shallow"
+    echo "      Create a shallow clone with a history truncated to single commit."
     return 0
     ;;
   --debug)
@@ -131,7 +150,7 @@ src-get() {
       dir=$(src-dir "$repo")
 
       if [[ ! -d $dir ]]; then
-        local git_clone_cmd=("${SRC_GIT:-git}" clone --depth=1 --progress -- "$repo" "$dir")
+        local git_clone_cmd=("${SRC_GIT:-git}" clone ${depth:+--depth=$depth} --progress -- "$repo" "$dir")
         if command "${git_clone_cmd[@]}"; then
           echo >&2 "src-get: ✅ ${git_clone_cmd[*]}"
         else

@@ -469,6 +469,10 @@ for m in visual viopp; do
   done
 done
 
+# alt-left/right
+bindkey "^[[1;3D" backward-word
+bindkey "^[[1;3C" forward-word
+
 #
 # Layout
 #

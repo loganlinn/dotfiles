@@ -14,6 +14,7 @@ with lib.my;
       aliases = {
         o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" .'';
         diff = "pr diff";
+        prw = "pr list --web";
         pco = "!gh prz | ifne xargs -n1 gh pr checkout";
         prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
         prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';

@@ -4,7 +4,8 @@
   self',
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.darwinModules.common
     ../modules/aerospace
@@ -18,84 +19,87 @@
     ../modules/xcode.nix
   ];
 
-  home-manager.users.${config.my.user.name} = {pkgs, ...}: {
-    imports = [
-      self.homeModules.common
-      self.homeModules.nix-colors
-      # self.homeModules.opnix
-      ../../nix/home/asciinema.nix
-      ../../nix/home/aws.nix
-      ../../nix/home/dev
-      ../../nix/home/dev/lua.nix
-      ../../nix/home/dev/javascript.nix
-      ../../nix/home/docker.nix
-      ../../nix/home/doom
-      ../../nix/home/ghostty.nix
-      ../../nix/home/just
-      ../../nix/home/kitty
-      ../../nix/home/neovide.nix
-      ../../nix/home/nixvim
-      ../../nix/home/pet.nix
-      ../../nix/home/pretty.nix
-      ../../nix/home/terraform.nix
-      ../../nix/home/tmux.nix
-      ../../nix/home/wezterm
-      ../../nix/home/yazi
-      ../../nix/home/yt-dlp.nix
-    ];
-    programs.asciinema.enable = true;
-    programs.passage.enable = true;
-    programs.age-op.enable = true;
-    programs.ghostty.enable = true;
-    programs.kitty.enable = true;
-    programs.nixvim = {
-      enable = true;
-      defaultEditor = true;
-      plugins.lsp.servers.nixd.settings.options = {
-        darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
-      };
-    };
-    programs.pet = {
-      enable = true;
-      snippets = [
+  home-manager.users.${config.my.user.name} =
+    { pkgs, ... }:
+    {
+      imports = [
+        self.homeModules.common
+        self.homeModules.nix-colors
+        # self.homeModules.opnix
+        ../../nix/home/asciinema.nix
+        ../../nix/home/aws.nix
+        ../../nix/home/dev
+        ../../nix/home/dev/lua.nix
+        ../../nix/home/dev/javascript.nix
+        ../../nix/home/docker.nix
+        ../../nix/home/doom
+        ../../nix/home/ghostty.nix
+        ../../nix/home/just
+        ../../nix/home/kitty
+        ../../nix/home/mise.nix
+        ../../nix/home/neovide.nix
+        ../../nix/home/nixvim
+        ../../nix/home/pet.nix
+        ../../nix/home/pretty.nix
+        ../../nix/home/terraform.nix
+        ../../nix/home/tmux.nix
+        ../../nix/home/wezterm
+        ../../nix/home/yazi
+        ../../nix/home/yt-dlp.nix
       ];
-    };
-    programs.wezterm.enable = true;
-    programs.zsh = {
-      dirHashes = {
-        gamma-app = "$HOME/src/github.com/gamma-app";
-        gamma = "$HOME/src/github.com/gamma-app/gamma";
+      programs.asciinema.enable = true;
+      programs.passage.enable = true;
+      programs.age-op.enable = true;
+      programs.ghostty.enable = true;
+      programs.kitty.enable = true;
+      programs.nixvim = {
+        enable = true;
+        defaultEditor = true;
+        plugins.lsp.servers.nixd.settings.options = {
+          darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
+        };
       };
-    };
-    home.packages = with pkgs; [
-      # gemini-cli
-      act
-      actionlint
-      checkov
-      dive
-      dry
-      flyctl
-      go-task
-      google-cloud-sdk
-      ipcalc
-      jc
-      jnv
-      kcat
-      mkcert
-      # process-compose
-      self'.packages.chrome-cli
-      self'.packages.everything-fzf
-      # step-cli
+      programs.pet = {
+        enable = true;
+        snippets = [
+        ];
+      };
+      programs.wezterm.enable = true;
+      programs.zsh = {
+        dirHashes = {
+          gamma-app = "$HOME/src/github.com/gamma-app";
+          gamma = "$HOME/src/github.com/gamma-app/gamma";
+        };
+      };
+      home.packages = with pkgs; [
+        # gemini-cli
+        act
+        actionlint
+        checkov
+        dive
+        dry
+        flyctl
+        go-task
+        google-cloud-sdk
+        ipcalc
+        jc
+        jnv
+        kcat
+        mkcert
+        # process-compose
+        self'.packages.chrome-cli
+        self'.packages.everything-fzf
+        # step-cli
 
-      # jujutsu
-      # jjui
-      # jj-fzf
-      # lazyjj
-    ];
-    xdg.enable = true;
-    # manual.html.enable = true;
-    home.stateVersion = "22.11";
-  };
+        # jujutsu
+        # jjui
+        # jj-fzf
+        # lazyjj
+      ];
+      xdg.enable = true;
+      # manual.html.enable = true;
+      home.stateVersion = "22.11";
+    };
 
   programs.aerospace.enable = true;
   programs.emacs-plus.enable = true;

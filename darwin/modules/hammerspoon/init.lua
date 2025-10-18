@@ -220,6 +220,7 @@ modes.main = hs.hotkey.modal
   :bind(ALT, "return", switchTo.terminal)
   :bind(SHIFT .. ALT, "return", switchTo.browser)
   :bind(ALT, "'", switchTo.browser)
+  :bind(ALT, "d", appSwitcher({ name = "Zed" }))
   :bind(ALT, "e", switchTo.editor)
   :bind(ALT, "i", appSwitcher({ name = "Linear" }))
   :bind(ALT, "m", switchTo.messenger)
