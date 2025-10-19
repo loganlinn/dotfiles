@@ -41,6 +41,7 @@
         ../../nix/home/nixvim
         ../../nix/home/pet.nix
         ../../nix/home/pretty.nix
+        ../../nix/home/television.nix
         ../../nix/home/terraform.nix
         ../../nix/home/tmux.nix
         ../../nix/home/wezterm
