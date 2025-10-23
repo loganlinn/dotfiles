@@ -132,15 +132,19 @@ with lib;
 
     initContent =
       let
-        section = title: content: ''
-          # ${title} {{{
-          ${content}
-          # }}}
+        includeFile = file: ''
+
+          #---------------------------------------------------------
+          # ${file}
+          #---------------------------------------------------------
+          ${readFile file}
         '';
       in
       mkMerge [
         (mkBefore ''
           if [[ $${ZPROF_ENABLE-} == "true" ]]; then zmodload zsh/zprof; fi
+
+          #=========================================================
 
           unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
           setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
@@ -156,12 +160,15 @@ with lib;
           DIRSTACKSIZE=9
         '')
         # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
-        (mkOrder 900 (section "line-editor.zsh" (readFile ./line-editor.zsh))) # this file is doing too much
-        (mkOrder 901 (section "clipcopy.zsh" (readFile ./clipcopy.zsh)))
-        # (mkAfter (section "nixpkgs.zsh" (readFile ./nixpkgs.zsh)))
-        # (mkAfter (section "wezterm.zsh" (readFile ./wezterm.zsh)))
+        (mkOrder 900 (includeFile ./line-editor.zsh)) # this file is doing too much
+        (mkOrder 901 (includeFile ./clipcopy.zsh))
+        # (mkAfter (includeFile ./nixpkgs.zsh))
+        # (mkAfter (includeFile ./wezterm.zsh))
+        (mkAfter (readFile ./sudo-prompt.zsh))
+        (mkAfter (readFile ./git.zsh))
         (mkAfter ''
-          ${readFile ./sudo-prompt.zsh}
+
+          #---------------------------------------------------------
 
           if (( $+commands[bat] )); then
             alias d='batdiff'
@@ -170,13 +177,36 @@ with lib;
             eval "$(batpipe)"
           fi
 
+          ${lib.optionalString
+            (
+              config.programs.television.enable
+              && config.programs.television.enableZshIntegration
+              && config.programs.fzf.enableZshIntegration
+            )
+            ''
+              #---------------------------------------------------------
+
+              # Prefer fzf's history search over television's
+              bindkey -M emacs '^R' fzf-history-widget
+              bindkey -M vicmd '^R' fzf-history-widget
+              bindkey -M viins '^R' fzf-history-widget
+            ''
+          }
+
+          #---------------------------------------------------------
+
           fpath=("${config.my.flakeDirectory}/config/zsh/functions" $fpath)
           autoload -U $fpath[1]/*(.:t)
-
-          if [[ -f ~/.zshrc.local ]]; then source ~/.zshrc.local; fi
-
-          if [[ $${ZPROF_ENABLE-} == "true" ]]; then zprof; fi;
         '')
+        (mkOrder 2000 # mkAfter: 1500
+
+          ''
+            #=========================================================
+
+            if [[ -f ~/.zshrc.local ]]; then source ~/.zshrc.local; fi
+            if [[ $${ZPROF_ENABLE-} == "true" ]]; then zprof; fi;
+          ''
+        )
       ];
     loginExtra = ''
       [[ ! -f ~/.zlogin.local ]] || source ~/.zlogin.local

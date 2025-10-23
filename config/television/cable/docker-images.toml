@@ -7,5 +7,19 @@ requirements = ["docker", "jq"]
 command = "docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}'"
 output = "{split: :-1}"
 
+[keybindings]
+ctrl-d = "actions:remove"
+ctrl-i = "actions:remove"
+
 [preview]
 command = "docker image inspect '{split: :-1}' | jq -C"
+
+[actions.remove]
+description = "Remove image"
+command = "docker rmi '{split: :-1}'"
+mode = "fork"
+
+[actions.inspect]
+description = "Inspect with dive"
+command = "dive '{split: :-1}'"
+mode = "fork"

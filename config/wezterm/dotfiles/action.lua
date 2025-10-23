@@ -132,19 +132,19 @@ local function is_same_pane(pane, other)
   return pane:pane_id() == other:pane_id()
 end
 
-M.toggle_popup_pane = action_callback(function(window, pane)
-  local direction = POPUP_DIRECTION
-  local tab = window:active_tab()
-  local panes_with_info = tab:panes_with_info()
-  local is_primary = tab:get_pane_direction(OPPOSITE_DIRECTION[direction]) == nil
-
-  if is_primary then
-    open_popup(window, pane, { direction = direction })
-  else
-    activate_pane(window, panes_with_info[1].pane, pane)
-    set_zoomed(tab, true)
-  end
-end)
+-- M.toggle_popup_pane = action_callback(function(window, pane)
+--   local direction = POPUP_DIRECTION
+--   local tab = window:active_tab()
+--   local panes_with_info = tab:panes_with_info()
+--   local is_primary = tab:get_pane_direction(OPPOSITE_DIRECTION[direction]) == nil
+--
+--   if is_primary then
+--     open_popup(window, pane, { direction = direction })
+--   else
+--     activate_pane(window, panes_with_info[1].pane, pane)
+--     set_zoomed(tab, true)
+--   end
+-- end)
 
 local ACTIVATE_DIRECTION_EVENT = "activate-direction"
 -- wezterm.on(ACTIVATE_DIRECTION_EVENT, function(window, pane, direction)

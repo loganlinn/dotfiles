@@ -1,14 +1,14 @@
 {
-  self,
   self',
   config,
-  pkgs,
   lib,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.programs.git.git-spice;
-in {
+in
+{
   options.programs.git.git-spice = {
     enable = mkEnableOption "git-spice";
     package = mkOption {
@@ -18,7 +18,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    home.packages = [cfg.package];
+    home.packages = [ cfg.package ];
     home.shellAliases = {
       grs = "command gs repo sync --restack";
     };
@@ -67,16 +67,7 @@ in {
       completionInit = ''
         complete -C ${cfg.package}/bin/gs gs
       '';
-      initContent = mkBefore ''
-        gs() {
-          if (( $# )) && [[ ! -e $1 ]]; then
-            # Remember that time you created PR as your coworker?
-            env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" command gs "$@"
-          else
-            git status .
-          fi
-        }
-      '';
+      initContent = mkAfter (lib.readFile ./git-spice.zsh);
     };
   };
 }

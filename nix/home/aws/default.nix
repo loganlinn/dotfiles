@@ -13,4 +13,6 @@
     awsrm
     e1s # ECS like k9s
   ];
+
+  programs.zsh.initContent = lib.mkAfter (lib.readFile ./aws-sso.zsh);
 }

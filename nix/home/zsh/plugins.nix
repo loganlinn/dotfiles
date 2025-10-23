@@ -10,16 +10,18 @@ with lib;
   programs.zsh = {
     antidote = {
       enable = true;
+      useFriendlyNames = true;
       plugins = [
         "aloxaf/fzf-tab"
-        # "mattmc3/zfunctions" # $ZDOTDIR/functions (see below)
+        "mattmc3/zfunctions" # $ZDOTDIR/functions (see below)
+        # "mattmc3/zshrc.d"
         # "mattmc3/zman"
         # "mattmc3/zsh-safe-rm"
         # "mehalter/zsh-nvim-appname" # nvapp
         # "romkatv/zsh-bench kind:path"
-        "wfxr/forgit"
+        # "wfxr/forgit"
         "zdharma-continuum/fast-syntax-highlighting kind:defer"
-        "zsh-users/zsh-history-substring-search"
+        # "zsh-users/zsh-history-substring-search"
         # "marlonrichert/zsh-edit"
         # "marlonrichert/zcolors"
 

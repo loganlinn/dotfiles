@@ -31,6 +31,7 @@
     gum
     sad
     tree
+    unipicker
     unzip
     watch
     xh

@@ -6,24 +6,19 @@
 }:
 let
   inherit (config.lib.file) mkOutOfStoreSymlink;
+  cfg = config.programs.television;
 in
 {
   xdg.configFile."television/cable".source =
     mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/television/cable";
 
   programs.television = {
-    enable = true;
+    enable = lib.mkDefault true;
     enableZshIntegration = true;
     settings = {
-      ui = {
-        use_nerd_font_icons = true;
-      };
-      keybindings = {
-        quit = [
-          "esc"
-          "ctrl-c"
-        ];
-      };
+      # keybindings = {
+      #   quit = [ "ctrl-c" ];
+      # };
     };
   };
 }

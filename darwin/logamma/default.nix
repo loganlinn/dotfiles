@@ -27,7 +27,7 @@
         self.homeModules.nix-colors
         # self.homeModules.opnix
         ../../nix/home/asciinema.nix
-        ../../nix/home/aws.nix
+        ../../nix/home/aws
         ../../nix/home/dev
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/javascript.nix
@@ -107,6 +107,7 @@
   programs.hammerspoon.enable = true;
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
+
   # services.kanata.enable = false;
   # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
