@@ -161,11 +161,11 @@ with lib;
         '')
         # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
         (mkOrder 900 (includeFile ./line-editor.zsh)) # this file is doing too much
-        (mkOrder 901 (includeFile ./clipcopy.zsh))
+        (mkOrder 900 (includeFile ./clipcopy.zsh))
         # (mkAfter (includeFile ./nixpkgs.zsh))
         # (mkAfter (includeFile ./wezterm.zsh))
-        (mkAfter (readFile ./sudo-prompt.zsh))
-        (mkAfter (readFile ./git.zsh))
+        (mkAfter (includeFile ./git.zsh))
+        (mkAfter (includeFile ./sudo-prompt.zsh))
         (mkAfter ''
 
           #---------------------------------------------------------
@@ -176,6 +176,9 @@ with lib;
             eval "$(batman --export-env)"
             eval "$(batpipe)"
           fi
+
+          alias showkey='bindkey -L | less'
+          bindkey '^X^H^K' describe-key-briefly
 
           ${lib.optionalString
             (

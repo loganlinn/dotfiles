@@ -36,7 +36,7 @@
         ../../nix/home/ghostty.nix
         ../../nix/home/just
         ../../nix/home/kitty
-        ../../nix/home/mise.nix
+        # ../../nix/home/mise.nix
         ../../nix/home/neovide.nix
         ../../nix/home/nixvim
         ../../nix/home/pet.nix
