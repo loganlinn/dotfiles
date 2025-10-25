@@ -13,6 +13,7 @@
     awsrm
     e1s # ECS like k9s
     gum # for aws-secretctl interactive selection
+    jq # for aws-secretctl-edit SSM parameter parsing
     moreutils # for vipe in aws-secretctl-edit
   ];
 
