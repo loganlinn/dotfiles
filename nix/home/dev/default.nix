@@ -6,9 +6,7 @@
 }:
 {
   imports = [
-    # ./kube.nix
     ../git
-    # ../java
     ../just
     ../python
     ./clang.nix
@@ -37,4 +35,8 @@
     xh
     zip
   ];
+
+  home.shellAliases = {
+    g = "git";
+  };
 }

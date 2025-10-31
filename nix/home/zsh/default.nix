@@ -7,6 +7,15 @@
 }:
 with builtins;
 with lib;
+let
+  includeFile = file: ''
+
+    #---------------------------------------------------------
+    # ${file}
+    #---------------------------------------------------------
+    ${readFile file}
+  '';
+in
 {
   imports = [
     ./options.nix
@@ -69,6 +78,7 @@ with lib;
       commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
       commandz = ''commands | fzf'';
       aliasez = ''alias | fzf'';
+      showkey = ''bindkey -L | ${pkgs.bat}/bin/bat'';
     };
     shellGlobalAliases = {
       "..." = "../..";
@@ -110,110 +120,103 @@ with lib;
       })
     ];
     envExtra = ''
+      [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
+
       # Ensure path arrays do not contain duplicates.
       typeset -gU path fpath
-
-      [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
 
       ${optionalString pkgs.stdenv.targetPlatform.isDarwin ''
         # Prevent /etc/zshrc_Apple_Terminal from running some unnecessary code for session persistence.
         export SHELL_SESSIONS_DISABLE=1
       ''}
     '';
-
     profileExtra = ''
-      if [[ -f ~/.zprofile.local ]]; then source ~/.zprofile.local; fi
+      [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
-
     completionInit = ''
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
       stty -ixon
     '';
+    initContent = mkMerge [
+      (mkOrder 100 ''
+        [[ ''${ZPROF_ENABLE-} != "true" ]] || zmodload zsh/zprof
+      '')
+      (mkBefore ''
+        unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
+        setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
+        setopt EQUALS               # Expansion of =command expands into full pathname of command
+        setopt LONG_LIST_JOBS       # List jobs in the long format by default.
+        setopt AUTO_RESUME          # Attempt to resume existing job before creating a new process.
+        setopt NOTIFY               # Report status of background jobs immediately.
+        unsetopt BG_NICE            # Don't run all background jobs at a lower priority.
+        unsetopt HUP                # Don't kill jobs on shell exit.
+        setopt AUTO_PUSHD           # Push the old directory onto the stack on cd.
+        setopt PUSHD_IGNORE_DUPS    # Do not store duplicates in the stack.
+        setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
+        DIRSTACKSIZE=9
+      '')
+      # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
+      (mkOrder 900 (includeFile ./line-editor.zsh)) # FIXME: declutter this flile
+      (mkOrder 900 (includeFile ./clipcopy.zsh))
+      # (mkAfter (includeFile ./nixpkgs.zsh))
+      # (mkAfter (includeFile ./wezterm.zsh))
+      (mkAfter (includeFile ./sudo-prompt.zsh))
+      (mkAfter ''
+        ${lib.optionalString config.programs.bat.enable ''
+          ##########################################################
 
-    initContent =
-      let
-        includeFile = file: ''
+          eval "$(batman --export-env)"
 
-          #---------------------------------------------------------
-          # ${file}
-          #---------------------------------------------------------
-          ${readFile file}
-        '';
-      in
-      mkMerge [
-        (mkBefore ''
-          if [[ $${ZPROF_ENABLE-} == "true" ]]; then zmodload zsh/zprof; fi
+          eval "$(batpipe)"
 
-          #=========================================================
+          function help  { "$@" --help 2>&1 | bat --plain --language=help; }
 
-          unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
-          setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
-          setopt EQUALS               # Expansion of =command expands into full pathname of command
-          setopt LONG_LIST_JOBS       # List jobs in the long format by default.
-          setopt AUTO_RESUME          # Attempt to resume existing job before creating a new process.
-          setopt NOTIFY               # Report status of background jobs immediately.
-          unsetopt BG_NICE            # Don't run all background jobs at a lower priority.
-          unsetopt HUP                # Don't kill jobs on shell exit.
-          setopt AUTO_PUSHD           # Push the old directory onto the stack on cd.
-          setopt PUSHD_IGNORE_DUPS    # Do not store duplicates in the stack.
-          setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
-          DIRSTACKSIZE=9
-        '')
-        # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
-        (mkOrder 900 (includeFile ./line-editor.zsh)) # this file is doing too much
-        (mkOrder 900 (includeFile ./clipcopy.zsh))
-        # (mkAfter (includeFile ./nixpkgs.zsh))
-        # (mkAfter (includeFile ./wezterm.zsh))
-        (mkAfter (includeFile ./sudo-prompt.zsh))
-        (mkAfter ''
+        ''}
+        ##########################################################
 
-          #---------------------------------------------------------
+        fpath=("${config.my.flakeDirectory}/config/zsh/functions" $fpath)
+        autoload -U $fpath[1]/*(.:t)
 
-          if (( $+commands[bat] )); then
-            alias d='batdiff'
-            alias g='batgrep'
-            eval "$(batman --export-env)"
-            eval "$(batpipe)"
+        zle -N git-widget
+        zle -N git-open-widget
+
+        bindkey '^X^G' git-widget
+        bindkey '^X^H^K' describe-key-briefly
+
+        ${lib.optionalString
+          (
+            config.programs.television.enable
+            && config.programs.television.enableZshIntegration
+            && config.programs.fzf.enableZshIntegration
+          )
+          ''
+            ##########################################################
+
+            # Prefer fzf's history search over television's
+            bindkey -M emacs '^R' fzf-history-widget
+            bindkey -M vicmd '^R' fzf-history-widget
+            bindkey -M viins '^R' fzf-history-widget
+
+          ''
+        }
+      '')
+      (mkAfter ''
+        ##########################################################
+
+        function edit-zshrc-local {
+          if ''${EDITOR:-vim} ~/.zshrc.local && source ~/.zshrc.local; then
+             >&2 echo "sourced ~/.zshrc.local"
           fi
+        }
 
-          alias showkey='bindkey -L | less'
-          bindkey '^X^H^K' describe-key-briefly
+        alias zlocal='edit-zshrc-local'
 
-          ${lib.optionalString
-            (
-              config.programs.television.enable
-              && config.programs.television.enableZshIntegration
-              && config.programs.fzf.enableZshIntegration
-            )
-            ''
-              #---------------------------------------------------------
-
-              # Prefer fzf's history search over television's
-              bindkey -M emacs '^R' fzf-history-widget
-              bindkey -M vicmd '^R' fzf-history-widget
-              bindkey -M viins '^R' fzf-history-widget
-            ''
-          }
-
-          #---------------------------------------------------------
-
-          fpath=("${config.my.flakeDirectory}/config/zsh/functions" $fpath)
-          autoload -U $fpath[1]/*(.:t)
-
-          zle -N git-widget
-          zle -N git-open-widget
-          bindkey '^X^G' git-widget
-        '')
-        (mkOrder 2000 # mkAfter: 1500
-
-          ''
-            #=========================================================
-
-            if [[ -f ~/.zshrc.local ]]; then source ~/.zshrc.local; fi
-            if [[ $${ZPROF_ENABLE-} == "true" ]]; then zprof; fi;
-          ''
-        )
-      ];
+        [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+      '')
+      (mkOrder 2000 ''
+        [[ ''${ZPROF_ENABLE-} != "true" ]] || zprof
+      '')
+    ];
     loginExtra = ''
       [[ ! -f ~/.zlogin.local ]] || source ~/.zlogin.local
     '';

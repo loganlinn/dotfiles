@@ -7,6 +7,9 @@
 with lib;
 with lib.my;
 {
+  home.shellAliases = {
+    gist = "gh gist";
+  };
   programs.gh = {
     enable = true;
     gitCredentialHelper.enable = true;

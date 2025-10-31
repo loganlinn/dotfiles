@@ -29,6 +29,7 @@
         ../../nix/home/asciinema.nix
         ../../nix/home/aws
         ../../nix/home/dev
+        ../../nix/home/dev/kubernetes.nix
         ../../nix/home/dev/lua.nix
         ../../nix/home/dev/javascript.nix
         ../../nix/home/docker.nix
