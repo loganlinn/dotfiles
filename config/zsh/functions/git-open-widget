@@ -3,7 +3,7 @@
 emulate -L zsh
 {
 case $(
-  fzf +i --bind=one:accept --prompt="git: " --height=50% --nth=1 --accept-nth=1 <<'EOF'
+  fzf +i --bind=one:accept --prompt="git: " --height=25% --nth=1 --accept-nth=1 <<'EOF'
 c   checks
 o   pwd
 p   pull-request

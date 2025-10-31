@@ -3,7 +3,7 @@
 emulate -L zsh
 {
 case $(
-  fzf +i --bind=one:accept --prompt="git: " --height=50% --nth=1 --accept-nth=1 <<'EOF'
+  fzf +i --bind=one:accept --prompt="git: " --height=25% --nth=1 --accept-nth=1 <<'EOF'
 b   branch
 o   open...
 p   prefix
@@ -31,7 +31,7 @@ s)
   fi
   ;;
 t) LBUFFER+="$(git rev-parse --show-toplevel 2>/dev/null)/" ;;
-u) LBUFFER+="$(git rev-parse --show-cdup 2>/dev/null)/" ;;
+u) LBUFFER+="$(git rev-parse --show-cdup 2>/dev/null)" ;;
 esac
 } always {
   zle reset-prompt

@@ -181,6 +181,7 @@ in
         zle -N git-open-widget
 
         bindkey '^X^G' git-widget
+        bindkey '^Xg' git-widget
         bindkey '^X^H^K' describe-key-briefly
 
         ${lib.optionalString
