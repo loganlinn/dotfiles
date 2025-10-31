@@ -1,5 +1,5 @@
 () {
-  $1() {
+  $1 () {
     setopt localoptions pipefail no_aliases 2> /dev/null
     local menu_pick="$(fzf --bind one:accept --accept-nth=1 <<'EOF'
   b -- branch
@@ -53,6 +53,8 @@ EOF
 
     zle reset-prompt
   }
+
   zle -N $1
-  bindkey "${2:-'^X^G'}" $1
-} git-widget
+  bindkey "$2" "$1"
+
+} git-widget "^X^g"
