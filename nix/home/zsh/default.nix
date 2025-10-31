@@ -164,7 +164,6 @@ with lib;
         (mkOrder 900 (includeFile ./clipcopy.zsh))
         # (mkAfter (includeFile ./nixpkgs.zsh))
         # (mkAfter (includeFile ./wezterm.zsh))
-        (mkAfter (includeFile ./git.zsh))
         (mkAfter (includeFile ./sudo-prompt.zsh))
         (mkAfter ''
 
@@ -200,6 +199,10 @@ with lib;
 
           fpath=("${config.my.flakeDirectory}/config/zsh/functions" $fpath)
           autoload -U $fpath[1]/*(.:t)
+
+          zle -N git-widget
+          zle -N git-open-widget
+          bindkey '^X^G' git-widget
         '')
         (mkOrder 2000 # mkAfter: 1500
 

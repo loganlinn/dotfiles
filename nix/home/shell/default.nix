@@ -4,11 +4,13 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.my;
-  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix {};
-  shellScriptType = types.coercedTo types.str (text: {inherit text;}) shellScriptModule;
-in {
+  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix { };
+  shellScriptType = types.coercedTo types.str (text: { inherit text; }) shellScriptModule;
+in
+{
   imports = [
     ../bash
     ../zsh
@@ -53,6 +55,15 @@ in {
       today.text = ''
         # shellcheck disable=SC2145
         exec date -Idate -d"now $@"
+      '';
+      harden.text = ''
+        # harden a link (convert it to a singly linked file)
+        for arg; do
+          rnd=$RANDOM
+          cp "$arg" "$arg"."$rnd"
+          rm "$arg"
+          mv "$arg"."$rnd" "$arg"
+        done
       '';
     };
 

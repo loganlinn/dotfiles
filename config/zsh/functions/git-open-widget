@@ -1,0 +1,30 @@
+# vim: ft=zsh
+# function git-open-widget {
+emulate -L zsh
+{
+case $(
+  fzf +i --bind=one:accept --prompt="git: " --height=50% --nth=1 --accept-nth=1 <<'EOF'
+c   checks
+o   pwd
+p   pull-request
+P   pull-requests
+r   releases
+s   settings
+w   workflow
+W   wiki
+EOF
+) in
+P) gh pr list --web ;;
+c) gh pr checks --web ;;
+o) gh browse --branch="${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}" "${GIT_PATH:-.}" ;;
+p) gh pr view --web ;;
+r) gh browse --releases ;;
+s) BUFFER='gh browse --settings'; zle accept-line ;;
+w) BUFFER='gh workflow view --web'; zle accept-line ;;
+W) gh browse --wiki ;;
+esac
+
+} always {
+  zle reset-prompt
+}
+# }
