@@ -162,6 +162,12 @@ in
       # (mkAfter (includeFile ./wezterm.zsh))
       (mkAfter (includeFile ./sudo-prompt.zsh))
       (mkAfter ''
+        ##########################################################
+
+        function +nixpkgs () {
+          command nix shell "''${@/#/nixpkgs#}"
+        }
+
         ${lib.optionalString config.programs.bat.enable ''
           ##########################################################
 
