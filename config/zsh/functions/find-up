@@ -1,0 +1,18 @@
+# vim: ft=zsh
+# function find-up {
+emulate -L zsh
+
+local target=${1:?filename required}
+local dir=$PWD
+
+# Walk up directory tree
+while [[ $dir != / ]]; do
+  [[ -e $dir/$target ]] && { print $dir/$target; return 0 }
+  dir=${dir:h}
+done
+
+# Check root
+[[ -e /$target ]] && { print /$target; return 0 }
+
+return 1
+# }
