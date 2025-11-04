@@ -4,8 +4,7 @@
   lib,
   ...
 }:
-with lib;
-{
+with lib; {
   system = {
     primaryUser = config.my.user.name or "logan";
 
@@ -168,8 +167,13 @@ with lib;
         # https://macos-defaults.com/misc/apple-intelligence.html
         "com.apple.CloudSubscriptionFeatures.optIn"."545129924" = false; # disable Apple Intelligence
         "com.google.Chrome" = {
-          # Keyboard shortcut for Pin Tab menu item: ⌘'
-          NSUserKeyEquivalents."Pin Tab" = "@'";
+          NSUserKeyEquivalents = {
+            "Developer Tools" = "@$i"; # ⌘⇧I
+            "Duplicate Tab" = "@$d"; # ⌘⇧D
+            "Email Link" = "~^$i"; # ⌥⌃⇧I
+            "JavaScript Console" = "@$j"; # ⌘⇧J
+            "Pin Tab" = "@'"; # ⌘'
+          };
         };
       };
     };

@@ -11,7 +11,6 @@
     ../modules/emacs-plus
     ../modules/hammerspoon
     # ../modules/kanata
-    ../modules/keyboard
     # ../modules/opnix
     # ../modules/podman.nix
     ../modules/sketchybar.nix
@@ -100,17 +99,6 @@
     xdg.enable = true;
     # manual.html.enable = true;
     home.stateVersion = "22.11";
-  };
-
-  modules.keyboard.enable = true;
-  modules.keyboard.appShortcuts = {
-    "com.google.Chrome" = {
-      "Developer Tools" = "@$i"; # ⌘⇧I
-      "Duplicate Tab" = "@$d"; # ⌘⇧D
-      "Email Link" = "~^$i"; # ⌘⌥⌃⇧I
-      "JavaScript Console" = "@$j"; # ⌘⇧J
-      "Pin Tab" = "@'"; # ⌘'
-    };
   };
 
   programs.aerospace.enable = true;
