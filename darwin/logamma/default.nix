@@ -102,29 +102,15 @@
     home.stateVersion = "22.11";
   };
 
+  modules.keyboard.enable = true;
   modules.keyboard.appShortcuts = {
-    "com.google.Chrome" = [
-      {
-        title = "Developer Tools";
-        shortcut = "@$i";
-      }
-      {
-        title = "Duplicate Tab";
-        shortcut = "@$d";
-      }
-      {
-        title = "Email Link";
-        shortcut = "~^$i";
-      }
-      {
-        title = "JavaScript Console";
-        shortcut = "@$j";
-      }
-      {
-        title = "Pin Tab";
-        shortcut = "@'";
-      }
-    ];
+    "com.google.Chrome" = {
+      "Developer Tools" = "@$i"; # ⌘⇧I
+      "Duplicate Tab" = "@$d"; # ⌘⇧D
+      "Email Link" = "~^$i"; # ⌘⌥⌃⇧I
+      "JavaScript Console" = "@$j"; # ⌘⇧J
+      "Pin Tab" = "@'"; # ⌘'
+    };
   };
 
   programs.aerospace.enable = true;
