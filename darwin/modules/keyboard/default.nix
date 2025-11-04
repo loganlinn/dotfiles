@@ -5,7 +5,7 @@
   ...
 }:
 with lib; let
-  cfg = config.modules.keyboard-shortcuts;
+  cfg = config.modules.keyboard;
 in {
   options = {
     modules.keyboard = {

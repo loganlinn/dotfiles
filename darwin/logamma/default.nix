@@ -11,6 +11,7 @@
     ../modules/emacs-plus
     ../modules/hammerspoon
     # ../modules/kanata
+    ../modules/keyboard
     # ../modules/opnix
     # ../modules/podman.nix
     ../modules/sketchybar.nix
@@ -45,14 +46,6 @@
       ../../nix/home/yazi
       ../../nix/home/yt-dlp.nix
     ];
-
-    modules.keyboard.appShortcuts = {
-      "Developer Tools" = "@$i";
-      "Duplicate Tab" = "@$d";
-      "Email Link" = "~^$i";
-      "JavaScript Console" = "@$j";
-      "Pin Tab" = "@'";
-    };
 
     programs.asciinema.enable = true;
     programs.passage.enable = true;
@@ -107,6 +100,31 @@
     xdg.enable = true;
     # manual.html.enable = true;
     home.stateVersion = "22.11";
+  };
+
+  modules.keyboard.appShortcuts = {
+    "com.google.Chrome" = [
+      {
+        title = "Developer Tools";
+        shortcut = "@$i";
+      }
+      {
+        title = "Duplicate Tab";
+        shortcut = "@$d";
+      }
+      {
+        title = "Email Link";
+        shortcut = "~^$i";
+      }
+      {
+        title = "JavaScript Console";
+        shortcut = "@$j";
+      }
+      {
+        title = "Pin Tab";
+        shortcut = "@'";
+      }
+    ];
   };
 
   programs.aerospace.enable = true;

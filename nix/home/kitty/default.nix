@@ -7,11 +7,17 @@
 with lib;
 with lib.my; # FIXME
 
-  {
-    imports = [./theme.nix];
-
+  let
+    dracula = pkgs.fetchFromGitHub {
+      owner = "dracula";
+      repo = "kitty";
+      rev = "87717a3f00e3dff0fc10c93f5ff535ea4092de70";
+      hash = "sha256-78PTH9wE6ktuxeIxrPp0ZgRI8ST+eZ3Ok2vW6BCIZkc=";
+    };
+  in {
     programs.kitty = {
       enable = lib.mkDefault pkgs.stdenv.isLinux; # install via homebrew on darwin
+      enableGitIntegration = mkDefault true;
 
       # Wrap package to fix apparent issue with how libxkbcommon is (not) loaded:
       # 'Failed to load libxkbcommon.xkb_keysym_from_name with error: Failed to find libxkbcommon'
@@ -35,9 +41,9 @@ with lib.my; # FIXME
       # );
 
       darwinLaunchOptions = [
-        # "--override=allow_remote_control=socket-only"
-        # "--listen-on=unix:~/.local/share/kitty/socket"
-        # "${lib.getExe config.programs.zsh.package} --login"
+        "--override=allow_remote_control=socket-only"
+        "--listen-on=unix:~/.local/share/kitty/socket"
+        # "${getExe config.programs.zsh.package} --login"
       ];
 
       font = config.my.fonts.terminal;
@@ -131,14 +137,31 @@ with lib.my; # FIXME
       };
       extraConfig = ''
         globinclude kitty.d/**/*.conf
+
+        # BEGIN_KITTY_THEME
+        # dracula
+        include current-theme.conf
+        # END_KITTY_THEME
       '';
     };
 
-    xdg.configFile = {
-      "kitty/kitty.d/dotfiles".source = config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/kitty/kitty.d/dotfiles";
-    };
+    xdg.configFile =
+      attrsets.unionOfDisjoint {
+        "kitty/diff.conf".source = "${dracula}/diff.conf";
+        "kitty/current-theme.conf".source = "${dracula}/dracula.conf";
+      } (
+        let
+          sourceDir = ../../../config/kitty/kitty.d;
+          entries = builtins.readDir sourceDir;
+        in
+          lib.mapAttrs' (name: type:
+            nameValuePair "kitty/kitty.d/${name}" {
+              source = config.lib.file.mkOutOfStoreSymlink "${sourceDir}/${name}";
+            })
+          entries
+      );
 
-    programs.rofi.terminal = "${config.programs.kitty.package}/bin/kitty";
+    programs.rofi.terminal = mkDefault (getExe config.programs.kitty.package);
 
     home.packages = let
       writeKittyBin = name: args:
