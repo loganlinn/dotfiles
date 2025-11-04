@@ -41,8 +41,8 @@ with lib.my; # FIXME
       # );
 
       darwinLaunchOptions = [
-        "--override=allow_remote_control=socket-only"
-        "--listen-on=unix:~/.local/share/kitty/socket"
+        # "--override=allow_remote_control=socket-only"
+        # "--listen-on=unix:~/.local/share/kitty/socket"
         # "${getExe config.programs.zsh.package} --login"
       ];
 
@@ -136,7 +136,110 @@ with lib.my; # FIXME
         macos_option_as_alt = "yes";
       };
       extraConfig = ''
-        globinclude kitty.d/**/*.conf
+        map f1 launch --type=overlay --stdin-source=@screen_scrollback --stdin-add-formatting bat +G -R
+        map f2 launch --type=overlay gh pr checks
+
+        map kitty_mod+v paste_from_clipboard
+        map kitty_mod+, move_tab_backward
+        map kitty_mod+. move_tab_forward
+        map kitty_mod+1 pass_selection_to_program
+        map kitty_mod+; next_layout
+        map kitty_mod+[ previous_tab
+        map kitty_mod+] next_tab
+        map kitty_mod+a>1 set_background_opacity 1
+        map kitty_mod+a>d set_background_opacity default
+        map kitty_mod+a>l set_background_opacity -0.1
+        map kitty_mod+a>m set_background_opacity +0.1
+        map kitty_mod+c copy_to_clipboard
+        map kitty_mod+delete clear_terminal reset active
+        map kitty_mod+e open_url_with_hints
+        map kitty_mod+enter new_window_with_cwd
+        map kitty_mod+escape kitty_shell window
+        map kitty_mod+h neighboring_window left
+        map kitty_mod+j neighboring_window down
+        map kitty_mod+k neighboring_window up
+        map kitty_mod+l neighboring_window right
+        map kitty_mod+o goto_tab -1
+        map kitty_mod+p>f kitten hints --type path --program -
+        map kitty_mod+p>h kitten hints --type hash --program -
+        map kitty_mod+p>l kitten hints --type line --program -
+        map kitty_mod+p>n kitten hints --type linenum
+        map kitty_mod+p>shift+f kitten hints --type path
+        map kitty_mod+p>w kitten hints --type word --program -
+        map kitty_mod+p>y kitten hints --type hyperlink
+        map kitty_mod+q close_tab
+        map kitty_mod+space>h move_window left
+        map kitty_mod+space>j move_window down
+        map kitty_mod+space>k move_window up
+        map kitty_mod+space>l move_window right
+        map kitty_mod+t new_tab_with_cwd
+        map kitty_mod+u kitten unicode_input
+        map kitty_mod+y>f kitten hints --type path --program @
+        map kitty_mod+y>h kitten hints --type hash --program @
+        map kitty_mod+y>l kitten hints --type line --program @
+        map kitty_mod+y>w kitten hints --type word --program @
+
+        map kitty_mod+left  resize_window narrower
+        map kitty_mod+down  resize_window shorter
+        map kitty_mod+up    resize_window taller
+        map kitty_mod+right resize_window wider
+
+        map kitty_mod+backspace change_font_size all 0
+        map kitty_mod+equal     change_font_size all +2.0
+        map kitty_mod+minus     change_font_size all -2.0
+
+        map super+. set_tab_title
+        map super+1 goto_tab 1
+        map super+2 goto_tab 2
+        map super+3 goto_tab 3
+        map super+4 goto_tab 4
+        map super+5 goto_tab 5
+        map super+6 goto_tab 6
+        map super+7 goto_tab 7
+        map super+8 goto_tab 8
+        map super+9 goto_tab 9
+        map super+down scroll_to_prompt 1
+        map super+n new_os_window_with_cwd
+        map super+shift+w close_os_window
+        map super+up scroll_to_prompt -1 2
+        map super+w close_window
+        map super+shift+t kitten themes
+        map super+shift+r load_config_file
+        map super+shift+d debug_config
+        map super+shift+l dump_lines_with_attrs
+        map super+shift+e show_kitty_env_vars
+
+        clear_all_mouse_actions no
+
+        mouse_map ctrl+alt+left       press       ungrabbed         mouse_selection   rectangle
+        mouse_map ctrl+alt+left       triplepress ungrabbed         mouse_selection   line_from_point
+        mouse_map ctrl+shift+left     press       grabbed           discard_event
+        mouse_map ctrl+shift+left     release     grabbed,ungrabbed mouse_click_url
+        mouse_map left                            click             ungrabbed         mouse_click_url_or_select
+        mouse_map left                            doublepress       ungrabbed         mouse_selection word
+        mouse_map left                            press             ungrabbed         mouse_selection normal
+        mouse_map left                            triplepress       ungrabbed         mouse_selection line
+        mouse_map middle                          release           ungrabbed         paste_from_selection
+        mouse_map right               press       ungrabbed         mouse_select_command_output
+        mouse_map shift+ctrl+alt+left press       ungrabbed,grabbed mouse_selection   rectangle
+        mouse_map shift+ctrl+alt+left triplepress ungrabbed,grabbed mouse_selection   line_from_point
+        mouse_map shift+left                      doublepress       ungrabbed,grabbed mouse_selection word
+        mouse_map shift+left                      press             ungrabbed,grabbed mouse_selection normal
+        mouse_map shift+left                      triplepress       ungrabbed,grabbed mouse_selection line
+        mouse_map shift+left                      click             grabbed,ungrabbed mouse_click_url_or_select
+        mouse_map shift+middle                    release           ungrabbed,grabbed paste_selection
+        mouse_map shift+right         press       ungrabbed,grabbed mouse_selection   extend
+
+        # Open any file with a fragment in vim, fragments are generated
+        # by the hyperlink_grep kitten and nothing else so far.
+        protocol file
+        fragment_matches [0-9]+
+        action launch --type=overlay vim +''${FRAGMENT} ''${FILE_PATH}
+
+        # Open text files without fragments in the editor
+        protocol file
+        mime text/*
+        action launch --type=overlay ''${EDITOR} ''${FILE_PATH}
 
         # BEGIN_KITTY_THEME
         # dracula
@@ -145,21 +248,10 @@ with lib.my; # FIXME
       '';
     };
 
-    xdg.configFile =
-      attrsets.unionOfDisjoint {
-        "kitty/diff.conf".source = "${dracula}/diff.conf";
-        "kitty/current-theme.conf".source = "${dracula}/dracula.conf";
-      } (
-        let
-          sourceDir = ../../../config/kitty/kitty.d;
-          entries = builtins.readDir sourceDir;
-        in
-          lib.mapAttrs' (name: type:
-            nameValuePair "kitty/kitty.d/${name}" {
-              source = config.lib.file.mkOutOfStoreSymlink "${sourceDir}/${name}";
-            })
-          entries
-      );
+    xdg.configFile = {
+      "kitty/diff.conf".source = "${dracula}/diff.conf";
+      "kitty/current-theme.conf".source = "${dracula}/dracula.conf";
+    };
 
     programs.rofi.terminal = mkDefault (getExe config.programs.kitty.package);
 
