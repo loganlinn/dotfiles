@@ -42,9 +42,9 @@ in
   config = {
     home.packages = with pkgs; [
       # nodejs
-      # deno
       config.programs.fnm.package
       bun
+      deno
     ];
 
     programs.zsh = {

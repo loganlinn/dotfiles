@@ -28,41 +28,12 @@ in
 
   programs.zsh = {
     enable = true;
+    zprof.enable = false;
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
     localVariables = { };
-    autosuggestion = {
-      enable = true;
-    };
-    # syntaxHighlighting = {
-    #   enable = true;
-    #   # https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
-    #   highlighters = [
-    #     "main"
-    #     "brackets"
-    #     "pattern"
-    #     "regexp"
-    #     "cursor"
-    #     "root"
-    #     "line"
-    #   ];
-    #   patterns = {
-    #     # "rm -rf *" = "fg=white,bold,bg=red";
-    #   };
-    #   styles = {
-    #     # comment = "fg=black,bold";
-    #   };
-    # };
-
-    # zprof = {
-    #   enable = true;
-    # };
-
-    # historySubstringSearch = {
-    #   enable = true;
-    # };
-
+    autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
       ignoreDups = true;
@@ -74,11 +45,12 @@ in
       save = 100000;
     };
     shellAliases = {
-      sudo = "sudo ";
+      aliasez = ''alias | fzf'';
       commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
       commandz = ''commands | fzf'';
-      aliasez = ''alias | fzf'';
+      flake = "nix flake";
       showkey = ''bindkey -L | ${pkgs.bat}/bin/bat'';
+      sudo = "sudo ";
     };
     shellGlobalAliases = {
       "..." = "../..";
@@ -138,9 +110,6 @@ in
       stty -ixon
     '';
     initContent = mkMerge [
-      (mkOrder 100 ''
-        [[ ''${ZPROF_ENABLE-} != "true" ]] || zmodload zsh/zprof
-      '')
       (mkBefore ''
         unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
         setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
@@ -157,7 +126,7 @@ in
       '')
       # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
       (mkOrder 900 (includeFile ./line-editor.zsh)) # FIXME: declutter this flile
-      (mkOrder 900 (includeFile ./clipcopy.zsh))
+      # (mkOrder 900 (includeFile ./clipcopy.zsh))
       # (mkAfter (includeFile ./nixpkgs.zsh))
       # (mkAfter (includeFile ./wezterm.zsh))
       (mkAfter (includeFile ./sudo-prompt.zsh))
@@ -219,9 +188,6 @@ in
         alias zlocal='edit-zshrc-local'
 
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
-      '')
-      (mkOrder 2000 ''
-        [[ ''${ZPROF_ENABLE-} != "true" ]] || zprof
       '')
     ];
     loginExtra = ''

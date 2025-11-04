@@ -15,6 +15,7 @@
     config = {
       global = {
         warn_timeout = "10s";
+        hide_env_diff = true;
       };
       whitelist = {
         prefix = [

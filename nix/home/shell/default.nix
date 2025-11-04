@@ -31,6 +31,9 @@ in
   };
 
   config = {
+    # The default for all programs.<PROGRAM>.enable<SHELL>Integration
+    # home.shell.enableShellIntegration = true; # TODO
+
     home.shellAliases = {
       "'..'" = "cd ..";
       "'...'" = "cd ...";
