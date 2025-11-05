@@ -5,20 +5,17 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   privateConfigFile = "${config.xdg.configHome}/git/config.local";
   allowedSignersFile = "${pkgs.writeText "allowed_signers" ''
     ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
   ''}";
   gpg-ssh-program = (
-    if pkgs.stdenv.isDarwin then
-      "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-    else
-      "op-ssh-sign"
+    if pkgs.stdenv.isDarwin
+    then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    else "op-ssh-sign"
   );
-in
-{
+in {
   imports = [
     ../shell
     ./gh.nix
@@ -62,16 +59,18 @@ in
     git-spice.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
-      { path = ./include/gitalias.txt; }
+      {path = ./include/gitalias.txt;}
       {
         path = pkgs.fetchurl {
           url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
           sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
         };
       }
-      { path = privateConfigFile; }
+      {path = privateConfigFile;}
     ];
     aliases = {
+      amend = "commit --amend";
+      can = "commit --amend --no-edit";
       branch-name = "rev-parse --abbrev-ref HEAD";
       config-private = "config --file ${privateConfigFile}";
       toplevel = "rev-parse --show-toplevel";

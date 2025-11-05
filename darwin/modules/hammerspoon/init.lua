@@ -118,8 +118,8 @@ local appSwitcher = function(opts)
     if win then
       local app = win:application()
       if fnutils.some(matchers, function(f)
-        return f(app)
-      end) then
+            return f(app)
+          end) then
         return true
       end
     end
@@ -204,7 +204,8 @@ local modes = setmetatable({}, {
 })
 
 local switchTo = {
-  terminal = appSwitcher({ bundleID = "com.github.wez.wezterm", name = "WezTerm" }),
+  -- terminal = appSwitcher({ bundleID = "com.github.wez.wezterm", name = "WezTerm" }),
+  terminal = appSwitcher({ bundleID = "net.kovidgoyal.kitty", name = "Kitty" }),
   browser = appSwitcher({ name = "Google Chrome" }),
   editor = appSwitcher({ name = "Emacs" }),
   messenger = appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }),
@@ -213,29 +214,29 @@ local switchTo = {
 }
 
 modes.main = hs.hotkey.modal
-  .new(HYPER, "k")
-  :bind(HYPER, "k", function() -- toggle all hotkeys
-    modes.main:exit()
-  end)
-  :bind(ALT, "return", switchTo.terminal)
-  :bind(SHIFT .. ALT, "return", switchTo.browser)
-  :bind(ALT, "'", switchTo.browser)
-  :bind(ALT, "d", appSwitcher({ name = "Zed" }))
-  :bind(ALT, "e", switchTo.editor)
-  :bind(ALT, "i", appSwitcher({ name = "Linear" }))
-  :bind(ALT, "m", switchTo.messenger)
-  :bind(ALT, "o", switchTo.explorer)
-  :bind(ALT, "p", appSwitcher({ name = "Claude" }))
-  :bind(ALT, "s", switchTo.chat)
-  :bind(HYPER, "return", switchTo.terminal)
-  :bind(HYPER, "space", switchTo.browser)
-  :bind(HYPER, "a", partial(aerospace, "reload-config"))
-  :bind(HYPER, "o", switchTo.explorer)
-  :bind(HYPER, "d", hs.toggleConsole)
-  :bind(HYPER, "l", hs.caffeinate.lockScreen)
-  :bind(HYPER, "r", hs.reload)
-  :bind(HYPER, "x", closeNotifications)
-  :enter()
+    .new(HYPER, "k")
+    :bind(HYPER, "k", function() -- toggle all hotkeys
+      modes.main:exit()
+    end)
+    :bind(ALT, "return", switchTo.terminal)
+    :bind(SHIFT .. ALT, "return", switchTo.browser)
+    :bind(ALT, "'", switchTo.browser)
+    :bind(ALT, "d", appSwitcher({ name = "Zed" }))
+    :bind(ALT, "e", switchTo.editor)
+    :bind(ALT, "i", appSwitcher({ name = "Linear" }))
+    :bind(ALT, "m", switchTo.messenger)
+    :bind(ALT, "o", switchTo.explorer)
+    :bind(ALT, "p", appSwitcher({ name = "Claude" }))
+    :bind(ALT, "s", switchTo.chat)
+    :bind(HYPER, "return", switchTo.terminal)
+    :bind(HYPER, "space", switchTo.browser)
+    :bind(HYPER, "a", partial(aerospace, "reload-config"))
+    :bind(HYPER, "o", switchTo.explorer)
+    :bind(HYPER, "d", hs.toggleConsole)
+    :bind(HYPER, "l", hs.caffeinate.lockScreen)
+    :bind(HYPER, "r", hs.reload)
+    :bind(HYPER, "x", closeNotifications)
+    :enter()
 
 --- Use Fn + `h/l/j/k` as arrow keys, `y/u/i/o` as mouse wheel, `,/.` as left/right click.
 -- hs.eventtap.new(

@@ -327,6 +327,17 @@ if.window-title-regex-substring = "wezterm Configuration Error"
 run = "layout floating"
 
 [[on-window-detected]]
+if.app-id = "net.kovidgoyal.kitty"
+if.during-aerospace-startup = true
+run = ["move-node-to-workspace 1"]
+check-further-callbacks = true
+
+[[on-window-detected]]
+if.app-id = "net.kovidgoyal.kitty-quick-access"
+run = "layout floating"
+
+
+[[on-window-detected]]
 if.app-id = "com.apple.systempreferences"
 run = "layout floating"
 

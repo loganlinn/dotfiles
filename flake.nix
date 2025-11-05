@@ -17,6 +17,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
     globset.url = "github:pdtpartners/globset";
+    kitty-tab-switcher.url = "github:OsiPog/kitty-tab-switcher";
     nix-colors.url = "github:misterio77/nix-colors";
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";

@@ -50,8 +50,10 @@
     programs.passage.enable = true;
     programs.age-op.enable = true;
     programs.ghostty.enable = true;
-    programs.kitty.enable = true; # install via brew
-    programs.kitty.package = pkgs.writeShellScriptBin "kitty" ''exec "''${HOMEBREW_PREFIX:-/opt/homebrew}/bin/kitty" "$@" '';
+    programs.kitty = {
+      enable = true;
+      package = pkgs.writeShellScriptBin "kitty" ''exec "''${HOMEBREW_PREFIX:-/opt/homebrew}/bin/kitty" "$@"'';
+    };
     programs.nixvim = {
       enable = true;
       defaultEditor = true;
