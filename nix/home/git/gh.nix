@@ -5,8 +5,7 @@
   ...
 }:
 with lib;
-with lib.my;
-{
+with lib.my; {
   home.shellAliases = {
     gist = "gh gist";
   };
@@ -62,9 +61,9 @@ with lib.my;
             | .[]'
         '';
 
-        my-team = "!gh my-org | sed '/loganlinn/d'";
-        my-prs = "pr list --author @me";
-        my-runs = "run list --user loganlinn";
+        my-team = "!gh my-org | sed '/${config.my.github.username}/d'";
+        my-prs = "pr list --author ${config.my.github.username}";
+        my-runs = "run list --user ${config.my.github.username}";
 
         reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
         edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
@@ -78,11 +77,49 @@ with lib.my;
         stars = ''
           api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
         '';
+
+        orr = ''!gh open-review-requested "$@"'';
+
+        open-review-requested = let
+          searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
+          openCmd =
+            if pkgs.stdenv.isDarwin
+            then "open"
+            else "xdg-open";
+          fzfOpts = {
+            multi = true;
+            select-1 = true;
+            exit-0 = true;
+            border = true;
+            ansi = true;
+            height = "50%";
+            layout = "reverse";
+            preview = "CLICOLOR_FORCE=1 gh pr view {}";
+            preview-window = "down,85%";
+          };
+        in ''
+          !gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
+            query ReviewsRequested($searchQuery: String!) {
+              search(query: $searchQuery, type: ISSUE, first: 20) {
+                edges {
+                  node {
+                    ... on PullRequest {
+                      url
+                    }
+                  }
+                }
+              }
+            }
+          ' |
+          ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
+          ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toGNUCommandLine {} fzfOpts)} |
+          tee /dev/stderr |
+          xargs ${openCmd}'';
       };
     };
   };
 
-  xdg.configFile."gh-dash/config.yml".source = ../../../config/gh-dash/config.yml;
+  xdg.configFile = {"gh-dash/config.yml".source = ../../../config/gh-dash/config.yml;};
 
   xdg.desktopEntries.gh-dash = mkIf pkgs.stdenv.isLinux {
     name = "gh-dash";
@@ -107,6 +144,6 @@ with lib.my;
   };
 
   xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
-    config.floating.criteria = [ { class = "gh-dash"; } ];
+    config.floating.criteria = [{class = "gh-dash";}];
   };
 }

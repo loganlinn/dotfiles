@@ -4,9 +4,14 @@
   lib,
   ...
 }:
-with lib; {
+with lib;
+{
   system = {
     primaryUser = config.my.user.name or "logan";
+
+    # For debugging...
+    # activationScripts.preActivation.text = mkBefore ''set -x;'';
+    # activationScripts.userDefaults.text = mkMerge [ (mkBefore ''set -x;'') (mkAfter ''set +x;'') ];
 
     # > The `system.activationScripts.postUserActivation` option has
     # > been removed, as all activation now takes place as `root`. Please
@@ -37,11 +42,13 @@ with lib; {
         #       Valid range is 1-3, with 1 being the slowest and 3 being the fastest.
         "com.apple.mouse.scaling" = 1.0;
       };
+
       ActivityMonitor = {
         ShowCategory = 101; # All Processes, hierarchically
         SortColumn = "CPUUsage";
         SortDirection = 0; # descending
       };
+
       NSGlobalDomain = {
         "com.apple.sound.beep.feedback" = 1;
         "com.apple.springing.delay" = 0.0;
@@ -166,14 +173,39 @@ with lib; {
         "com.apple.ActivityMonitor".UpdatePeriod = 2;
         # https://macos-defaults.com/misc/apple-intelligence.html
         "com.apple.CloudSubscriptionFeatures.optIn"."545129924" = false; # disable Apple Intelligence
+        # App Shortcuts
+        # ⌘ :: @
+        # ⌥ :: ~
+        # ⌃ :: ^
+        # ⇧ :: $
         "com.google.Chrome" = {
           NSUserKeyEquivalents = {
-            "Developer Tools" = "@$i"; # ⌘⇧I
-            "Duplicate Tab" = "@$d"; # ⌘⇧D
-            "Email Link" = "~^$i"; # ⌥⌃⇧I
-            "JavaScript Console" = "@$j"; # ⌘⇧J
-            "Pin Tab" = "@'"; # ⌘'
+            "Bookmark All Tabs..." = "@~^$d";
+            "Close Other Tabs" = "@^$o";
+            "Close Tabs to the Right" = "@^$\\";
+            "Developer Tools" = "@$i";
+            "Duplicate Tab" = "@^$t";
+            "Email Link" = "@~^$i";
+            "Extensions" = "@$e";
+            "Group Tab" = "@$g";
+            "JavaScript Console" = "@$j";
+            "Logan (Personal)" = "@^$1";
+            "Logan (Work)" = "@^$2";
+            "Move Tab to New Window" = "@^$n";
+            "Name Window..." = "@$.";
+            "New Tab to the Right" = "^$t";
+            "Pin Tab" = "@'";
+            "Task Manager" = "@$,";
+            "Ungroup" = "@^$g"; # TODO does this work?
           };
+        };
+        # # 2025-11-04 22:41:04.336 defaults[32252:2495625] Could not write domain com.apple.universalaccess; exiting
+        # "com.apple.universalaccess"."com.apple.custommenu.apps" = [
+        #   "com.google.Chrome"
+        # ];
+
+        "pl.maketheweb.cleanshotx" = {
+          exportPath = config.my.userDirs.screenshots;
         };
       };
     };

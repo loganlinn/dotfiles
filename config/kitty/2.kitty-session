@@ -1,0 +1,5 @@
+layout tall
+
+cd ~/.dotfiles
+
+launch
