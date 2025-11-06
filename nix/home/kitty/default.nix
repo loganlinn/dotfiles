@@ -29,10 +29,13 @@ with lib.my; # FIXME
         cursor_underline_thickness = 1;
         active_border_color = "#bd93f9";
         inactive_border_color = "#414550";
+        dynamic_background_opacity = "yes";
+        kitten_alias = "hints hints --hints-offset=0 --alphabet=abcdefghijklmnopqrstuvwxyz";
 
         # Behavior
         shell_integration = "enabled";
         allow_remote_control = "yes"; # "socket-only";
+        env = "read_from_shell=PATH LANG LC_* XDG_* EDITOR VISUAL";
         confirm_os_window_close = 0;
         notify_on_cmd_finish = "invisible 10";
         enabled_layouts = concatStringsSep "," [
@@ -123,18 +126,6 @@ with lib.my; # FIXME
               hash = "sha256-QqNYi5s7VqOj0LBCaZKVHe65j75NBs3WYPdeGbYYXVo=";
             }
           }/smart_scroll.py";
-        };
-        "kitty/onepassword_kitten.py" = let
-          src = pkgs.fetchFromGitHub {
-            owner = "mm-zacharydavison";
-            repo = "kitty-kitten-1password";
-            rev = "a46b68e911557a8ca74f12d8b6d68415a89fc2d5";
-            hash = "sha256-PiLyOMmBowySBYhbXKL6IhaABcJX4c1F2sRKGUkLAjc=";
-          };
-          render = lib.replaceString ''FZF_BINARY_PATH = None'' ''FZF_BINARY_PATH = "${lib.getExe pkgs.fzf}"'';
-        in {
-          executable = true;
-          text = render (readFile "${src}/onepassword_kitten.py");
         };
         "kitty/kitty_grab".source = pkgs.fetchFromGitHub {
           owner = "yurikhan";
