@@ -32,7 +32,7 @@ pkgs: with pkgs; {
     gnutar
     imagemagick
     mediainfo
-    poppler_utils
+    poppler-utils
     unzip
   ];
 
@@ -44,7 +44,7 @@ pkgs: with pkgs; {
 
   ":lang docker" = [
     dockfmt
-    dockerfile-language-server-nodejs
+    dockerfile-language-server
   ];
 
   # ":lang elixir +lsp" = [ elixir-ls ];

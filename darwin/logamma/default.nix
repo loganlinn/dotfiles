@@ -26,7 +26,6 @@
         self.homeModules.common
         self.homeModules.nix-colors
         # self.homeModules.opnix
-        ../../nix/home/asciinema.nix
         ../../nix/home/aws
         ../../nix/home/dev
         ../../nix/home/dev/kubernetes.nix

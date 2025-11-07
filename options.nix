@@ -17,10 +17,7 @@ let
 
   pathStr =
     with types;
-    coercedTo path toString str
-    // {
-      check = x: isString x && builtins.substring 0 1 x == "/";
-    };
+    addCheck (coercedTo path toString str) (x: isString x && builtins.substring 0 1 x == "/");
 in
 {
   options.my = with types; {

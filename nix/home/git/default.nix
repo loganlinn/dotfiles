@@ -22,13 +22,6 @@ in {
     ./git-spice.nix
   ];
 
-  home.packages = with pkgs; [
-    delta
-    difftastic
-    gitu
-    # git-absorb
-  ];
-
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
   home.shellAliases = {
     gc = "git commit -v";
@@ -54,9 +47,26 @@ in {
     '';
   };
 
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      features = "arctic-fox"; # from included themes.gitconfig
+      zero-style = "dim syntax auto";
+      minus-style = "omit syntax auto";
+      plus-style = "omit syntax auto";
+      syntax-theme = "base16";
+
+      navigate = 1; # seems to specifically want a number
+      hyperlinks = true;
+      line-numbers = true;
+    };
+  };
+
   programs.git = {
     enable = true;
     git-spice.enable = true;
+    lfs.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
     includes = [
       {path = ./include/gitalias.txt;}
@@ -68,113 +78,24 @@ in {
       }
       {path = privateConfigFile;}
     ];
-    aliases = {
-      amend = "commit --amend";
-      can = "commit --amend --no-edit";
-      branch-name = "rev-parse --abbrev-ref HEAD";
-      config-private = "config --file ${privateConfigFile}";
-      toplevel = "rev-parse --show-toplevel";
-      cdup = "rev-parse --show-cdup";
-      prefix = "rev-parse --show-prefix";
-      fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
-      rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
-      new = "commit --allow-empty-message -m ''";
-      stash-search = ''
-        !f() {
-          if ! (( $# )); then
-            set -- "$(${pkgs.gum}/bin/gum input --prompt="regex: " --placeholder=pattern)" || return "$?";
-          fi;
-          git stash list -i -G"$@";
-        }; f
-      '';
-      stash-show-file = ''
-        !f() {
-          local stash=$1
-          local file=$2
-          if [[ -z $stash ]]; then
-            stash=$(
-              git stash list |
-              ${pkgs.fzf}/bin/fzf --border-label '🥡 Stashes' --delimiter=: --preview "git show --color=always {1}" "$@" |
-              cut -d: -f1
-            ) || return $?;
-          fi;
-          if [[ -z $file ]]; then
-            file=$(
-              git ls-files "$(git rev-parse --show-toplevel)" |
-              ${pkgs.fzf}/bin/fzf  --color=always --preview="git diff $stash^! -- {1}"
-            ) || return $?;
-          fi;
-          git diff "$stash"^! -- "$file";
-        }; f'';
-      # stash-checkout-file = ''
-      #   !f() {
-      #     local idx=''${1-0};
-      #     local file=''${2?main};
-      #     if [[ $idx =  ]]
-      #     shift;
-      #     git checkout "stash@{$idx}" -- "$@";
-      #   }; f'';
-
-      # worktree
-      wt = "worktree";
-      wtm = "worktree-main";
-      wtl = "worktree-linked";
-      wtr = ''
-        !${pkgs.writeShellScriptBin "git-worktree-rm" ''
-          for p in $(git worktree list --porcelain | ${pkgs.gawk}/bin/awk '(NR>1) && /^worktree / { print $2 }' | ${pkgs.fzf}/bin/fzf -0 -m); do
-            ${pkgs.gum}/bin/gum confirm "git worktree remove $p" &&
-            git worktree remove --force "$p"
-          done
-        ''}
-      '';
-      wtx = "!${./worktree-shell.sh}";
-      worktree-linked = "!git worktree list --porcelain | grep -E 'worktree ' | cut -d' ' -f2 | tail -n +2";
-      worktree-main = "!git worktree list --porcelain | head -n1 | cut -d' ' -f2";
-      # amend = "commit --amend --reuse-message HEAD";
-      touch = ''!git commit --amend --date="$(date -r)"'';
-      undo = "reset --soft HEAD~1";
-      default-branch = ''
-        !f() {
-          git rev-parse --git-dir &>/dev/null || return $?;
-          for a in heads remotes; do
-            for b in origin upstream; do
-              for c in main trunk master; do
-                if git show-ref --quiet --verify "refs/$a/$b/$c"; then
-                  printf %q "$c";
-                  return;
-                fi;
-              done;
-            done;
-          done;
-          gh api /repos/{owner}/{repo} --jq '.default_branch'
-        }; f'';
-    };
-
-    lfs.enable = true;
-
-    difftastic = {
-      enable = false;
-      background = "dark";
-    };
-
-    delta = {
-      enable = true;
-      options = {
-        features = "arctic-fox"; # from included themes.gitconfig
-        zero-style = "dim syntax auto";
-        minus-style = "omit syntax auto";
-        plus-style = "omit syntax auto";
-        syntax-theme = "base16";
-
-        navigate = 1; # seems to specifically want a number
-        hyperlinks = true;
-        line-numbers = true;
-      };
-    };
-    extraConfig = {
+    signing.key = mkDefault null; # let GnuPG decide
+    settings = {
       advice.detachedHead = false;
       advice.skippedCherryPicks = false;
       advice.statusHints = false;
+      alias.amend = "commit --amend";
+      alias.branch-name = "rev-parse --abbrev-ref HEAD";
+      alias.can = "commit --amend --no-edit";
+      alias.cdup = "rev-parse --show-cdup";
+      alias.config-private = "config --file ${privateConfigFile}";
+      alias.fd = ''!${pkgs.fd}/bin/fd --search-path "$(git rev-parse --show-cdup)"'';
+      alias.new = "commit --allow-empty-message -m ''";
+      alias.prefix = "rev-parse --show-prefix";
+      alias.rg = ''!f() { ${config.programs.ripgrep.package}/bin/rg "$@" "$(git rev-parse --show-cdup)"; }; f'';
+      alias.toplevel = "rev-parse --show-toplevel";
+      alias.touch = ''!git commit --amend --date="$(date -r)"'';
+      alias.undo = "reset --soft HEAD~1";
+      alias.wt = "worktree";
       branch.autoSetupRebase = "always";
       branch.sort = "-committerdate";
       checkout.defaultRemote = "origin";
@@ -198,12 +119,10 @@ in {
       status.displayCommentPrefix = false;
       status.short = true;
       status.showStash = true;
-      user.signingkey = mkDefault config.my.pubkeys.ssh.ed25519;
+      user.email = config.my.email;
+      user.name = "Logan Linn";
+      user.signingkey = config.my.pubkeys.ssh.ed25519;
     };
-    # hooks
-    signing.key = mkDefault null; # let GnuPG decide
-    userEmail = mkDefault config.my.email;
-    userName = mkDefault "Logan Linn";
   };
 
   programs.gpg.publicKeys = [

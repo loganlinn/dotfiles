@@ -23,8 +23,8 @@ in
       grs = "command gs repo sync --restack";
     };
     programs.git = {
-      aliases.spice = "!${cfg.package}/bin/gs";
-      extraConfig = {
+      settings = {
+        alias.spice = "!${cfg.package}/bin/gs";
         spice.branchPrompt.sort = "comitteddate";
         spice.experiment.commitFixup = "true";
         spice.log.all = "false";

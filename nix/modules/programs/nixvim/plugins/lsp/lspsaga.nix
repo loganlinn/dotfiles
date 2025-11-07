@@ -2,107 +2,97 @@
   programs.nixvim = {
     plugins.lspsaga = {
       enable = true;
-
-      beacon = {
-        enable = true;
-      };
-
-      callhierarchy = {
-        layout = "normal"; # default: "float"
-        keys = {
-          edit = "e";
-          vsplit = "s";
-          split = "i";
-          tabe = "t";
-          close = "<C-c>k";
-          quit = "q";
-          shuttle = "[w";
-          toggleOrReq = "u";
+      settings = {
+        beacon = {
+          enable = true;
         };
-      };
-
-      ui = {
-        border = "rounded"; # One of none, single, double, rounded, solid, shadow
-        codeAction = "💡"; # Can be any symbol you want 💡
-      };
-
-      hover = {
-        openCmd = "!floorp"; # Choose your browser
-        openLink = "gx";
-      };
-
-      diagnostic = {
-        borderFollow = true;
-        diagnosticOnlyCurrent = true;
-        showCodeAction = true;
-      };
-
-      symbolInWinbar = {
-        enable = true; # Breadcrumbs
-      };
-
-      codeAction = {
-        extendGitSigns = false;
-        showServerName = true;
-        onlyInCursor = true;
-        numShortcut = true;
-        keys = {
-          exec = "<cr>";
-          quit = [
-            "<Esc>"
-            "q"
-          ];
+        callhierarchy = {
+          layout = "normal"; # default: "float"
+          keys = {
+            edit = "e";
+            vsplit = "s";
+            split = "i";
+            table = "t";
+            close = "<C-c>k";
+            quit = "q";
+            shuttle = "[w";
+            toggleOrReq = "u";
+          };
         };
-      };
-
-      lightbulb = {
-        enable = false;
-        sign = false;
-        virtualText = true;
-      };
-
-      implement = {
-        enable = true;
-        virtualText = true;
-      };
-
-      rename = {
-        inSelect = true; # Whether the name is selected when the float opens.
-        autoSave = false; # Auto save file when the rename is done.
-        projectMaxWidth = 0.6; # Width for the `project_replace` float window.
-        projectMaxHeight = 0.4; # Height for the `project_replace` float window.
-        keys = {
-          exec = "<cr>";
-          quit = [
-            "<C-k>"
-            "<Esc>"
-            "<C-c>"
-            "<C-g>"
-          ];
-          select = "x";
+        ui = {
+          border = "rounded"; # One of none, single, double, rounded, solid, shadow
+          codeAction = "💡"; # Can be any symbol you want 💡
         };
-      };
-
-      outline = {
-        autoClose = true;
-        autoPreview = true;
-        closeAfterJump = true;
-        detail = true;
-        layout = "normal"; # normal or float
-        winPosition = "right"; # left or right
-        winWidth = 50;
-        maxHeight = 0.5;
-        leftWidth = 0.3;
-        keys = {
-          jump = "e";
-          quit = "q";
-          toggleOrJump = "o";
+        hover = {
+          openCmd = "!floorp"; # Choose your browser
+          openLink = "gx";
         };
-      };
-
-      scrollPreview = {
-        scrollDown = "<C-f>";
-        scrollUp = "<C-b>";
+        diagnostic = {
+          borderFollow = true;
+          diagnosticOnlyCurrent = true;
+          showCodeAction = true;
+        };
+        symbolInWinbar = {
+          enable = true; # Breadcrumbs
+        };
+        codeAction = {
+          extendGitSigns = false;
+          showServerName = true;
+          onlyInCursor = true;
+          numShortcut = true;
+          keys = {
+            exec = "<cr>";
+            quit = [
+              "<Esc>"
+              "q"
+            ];
+          };
+        };
+        lightbulb = {
+          enable = false;
+          sign = false;
+          virtualText = true;
+        };
+        implement = {
+          enable = true;
+          virtualText = true;
+        };
+        rename = {
+          inSelect = true; # Whether the name is selected when the float opens.
+          autoSave = false; # Auto save file when the rename is done.
+          projectMaxWidth = 0.6; # Width for the `project_replace` float window.
+          projectMaxHeight = 0.4; # Height for the `project_replace` float window.
+          keys = {
+            exec = "<cr>";
+            quit = [
+              "<C-k>"
+              "<Esc>"
+              "<C-c>"
+              "<C-g>"
+            ];
+            select = "x";
+          };
+        };
+        outline = {
+          autoClose = true;
+          autoPreview = true;
+          closeAfterJump = true;
+          detail = true;
+          layout = "normal"; # normal or float
+          winPosition = "right"; # left or right
+          winWidth = 50;
+          maxHeight = 0.5;
+          leftWidth = 0.3;
+          keys = {
+            jump = "e";
+            quit = "q";
+            toggleOrJump = "o";
+          };
+        };
+        scrollPreview = {
+          scrollDown = "<C-f>";
+          scrollUp = "<C-b>";
+        };
       };
     };
     keymaps = [
@@ -290,7 +280,6 @@
           silent = true;
         };
       }
-
       {
         mode = "v";
         key = "<leader>ot";

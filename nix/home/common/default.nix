@@ -37,7 +37,7 @@
       dig
       dogdns # dig on steroids
       dua
-      du-dust # du alternative
+      dust # du alternative
       duf # df alternative
       envsubst
       file
