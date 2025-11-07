@@ -13,6 +13,7 @@ in
     ./plugins
     ./keymaps.nix
     ./neovide.nix
+    ./kitty.nix
   ];
 
   config = {
