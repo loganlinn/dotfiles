@@ -35,18 +35,19 @@ with lib.my; # FIXME
             }
         )
         [
+          "a.kitty-session"
+          "b.kitty-session"
+          "c.kitty-session"
+          "choose-files.conf"
+          "current-theme.conf"
+          "diff.conf"
+          "grab.conf"
           "kitty.common.conf"
           "kitty.darwin.conf"
           "kitty.linux.conf"
           "open-actions.conf"
-          "current-theme.conf"
-          "diff.conf"
-          "choose-files.conf"
           "quick-access-terminal.conf"
-          "grab.conf"
-          "one.kitty-session"
-          "two.kitty-session"
-          "three.kitty-session"
+          "tab_bar.py"
         ]
       ))
       // {

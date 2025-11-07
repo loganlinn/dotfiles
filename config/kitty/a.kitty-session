@@ -1,3 +1,6 @@
-layout tall
+layout tall:bias=66
 
-launch --cwd ~/src/github.com/gamma-app/gamma
+cd ~/src/github.com/gamma-app/gamma
+
+launch emacs -nw
+launch

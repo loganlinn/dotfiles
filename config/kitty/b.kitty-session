@@ -1,4 +1,4 @@
-layout tall
+layout tall:bias=66
 
 cd ~/.dotfiles
 
