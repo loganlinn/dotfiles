@@ -142,7 +142,8 @@ in
 
           eval "$(batman --export-env)"
 
-          eval "$(batpipe)"
+          # Disabled due to: 'ps: time: requires entitlement'
+          # eval "$(batpipe)"
 
           function help  { "$@" --help 2>&1 | bat --plain --language=help; }
 
