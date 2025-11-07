@@ -44,9 +44,9 @@ with lib.my; # FIXME
           "choose-files.conf"
           "quick-access-terminal.conf"
           "grab.conf"
-          "1.kitty-session"
-          "2.kitty-session"
-          "2.kitty-session"
+          "one.kitty-session"
+          "two.kitty-session"
+          "three.kitty-session"
         ]
       ))
       // {
