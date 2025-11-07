@@ -34,10 +34,10 @@ with lib.my; # FIXME
 
         # Behavior
         shell_integration = "enabled";
-        allow_remote_control = "yes"; # "socket-only";
+        allow_remote_control = "socket-only";
+        listen_on = "unix:${config.xdg.runtimeDir}/kitty/ipc-socket.{kitty_pid}";
         env = "read_from_shell=PATH LANG LC_* XDG_* EDITOR VISUAL";
-        confirm_os_window_close = 0;
-        notify_on_cmd_finish = "invisible 10";
+        notify_on_cmd_finish = "invisible 15";
         enabled_layouts = concatStringsSep "," [
           "tall:bias=66"
           "fat:bias=66"

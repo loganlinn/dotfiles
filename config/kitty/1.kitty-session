@@ -1,6 +1,3 @@
 layout tall
 
-cd ~/src/github.com/gamma-app
-
-launch --cwd gamma
-launch --cwd saved_media_benchmarking
+launch --cwd ~/src/github.com/gamma-app/gamma

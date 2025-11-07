@@ -36,6 +36,7 @@
       ../../nix/home/kitty
       ../../nix/home/neovide.nix
       ../../nix/home/nixvim
+      ../../nix/home/nixvim/kitty.nix
       ../../nix/home/pet.nix
       ../../nix/home/pretty.nix
       ../../nix/home/television.nix
