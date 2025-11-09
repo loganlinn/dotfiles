@@ -32,6 +32,8 @@ local pathwatcher = require("hs.pathwatcher")
 local window = require("hs.window")
 local osascript = require("hs.osascript")
 
+local command = require("command")
+
 local CTRL = "⌃"
 local ALT = "⌥"
 local SHIFT = "⇧"
@@ -63,21 +65,6 @@ configwatcher = pathwatcher.new(configpath, function()
   end
 end)
 configwatcher:start()
-
--- local getUserEnvs = function(names)
---   local env = {}
---   local output, ok = hs.execute([[zsh -l -c 'printenv --null "$@"' -s ]] .. table.concat(names, " "))
---   if ok then
---     local values = split(output, "\0")
---     for i = 1, #names do
---       env[names[i]] = values[i]
---     end
---   end
---   return env
--- end
--- for k, v in pairs(getUserEnvs({ "HOME", "PATH" })) do
---   log.i(k, v)
--- end
 
 ---------------------------------------------------------------------------------------------------
 -- Keybindings
@@ -185,15 +172,6 @@ local function findExe(name)
   return ok and split(output or "", "%s+", 1)[1] or nil
 end
 
-local aerospaceExe = findExe("aerospace")
-
-local aerospace = function(command)
-  local cmdline = [[/bin/sh -c '"]] .. (aerospaceExe or "aerospace") .. [[" $@' -s ]] .. tostring(command)
-  log.i(cmdline)
-  return hs.execute(cmdline)
-end
--- log.i(aerospace("--version"))
-
 local modes = setmetatable({}, {
   __newindex = function(self, name, mode)
     log.i("Registering mode", name)
@@ -213,11 +191,17 @@ local switchTo = {
   chat = appSwitcher({ name = "Slack" }),
 }
 
-modes.main = hs.hotkey.modal
+local function aerospaceReload()
+  hs.execute("aerospace reload-config", true)
+end
+
+modes.main = hs
+    .hotkey
+    .modal
     .new(HYPER, "k")
-    :bind(HYPER, "k", function() -- toggle all hotkeys
+    :bind(HYPER, "k", function()
       modes.main:exit()
-    end)
+    end) -- toggle all hotkeys
     :bind(ALT, "return", switchTo.terminal)
     :bind(SHIFT .. ALT, "return", switchTo.browser)
     :bind(ALT, "'", switchTo.browser)
@@ -229,70 +213,14 @@ modes.main = hs.hotkey.modal
     :bind(ALT, "p", appSwitcher({ name = "Claude" }))
     :bind(ALT, "s", switchTo.chat)
     :bind(HYPER, "return", switchTo.terminal)
-    :bind(HYPER, "space", switchTo.browser)
-    :bind(HYPER, "a", partial(aerospace, "reload-config"))
+    :bind(HYPER, "a", aerospaceReload)
     :bind(HYPER, "o", switchTo.explorer)
     :bind(HYPER, "d", hs.toggleConsole)
     :bind(HYPER, "l", hs.caffeinate.lockScreen)
+    :bind(HYPER, "p", function() hs.execute("kclaude", true) end)
     :bind(HYPER, "r", hs.reload)
     :bind(HYPER, "x", closeNotifications)
     :enter()
-
---- Use Fn + `h/l/j/k` as arrow keys, `y/u/i/o` as mouse wheel, `,/.` as left/right click.
--- hs.eventtap.new(
---   { hs.eventtap.event.types.keyDown },
---   function(event)
---     log.i(hs.inspect(event))
---     local activated = event:getFlags()['fn']
---     if activated then
---       if event:getCharacters() == "h" then
---         return true, { hs.eventtap.event.newKeyEvent({}, "left", true) }
---       elseif event:getCharacters() == "l" then
---         return true, { hs.eventtap.event.newKeyEvent({}, "right", true) }
---       elseif event:getCharacters() == "j" then
---         return true, { hs.eventtap.event.newKeyEvent({}, "down", true) }
---       elseif event:getCharacters() == "k" then
---         return true, { hs.eventtap.event.newKeyEvent({}, "up", true) }
---       elseif event:getCharacters() == "y" then
---         return true, { hs.eventtap.event.newScrollEvent({ 3, 0 }, {}, "line") }
---       elseif event:getCharacters() == "o" then
---         return true, { hs.eventtap.event.newScrollEvent({ -3, 0 }, {}, "line") }
---       elseif event:getCharacters() == "u" then
---         return true, { hs.eventtap.event.newScrollEvent({ 0, -3 }, {}, "line") }
---       elseif event:getCharacters() == "i" then
---         return true, { hs.eventtap.event.newScrollEvent({ 0, 3 }, {}, "line") }
---       elseif event:getCharacters() == "," then
---         local currents = hs.mouse.getAbsolutePosition()
---         return true, { hs.eventtap.leftClick(currents) }
---       elseif event:getCharacters() == "." then
---         local currents = hs.mouse.getAbsolutePosition()
---         return true, { hs.eventtap.rightClick(currents) }
---       end
---     end
---   end
--- ):start()
-
--- et = hs.eventtap.new(
---   { eventtap.event.types.flagsChanged },
---   function(e)
---     local flags = e:rawFlags()
---     if flags & eventtap.event.rawFlagMasks.deviceRightCommand > 0 then
---       if not myKeysActive then
---         for _, v in ipairs(myKeys) do
---           v:enable()
---         end
---         myKeysActive = true
---       end
---     else
---       if myKeysActive then
---         for _, v in ipairs(myKeys) do
---           v:disable()
---         end
---         myKeysActive = false
---       end
---     end
---   end
--- ):start()
 
 -- hs.loadSpoon("EmmyLua")
 alert("✅ Hammerspoon")

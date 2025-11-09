@@ -19,8 +19,8 @@ with lib.my; # FIXME
       shellIntegration.enableFishIntegration = true;
       extraConfig = ''
         include kitty.common.conf
-        ${optionalString pkgs.stdenv.isDarwin "kitty.darwin.conf"}
-        ${optionalString pkgs.stdenv.isLinux "kitty.linux.conf"}
+        ${optionalString pkgs.stdenv.isDarwin "include kitty.darwin.conf"}
+        ${optionalString pkgs.stdenv.isLinux "include kitty.linux.conf"}
         include kitty.local.conf
       '';
     };
@@ -79,36 +79,27 @@ with lib.my; # FIXME
 
     programs.rofi.terminal = mkDefault (getExe cfg.package);
 
-    home.packages = let
-      writeKittyBin = name: args:
-        pkgs.writeShellScriptBin name ''exec kitty ${escapeShellArgs (map toString (toList args))} "$@"'';
-    in
+    home.packages = with pkgs;
       mkIf cfg.enable (
-        [
-          inputs'.kitty-tab-switcher.packages.default
-          (writeKittyBin "kitty-diff" [
-            "+kitten"
-            "diff"
-          ])
-          (writeKittyBin "kitty-ssh" [
-            "+kitten"
-            "ssh"
-          ])
-          (writeKittyBin "kitty-cat" [
-            "+kitten"
-            "icat"
-          ])
-          (writeKittyBin "kitty-panel" [
-            "+kitten"
-            "panel"
-          ])
-          (writeKittyBin "kitty-ask" [
-            "+kitten"
-            "ask"
-          ])
-        ]
-        ++ optionals pkgs.stdenv.isLinux [
-          (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"'')
+        concatLists [
+          [
+            (writeShellScriptBin "kdiff" ''kitten diff "$@"'')
+            (writeShellScriptBin "kssh" ''kitten ssh "$@"'')
+            (writeShellScriptBin "icat" ''kitten icat "$@"'')
+            (writeShellScriptBin "kclaude" ''
+              # TODO change cwd from currently active/focused kitty window via 'kitty @ ls'
+              exec kitten quick-access-terminal \
+                --instance-group=claude \
+                -o app_id=kitty-quick-access-claude \
+                -o edge=center \
+                -o background_opacity=0.95 \
+                -o hide_on_focus_lost=yes \
+                -o allow_remote_control=socket-only \
+                -o listen_on="''${XDG_DATA_DIR:-$HOME/.local/share}/kitty/quick-access-claude.sock" \
+                claude
+            '')
+          ]
+          (optional pkgs.stdenv.isLinux (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"''))
         ]
       );
 

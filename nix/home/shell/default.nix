@@ -4,31 +4,29 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.my;
-  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix { };
-  shellScriptType = types.coercedTo types.str (text: { inherit text; }) shellScriptModule;
-in
-{
+  shellScriptModule = pkgs.callPackage ./shellScriptModule.nix {};
+  shellScriptType = types.coercedTo types.str (text: {inherit text;}) shellScriptModule;
+in {
   imports = [
     ../bash
     ../zsh
   ];
 
-  options.my = {
-    shellInitExtra = mkOption {
-      type = types.lines;
-      description = "Extra commands that should be added to <filename>.zshrc</filename> and <filename>.zshrc</filename>.";
-      default = "";
-    };
-    shellScripts = mkOption {
-      description = ''
-        See https://nixos.org/manual/nixpkgs/unstable/#trivial-builder-writeShellApplication
-      '';
-      type = types.attrsOf shellScriptType;
-    };
-  };
+  # options.my = {
+  #   shellInitExtra = mkOption {
+  #     type = types.lines;
+  #     description = "Extra commands that should be added to <filename>.zshrc</filename> and <filename>.zshrc</filename>.";
+  #     default = "";
+  #   };
+  #   shellScripts = mkOption {
+  #     description = ''
+  #       See https://nixos.org/manual/nixpkgs/unstable/#trivial-builder-writeShellApplication
+  #     '';
+  #     type = types.attrsOf shellScriptType;
+  #   };
+  # };
 
   config = {
     # The default for all programs.<PROGRAM>.enable<SHELL>Integration

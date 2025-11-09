@@ -5,21 +5,18 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   myLib = (import ./lib/extended.nix lib).my;
 
   inherit (pkgs.stdenv) isLinux isDarwin;
 
   cfg = config.my;
 
-  mkOpt = type: default: mkOption { inherit type default; };
+  mkOpt = type: default: mkOption {inherit type default;};
 
-  pathStr =
-    with types;
+  pathStr = with types;
     addCheck (coercedTo path toString str) (x: isString x && builtins.substring 0 1 x == "/");
-in
-{
+in {
   options.my = with types; {
     email = mkOpt (nullOr str) "logan@loganlinn.com";
     homepage = mkOpt str "https://loganlinn.com";
@@ -29,17 +26,21 @@ in
     flakeRepository = mkOpt str "https://github.com/loganlinn/dotfiles";
     environment.variables = mkOpt (attrsOf (
       coercedTo path toString (coercedTo package getExe str)
-    )) { }; # see below
+    )) {}; # see below
 
     # https://github.com/NixOS/nixpkgs/blob/68898dd/nixos/modules/config/users-groups.nix
     # https://github.com/nix-darwin/nix-darwin/blob/73d5958/modules/users/user.nix
     user = {
       name = mkOpt str "logan";
       description = mkOpt str "Logan Linn";
-      home = mkOpt str (if isDarwin then "/Users/${cfg.user.name}" else "/home/${cfg.user.name}");
+      home = mkOpt str (
+        if isDarwin
+        then "/Users/${cfg.user.name}"
+        else "/home/${cfg.user.name}"
+      );
       shell = mkOpt (either str package) pkgs.zsh;
-      packages = mkOpt (listOf package) [ ];
-      openssh.authorizedKeys.keys = mkOpt (listOf str) [ ];
+      packages = mkOpt (listOf package) [];
+      openssh.authorizedKeys.keys = mkOpt (listOf str) [];
     };
 
     # https://github.com/nix-community/home-manager/blob/ef3b2a6/modules/misc/xdg-user-dirs.nix
@@ -62,45 +63,77 @@ in
         screenshots = mkOpt (nullOr pathStr) "${cfg.user.home}/Pictures/Screenshots";
       };
       freeformType = nullOr pathStr;
-    }) { };
+    }) {};
 
-    pubkeys.ssh = mkOpt (attrsOf str) { };
+    pubkeys.ssh = mkOpt (attrsOf str) {};
+
+    fonts = {
+      serif = mkOption {type = myLib.types.font;};
+      sans = mkOption {type = myLib.types.font;};
+      mono = mkOption {type = myLib.types.font;};
+      terminal = mkOption {type = myLib.types.font;};
+      packages = mkOpt (listOf package) [];
+    };
+
+    shellInitExtra = mkOption {
+      type = types.lines;
+      description = "Extra commands that should be added to <filename>.zshrc</filename> and <filename>.zshrc</filename>.";
+      default = "";
+    };
+
+    shellScripts = let
+      shellScriptModule = pkgs.callPackage ./lib/shellScriptModule.nix {};
+      shellScriptType = types.coercedTo types.str (text: {inherit text;}) shellScriptModule;
+    in
+      mkOption {
+        description = ''
+          See https://nixos.org/manual/nixpkgs/unstable/#trivial-builder-writeShellApplication
+        '';
+        type = attrsOf shellScriptType;
+        # ({pkgs, ...}: {
+        #   options = {
+        #     copy = mkOpt shellScriptType (
+        #       if isDarwin
+        #       then (writeShellScriptBin "copy" ''exec pbcopy'')
+        #       else (writeShellScriptBin "copy" ''exec ${pkgs.xclip}/bin/xclip -sel clip'')
+        #     );
+        #     pasta = mkOpt shellScriptType (
+        #       if isDarwin
+        #       then (writeShellScriptBin "pasta" ''exec pbpaste "$@"'')
+        #       else (writeShellScriptBin "copy" ''exec ${pkgs.xclip}/bin/xclip -o -sel clip'')
+        #     );
+        #   };
+        #   freeformType = shellScriptType;
+        # });
+        default = {};
+      };
+
+    nix.registry = mkOption {
+      type = myLib.types.nix-registry;
+      default = {};
+    };
+
+    nix.settings = mkOption {
+      type = let
+        confAtom =
+          nullOr (oneOf [
+            bool
+            int
+            float
+            str
+            path
+            package
+          ])
+          // {
+            description = "Nix config atom (null, bool, int, float, str, path or package)";
+          };
+      in
+        attrsOf (either confAtom (listOf confAtom));
+    };
 
     # homeModules = mkOpt (listOf raw) [ ];
     # nixosModules = mkOpt (listOf raw) [ ];
     # darwinModules = mkOpt (listOf raw) [ ];
-
-    fonts = {
-      serif = mkOption { type = myLib.types.font; };
-      sans = mkOption { type = myLib.types.font; };
-      mono = mkOption { type = myLib.types.font; };
-      terminal = mkOption { type = myLib.types.font; };
-      packages = mkOpt (listOf package) [ ];
-    };
-
-    nix.registry = mkOption {
-      type = myLib.types.nix-registry;
-      default = { };
-    };
-
-    nix.settings = mkOption {
-      type =
-        let
-          confAtom =
-            nullOr (oneOf [
-              bool
-              int
-              float
-              str
-              path
-              package
-            ])
-            // {
-              description = "Nix config atom (null, bool, int, float, str, path or package)";
-            };
-        in
-        attrsOf (either confAtom (listOf confAtom));
-    };
   };
 
   config = {
@@ -117,42 +150,72 @@ in
           gh
         ];
       };
-      environment.variables = {
-        DISABLE_TELEMETRY = "1";
-        DOCKER_SCAN_SUGGEST = "false";
-        DOTFILES_DIR = cfg.flakeDirectory;
-        DOTNET_CLI_TELEMETRY_OPTOUT = "true";
-        DO_NOT_TRACK = "1";
-        FLAKE_CHECKER_NO_TELEMETRY = "true";
-        NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
-        TELEMETRY_DISABLED = "1";
-      }
-      // optionalAttrs isDarwin {
-        # Since home-managers xdg-user-dirs module does not support darwin
-        XDG_NOTES_DIR = toString cfg.userDirs.notes;
-        XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
-        XDG_CODE_DIR = toString cfg.userDirs.code;
+      environment.variables =
+        {
+          DISABLE_TELEMETRY = "1";
+          DOCKER_SCAN_SUGGEST = "false";
+          DOTFILES_DIR = cfg.flakeDirectory;
+          DOTNET_CLI_TELEMETRY_OPTOUT = "true";
+          DO_NOT_TRACK = "1";
+          FLAKE_CHECKER_NO_TELEMETRY = "true";
+          NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
+          TELEMETRY_DISABLED = "1";
+        }
+        // optionalAttrs isDarwin {
+          # Since home-managers xdg-user-dirs module does not support darwin
+          XDG_NOTES_DIR = toString cfg.userDirs.notes;
+          XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
+          XDG_CODE_DIR = toString cfg.userDirs.code;
+        };
+
+      shellScripts = {
+        copy = mkDefault (
+          if isDarwin
+          then ''exec pbcopy''
+          else ''exec ${pkgs.xclip}/bin/xclip -sel clip''
+        );
+        pasta = mkDefault (
+          if isDarwin
+          then ''exec pbpaste''
+          else ''exec ${pkgs.xclip}/bin/xclip -o -sel clip''
+        );
       };
       fonts = {
         serif = mkDefault {
           package = pkgs.dejavu_fonts;
           name = "DejaVu Serif";
-          size = mkDefault (if isLinux then 10 else 12);
+          size = mkDefault (
+            if isLinux
+            then 10
+            else 12
+          );
         };
         sans = mkDefault {
           package = pkgs.dejavu_fonts;
           name = "DejaVu Sans";
-          size = mkDefault (if isLinux then 10 else 12);
+          size = mkDefault (
+            if isLinux
+            then 10
+            else 12
+          );
         };
         mono = mkDefault {
           package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
-          size = mkDefault (if isLinux then 10 else 12);
+          size = mkDefault (
+            if isLinux
+            then 10
+            else 12
+          );
         };
         terminal = mkDefault {
           package = pkgs.nerd-fonts.victor-mono;
           name = "Victor Mono";
-          size = mkDefault (if isLinux then 11 else 12);
+          size = mkDefault (
+            if isLinux
+            then 11
+            else 12
+          );
         };
         packages = with pkgs; [
           # cfg.fonts.mono.package
@@ -179,7 +242,7 @@ in
       nix.settings = rec {
         warn-dirty = mkDefault false;
         show-trace = mkDefault true;
-        trusted-users = [ cfg.user.name ];
+        trusted-users = [cfg.user.name];
         extra-substituters = [
           "https://cache.nixos.org"
           "https://nix-community.cachix.org"
