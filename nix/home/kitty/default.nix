@@ -91,11 +91,14 @@ with lib.my; # FIXME
               exec kitten quick-access-terminal \
                 --instance-group=claude \
                 -o app_id=kitty-quick-access-claude \
-                -o edge=center \
-                -o background_opacity=0.95 \
+                -o edge=right \
+                -o columns=140 \
+                -o background_opacity=0.97 \
                 -o hide_on_focus_lost=yes \
+                -o confirm_os_window_close=yes \
                 -o allow_remote_control=socket-only \
                 -o listen_on="''${XDG_DATA_DIR:-$HOME/.local/share}/kitty/quick-access-claude.sock" \
+                ''${KCLAUDE_DEFAULT_ARGS-} \
                 claude
             '')
           ]
