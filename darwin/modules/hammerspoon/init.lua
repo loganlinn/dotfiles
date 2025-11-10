@@ -1,25 +1,11 @@
 local HOME = os.getenv("HOME")
-package.path = package.path .. ";" .. HOME .. "/.dotfiles/darwin/modules/hammerspoon/?.lua"
-package.path = package.path .. ";" .. HOME .. "/.dotfiles/darwin/modules/hammerspoon/?/init.lua"
-package.cpath = package.cpath .. ";" .. HOME .. "/.dotfiles/darwin/modules/hammerspoon/?.so"
--- package.path = package.path
---     .. ";"
---     .. HOME
---     .. "/.luarocks/share/lua/5.4/?.lua;"
---     .. HOME
---     .. "/.luarocks/share/lua/5.4/?/init.lua"
--- package.cpath = package.cpath .. ";" .. HOME .. "/.luarocks/lib/lua/5.4/?.so"
--- package.path = package.path
---     .. ";"
---     .. HOME
---     .. "/.luarocks/share/lua/5.3/?.lua;"
---     .. HOME
---     .. "/.luarocks/share/lua/5.3/?/init.lua"
--- package.cpath = package.cpath .. ";" .. HOME .. "/.luarocks/lib/lua/5.3/?.so"
+local DOTFILES_DIR = os.getenv("DOTFILES_DIR") or (HOME .. "/.dotfiles")
+package.path = package.path .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?.lua"
+package.path = package.path .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?/init.lua"
+package.cpath = package.cpath .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?.so"
 
--- local fennel = require("fennel")
--- table.insert(package.loaders or package.searchers, fennel.searcher)
-----------------------------------------------------------------------------------------------------
+local command = require("command")
+
 local alert = require("hs.alert")
 local application = require("hs.application")
 local eventtap = require("hs.eventtap")
@@ -28,11 +14,9 @@ local hints = require("hs.hints")
 local inspect = require("hs.inspect")
 local ipc = require("hs.ipc")
 local logger = require("hs.logger")
+local osascript = require("hs.osascript")
 local pathwatcher = require("hs.pathwatcher")
 local window = require("hs.window")
-local osascript = require("hs.osascript")
-
-local command = require("command")
 
 local CTRL = "⌃"
 local ALT = "⌥"
@@ -41,11 +25,19 @@ local GUI = "⌘"
 local HYPER = CTRL .. SHIFT .. ALT .. GUI
 local MEH = CTRL .. SHIFT .. ALT
 
-local contains = fnutils.contains
 local partial = fnutils.partial
-local split = fnutils.split
+
+local log = logger.new(hs.configdir .. "/init.lua", "debug")
 
 ipc.cliInstall()
+
+local configwatcher
+configwatcher = pathwatcher.new(hs.configdir .. "/init.lua", function()
+  if configwatcher then
+    hs.reload()
+  end
+end)
+configwatcher:start()
 
 hints.style = "vimperator"
 hints.showTitleThresh = 4
@@ -53,18 +45,6 @@ hints.titleMaxSize = 10
 hints.fontSize = 30
 
 window.animationDuration = 0.2
-
-local configpath = hs.configdir .. "/init.lua"
-
-local log = logger.new(configpath, "debug")
-
-local configwatcher
-configwatcher = pathwatcher.new(configpath, function()
-  if configwatcher then
-    hs.reload()
-  end
-end)
-configwatcher:start()
 
 ---------------------------------------------------------------------------------------------------
 -- Keybindings
@@ -167,11 +147,6 @@ local closeNotifications = function()
   log.i(ok, output, hs.inspect.inspect(descriptor))
 end
 
-local function findExe(name)
-  local output, ok = hs.execute([[zsh -l -c 'command -v "$1"' -s ]] .. name)
-  return ok and split(output or "", "%s+", 1)[1] or nil
-end
-
 local modes = setmetatable({}, {
   __newindex = function(self, name, mode)
     log.i("Registering mode", name)
@@ -180,16 +155,6 @@ local modes = setmetatable({}, {
     rawset(self, name, mode)
   end,
 })
-
-local switchTo = {
-  -- terminal = appSwitcher({ bundleID = "com.github.wez.wezterm", name = "WezTerm" }),
-  terminal = appSwitcher({ bundleID = "net.kovidgoyal.kitty", name = "Kitty" }),
-  browser = appSwitcher({ name = "Google Chrome" }),
-  editor = appSwitcher({ name = "Emacs" }),
-  messenger = appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }),
-  explorer = appSwitcher({ name = "Finder" }),
-  chat = appSwitcher({ name = "Slack" }),
-}
 
 local function aerospaceReload()
   hs.execute("aerospace reload-config", true)
@@ -202,25 +167,20 @@ modes.main = hs
     :bind(HYPER, "k", function()
       modes.main:exit()
     end) -- toggle all hotkeys
-    :bind(ALT, "return", switchTo.terminal)
-    :bind(SHIFT .. ALT, "return", switchTo.browser)
-    :bind(ALT, "'", switchTo.browser)
+    :bind(ALT, "return", appSwitcher({ bundleID = "net.kovidgoyal.kitty", name = "Kitty" }))
+    :bind(SHIFT .. ALT, "return", appSwitcher({ name = "Google Chrome" }))
     :bind(ALT, "d", appSwitcher({ name = "Zed" }))
-    :bind(ALT, "e", switchTo.editor)
+    :bind(ALT, "e", appSwitcher({ name = "Emacs" }))
     :bind(ALT, "i", appSwitcher({ name = "Linear" }))
-    :bind(ALT, "m", switchTo.messenger)
-    :bind(ALT, "o", switchTo.explorer)
+    :bind(ALT, "m", appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }))
+    :bind(ALT, "o", appSwitcher({ name = "Finder" }))
     :bind(ALT, "p", appSwitcher({ name = "Claude" }))
-    :bind(ALT, "s", switchTo.chat)
-    :bind(HYPER, "return", switchTo.terminal)
+    :bind(ALT, "s", appSwitcher({ name = "Slack" }))
     :bind(HYPER, "a", aerospaceReload)
-    :bind(HYPER, "o", switchTo.explorer)
     :bind(HYPER, "d", hs.toggleConsole)
     :bind(HYPER, "l", hs.caffeinate.lockScreen)
-    :bind(HYPER, "p", function() hs.execute("kclaude", true) end)
     :bind(HYPER, "r", hs.reload)
     :bind(HYPER, "x", closeNotifications)
     :enter()
 
--- hs.loadSpoon("EmmyLua")
 alert("✅ Hammerspoon")

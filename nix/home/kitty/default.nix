@@ -19,8 +19,7 @@ with lib.my; # FIXME
       shellIntegration.enableFishIntegration = true;
       extraConfig = ''
         include kitty.common.conf
-        ${optionalString pkgs.stdenv.isDarwin "include kitty.darwin.conf"}
-        ${optionalString pkgs.stdenv.isLinux "include kitty.linux.conf"}
+        include kitty.''${KITTY_OS}.conf
         include kitty.local.conf
       '';
     };
@@ -43,7 +42,7 @@ with lib.my; # FIXME
           "diff.conf"
           "grab.conf"
           "kitty.common.conf"
-          "kitty.darwin.conf"
+          "kitty.macos.conf"
           "kitty.linux.conf"
           "open-actions.conf"
           "quick-access-terminal.conf"
