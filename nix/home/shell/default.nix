@@ -43,6 +43,7 @@ in {
       termkeys = "infocmp -L1";
       envz = "printenv | fzf ";
       fd = "fd --hyperlink";
+      rm = "command rm -i";
     };
 
     programs.bash.initExtra = cfg.shellInitExtra;

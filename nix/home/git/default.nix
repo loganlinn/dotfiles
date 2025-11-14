@@ -28,11 +28,10 @@ in {
     gca = "git commit -v -a";
     gcm = ''git switch "$(git default-branch || echo main)"'';
     gcob = "git switch -c";
-    gcop = "git checkout -p";
     gd = "git diff --color";
     gdc = "gd --cached";
-    gdn = "git diff --name-only";
     gfo = "git fetch --all";
+    gl = "git pull";
     glg = "git log --oneline --decorate";
     gp = "git push";
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"

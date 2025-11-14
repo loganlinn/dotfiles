@@ -11,8 +11,10 @@ local application = require("hs.application")
 local eventtap = require("hs.eventtap")
 local fnutils = require("hs.fnutils")
 local hints = require("hs.hints")
+local hotkey = require("hs.hotkey")
 local inspect = require("hs.inspect")
 local ipc = require("hs.ipc")
+local keycodes = require("hs.keycodes")
 local logger = require("hs.logger")
 local osascript = require("hs.osascript")
 local pathwatcher = require("hs.pathwatcher")
@@ -147,40 +149,61 @@ local closeNotifications = function()
   log.i(ok, output, hs.inspect.inspect(descriptor))
 end
 
-local modes = setmetatable({}, {
-  __newindex = function(self, name, mode)
-    log.i("Registering mode", name)
-    mode.entered = mode.entered or partial(alert, "+" .. name)
-    mode.exited = mode.exited or partial(alert, "-" .. name)
-    rawset(self, name, mode)
-  end,
-})
+local focusKitty = appSwitcher({ bundleID = "net.kovidgoyal.kitty", name = "Kitty" })
 
-local function aerospaceReload()
-  hs.execute("aerospace reload-config", true)
+local modes = {}
+modes.main = hotkey.modal.new(HYPER, "k")
+modes.main:bind(SHIFT .. ALT, "return", appSwitcher({ name = "Google Chrome" }))
+modes.main:bind(ALT, "d", appSwitcher({ name = "Zed" }))
+modes.main:bind(ALT, "e", appSwitcher({ name = "Emacs" }))
+modes.main:bind(ALT, "i", appSwitcher({ name = "Linear" }))
+modes.main:bind(ALT, "m", appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }))
+modes.main:bind(ALT, "o", appSwitcher({ name = "Finder" }))
+modes.main:bind(ALT, "p", appSwitcher({ name = "Claude" }))
+modes.main:bind(ALT, "s", appSwitcher({ name = "Slack" }))
+modes.main:bind(HYPER, "a", function() hs.execute("aerospace reload-config", true) end)
+modes.main:bind(HYPER, "return", focusKitty)
+modes.main:bind(HYPER, "d", hs.toggleConsole)
+modes.main:bind(HYPER, "l", hs.caffeinate.lockScreen)
+modes.main:bind(HYPER, "r", hs.reload)
+modes.main:bind(HYPER, "x", closeNotifications)
+modes.main:bind(HYPER, "k", function() modes.main:exit() end)
+modes.main:enter()
+modes.main.entered = partial(alert, "+main")
+modes.main.exited = partial(alert, "-main")
+
+-- hotkey.bind(HYPER, "k", function()
+--   local win = window.focusedWindow()
+--   if win then
+--     win:minimize()
+--   end
+-- end)
+
+---------------------------------------------------------------------------------------------------
+-- Handle alt+return to focus terminal, but pass-through if already focused
+
+local frontmostApplication = application.frontmostApplication
+
+local frontmostBundleID = function()
+  local app = frontmostApplication()
+  return app and app:bundleID()
 end
+local isKittyFocused = function() return frontmostBundleID() == "net.kovidgoyal.kitty" end
 
-modes.main = hs
-    .hotkey
-    .modal
-    .new(HYPER, "k")
-    :bind(HYPER, "k", function()
-      modes.main:exit()
-    end) -- toggle all hotkeys
-    :bind(ALT, "return", appSwitcher({ bundleID = "net.kovidgoyal.kitty", name = "Kitty" }))
-    :bind(SHIFT .. ALT, "return", appSwitcher({ name = "Google Chrome" }))
-    :bind(ALT, "d", appSwitcher({ name = "Zed" }))
-    :bind(ALT, "e", appSwitcher({ name = "Emacs" }))
-    :bind(ALT, "i", appSwitcher({ name = "Linear" }))
-    :bind(ALT, "m", appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }))
-    :bind(ALT, "o", appSwitcher({ name = "Finder" }))
-    :bind(ALT, "p", appSwitcher({ name = "Claude" }))
-    :bind(ALT, "s", appSwitcher({ name = "Slack" }))
-    :bind(HYPER, "a", aerospaceReload)
-    :bind(HYPER, "d", hs.toggleConsole)
-    :bind(HYPER, "l", hs.caffeinate.lockScreen)
-    :bind(HYPER, "r", hs.reload)
-    :bind(HYPER, "x", closeNotifications)
-    :enter()
+local KC_RET = keycodes.map["return"]
+
+local keydown = eventtap.new({ eventtap.event.types.keyDown }, function(e)
+  local keyCode = e:getKeyCode()
+  local flags = e:getFlags()
+  if flags.alt and not flags.shift and keyCode == KC_RET then
+    if not isKittyFocused() then
+      focusKitty()
+    else
+      eventtap.keyStroke(flags, keyCode)
+    end
+  end
+end)
+
+keydown:start()
 
 alert("✅ Hammerspoon")

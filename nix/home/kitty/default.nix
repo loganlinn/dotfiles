@@ -85,21 +85,21 @@ with lib.my; # FIXME
             (writeShellScriptBin "kdiff" ''kitten diff "$@"'')
             (writeShellScriptBin "kssh" ''kitten ssh "$@"'')
             (writeShellScriptBin "icat" ''kitten icat "$@"'')
-            (writeShellScriptBin "kclaude" ''
-              # TODO change cwd from currently active/focused kitty window via 'kitty @ ls'
-              exec kitten quick-access-terminal \
-                --instance-group=claude \
-                -o app_id=kitty-quick-access-claude \
-                -o edge=right \
-                -o columns=140 \
-                -o background_opacity=0.97 \
-                -o hide_on_focus_lost=yes \
-                -o confirm_os_window_close=yes \
-                -o allow_remote_control=socket-only \
-                -o listen_on="''${XDG_DATA_DIR:-$HOME/.local/share}/kitty/quick-access-claude.sock" \
-                ''${KCLAUDE_DEFAULT_ARGS-} \
-                claude
-            '')
+            # (writeShellScriptBin "kclaude" ''
+            #   # TODO change cwd from currently active/focused kitty window via 'kitty @ ls'
+            #   exec kitten quick-access-terminal \
+            #     --instance-group=claude \
+            #     -o app_id=kitty-quick-access-claude \
+            #     -o edge=right \
+            #     -o columns=140 \
+            #     -o background_opacity=0.97 \
+            #     -o hide_on_focus_lost=yes \
+            #     -o confirm_os_window_close=yes \
+            #     -o allow_remote_control=socket-only \
+            #     -o listen_on="''${XDG_DATA_DIR:-$HOME/.local/share}/kitty/quick-access-claude.sock" \
+            #     ''${KCLAUDE_DEFAULT_ARGS-} \
+            #     claude
+            # '')
           ]
           (optional pkgs.stdenv.isLinux (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"''))
         ]
