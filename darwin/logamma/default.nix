@@ -198,6 +198,7 @@
       "gimp"
       "hammerspoon"
       "hiddenbar"
+      "inkscape"
       "karabiner-elements"
       "keybase"
       "obs"
