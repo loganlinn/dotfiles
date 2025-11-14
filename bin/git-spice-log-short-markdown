@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+hash gs gh jq || exit 1
+
+# Parse arguments
+quiet=false
+while [[ $# -gt 0 ]]; do
+  case $1 in
+  -q | --quiet)
+    quiet=true
+    shift
+    ;;
+  -h | --help)
+    echo "Usage: git-spice-log-short-markdown [-q|--quiet]"
+    echo "Generate Slack-friendly Markdown from git-spice stack"
+    echo ""
+    echo "Options:"
+    echo "  -q, --quiet    Suppress progress messages"
+    echo "  -h, --help     Show this help message"
+    exit 0
+    ;;
+  *)
+    echo >&2 "Unknown option: $1"
+    exit 1
+    ;;
+  esac
+done
+
+# Get git-spice stack data as JSON
+stack_json=$(gs ll --json)
+
+# Detect the default branch (main, master, etc.)
+# The default branch is the one with no "down" (no parent branch)
+default_branch=$(jq -r 'select((.down.name // null) == null) | .name' <<<"$stack_json" | head -n1)
+[[ "$quiet" == false ]] && echo >&2 "Detected default branch: $default_branch"
+
+# Build a map of branch name to PR info
+declare -A pr_map
+
+# Count total branches (excluding default branch)
+total_branches=$(jq -r --arg default "$default_branch" 'select(.name != $default) | .name' <<<"$stack_json" | wc -l)
+[[ "$quiet" == false ]] && echo >&2 "Found $total_branches branches in stack"
+
+# First pass: collect all PR URLs to fetch titles in batch
+pr_numbers=()
+while IFS= read -r line; do
+  pr_id=$(jq -r '.change.id // empty' <<<"$line" | sed 's/#//')
+  if [[ -n "$pr_id" ]]; then
+    pr_numbers+=("$pr_id")
+    branch=$(jq -r '.name' <<<"$line")
+    pr_url=$(jq -r '.change.url' <<<"$line")
+    pr_map["$branch"]="$pr_id|$pr_url|"
+  fi
+done <<<"$stack_json"
+
+# Fetch PR titles in a single API call if possible
+if [[ ${#pr_numbers[@]} -gt 0 ]]; then
+  [[ "$quiet" == false ]] && echo >&2 "Fetching PR ${#pr_numbers[@]} titles..."
+
+  # Get repo info
+  repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+
+  # Build GraphQL query for multiple PRs
+  query='query {'
+  for i in "${!pr_numbers[@]}"; do
+    pr_num="${pr_numbers[$i]}"
+    query+=" pr$i: repository(owner: \"${repo%%/*}\", name: \"${repo##*/}\") { pullRequest(number: $pr_num) { title number } }"
+  done
+  query+=' }'
+
+  # Execute query and parse results
+  pr_data=$(gh api graphql -f query="$query")
+
+  # Update pr_map with titles
+  for i in "${!pr_numbers[@]}"; do
+    pr_num="${pr_numbers[$i]}"
+    title=$(jq -r ".data.pr$i.pullRequest.title" <<<"$pr_data")
+
+    # Find and update the branch with this PR number
+    for branch in "${!pr_map[@]}"; do
+      if [[ "${pr_map[$branch]}" == "$pr_num|"* ]]; then
+        pr_url=$(cut -d'|' -f2 <<<"${pr_map[$branch]}")
+        pr_map["$branch"]="$pr_num|$pr_url|$title"
+      fi
+    done
+  done
+fi
+
+# Track visited branches
+declare -A visited
+
+# Find root (the one that points to default branch)
+root=""
+while IFS= read -r line; do
+  name=$(jq -r '.name' <<<"$line")
+  down=$(jq -r '.down.name // empty' <<<"$line")
+
+  if [[ "$down" == "$default_branch" ]]; then
+    root="$name"
+    break
+  fi
+done <<<"$stack_json"
+
+# Recursive function to print tree
+print_stack() {
+  local branch="$1"
+  local indent="$2"
+
+  # Skip if already visited or if it's the default branch
+  if [[ -n "${visited[$branch]:-}" || "$branch" == "$default_branch" ]]; then
+    return
+  fi
+  visited["$branch"]=1
+
+  # Print current branch
+  if [[ -n "${pr_map[$branch]:-}" ]]; then
+    pr_num=$(cut -d'|' -f1 <<<"${pr_map[$branch]}")
+    pr_url=$(cut -d'|' -f2 <<<"${pr_map[$branch]}")
+    pr_title=$(cut -d'|' -f3 <<<"${pr_map[$branch]}")
+    echo "${indent}• [$pr_title (#$pr_num)]($pr_url)"
+  fi
+
+  # Find children (branches that point down to this one)
+  while IFS= read -r line; do
+    child_name=$(jq -r '.name' <<<"$line")
+    child_down=$(jq -r '.down.name // empty' <<<"$line")
+
+    if [[ "$child_down" == "$branch" ]]; then
+      print_stack "$child_name" "$indent  "
+    fi
+  done <<<"$stack_json"
+}
+
+# Start printing from root
+if [[ -n "$root" ]]; then
+  print_stack "$root" ""
+fi
