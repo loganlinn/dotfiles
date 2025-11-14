@@ -31,6 +31,19 @@ local partial = fnutils.partial
 
 local log = logger.new(hs.configdir .. "/init.lua", "debug")
 
+local execute = function(...)
+  log.i("execute ->", inspect({ ... }))
+  local results = table.pack(pcall(hs.execute, ...))
+  local success = results[1]
+  if success then
+    log.i("execute <-", inspect(results))
+    return table.unpack(results, 2)
+  else
+    log.e("execute <-", inspect(results))
+    return nil, results[2]
+  end
+end
+
 ipc.cliInstall()
 
 local configwatcher
@@ -150,60 +163,62 @@ local closeNotifications = function()
 end
 
 local focusKitty = appSwitcher({ bundleID = "net.kovidgoyal.kitty", name = "Kitty" })
+local aerospaceReloadConfig = function()
+  log.i("Reloading AeroSpace config")
+  local _, ok = hs.execute("aerospace reload-config --dry-run", true)
+  if ok then
+    _, ok = execute("aerospace reload-config", true)
+    if ok then
+      alert("✅ Aerospace")
+    end
+  end
+end
 
 local modes = {}
 modes.main = hotkey.modal.new(HYPER, "k")
-modes.main:bind(SHIFT .. ALT, "return", appSwitcher({ name = "Google Chrome" }))
-modes.main:bind(ALT, "d", appSwitcher({ name = "Zed" }))
-modes.main:bind(ALT, "e", appSwitcher({ name = "Emacs" }))
-modes.main:bind(ALT, "i", appSwitcher({ name = "Linear" }))
-modes.main:bind(ALT, "m", appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }))
-modes.main:bind(ALT, "o", appSwitcher({ name = "Finder" }))
-modes.main:bind(ALT, "p", appSwitcher({ name = "Claude" }))
-modes.main:bind(ALT, "s", appSwitcher({ name = "Slack" }))
-modes.main:bind(HYPER, "a", function() hs.execute("aerospace reload-config", true) end)
-modes.main:bind(HYPER, "return", focusKitty)
+modes.main:bind(HYPER, "space", focusKitty)
+modes.main:bind(HYPER, "return", appSwitcher({ name = "Google Chrome" }))
+modes.main:bind(HYPER, "a", aerospaceReloadConfig)
 modes.main:bind(HYPER, "d", hs.toggleConsole)
-modes.main:bind(HYPER, "l", hs.caffeinate.lockScreen)
-modes.main:bind(HYPER, "r", hs.reload)
-modes.main:bind(HYPER, "x", closeNotifications)
+modes.main:bind(HYPER, "e", appSwitcher({ name = "Emacs" }))
+modes.main:bind(HYPER, "i", appSwitcher({ name = "Linear" }))
 modes.main:bind(HYPER, "k", function() modes.main:exit() end)
+modes.main:bind(HYPER, "l", hs.caffeinate.lockScreen)
+modes.main:bind(HYPER, "m", appSwitcher({ bundleID = "com.apple.MobileSMS", name = "Messages" }))
+modes.main:bind(HYPER, "o", appSwitcher({ name = "Finder" }))
+modes.main:bind(HYPER, "p", appSwitcher({ name = "Claude" }))
+modes.main:bind(HYPER, "r", hs.reload)
+modes.main:bind(HYPER, "s", appSwitcher({ name = "Slack" }))
+modes.main:bind(HYPER, "x", closeNotifications)
 modes.main:enter()
 modes.main.entered = partial(alert, "+main")
 modes.main.exited = partial(alert, "-main")
 
--- hotkey.bind(HYPER, "k", function()
---   local win = window.focusedWindow()
---   if win then
---     win:minimize()
---   end
--- end)
-
 ---------------------------------------------------------------------------------------------------
 -- Handle alt+return to focus terminal, but pass-through if already focused
 
-local frontmostApplication = application.frontmostApplication
+-- local frontmostApplication = application.frontmostApplication
 
-local frontmostBundleID = function()
-  local app = frontmostApplication()
-  return app and app:bundleID()
-end
-local isKittyFocused = function() return frontmostBundleID() == "net.kovidgoyal.kitty" end
+-- local frontmostBundleID = function()
+--   local app = frontmostApplication()
+--   return app and app:bundleID()
+-- end
+-- local isKittyFocused = function() return frontmostBundleID() == "net.kovidgoyal.kitty" end
 
-local KC_RET = keycodes.map["return"]
+-- local KC_RET = keycodes.map["return"]
 
-local keydown = eventtap.new({ eventtap.event.types.keyDown }, function(e)
-  local keyCode = e:getKeyCode()
-  local flags = e:getFlags()
-  if flags.alt and not flags.shift and keyCode == KC_RET then
-    if not isKittyFocused() then
-      focusKitty()
-    else
-      eventtap.keyStroke(flags, keyCode)
-    end
-  end
-end)
+-- local keydown = eventtap.new({ eventtap.event.types.keyDown }, function(e)
+--   local keyCode = e:getKeyCode()
+--   local flags = e:getFlags()
+--   if flags.alt and not flags.shift and keyCode == KC_RET then
+--     if not isKittyFocused() then
+--       focusKitty()
+--     else
+--       eventtap.keyStroke(flags, keyCode)
+--     end
+--   end
+-- end)
 
-keydown:start()
+-- keydown:start()
 
 alert("✅ Hammerspoon")
