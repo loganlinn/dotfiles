@@ -43,8 +43,9 @@ aws() {
 			((i++))
 		done
 
-		# Run aws command and pipe through linkifier
-		command aws "$@" | aws-help-linkify "$service" "$command"
+		# Force AWS CLI to use pager and pipe through linkifier
+		# AWS CLI uses less by default, so we set up a pipeline that preserves pager behavior
+		AWS_PAGER="aws-help-linkify $service $command | \${PAGER:-less -R}" command aws "$@"
 	else
 		# Not a help command, pass through normally
 		command aws "$@"

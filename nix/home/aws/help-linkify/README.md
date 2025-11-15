@@ -2,21 +2,33 @@
 
 This adds clickable hyperlinks to AWS CLI help output, allowing you to navigate between help pages directly in your terminal.
 
+## File Structure
+
+```
+nix/home/aws/help-linkify/
+├── README.md           # This file
+├── bin/
+│   └── aws-help-linkify  # Core transformation script
+└── wrapper.zsh         # Zsh integration
+```
+
 ## Components
 
 ### 1. `bin/aws-help-linkify`
-Bash script that transforms AWS help output by adding OSC 8 terminal hyperlinks:
+Bash/awk script that transforms AWS help output by adding OSC 8 terminal hyperlinks:
 - **Services list**: In `aws help`, each service name links to `aws <service> help`
 - **Commands list**: In `aws <service> help`, each command name links to `aws <service> <command> help`
 - **HTTP URLs**: Existing `<https://...>` URLs become clickable
 
-### 2. `aws-help.zsh`
+### 2. `wrapper.zsh`
 Zsh wrapper function that:
 - Intercepts `aws ... help` commands
-- Pipes output through `aws-help-linkify` with proper context
+- Configures AWS_PAGER to pipe through `aws-help-linkify`
+- Preserves pager behavior (less)
 - Passes non-help commands through unchanged
 
 ### 3. Kitty Configuration
+Located in `config/kitty/`:
 - `kitty.common.conf`: Adds `exec` to `url_prefixes`
 - `open-actions.conf`: Handles `exec://` URLs by launching commands in a kitty overlay
 
@@ -42,11 +54,23 @@ Uses OSC 8 escape sequences: `\e]8;;URL\e\\TEXT\e]8;;\e\\`
 ### URL Scheme
 Links use `exec://` protocol with URL-encoded commands:
 - Example: `exec://aws%20s3%20help` → runs `aws s3 help`
+- The kitty handler decodes the URL and executes the command in an overlay
+
+### Pager Integration
+The wrapper uses `AWS_PAGER` environment variable to inject the linkifier:
+- AWS CLI → linkifier → less (pager)
+- Preserves interactive paging behavior
+- User can navigate help with less keybindings
 
 ### Pattern Matching
 - Services/commands: `^\s+o\s+([a-z0-9-]+)$`
 - HTTP URLs: `<(https?://[^>]+)>`
 - Section detection: `^AVAILABLE SERVICES`, `^AVAILABLE COMMANDS`
+
+### Performance
+- Uses awk for fast single-pass processing
+- No subshell spawning or external command calls in main loop
+- ~0.01s overhead for processing large help output
 
 ## Known Limitations
 

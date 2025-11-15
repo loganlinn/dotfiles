@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# aws-help-linkify: Add terminal hyperlinks to AWS CLI help output
+#
+# Usage: aws [service] [command] help | aws-help-linkify [service] [command]
+#
+# This script transforms AWS CLI help output by adding OSC 8 hyperlinks:
+# - Services in AVAILABLE SERVICES link to "aws <service> help"
+# - Commands in AVAILABLE COMMANDS link to "aws <service> <command> help"
+# - HTTP/HTTPS URLs become clickable links
+
+# Parse arguments to determine context
+SERVICE=""
+COMMAND=""
+
+if [[ $# -ge 1 ]]; then
+	SERVICE="$1"
+fi
+if [[ $# -ge 2 ]]; then
+	COMMAND="$2"
+fi
+
+# Track whether we're in specific sections
+in_available_services=false
+in_available_commands=false
+
+# Precompute common URL-encoded strings to avoid repeated encoding
+# AWS service/command names only use [a-z0-9-], so we only need to encode space and hyphen
+encode_space="%20"
+
+# Process stdin with awk for better performance
+awk -v service="$SERVICE" -v cmd="$COMMAND" '
+# Function to create OSC 8 hyperlink
+function hyperlink(url, text) {
+	return "\033]8;;" url "\033\\" text "\033]8;;\033\\"
+}
+
+# Function to URL-encode (simplified for AWS command names: only alphanumeric and hyphen)
+function urlencode(str,    i, c, encoded) {
+	encoded = ""
+	for (i = 1; i <= length(str); i++) {
+		c = substr(str, i, 1)
+		if (c == " ") {
+			encoded = encoded "%20"
+		} else {
+			encoded = encoded c
+		}
+	}
+	return encoded
+}
+
+# Track section state
+/^AVAILABLE[[:space:]]SERVICES/ {
+	in_services = 1
+	in_commands = 0
+	print
+	next
+}
+
+/^AVAILABLE[[:space:]]COMMANDS/ {
+	in_services = 0
+	in_commands = 1
+	print
+	next
+}
+
+# Reset flags on new major section (all caps, no leading whitespace)
+/^[A-Z][A-Z ]+$/ && !/^[[:space:]]/ {
+	in_services = 0
+	in_commands = 0
+	print
+	next
+}
+
+# Process service names in AVAILABLE SERVICES
+in_services && /^[[:space:]]+o[[:space:]]+[a-z0-9-]+[[:space:]]*$/ {
+	match($0, /^([[:space:]]+o[[:space:]]+)([a-z0-9-]+)(.*)$/, parts)
+	if (parts[2]) {
+		svc_name = parts[2]
+		exec_cmd = "aws " svc_name " help"
+		exec_url = "exec://" urlencode(exec_cmd)
+		print parts[1] hyperlink(exec_url, svc_name) parts[3]
+		next
+	}
+}
+
+# Process command names in AVAILABLE COMMANDS
+in_commands && /^[[:space:]]+o[[:space:]]+[a-z0-9-]+[[:space:]]*$/ {
+	match($0, /^([[:space:]]+o[[:space:]]+)([a-z0-9-]+)(.*)$/, parts)
+	if (parts[2] && service) {
+		cmd_name = parts[2]
+		exec_cmd = "aws " service " " cmd_name " help"
+		exec_url = "exec://" urlencode(exec_cmd)
+		print parts[1] hyperlink(exec_url, cmd_name) parts[3]
+		next
+	}
+}
+
+# Process HTTP/HTTPS URLs
+/<https?:\/\/[^>]+>/ {
+	# Handle multiple URLs per line
+	line = $0
+	while (match(line, /<(https?:\/\/[^>]+)>/, url_match)) {
+		url = url_match[1]
+		before = substr(line, 1, RSTART - 1)
+		after = substr(line, RSTART + RLENGTH)
+		printf "%s%s", before, hyperlink(url, url)
+		line = after
+	}
+	print line
+	next
+}
+
+# Default: pass through unchanged
+{ print }
+'
