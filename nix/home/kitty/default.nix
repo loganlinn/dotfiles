@@ -67,15 +67,6 @@ with lib.my; # FIXME
             }
           }/smart_scroll.py";
         };
-        "kitty/edit_marks.py" = {
-          executable = true;
-          source = "${pkgs.fetchFromGitHub {
-            owner = "yurikhan";
-            repo = "kitty-edit-marks";
-            rev = "f86d2f7e5aefb306437fc0bf851ae007b52fccc0";
-            hash = "sha256-jwrZENzFciMWoOHoBa7JNGYViMXqpR3vOQsPkqIUU5E=";
-          }}/edit_marks.py";
-        };
         "kitty/kitty_grab".source = pkgs.fetchFromGitHub {
           owner = "yurikhan";
           repo = "kitty_grab";
