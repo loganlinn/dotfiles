@@ -6,31 +6,56 @@ This adds clickable hyperlinks to AWS CLI help output, allowing you to navigate 
 
 ```
 nix/home/aws/help-linkify/
-├── README.md           # This file
-├── bin/
-│   └── aws-help-linkify  # Core transformation script
-└── wrapper.zsh         # Zsh integration
+├── README.md                      # This file
+├── aws-help-linkify.plugin.zsh   # Zsh plugin entry point
+└── bin/
+    ├── aws-help-linkify           # Core transformation script
+    └── aws-help-pager             # Pager wrapper
 ```
 
 ## Components
 
-### 1. `bin/aws-help-linkify`
+### 1. `aws-help-linkify.plugin.zsh`
+Zsh plugin that:
+- Adds `bin/` directory to PATH automatically
+- Wraps the `aws` command to intercept help requests
+- Configures AWS_PAGER to pipe through `aws-help-linkify`
+- Preserves pager behavior (less/bat)
+- Passes non-help commands through unchanged
+
+### 2. `bin/aws-help-linkify`
 Bash/awk script that transforms AWS help output by adding OSC 8 terminal hyperlinks:
 - **Services list**: In `aws help`, each service name links to `aws <service> help`
 - **Commands list**: In `aws <service> help`, each command name links to `aws <service> <command> help`
 - **HTTP URLs**: Existing `<https://...>` URLs become clickable
 
-### 2. `wrapper.zsh`
-Zsh wrapper function that:
-- Intercepts `aws ... help` commands
-- Configures AWS_PAGER to pipe through `aws-help-linkify`
-- Preserves pager behavior (less)
-- Passes non-help commands through unchanged
+### 3. `bin/aws-help-pager`
+Pager wrapper script that:
+- Reads service/command context from environment variables
+- Calls `aws-help-linkify` with proper arguments
+- Pipes to user's `$PAGER` (with special handling for `bat`)
 
-### 3. Kitty Configuration
+### 4. Kitty Configuration
 Located in `config/kitty/`:
 - `kitty.common.conf`: Adds `exec` to `url_prefixes`
 - `open-actions.conf`: Handles `exec://` URLs by launching commands in a kitty overlay
+
+## Installation
+
+This plugin is loaded via Nix home-manager's `programs.zsh.plugins` option:
+
+```nix
+programs.zsh = {
+  plugins = [
+    {
+      name = "aws-help-linkify";
+      src = ./help-linkify;
+    }
+  ];
+};
+```
+
+The plugin automatically adds its `bin/` directory to PATH, so the helper scripts are available.
 
 ## Usage
 

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# aws-help-pager: Pager wrapper that adds hyperlinks to AWS help output
+#
+# This script is meant to be called by AWS CLI via AWS_PAGER environment variable.
+# It reads from stdin, adds hyperlinks, and pipes to the user's pager.
+
+# Get the service and command context from environment variables
+SERVICE="${AWS_HELP_SERVICE:-}"
+COMMAND="${AWS_HELP_COMMAND:-}"
+
+# Get the directory where this script lives
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Determine the pager to use
+# Extract just the command name from PAGER (might be "bat --options" or "/path/to/bat")
+pager_cmd="${PAGER:-less -R}"
+pager_name=$(basename "${pager_cmd%% *}")
+
+# If PAGER is bat or batcat (Debian/Ubuntu package name), use it directly
+# Otherwise use less -R to ensure color codes are preserved
+if [[ "$pager_name" == "bat" || "$pager_name" == "batcat" ]]; then
+	# Run the linkifier and pipe to bat
+	"${SCRIPT_DIR}/aws-help-linkify" "$SERVICE" "$COMMAND" | ${PAGER:-bat}
+else
+	# Run the linkifier and pipe to pager (default: less -R)
+	"${SCRIPT_DIR}/aws-help-linkify" "$SERVICE" "$COMMAND" | ${PAGER:-less -R}
+fi

@@ -19,10 +19,15 @@
 
   home.sessionPath = [
     "${config.my.flakeDirectory}/nix/home/aws/bin"
-    "${config.my.flakeDirectory}/nix/home/aws/help-linkify/bin"
   ];
 
-  programs.zsh.initContent = lib.mkAfter (
-    (lib.readFile ./aws-sso.zsh) + "\n" + (lib.readFile ./help-linkify/wrapper.zsh)
-  );
+  programs.zsh = {
+    plugins = [
+      {
+        name = "aws-help-linkify";
+        src = ./help-linkify;
+      }
+    ];
+    initContent = lib.mkAfter (lib.readFile ./aws-sso.zsh);
+  };
 }
