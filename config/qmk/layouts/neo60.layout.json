@@ -64,7 +64,7 @@
       "KC_ESC",
       "KC_NO",
       "MO(1)",
-      "LT(1,KC_ESC)",
+      "MT(MOD_LCTL | MOD_LSFT | MOD_LALT | MOD_LGUI,KC_ESC)",
       "KC_LALT",
       "KC_LGUI",
       "KC_NO",
@@ -76,7 +76,7 @@
       "KC_NO",
       "KC_NO",
       "HYPR(KC_NO)",
-      "MEH(KC_NO)",
+      "KC_RALT",
       "KC_PGUP",
       "KC_PGDN"
     ],
