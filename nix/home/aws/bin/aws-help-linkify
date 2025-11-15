@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# aws-help-linkify: Add terminal hyperlinks to AWS CLI help output
+#
+# Usage: aws [service] [command] help | aws-help-linkify [service] [command]
+#
+# This script transforms AWS CLI help output by adding OSC 8 hyperlinks:
+# - Services in AVAILABLE SERVICES link to "aws <service> help"
+# - Commands in AVAILABLE COMMANDS link to "aws <service> <command> help"
+# - HTTP/HTTPS URLs become clickable links
+
+# Parse arguments to determine context
+SERVICE=""
+COMMAND=""
+
+if [[ $# -ge 1 ]]; then
+	SERVICE="$1"
+fi
+if [[ $# -ge 2 ]]; then
+	COMMAND="$2"
+fi
+
+# URL-encode a string for use in exec:// URLs
+urlencode() {
+	local string="${1}"
+	local strlen=${#string}
+	local encoded=""
+	local pos c o
+
+	for ((pos = 0; pos < strlen; pos++)); do
+		c=${string:$pos:1}
+		case "$c" in
+		[-_.~a-zA-Z0-9]) o="${c}" ;;
+		*) printf -v o '%%%02x' "'$c" ;;
+		esac
+		encoded+="${o}"
+	done
+	echo "${encoded}"
+}
+
+# Create an OSC 8 hyperlink
+# Args: url text
+hyperlink() {
+	local url="$1"
+	local text="$2"
+	printf '\e]8;;%s\e\\%s\e]8;;\e\\' "$url" "$text"
+}
+
+# Track whether we're in specific sections
+in_available_services=false
+in_available_commands=false
+
+# Process stdin line by line
+while IFS= read -r line; do
+	# Detect section headers
+	if [[ "$line" =~ ^AVAILABLE[[:space:]]SERVICES ]]; then
+		in_available_services=true
+		in_available_commands=false
+		echo "$line"
+		continue
+	elif [[ "$line" =~ ^AVAILABLE[[:space:]]COMMANDS ]]; then
+		in_available_services=false
+		in_available_commands=true
+		echo "$line"
+		continue
+	elif [[ "$line" =~ ^[A-Z][A-Z\ ]+$ ]] && [[ ! "$line" =~ ^[[:space:]] ]]; then
+		# New section header - reset flags
+		in_available_services=false
+		in_available_commands=false
+		echo "$line"
+		continue
+	fi
+
+	# Transform lines based on current section
+	if $in_available_services; then
+		# Match service names: "       o service-name"
+		if [[ "$line" =~ ^[[:space:]]+o[[:space:]]+([a-z0-9-]+)[[:space:]]*$ ]]; then
+			service_name="${BASH_REMATCH[1]}"
+			cmd="aws ${service_name} help"
+			exec_url="exec://$(urlencode "$cmd")"
+			indent="${line%%o*}"
+			suffix="${line#*${service_name}}"
+
+			# Reconstruct line with hyperlink
+			printf '%so %s%s\n' "$indent" "$(hyperlink "$exec_url" "$service_name")" "$suffix"
+			continue
+		fi
+	elif $in_available_commands; then
+		# Match command names: "       o command-name"
+		if [[ "$line" =~ ^[[:space:]]+o[[:space:]]+([a-z0-9-]+)[[:space:]]*$ ]]; then
+			command_name="${BASH_REMATCH[1]}"
+			cmd="aws ${SERVICE} ${command_name} help"
+			exec_url="exec://$(urlencode "$cmd")"
+			indent="${line%%o*}"
+			suffix="${line#*${command_name}}"
+
+			# Reconstruct line with hyperlink
+			printf '%so %s%s\n' "$indent" "$(hyperlink "$exec_url" "$command_name")" "$suffix"
+			continue
+		fi
+	fi
+
+	# Transform HTTP/HTTPS URLs anywhere in the help text
+	# Match pattern: <http://...> or <https://...>
+	if [[ "$line" =~ \<(https?://[^\>]+)\> ]]; then
+		# Use sed for multiple URL replacements
+		# This is more robust for multiple URLs per line
+		modified_line=$(echo "$line" | sed -E 's|<(https?://[^>]+)>|\x1b]8;;\1\x1b\\\1\x1b]8;;\x1b\\|g')
+		echo "$modified_line"
+		continue
+	fi
+
+	# Pass through unchanged
+	echo "$line"
+done

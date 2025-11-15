@@ -21,5 +21,7 @@
     "${config.my.flakeDirectory}/nix/home/aws/bin"
   ];
 
-  programs.zsh.initContent = lib.mkAfter (lib.readFile ./aws-sso.zsh);
+  programs.zsh.initContent = lib.mkAfter (
+    (lib.readFile ./aws-sso.zsh) + "\n" + (lib.readFile ./aws-help.zsh)
+  );
 }
