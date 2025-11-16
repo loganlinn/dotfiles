@@ -3,10 +3,11 @@
 # This plugin wraps the `aws` command to automatically add clickable hyperlinks
 # to AWS help pages, making it easy to navigate between services and commands.
 
-# Add plugin's bin directory to PATH
+# Add plugin's bin directory to PATH and save its location
 0="${${ZERO:-${0:#$ZSH_ARGZERO}}:-${(%):-%N}}"
 0="$(builtin cd -q -- "${0:A:h}" && builtin pwd -P)"
-path=("${0}/bin" $path)
+AWS_HELP_LINKIFY_BIN_DIR="${0}/bin"
+path=("${AWS_HELP_LINKIFY_BIN_DIR}" $path)
 
 # Wrapper function for aws command
 aws() {
@@ -52,9 +53,13 @@ aws() {
     done
 
     # Set context for the pager wrapper and use our custom pager
-    AWS_HELP_SERVICE="$service" AWS_HELP_COMMAND="$command" AWS_PAGER="aws-help-pager" command aws "$@"
+    # Note: `aws help` uses MANPAGER, not PAGER or AWS_PAGER!
+    # Save original pager (check MANPAGER first, then PAGER) so aws-help-pager can use it
+    # Use absolute path because Nix's aws wrapper resets PATH
+    # Don't use 'command' builtin - let the wrapper run normally
+    AWS_HELP_SERVICE="$service" AWS_HELP_COMMAND="$command" AWS_HELP_ORIGINAL_PAGER="${MANPAGER:-${PAGER:-less -R}}" MANPAGER="${AWS_HELP_LINKIFY_BIN_DIR}/aws-help-pager" /etc/profiles/per-user/$USER/bin/aws "$@"
   else
     # Not a help command, pass through normally
-    command aws "$@"
+    /etc/profiles/per-user/$USER/bin/aws "$@"
   fi
 }
