@@ -10,6 +10,7 @@ with lib.my; # FIXME
 
   let
     cfg = config.programs.kitty;
+    json = pkgs.formats.json {};
   in {
     programs.kitty = mkIf cfg.enable {
       enableGitIntegration = true;
@@ -72,6 +73,9 @@ with lib.my; # FIXME
           repo = "kitty_grab";
           rev = "969e363295b48f62fdcbf29987c77ac222109c41";
           hash = "sha256-DamZpYkyVjxRKNtW5LTLX1OU47xgd/ayiimDorVSamE=";
+        };
+        "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
+          extraPaths = ["../../src/github.com/kovidgoyal/kitty"]; # src-get kovidgoyal/kitty
         };
       }
     );

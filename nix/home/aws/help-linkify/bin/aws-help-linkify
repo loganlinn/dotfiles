@@ -15,10 +15,10 @@ SERVICE=""
 COMMAND=""
 
 if [[ $# -ge 1 ]]; then
-	SERVICE="$1"
+  SERVICE="$1"
 fi
 if [[ $# -ge 2 ]]; then
-	COMMAND="$2"
+  COMMAND="$2"
 fi
 
 # Track whether we're in specific sections

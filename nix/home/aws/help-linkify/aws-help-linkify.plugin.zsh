@@ -52,14 +52,16 @@ aws() {
       ((i++))
     done
 
+    local pager="${MANPAGER:-${PAGER:-less -R}}"
+    MANPAGER="${AWS_HELP_LINKIFY_BIN_DIR}/aws-help-linkify" command aws "$@"
+
     # Set context for the pager wrapper and use our custom pager
     # Note: `aws help` uses MANPAGER, not PAGER or AWS_PAGER!
     # Save original pager (check MANPAGER first, then PAGER) so aws-help-pager can use it
     # Use absolute path because Nix's aws wrapper resets PATH
     # Don't use 'command' builtin - let the wrapper run normally
-    AWS_HELP_SERVICE="$service" AWS_HELP_COMMAND="$command" AWS_HELP_ORIGINAL_PAGER="${MANPAGER:-${PAGER:-less -R}}" MANPAGER="${AWS_HELP_LINKIFY_BIN_DIR}/aws-help-pager" /etc/profiles/per-user/$USER/bin/aws "$@"
+    # AWS_HELP_SERVICE="$service" AWS_HELP_COMMAND="$command" AWS_HELP_MANPAGER="${MANPAGER:-${PAGER:-less -R}}" MANPAGER="${AWS_HELP_LINKIFY_BIN_DIR}/aws-help-pager" command aws "$@"
   else
-    # Not a help command, pass through normally
-    /etc/profiles/per-user/$USER/bin/aws "$@"
+    command aws "$@"
   fi
 }

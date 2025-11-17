@@ -6,8 +6,7 @@
   ...
 }:
 with builtins;
-with lib;
-let
+with lib; let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -15,8 +14,7 @@ let
     #---------------------------------------------------------
     ${readFile file}
   '';
-in
-{
+in {
   imports = [
     ./options.nix
     ./plugins.nix
@@ -32,7 +30,7 @@ in
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = { };
+    localVariables = {};
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -59,7 +57,7 @@ in
       "......" = "../../../../..";
       # https://github.com/sharkdp/bat/blob/master/README.md#highlighting---help-messages
       "-?" = ''--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain'';
-      "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
+      # "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
     };
     dirHashes = mergeAttrsList [
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
@@ -140,7 +138,7 @@ in
         ${lib.optionalString config.programs.bat.enable ''
           ##########################################################
 
-          eval "$(batman --export-env)"
+          # eval "$(batman --export-env)"
 
           # Disabled due to: 'ps: time: requires entitlement'
           # eval "$(batpipe)"
@@ -160,7 +158,8 @@ in
         bindkey '^Xg' git-widget
         bindkey '^X^H^K' describe-key-briefly
 
-        ${lib.optionalString
+        ${
+          lib.optionalString
           (
             config.programs.television.enable
             && config.programs.television.enableZshIntegration
