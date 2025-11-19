@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   home.packages = with pkgs; [
     aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
     awscli2
@@ -23,10 +22,10 @@
 
   programs.zsh = {
     plugins = [
-      {
-        name = "aws-help-linkify";
-        src = ./help-linkify;
-      }
+      # {
+      #   name = "aws-help-linkify";
+      #   src = ./help-linkify;
+      # }
     ];
     initContent = lib.mkAfter (lib.readFile ./aws-sso.zsh);
   };

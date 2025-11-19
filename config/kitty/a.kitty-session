@@ -1,6 +1,11 @@
-layout tall:bias=66
+new_os_window
 
 cd ~/src/github.com/gamma-app/gamma
 
-launch emacs -nw
-launch
+layout tall:bias=66
+launch --type=window
+launch --type=window
+
+launch --type=tab --dont-take-focus --cwd=current --title files yazi
+
+# focus_tab 0

@@ -78,7 +78,7 @@ with lib.my; {
           api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
         '';
 
-        orr = ''!gh open-review-requested "$@"'';
+        # orr = ''!gh open-review-requested "$@"'';
 
         open-review-requested = let
           searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
@@ -98,23 +98,25 @@ with lib.my; {
             preview-window = "down,85%";
           };
         in ''
-          !gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
-            query ReviewsRequested($searchQuery: String!) {
-              search(query: $searchQuery, type: ISSUE, first: 20) {
-                edges {
-                  node {
-                    ... on PullRequest {
-                      url
+          !f() {
+            gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
+              query ReviewsRequested($searchQuery: String!) {
+                search(query: $searchQuery, type: ISSUE, first: 20) {
+                  edges {
+                    node {
+                      ... on PullRequest {
+                        url
+                      }
                     }
                   }
                 }
               }
-            }
-          ' |
-          ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-          ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toGNUCommandLine {} fzfOpts)} |
-          tee /dev/stderr |
-          xargs ${openCmd}'';
+            ' |
+            ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
+            ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toGNUCommandLine {} fzfOpts)} |
+            tee /dev/stderr |
+            xargs ${openCmd};
+          }; f'';
       };
     };
   };
@@ -146,4 +148,46 @@ with lib.my; {
   xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
     config.floating.criteria = [{class = "gh-dash";}];
   };
+
+  home.packages = [
+    (let
+      openCmd =
+        if pkgs.stdenv.isDarwin
+        then "open"
+        else "xdg-open";
+      fzfOpts = {
+        multi = true;
+        select-1 = true;
+        exit-0 = true;
+        border = true;
+        ansi = true;
+        height = "50%";
+        layout = "reverse";
+        preview = "CLICOLOR_FORCE=1 gh pr view {}";
+        preview-window = "down,85%";
+      };
+    in
+      pkgs.writeShellScriptBin "gh-pr-review" ''
+
+        graphql_query='
+          query ReviewsRequested(limit: Int!) {
+            search(query: "type:pr review-requested:${config.my.github.username} state:open archived:false", type: ISSUE, first: $limit) {
+              edges {
+                node {
+                  ... on PullRequest {
+                    url
+                  }
+                }
+              }
+            }
+          }
+        '
+
+        gh api graphql -F limit=10 -f query="$graphql_query" |
+        ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
+        ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toGNUCommandLine {} fzfOpts)} |
+        tee /dev/stderr |
+        xargs ${openCmd};
+      '')
+  ];
 }
