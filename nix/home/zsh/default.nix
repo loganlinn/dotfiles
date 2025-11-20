@@ -6,7 +6,8 @@
   ...
 }:
 with builtins;
-with lib; let
+with lib;
+let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -14,7 +15,8 @@ with lib; let
     #---------------------------------------------------------
     ${readFile file}
   '';
-in {
+in
+{
   imports = [
     ./options.nix
     ./plugins.nix
@@ -30,7 +32,7 @@ in {
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = {};
+    localVariables = { };
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -135,6 +137,10 @@ in {
           command nix shell "''${@/#/nixpkgs#}"
         }
 
+        function @nixpkgs () {
+          command nix run "''${@/#/nixpkgs#}"
+        }
+
         ${lib.optionalString config.programs.bat.enable ''
           ##########################################################
 
@@ -158,8 +164,7 @@ in {
         bindkey '^Xg' git-widget
         bindkey '^X^H^K' describe-key-briefly
 
-        ${
-          lib.optionalString
+        ${lib.optionalString
           (
             config.programs.television.enable
             && config.programs.television.enableZshIntegration
