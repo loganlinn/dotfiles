@@ -6,8 +6,7 @@
   ...
 }:
 with builtins;
-with lib;
-let
+with lib; let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -15,8 +14,7 @@ let
     #---------------------------------------------------------
     ${readFile file}
   '';
-in
-{
+in {
   imports = [
     ./options.nix
     ./plugins.nix
@@ -32,7 +30,7 @@ in
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = { };
+    localVariables = {};
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -164,7 +162,8 @@ in
         bindkey '^Xg' git-widget
         bindkey '^X^H^K' describe-key-briefly
 
-        ${lib.optionalString
+        ${
+          lib.optionalString
           (
             config.programs.television.enable
             && config.programs.television.enableZshIntegration
@@ -182,6 +181,10 @@ in
         }
       '')
       (mkAfter ''
+        ##########################################################
+
+        [ "$TERM" = "xterm-kitty" ] && alias ssh="command kitty +kitten ssh"
+
         ##########################################################
 
         function edit-zshrc-local {
