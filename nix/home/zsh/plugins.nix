@@ -1,16 +1,6 @@
-{
-  inputs,
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-with lib;
-{
+{config, ...}: {
   programs.zsh = {
     sessionVariables = {
-      FORGIT_NO_ALIASES = "1";
-      FORGIT_CHECKOUT_BRANCH_BRANCH_GIT_OPTS = "--sort=-committerdate";
       ANTIDOTE_HOME = "${config.xdg.cacheHome}/antidote";
       ZFUNCDIR = "${config.my.flakeDirectory}/config/zsh/functions"; # zfunctions
     };
@@ -26,7 +16,6 @@ with lib;
         # "mattmc3/zsh-safe-rm"
         # "mehalter/zsh-nvim-appname" # nvapp
         # "romkatv/zsh-bench kind:path"
-        "wfxr/forgit"
         "zdharma-continuum/fast-syntax-highlighting kind:defer"
         # "zsh-users/zsh-history-substring-search"
         "marlonrichert/zsh-edit"

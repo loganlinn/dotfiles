@@ -4,8 +4,7 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (pkgs.stdenv.targetPlatform) isLinux;
   images = [
     "image/bmp"
@@ -306,14 +305,18 @@ let
     "vim.desktop"
     # "code.desktop"
   ];
-  viewer = [
-    "viewnior.desktop"
-    "imv.desktop"
-  ] ++ browser;
-  player = [
-    "vlc.desktop"
-    "mpv.desktop"
-  ] ++ browser;
+  viewer =
+    [
+      "viewnior.desktop"
+      "imv.desktop"
+    ]
+    ++ browser;
+  player =
+    [
+      "vlc.desktop"
+      "mpv.desktop"
+    ]
+    ++ browser;
   filemanager = [
     "thunar.desktop"
     "dolphin.desktop"
@@ -323,8 +326,7 @@ let
     "kitty-open.desktop"
     "emacs.desktop"
   ];
-in
-{
+in {
   options.xdg = {
     # a la  https://www.pathname.com/fhs/pub/fhs-2.3.html#USRSRCSOURCECODE2
     userDirs.sourceCode = mkOption {
@@ -345,7 +347,8 @@ in
       userDirs = optionalAttrs isLinux {
         enable = true;
         createDirectories = true;
-        inherit (config.my.userDIrs)
+        inherit
+          (config.my.userDirs)
           desktop
           documents
           download
@@ -379,7 +382,7 @@ in
             "x-scheme-handler/terminal" = "kitty.desktop"; # https://github.com/chmln/handlr#setting-default-terminal
           };
         associations.removed = {
-          "inode/directory" = [ "code.desktop" ];
+          "inode/directory" = ["code.desktop"];
         };
       };
     };

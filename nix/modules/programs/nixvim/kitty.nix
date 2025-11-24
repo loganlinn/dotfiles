@@ -3,9 +3,8 @@
   lib,
   pkgs,
   ...
-}:
-{
-  programs.nixvim = lib.mkIf config.programs.kitty.enable {
+}: {
+  programs.nixvim = {
     plugins.kitty-scrollback = {
       enable = true;
     };

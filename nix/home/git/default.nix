@@ -148,4 +148,43 @@ in {
       '';
     }
   ];
+
+  programs.zsh = {
+    sessionVariables = {
+      FORGIT_NO_ALIASES = "1";
+      FORGIT_CHECKOUT_BRANCH_BRANCH_GIT_OPTS = "--sort=-committerdate";
+    };
+    shellAliases = {
+      glog = "forgit::log ";
+      greflog = "forgit::reflog ";
+      gdiff = "forgit::diff ";
+      gshow = "forgit::show ";
+      gadd = "forgit::add ";
+      greset = "forgit::reset::head ";
+      gignore = "forgit::ignore ";
+      gattrs = "forgit::attributes ";
+      gfco = "forgit::checkout::file ";
+      gbco = "forgit::checkout::branch ";
+      gbrm = "forgit::branch::delete ";
+      gtag = "forgit::checkout::tag ";
+      gcco = "forgit::checkout::commit ";
+      grevert = "forgit::revert::commit ";
+      gclean = "forgit::clean ";
+      gss = "forgit::stash::show ";
+      gsp = "forgit::stash::push ";
+      gcherry = "forgit::cherry::pick ";
+      grebase = "forgit::rebase ";
+      gblame = "forgit::blame ";
+      gfix = "forgit::fixup ";
+      gsquash = "forgit::squash ";
+      greword = "forgit::reword ";
+    };
+
+    antidote = {
+      enable = mkDefault true;
+      plugins = [
+        "wfxr/forgit"
+      ];
+    };
+  };
 }

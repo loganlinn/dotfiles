@@ -68,7 +68,7 @@
       "KC_ESC",
       "KC_UP",
       "LT(3,KC_END)",
-      "KC_ESC",
+      "MT(MOD_LCTL | MOD_LSFT | MOD_LALT | MOD_LGUI,KC_ESC)",
       "KC_LALT",
       "KC_LGUI",
       "KC_NO",
