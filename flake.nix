@@ -91,7 +91,7 @@
           ];
         };
 
-        packages = import ./nix/pkgs {inherit pkgs;};
+        packages = import ./nix/pkgs {inherit inputs' pkgs;};
 
         overlayAttrs = {
           inherit (inputs'.home-manager.packages) home-manager;

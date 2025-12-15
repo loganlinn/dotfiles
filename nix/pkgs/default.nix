@@ -1,4 +1,8 @@
-{pkgs ? import <nixpkgs> {}, ...}: let
+{
+  inputs',
+  pkgs ? import <nixpkgs> {},
+  ...
+}: let
   inherit (pkgs) lib;
 
   paths = [
@@ -35,3 +39,6 @@
   ];
 in
   packages
+  // (lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+    darwin-rebuild = inputs'.nix-darwin.packages.darwin-rebuild;
+  })
