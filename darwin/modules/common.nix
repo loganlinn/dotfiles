@@ -12,7 +12,7 @@ with lib; let
 in {
   imports = [
     self.darwinModules.home-manager
-    ./system.nix
+    ./system
     ./homebrew.nix
   ];
 

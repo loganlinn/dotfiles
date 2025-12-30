@@ -4,8 +4,11 @@
   lib,
   ...
 }:
-with lib;
-{
+with lib; {
+  imports = [
+    ./file-associations.nix
+  ];
+
   system = {
     primaryUser = config.my.user.name or "logan";
 
