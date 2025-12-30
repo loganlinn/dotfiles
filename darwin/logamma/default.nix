@@ -109,24 +109,29 @@
       # "podlet"
       # "podman"
       # "podman-tui"
+      "jbangdev/tap/jbang"
     ];
     casks = [
       "1password-cli"
-      # "dbeaver-community"
+      "dagger/tap/container-use"
       "discord"
       "ghostty"
-      # "gimp"
       "hammerspoon"
       "hiddenbar"
       "inkscape"
-      # "karabiner-elements"
-      # "keybase"
+      "mocki-toki/formulae/barik"
+      "nikitabobko/tap/aerospace"
       "obs"
       "sf-symbols"
       "tailscale-app"
-      "dagger/tap/container-use"
-      "nikitabobko/tap/aerospace"
+      "temurin@17"
+      "visualvm"
+      "vlc"
       # "1password" # currently installed manually
+      # "dbeaver-community"
+      # "gimp"
+      # "karabiner-elements"
+      # "keybase"
     ];
   };
   ids.gids.nixbld = 30000;
@@ -173,6 +178,7 @@
       jc
       jnv
       kcat
+      mcat
       mkcert
       self'.packages.chrome-cli
       self'.packages.everything-fzf
