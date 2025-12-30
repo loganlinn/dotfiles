@@ -7,27 +7,27 @@ music_dir="${XDG_MUSIC_DIR:-$HOME/Music}"
 # Check if yt-dlp is available
 require() { hash "$1" &>/dev/null || exit 1; }
 if ! require yt-dlp; then
-	echo >&2 "Error: yt-dlp is not installed"
-	exit 1
+  echo >&2 "Error: yt-dlp is not installed"
+  exit 1
 fi
 
 # Show usage if no arguments
 if [[ $# -eq 0 ]]; then
-	echo >&2 "Usage: $(basename "$0") <URL> [URL...]"
-	echo >&2 "Downloads best quality audio as MP3 to: $music_dir"
-	exit 1
+  echo >&2 "Usage: $(basename "$0") <URL> [URL...]"
+  echo >&2 "Downloads best quality audio as MP3 to: $music_dir"
+  exit 1
 fi
 
 # Download audio
 yt-dlp \
-	-x \
-	--audio-format mp3 \
-	--audio-quality 0 \
-	--embed-metadata \
-	--no-playlist \
-	--no-write-thumbnail \
-	--no-write-info-json \
-	--no-write-description \
-	--no-write-playlist-metafiles \
-	-o "${music_dir}/%(title)s.%(ext)s" \
-	"$@"
+  -x \
+  --audio-format mp3 \
+  --audio-quality 0 \
+  --embed-metadata \
+  --no-playlist \
+  --no-write-thumbnail \
+  --no-write-info-json \
+  --no-write-description \
+  --no-write-playlist-metafiles \
+  -o "${music_dir}/%(fulltitle,title)s.%(ext)s" \
+  "$@"
