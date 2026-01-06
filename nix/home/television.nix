@@ -4,16 +4,22 @@
   lib,
   ...
 }:
-let
+with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
-  cfg = config.programs.television;
-in
-{
-  xdg.configFile."television/cable".source =
-    mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/television/cable";
+  cableDir = "${config.my.flakeDirectory}/config/television/cable";
+in {
+  xdg.configFile =
+    mapAttrs'
+    (name: _:
+      nameValuePair
+      "television/cable/${name}"
+      {
+        source = mkOutOfStoreSymlink "${cableDir}/${name}";
+      })
+    (builtins.readDir cableDir);
 
   programs.television = {
-    enable = lib.mkDefault true;
+    enable = mkDefault true;
     enableZshIntegration = true;
     settings = {
       # keybindings = {
