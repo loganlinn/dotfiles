@@ -110,6 +110,7 @@
       # "podman"
       # "podman-tui"
       "jbangdev/tap/jbang"
+      "wedow/tools/ticket"
     ];
     casks = [
       "1password-cli"
@@ -137,6 +138,23 @@
   ids.gids.nixbld = 30000;
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
   system.stateVersion = 5;
+
+  system.duti = {
+    enable = true;
+    settings = ''
+      org.gnu.Emacs .json all
+      org.gnu.Emacs .md   all
+      org.gnu.Emacs .nix  all
+      org.gnu.Emacs .org  all
+      org.gnu.Emacs .rst  all
+      org.gnu.Emacs .toml all
+      org.gnu.Emacs .txt  all
+      org.gnu.Emacs .yaml all
+      org.videolan.vlc .mkv all
+      org.videolan.vlc .mp3 all
+      org.videolan.vlc .mp4 all
+    '';
+  };
 
   home-manager.users.${config.my.user.name} = {pkgs, ...}: {
     imports = [
