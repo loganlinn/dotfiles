@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # @raycast.schemaVersion 1
-# @raycast.title Reload Hammerspoon Config
+# @raycast.title Hammerspoon - Reload
 # @raycast.mode silent
-# @raycast.icon 🔨
+# @raycast.icon 🔃
 # @raycast.author loganlinn
 # @raycast.authorURL https://github.com/loganlinn
 
