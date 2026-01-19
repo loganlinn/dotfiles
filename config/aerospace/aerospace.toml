@@ -212,17 +212,17 @@ ctrl-g = "mode main"
 
 
 [workspace-to-monitor-force-assignment]
-"1" = ["DELL U2723QE \\(2\\)", "primary"]
-"2" = ["DELL U2723QE \\(1\\)", "primary"]
-"3" = ["DELL U2723QE \\(2\\)", "primary"]
-"4" = ["DELL U2723QE \\(1\\)", "primary"]
-"5" = ["DELL U2723QE \\(2\\)", "primary"]
-"6" = ["DELL U2723QE \\(1\\)", "secondary", 'built-in']
-"7" = ["DELL U2723QE \\(2\\)", "secondary", 'built-in']
-"8" = ["DELL U2723QE \\(1\\)", "secondary", 'built-in']
-"9" = ["DELL U2723QE \\(2\\)", "secondary", 'built-in']
-"0" = ["DELL U2723QE \\(1\\)", "secondary", 'built-in']
-"E" = ["DELL U2723QE \\(2\\)", "primary"]
+"1" = ["DELL U2723QE \\(1\\)", "primary"]
+"2" = ["DELL U2723QE \\(2\\)", "primary"]
+"3" = ["DELL U2723QE \\(1\\)", "primary"]
+"4" = ["DELL U2723QE \\(2\\)", "primary"]
+"5" = ["DELL U2723QE \\(1\\)", "primary"]
+"6" = ["DELL U2723QE \\(2\\)", "secondary", 'built-in']
+"7" = ["DELL U2723QE \\(1\\)", "secondary", 'built-in']
+"8" = ["DELL U2723QE \\(2\\)", "secondary", 'built-in']
+"9" = ["DELL U2723QE \\(1\\)", "secondary", 'built-in']
+"0" = ["DELL U2723QE \\(2\\)", "secondary", 'built-in']
+"E" = ["DELL U2723QE \\(1\\)", "primary"]
 
 [[on-window-detected]]
 if.app-id = "com.google.Chrome"
@@ -336,7 +336,6 @@ check-further-callbacks = true
 if.app-id = "net.kovidgoyal.kitty-quick-access"
 run = "layout floating"
 
-
 [[on-window-detected]]
 if.app-id = "com.apple.systempreferences"
 run = "layout floating"
@@ -356,4 +355,4 @@ run = "layout tiling"
 
 [[on-window-detected]]
 if.app-id = "com.tinyspeck.slackmacgap"
-run = ["move-node-to-workspace S"]
+run = ["move-node-to-workspace 9"]
