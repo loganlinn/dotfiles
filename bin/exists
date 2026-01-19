@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+context_dir="."
+
+usage() {
+	cat <<-EOF
+		Usage: exist [-C PATH]
+		Filter paths from stdin to stdout that exist
+
+		Options:
+		  -C PATH    Use PATH as context directory (default: .)
+	EOF
+}
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	-h | --help)
+		usage
+		exit 0
+		;;
+	-C)
+		shift
+		context_dir="${1:-}"
+		if [[ -z "$context_dir" ]]; then
+			echo >&2 "Error: -C requires an argument"
+			exit 1
+		fi
+		;;
+	-*)
+		echo >&2 "Unknown option: $1"
+		exit 1
+		;;
+	*)
+		echo >&2 "Unexpected argument: $1"
+		usage >&2
+		exit 1
+		;;
+	esac
+	shift
+done
+
+# Ensure context_dir exists
+if [[ ! -d "$context_dir" ]]; then
+	echo >&2 "Error: Context directory does not exist: $context_dir"
+	exit 1
+fi
+
+# Read paths from stdin and check if they exist
+while IFS= read -r path; do
+	[[ -n "$path" ]] || continue
+	if [[ -e "$context_dir/$path" ]]; then
+		echo "$path"
+	fi
+done
