@@ -60,8 +60,8 @@ in {
       clcd = "mkdir -p ~/.claude && cd ~/.claude";
       clcfg = "editor ~/.claude/settings.json";
       clres = "claude --resume";
-      dk = "docker";
-      ddb-local = "aws dynamodb --endpoint-url http://localhost:${DYNAMODB_LOCAL_PORT: -8000}";
+      d = "docker";
+      ddb-local = "aws dynamodb --endpoint-url http://localhost:$${DYNAMODB_LOCAL_PORT: -8000}";
       ecr-login = "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com";
       gh = "env -u GITHUB_TOKEN gh";
       grtt = ''cd "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || git rev-parse --show-toplevel || echo .)"'';

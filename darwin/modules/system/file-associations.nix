@@ -40,7 +40,7 @@ in {
     (mkIf (cfg.settings != "") {
       environment.etc."duti/settings.duti".text = cfg.settings;
 
-      system.activationScripts.postUserActivation.text = ''
+      system.activationScripts.postActivation.text = ''
         echo "Setting file associations with duti..."
         ${pkgs.duti}/bin/duti /etc/duti/settings.duti
       '';

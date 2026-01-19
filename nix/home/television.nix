@@ -6,7 +6,7 @@
 }:
 with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
-  cableDir = "${config.my.flakeDirectory}/config/television/cable";
+  cableDir = ../../config/television/cable;
 in {
   xdg.configFile =
     mapAttrs'
