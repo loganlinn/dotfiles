@@ -49,6 +49,34 @@ in {
       flake = "nix flake";
       showkey = ''bindkey -L | ${pkgs.bat}/bin/bat'';
       sudo = "sudo ";
+      "?" = "whence -fs";
+      asu = "aws-sso-util";
+      asuL = "aws-sso-util logout";
+      asul = "aws-sso-util login";
+      b = "bun";
+      br = "bun run";
+      ch = "noglob clickhouse";
+      cl = "claude";
+      clcd = "mkdir -p ~/.claude && cd ~/.claude";
+      clcfg = "editor ~/.claude/settings.json";
+      clres = "claude --resume";
+      dk = "docker";
+      ddb-local = "aws dynamodb --endpoint-url http://localhost:${DYNAMODB_LOCAL_PORT: -8000}";
+      ecr-login = "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com";
+      gh = "env -u GITHUB_TOKEN gh";
+      grtt = ''cd "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || git rev-parse --show-toplevel || echo .)"'';
+      gist = "gh gist";
+      k = "kubectl";
+      kk = "kustomize";
+      li = "linearis";
+      lil = "linearis issues list";
+      m = "mise";
+      mr = "mise run";
+      mx = "mise exec";
+      nix = "noglob nix";
+      pbc = "pbcopy";
+      pbp = "pbpaste";
+      yolo = "claude --dangerously-skip-permissions";
     };
     shellGlobalAliases = {
       "..." = "../..";
@@ -90,6 +118,10 @@ in {
       })
     ];
     envExtra = ''
+      # if [[ -n "$CLAUDECODE" ]]; then
+      #   eval "$(direnv hook zsh)"
+      # fi
+
       [[ ! -f ~/.zshenv.local ]] || source ~/.zshenv.local
 
       # Ensure path arrays do not contain duplicates.
@@ -188,9 +220,42 @@ in {
         ##########################################################
 
         function edit-zshrc-local {
-          if ''${EDITOR:-vim} ~/.zshrc.local && source ~/.zshrc.local; then
-             >&2 echo "sourced ~/.zshrc.local"
+          local a b f
+          f=$HOME/.zshrc.local
+
+          echo "editing $f"
+          a=$(< "$f")
+          b=$(vipe <<<"$a") || return 1
+          if [[ "$a" == "$b" ]]; then
+            echo "no changes detected"
+            return 0
           fi
+
+          if hash delta &>/dev/null; then
+            diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b") | delta --paging=never
+          else
+            diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b")
+          fi
+          echo
+
+          if ! zsh -n <<<"$b"; then
+            echo >&2 "syntax error, aborting"
+            return 1
+          fi
+
+          printf '%s\n' "$b" > "$f"
+          echo "wrote: $f"
+
+          if hash gh &>/dev/null; then
+            local gistid=90b892b5069e95c2f893fab46177334a
+            gh gist edit "$gistid" "$f"
+            echo "updated: https://gist.github.com/$gistid"
+          fi
+
+          source "$f"
+          echo "sourced: $f"
+
+          echo 'done!'
         }
 
         alias zlocal='edit-zshrc-local'

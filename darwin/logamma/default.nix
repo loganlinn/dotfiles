@@ -120,6 +120,7 @@
       "hammerspoon"
       "hiddenbar"
       "inkscape"
+      "jordanbaird-ice"
       "mocki-toki/formulae/barik"
       "nikitabobko/tap/aerospace"
       "obs"
