@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+# mvln - Move file and create symbolic link at original location
+
+set -e
+
+usage() {
+    cat << EOF
+Usage: mvln [OPTIONS] <source> <destination>
+
+Moves <source> to <destination> and creates a symbolic link
+at the original <source> location pointing to <destination>
+
+Options:
+  -f, --force     Force overwrite if destination exists
+  -n, --dry-run   Show what would be done without doing it
+  -h, --help      Show this help message
+
+Examples:
+  mvln file.txt /archive/file.txt
+  mvln -f old.dat /backup/old.dat
+  mvln --dry-run ~/docs/large.pdf ~/archive/large.pdf
+EOF
+    exit "${1:-0}"
+}
+
+# Default options
+FORCE=false
+DRY_RUN=false
+SOURCE=""
+DEST=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--force)
+            FORCE=true
+            shift
+            ;;
+        -n|--dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -h|--help)
+            usage 0
+            ;;
+        -*)
+            echo "Error: Unknown option '$1'" >&2
+            echo "" >&2
+            usage 1
+            ;;
+        *)
+            if [ -z "$SOURCE" ]; then
+                SOURCE="$1"
+            elif [ -z "$DEST" ]; then
+                DEST="$1"
+            else
+                echo "Error: Too many arguments" >&2
+                echo "" >&2
+                usage 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Validate arguments
+if [ -z "$SOURCE" ] || [ -z "$DEST" ]; then
+    echo "Error: Both source and destination are required" >&2
+    echo "" >&2
+    usage 1
+fi
+
+# Check if source exists
+if [ ! -e "$SOURCE" ]; then
+    echo "Error: Source '$SOURCE' does not exist" >&2
+    exit 1
+fi
+
+# Get absolute source path
+SOURCE_ABS=$(readlink -f "$SOURCE")
+
+# Get destination directory
+DEST_DIR=$(dirname "$DEST")
+
+# Check if destination exists
+if [ -e "$DEST" ] && [ "$FORCE" = false ]; then
+    echo "Error: Destination '$DEST' already exists (use -f to force)" >&2
+    exit 1
+fi
+
+# Create parent directory if it doesn't exist
+if [ ! -d "$DEST_DIR" ]; then
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] Would create directory: $DEST_DIR"
+    else
+        mkdir -p "$DEST_DIR"
+        echo "Created directory: $DEST_DIR"
+    fi
+fi
+
+# NOW get the absolute destination path (after directory exists)
+DEST_ABS=$(cd "$DEST_DIR" && pwd)/$(basename "$DEST")
+
+# Perform the move and link
+if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would move: $SOURCE_ABS -> $DEST_ABS"
+    echo "[DRY RUN] Would create symlink: $SOURCE_ABS -> $DEST_ABS"
+else
+    # Move the file (with force if specified)
+    if [ "$FORCE" = true ]; then
+        mv -f "$SOURCE" "$DEST"
+    else
+        mv "$SOURCE" "$DEST"
+    fi
+
+    # Create symbolic link at original location
+    ln -s "$DEST_ABS" "$SOURCE_ABS"
+
+    echo "Moved: $SOURCE_ABS -> $DEST_ABS"
+    echo "Created symlink: $SOURCE_ABS -> $DEST_ABS"
+fi
