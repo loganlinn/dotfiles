@@ -182,9 +182,12 @@
       ../../nix/home/yt-dlp.nix
     ];
 
-    programs.man.generateCaches = false; # mandb takes too long build every generation switch...
+    # mandb takes too long build every generation switch...
+    # programs.fish.enable = true causes this to be set true by default
+    programs.man.generateCaches = false;
 
     home.packages = with pkgs; [
+      # step-cli
       (writeShellScriptBin "copilot-language-server" ''npx @github/copilot-language-server "$@"'')
       act
       actionlint
@@ -196,17 +199,14 @@
       google-cloud-sdk
       ipcalc
       jc
+      jjui
       jnv
+      jujutsu
       kcat
       mcat
       mkcert
       self'.packages.chrome-cli
       self'.packages.everything-fzf
-      # step-cli
-      # jujutsu
-      # jjui
-      # jj-fzf
-      # lazyjj
     ];
 
     home.stateVersion = "22.11";
