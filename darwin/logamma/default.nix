@@ -60,7 +60,6 @@
       "caddy"
       "cmake"
       "curl"
-      "d12frosted/emacs-plus/emacs-plus@31"
       "ddcctl"
       "direnv"
       # "drewdeponte/oss/git-ps-rs"
@@ -140,7 +139,6 @@
   ids.gids.nixbld = 30000;
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
   system.stateVersion = 5;
-
   system.duti = {
     enable = true;
     settings = ''
@@ -183,6 +181,8 @@
       ../../nix/home/yazi
       ../../nix/home/yt-dlp.nix
     ];
+
+    programs.man.generateCaches = false; # mandb takes too long build every generation switch...
 
     home.packages = with pkgs; [
       (writeShellScriptBin "copilot-language-server" ''npx @github/copilot-language-server "$@"'')
