@@ -4,19 +4,13 @@
   lib,
   ...
 }:
-with lib; let
+with lib;
+let
   inherit (config.lib.file) mkOutOfStoreSymlink;
-  cableDir = ../../config/television/cable;
-in {
-  xdg.configFile =
-    mapAttrs'
-    (name: _:
-      nameValuePair
-      "television/cable/${name}"
-      {
-        source = mkOutOfStoreSymlink "${cableDir}/${name}";
-      })
-    (builtins.readDir cableDir);
+in
+{
+  xdg.configFile."television/cable".source =
+    mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/television/cable";
 
   programs.television = {
     enable = mkDefault true;

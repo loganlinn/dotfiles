@@ -1,0 +1,68 @@
+[metadata]
+name = "launchctl"
+description = "Manage macOS Launch Agents and Daemons (launchctl)"
+requirements = ["launchctl"]
+
+[source]
+# Skip header, format: PID Status Label -> colorized "state  label"
+command = "launchctl list | tail -n +2 | awk '{pid=$1; label=$3; if(pid==\"-\") printf \"\\033[31mstopped\\033[0m\\t%s\\n\", label; else printf \"\\033[32mrunning\\033[0m\\t%s\\n\", label}'"
+output = "{strip_ansi|split:\t:1}"
+ansi = true
+sort_results = true
+# Refresh every 2 seconds to reflect state changes after actions
+watch_interval = 2000
+
+[preview]
+command = "~/.dotfiles/config/television/cable/launchctl-preview.sh '{split:\t:1}'"
+
+[ui]
+layout = "landscape"
+
+[ui.preview_panel]
+size = 60
+header = "{split:\t:1}"
+
+[keybindings]
+shortcut = "l"
+enter = "actions:info"
+ctrl-1 = "actions:enable"
+ctrl-2 = "actions:disable"
+ctrl-3 = "actions:start"
+ctrl-4 = "actions:stop"
+ctrl-5 = "actions:restart"
+ctrl-0 = "actions:unload"
+
+[actions.info]
+description = "Show detailed service info"
+command = "launchctl print gui/$(id -u)/{split:\t:1} 2>&1 || launchctl print user/$(id -u)/{split:\t:1} 2>&1 | less"
+mode = "fork"
+
+[actions.start]
+description = "Start the service"
+command = "launchctl kickstart -p gui/$(id -u)/{split:\t:1} 2>&1 || launchctl kickstart -p user/$(id -u)/{split:\t:1} 2>&1"
+mode = "fork"
+
+[actions.stop]
+description = "Stop the service"
+command = "launchctl kill SIGTERM gui/$(id -u)/{split:\t:1} 2>&1 || launchctl kill SIGTERM user/$(id -u)/{split:\t:1} 2>&1"
+mode = "fork"
+
+[actions.restart]
+description = "Restart the service (kill + start)"
+command = "launchctl kickstart -kp gui/$(id -u)/{split:\t:1} 2>&1 || launchctl kickstart -kp user/$(id -u)/{split:\t:1} 2>&1"
+mode = "fork"
+
+[actions.enable]
+description = "Enable the service (persists across reboots)"
+command = "launchctl enable gui/$(id -u)/{split:\t:1} 2>&1 || launchctl enable user/$(id -u)/{split:\t:1} 2>&1"
+mode = "fork"
+
+[actions.disable]
+description = "Disable the service (persists across reboots)"
+command = "launchctl disable gui/$(id -u)/{split:\t:1} 2>&1 || launchctl disable user/$(id -u)/{split:\t:1} 2>&1"
+mode = "fork"
+
+[actions.unload]
+description = "Unload/remove the service from launchd"
+command = "launchctl bootout gui/$(id -u)/{split:\t:1} 2>&1 || launchctl bootout user/$(id -u)/{split:\t:1} 2>&1"
+mode = "fork"

@@ -1,0 +1,65 @@
+[metadata]
+name = "claude-sessions"
+description = "Claude Code sessions running in Kitty terminal"
+requirements = ["kitty", "jq"]
+
+[source]
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-source.sh"
+# Output: formatted columns with session_id as last space-separated field
+output = "{split: :-1}"
+sort_results = false
+
+[preview]
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-preview.sh {split: :-1}"
+
+[ui]
+layout = "landscape"
+
+[ui.preview_panel]
+size = 55
+header = "Claude Session: {split: :-1}"
+
+[keybindings]
+# shortcut = "c"
+enter = "actions:focus"
+ctrl-t = "actions:transcript"
+ctrl-shift-t = "actions:tail"
+ctrl-e = "actions:edit"
+ctrl-n = "actions:cd"
+ctrl-y = "actions:copy"
+ctrl-j = "actions:json"
+
+[actions.focus]
+description = "Focus the Kitty window running this session"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh focus {}"
+mode = "execute"
+
+[actions.transcript]
+description = "View full transcript in bat/less"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh transcript {}"
+mode = "fork"
+
+[actions.tail]
+description = "Tail transcript live"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh tail {}"
+mode = "fork"
+
+[actions.edit]
+description = "Edit transcript in $EDITOR"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh edit {}"
+mode = "fork"
+
+[actions.cd]
+description = "Open session CWD in new Kitty tab"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh cd {}"
+mode = "execute"
+
+[actions.copy]
+description = "Copy full session ID to clipboard"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh copy {}"
+mode = "fork"
+
+[actions.json]
+description = "View session JSON in jless"
+command = "~/.dotfiles/config/kitty/claude-sessions-tv-action.sh json {}"
+mode = "fork"

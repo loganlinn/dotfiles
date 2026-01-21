@@ -6,7 +6,8 @@
   ...
 }:
 with builtins;
-with lib; let
+with lib;
+let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -14,7 +15,8 @@ with lib; let
     #---------------------------------------------------------
     ${readFile file}
   '';
-in {
+in
+{
   imports = [
     ./options.nix
     ./plugins.nix
@@ -30,7 +32,7 @@ in {
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = {};
+    localVariables = { };
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -56,16 +58,26 @@ in {
       b = "bun";
       br = "bun run";
       ch = "noglob clickhouse";
+
       cl = "claude";
+      cla = "claude --allow-dangerously-skip-permissions";
       clcd = "mkdir -p ~/.claude && cd ~/.claude";
       clcfg = "editor ~/.claude/settings.json";
       clres = "claude --resume";
+      yolo = "claude --dangerously-skip-permissions";
+      sonnet = "claude --model sonnet";
+      opus = "claude --model opus";
+      haiku = "claude --model haiku";
+      sonnet1m = "claude --model 'sonnet[1m]'";
+      opusplan = "claude --model opusplan";
+
       d = "docker";
       ddb-local = "aws dynamodb --endpoint-url http://localhost:$${DYNAMODB_LOCAL_PORT: -8000}";
       ecr-login = "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com";
       gh = "env -u GITHUB_TOKEN gh";
       grtt = ''cd "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || git rev-parse --show-toplevel || echo .)"'';
       gist = "gh gist";
+      hg = "kitten hyperlinked-grep";
       k = "kubectl";
       kk = "kustomize";
       li = "linearis";
@@ -76,7 +88,6 @@ in {
       nix = "noglob nix";
       pbc = "pbcopy";
       pbp = "pbpaste";
-      yolo = "claude --dangerously-skip-permissions";
     };
     shellGlobalAliases = {
       "..." = "../..";
@@ -91,30 +102,30 @@ in {
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
       (filterAttrs (_: value: value != null) config.my.userDirs)
       rec {
+        cache = ''''${XDG_CACHE_HOME:-$HOME/.cache}'';
+        cfg = ''''${XDG_CONFIG_HOME:-$HOME/.config}'';
+        cl = ''''$HOME/.claude'';
+        data = ''''${XDG_DATA_HOME:-$HOME/.local/share}'';
+        dl = ''''${XDG_DOWNLOADS_DIR:-$HOME/Downloads}'';
         doom = ''''${DOOMDIR:-${cfg}/doom}'';
         dot = ''''${DOTFILES_DIR:-$HOME/.dotfiles}'';
         emacs = ''''${EMACSDIR:-${cfg}/emacs}'';
         gh = ''${src}/github.com'';
+        kitty = ''''${XDG_CONFIG_HOME:-$HOME/.config}/kitty'';
         nvim = ''${cfg}/nvim''${NVIM_APPNAME:+"_$NVIM_APPNAME"}'';
         src = ''''${SRC_HOME:-$HOME/src}'';
-        wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
-        # xdg
-        cfg = ''''${XDG_CONFIG_HOME:-$HOME/.config}'';
-        cache = ''''${XDG_CACHE_HOME:-$HOME/.cache}'';
-        data = ''''${XDG_DATA_HOME:-$HOME/.local/share}'';
-        dl = ''''${XDG_DOWNLOADS_DIR:-$HOME/Downloads}'';
         state = ''''${XDG_DATA_HOME:-$HOME/.local/state}'';
+        tv = ''''${XDG_CONFIG_HOME:-$HOME/.config}/television'';
+        wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
       }
-      (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin rec {
-        apps = ''$HOME/Applications'';
-        appdata = ''$HOME/Library/Application Support'';
-        appscripts = ''$HOME/Library/Application Scripts'';
+      (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin {
+        app = ''$HOME/Library/Application Support'';
         launch = ''$HOME/Library/LaunchAgents'';
         logs = ''$HOME/Library/Logs'';
-        lib = ''$HOME/Library/Logs'';
+        lib = ''$HOME/Library'';
         prefs = ''$HOME/Library/Preferences'';
-        chromedata = ''${appdata}/Google/Chrome'';
-        firefoxdata = ''${appdata}/Firefox'';
+        chrome = ''$HOME/Library/Application Support/Google/Chrome'';
+        ff = ''$HOME/Library/Application Support/Firefox'';
       })
     ];
     envExtra = ''
@@ -194,8 +205,7 @@ in {
         bindkey '^Xg' git-widget
         bindkey '^X^H^K' describe-key-briefly
 
-        ${
-          lib.optionalString
+        ${lib.optionalString
           (
             config.programs.television.enable
             && config.programs.television.enableZshIntegration

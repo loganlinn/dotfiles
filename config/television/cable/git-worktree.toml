@@ -1,0 +1,21 @@
+[metadata]
+name = "git-worktree"
+description = "Select and change to a git worktree"
+requirements = ["git"]
+
+[source]
+command = "git worktree list"
+output = "{split:  :0}"
+
+[preview]
+command = '''
+path='{split:  :0}'
+branch='{split:[:1|split:]:0}'
+commit='{split:  :1|split: :0}'
+
+printf '\033[1;34mWorktree Path:\033[0m\n%s\n\n' "$path"
+printf '\033[1;34mBranch:\033[0m %s\n' "$branch"
+printf '\033[1;34mCommit:\033[0m %s\n\n' "$commit"
+printf '\033[1;34mGit Status:\033[0m\n'
+git -C "$path" status --short 2>/dev/null || echo "(no changes)"
+'''

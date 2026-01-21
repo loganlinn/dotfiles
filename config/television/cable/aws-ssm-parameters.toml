@@ -1,0 +1,54 @@
+[metadata]
+name = "aws-ssm-parameters"
+description = "List and preview AWS SSM Parameters"
+requirements = ["aws", "jq", "pbcopy"]
+
+[source]
+command = "aws ssm describe-parameters --query 'Parameters[*].[Name]' --output text"
+
+[preview]
+command = "aws ssm get-parameter --name {} --output json | jq -C ."
+
+[ui]
+orientation = "portrait"
+
+[ui.preview_panel]
+size = 20
+
+[keybindings]
+enter = "actions:view"
+ctrl-y = "actions:copy"
+# ctrl-e = "actions:edit"
+
+[actions.view]
+description = "View parameter value"
+command = "aws ssm get-parameter --name {} --with-decryption --query 'Parameter.Value' --output text"
+mode = "execute"
+
+[actions.copy]
+description = "Copy parameter value"
+command = "aws ssm get-parameter --name {} --with-decryption --query 'Parameter.Value' --output text | pbcopy; echo Copied {}"
+mode = "execute"
+
+# [actions.edit]
+# description = "Edit parameter value"
+# env = { NVIM_APPNAME = "television" }
+# command = """bash -c '
+#   current=$(aws ssm get-parameter --name "$1" --with-decryption --query 'Parameter.Value' --output text)
+#   edited=$(NVIM_APP_NAME=television vipe <<<"$current")
+#   if [[ $current != $edited ]]; then
+#     if gum confirm "Overwrite '$1'"; then 
+#       echo aws ssm put-parameter --name "$1" --value "$edited"
+#       echo Updated "$1"
+#     fi
+#   else
+#     echo "Skipped"
+#   fi
+# ' -s {}
+# """
+
+# TODO
+# [actions.delete]
+# description = "Delete parameter"
+# command = "aws ssm delete-parameter --name {}"
+# mode = "fork"
