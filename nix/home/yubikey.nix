@@ -7,7 +7,6 @@
   home.packages = with pkgs; [
     yubikey-manager
     yubikey-personalization
-    yubikey-personalization-gui
     yubico-pam
     yubioath-flutter # replaced yubioath-desktop
   ];

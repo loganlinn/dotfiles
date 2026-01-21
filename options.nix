@@ -167,19 +167,18 @@ in {
           XDG_SCREENSHOTS_DIR = toString cfg.userDirs.screenshots;
           XDG_CODE_DIR = toString cfg.userDirs.code;
         };
-
-      shellScripts = {
-        copy = mkDefault (
-          if isDarwin
-          then ''exec pbcopy''
-          else ''exec ${pkgs.xclip}/bin/xclip -sel clip''
-        );
-        pasta = mkDefault (
-          if isDarwin
-          then ''exec pbpaste''
-          else ''exec ${pkgs.xclip}/bin/xclip -o -sel clip''
-        );
-      };
+      # shellScripts = {
+      #   copy = mkDefault (
+      #     if isDarwin
+      #     then ''exec pbcopy''
+      #     else ''exec ${pkgs.xclip}/bin/xclip -sel clip''
+      #   );
+      #   pasta = mkDefault (
+      #     if isDarwin
+      #     then ''exec pbpaste''
+      #     else ''exec ${pkgs.xclip}/bin/xclip -o -sel clip''
+      #   );
+      # };
       fonts = {
         serif = mkDefault {
           package = pkgs.dejavu_fonts;

@@ -213,7 +213,7 @@
 
     programs.age-op.enable = true;
     programs.asciinema.enable = true;
-    programs.fish.enable = true;
+    programs.fish.enable = false; # not used currently and slows builds down a bit.
     programs.ghostty.enable = true;
     programs.nixvim = {
       enable = true;
@@ -225,6 +225,7 @@
     programs.passage.enable = true;
     programs.wezterm.enable = true;
     programs.zsh = {
+      enable = true;
       dirHashes = {
         gamma-app = "$HOME/src/github.com/gamma-app";
         gamma = "$HOME/src/github.com/gamma-app/gamma";
