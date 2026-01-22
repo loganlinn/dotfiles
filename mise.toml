@@ -79,7 +79,7 @@ depends = [
 
 [tasks."darwin:switch"]
 run = '''
-sudo -E mise darwin:rebuild --flake "${NIX_DARWIN_FLAKE:-{{config_root}}}" switch
+time sudo -E mise darwin:rebuild --flake "${NIX_DARWIN_FLAKE:-{{config_root}}}" switch
 '''
 
 [tasks."darwin:rebuild"]

@@ -469,6 +469,8 @@ for m in visual viopp; do
   done
 done
 
+bindkey '\eOP' run-help # f1
+
 # alt-left/right
 bindkey "^[[1;3D" backward-word
 bindkey "^[[1;3C" forward-word
