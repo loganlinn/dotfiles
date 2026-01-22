@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+
+# download - Download URL to current directory with sensible filename
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: download [OPTIONS] <url>
+
+Downloads <url> using curl (or wget fallback).
+Filename is determined from Content-Disposition header or URL basename.
+
+Options:
+  -d, --directory <dir>  Save to directory (default: current)
+  -o, --output <name>    Save as specific filename
+  -f, --force            Overwrite existing file
+  -q, --quiet            Suppress progress output
+  -h, --help             Show this help message
+
+Examples:
+  download https://example.com/file.tar.gz
+  download -d ~/Downloads https://example.com/file.tar.gz
+  download -o custom.tar.gz https://example.com/file.tar.gz
+  download -d /tmp -o latest.zip https://example.com/file.zip
+EOF
+  exit "${1:-0}"
+}
+
+# Default options
+DIRECTORY="."
+OUTPUT=""
+FORCE=false
+QUIET=false
+URL=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -d | --directory)
+    [[ $# -lt 2 ]] && {
+      echo >&2 "Error: -d requires an argument"
+      exit 1
+    }
+    DIRECTORY="$2"
+    shift 2
+    ;;
+  -o | --output)
+    [[ $# -lt 2 ]] && {
+      echo >&2 "Error: -o requires an argument"
+      exit 1
+    }
+    OUTPUT="$2"
+    shift 2
+    ;;
+  -f | --force)
+    FORCE=true
+    shift
+    ;;
+  -q | --quiet)
+    QUIET=true
+    shift
+    ;;
+  -h | --help)
+    usage 0
+    ;;
+  -*)
+    echo >&2 "Error: Unknown option '$1'"
+    echo >&2
+    usage 1
+    ;;
+  *)
+    if [[ -z "$URL" ]]; then
+      URL="$1"
+    else
+      echo >&2 "Error: Too many arguments"
+      echo >&2
+      usage 1
+    fi
+    shift
+    ;;
+  esac
+done
+
+# Validate
+[[ -z "$URL" ]] && {
+  echo >&2 "Error: URL is required"
+  echo >&2
+  usage 1
+}
+
+# Determine downloader
+if command -v curl &>/dev/null; then
+  DOWNLOADER=curl
+elif command -v wget &>/dev/null; then
+  DOWNLOADER=wget
+else
+  echo >&2 "Error: Neither curl nor wget found"
+  exit 1
+fi
+
+# Get filename from headers or URL
+get_filename() {
+  local url="$1"
+  local filename=""
+
+  if [[ "$DOWNLOADER" == "curl" ]]; then
+    # Try Content-Disposition header
+    filename=$(curl -sIL "$url" | grep -i '^content-disposition:' | sed -n "s/.*filename=[\"']\?\([^\"';]*\)[\"']\?.*/\1/ip" | tail -1 | tr -d '\r')
+  else
+    # wget: try server response
+    filename=$(wget --spider --server-response "$url" 2>&1 | grep -i 'content-disposition:' | sed -n "s/.*filename=[\"']\?\([^\"';]*\)[\"']\?.*/\1/ip" | tail -1)
+  fi
+
+  # Fallback to URL basename
+  if [[ -z "$filename" ]]; then
+    filename=$(basename "${url%%\?*}")
+    # Handle empty or slash-only
+    [[ -z "$filename" || "$filename" == "/" ]] && filename="download"
+  fi
+
+  echo "$filename"
+}
+
+# Determine output filename
+if [[ -n "$OUTPUT" ]]; then
+  FILENAME="$OUTPUT"
+else
+  FILENAME=$(get_filename "$URL")
+fi
+
+# Full path
+FILEPATH="$DIRECTORY/$FILENAME"
+
+# Create directory if needed
+[[ ! -d "$DIRECTORY" ]] && mkdir -p "$DIRECTORY"
+
+# Check existing file
+if [[ -e "$FILEPATH" ]] && [[ "$FORCE" == false ]]; then
+  echo >&2 "Error: '$FILEPATH' already exists (use -f to overwrite)"
+  exit 1
+fi
+
+# Download
+[[ "$QUIET" == false ]] && echo "Downloading: $URL -> $FILEPATH"
+
+if [[ "$DOWNLOADER" == "curl" ]]; then
+  curl_args=(-L -o "$FILEPATH")
+  [[ "$QUIET" == true ]] && curl_args+=(-s) || curl_args+=(--progress-bar)
+  curl "${curl_args[@]}" "$URL"
+else
+  wget_args=(-O "$FILEPATH")
+  [[ "$QUIET" == true ]] && wget_args+=(-q)
+  wget "${wget_args[@]}" "$URL"
+fi
+
+[[ "$QUIET" == false ]] && echo "Saved: $FILEPATH"
