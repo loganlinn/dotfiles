@@ -1,0 +1,255 @@
+[settings]
+experimental = true
+jobs = 4
+
+# ============================================================================
+# Composite Tasks
+# ============================================================================
+
+[tasks.clean]
+depends = "*:clean"
+
+[tasks.lint]
+depends = "*:lint"
+
+[tasks.check]
+depends = "*:check"
+
+[tasks.fmt]
+depends = "*:fmt"
+
+# ============================================================================
+# Mise Tasks
+# ============================================================================
+
+[tasks."mise:lint"]
+run = "mise fmt --check"
+
+# ============================================================================
+# Nix Tasks
+# ============================================================================
+
+[tasks."nix:fmt"]
+run = "nix fmt ."
+
+[tasks."nix:clean"]
+run = "fd -u -F result"
+
+[tasks."nix:check"]
+run = "nix flake check"
+
+[tasks."nix:update"]
+description = "Update flake inputs"
+usage = '''
+arg "[inputs]" var=#true help="Specific inputs to update (default: all)"
+'''
+run = '''
+nix flake update --commit-lock-file ${usage_inputs[@]+"${usage_inputs[@]}"}
+'''
+
+[tasks."nix:repl"]
+description = "Start flake repl"
+usage = '''
+arg "[file]" help="Repl file to load" default="./repl.nix"
+'''
+run = "nix repl --verbose --trace-verbose --file ${usage_file?}"
+
+[tasks."nix:develop"]
+description = "Enter nix development shell"
+usage = '''
+arg "[args]" var=#true help="Additional arguments"
+'''
+run = "nix develop --command zsh ${usage_args[@]}"
+
+# ----------------------------------------------------------------------------
+# nix-darwin
+# ----------------------------------------------------------------------------
+
+[tasks."darwin:link"]
+depends = [
+  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "/etc/nix-darwin/flake.nix"] },
+  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"] },
+]
+
+[tasks."darwin:bootstrap"]
+depends = [
+  "darwin:link",
+  "darwin:switch",
+]
+
+[tasks."darwin:switch"]
+run = '''
+sudo -E mise darwin:rebuild --flake "${NIX_DARWIN_FLAKE:-{{config_root}}}" switch
+'''
+
+[tasks."darwin:rebuild"]
+raw = true
+run = '''
+nix run --inputs-from {{config_root}} nix-darwin --
+'''
+
+[tasks."darwin:nix-daemon:restart"]
+description = "Restart nix daemon (supports both Determinate and NixOS daemons)"
+quiet = true
+run = '''
+svcs=$(sudo launchctl list | grep -o 'systems\.determinate\.nix-daemon\|org\.nixos\.nix-daemon')
+if [[ -z "$svcs" ]]; then
+  echo >&2 "No nix daemon service found"
+  exit 1
+fi
+for svc in $svcs; do
+  echo -e "\033[1;32m[restart]\033[0m $svc"
+  sudo launchctl kickstart -k "system/$svc"
+done
+'''
+
+# ----------------------------------------------------------------------------
+# nixos
+# ----------------------------------------------------------------------------
+
+[tasks."nixos:bootstrap"]
+depends = [
+  "nixos:link",
+  "nixos:switch",
+]
+
+[tasks."nixos:link"]
+depends = [
+  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "/etc/nixos/flake.nix"] },
+  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"] },
+]
+
+[tasks."nixos:switch"]
+run = 'sudo -E nixos-rebuild switch --flake {{config_root}}'
+
+# ============================================================================
+# Internal/Private Tasks
+# ============================================================================
+
+[tasks."_internal:link"]
+description = "Create a symlink (internal helper)"
+hide = true
+usage = '''
+arg "<path>" help="Path to link target (relative to config root)"
+arg "<link>" help="Link destination path"
+'''
+run = '''
+target="{{config_root}}/${usage_path?}"
+link="${usage_link?}"
+
+# Expand environment variables in link path
+link=$(eval echo "$link")
+
+# Resolve absolute paths
+target=$(readlink -f "$target" 2>/dev/null || realpath "$target" 2>/dev/null || echo "$target")
+current_link=$(readlink -f "$link" 2>/dev/null || echo "")
+
+if [ "$current_link" = "$target" ]; then
+  echo -e "\033[1m\033[34mexists:\033[0m \033[36m$target\033[0m <-- \033[34m$link\033[0m"
+else
+  echo -e "\033[1m\033[32mcreate:\033[0m \033[36m$target\033[0m <-- \033[32m$link\033[0m"
+  mkdir -p "$(dirname "$link")"
+  ln -s -i -T "$target" "$link"
+fi
+'''
+
+[tasks."_internal:link-global-justfile"]
+description = "Link justfile globally"
+hide = true
+run = "mise run _internal:link justfile ${XDG_CONFIG_HOME:-$HOME/.config}/just/justfile"
+
+# ============================================================================
+# Git Tasks (dotfiles context)
+# ============================================================================
+
+[tasks.git]
+description = "Run git commands in dotfiles context"
+usage = '''
+arg "[args]" var=#true help="Git arguments"
+'''
+run = "git ${usage_args[@]}"
+
+# ============================================================================
+# Credential & Secret Management
+# ============================================================================
+
+[tasks.netrc]
+description = "Generate .netrc from 1Password template"
+run = "op inject -i netrc.tpl -o ~/.netrc"
+
+[tasks.passage]
+description = "Run passage with auto-setup of identities"
+usage = '''
+arg "[args]" var=#true help="Passage arguments"
+'''
+run = '''
+hash passage
+
+PASSAGE_IDENTITIES_FILE="${PASSAGE_IDENTITIES_FILE:-$HOME/.passage/identities}"
+
+if [[ ! -f "$PASSAGE_IDENTITIES_FILE" ]]; then
+  echo "Installing ${PASSAGE_IDENTITIES_FILE} from 1Password..."
+  mkdir -p "$(dirname "$PASSAGE_IDENTITIES_FILE")"
+  op document get "passage identities" -o "$PASSAGE_IDENTITIES_FILE"
+  echo "Done."
+fi
+
+passage ${usage_args[@]+"${usage_args[@]}"}
+'''
+
+# ============================================================================
+# ClickHouse Tasks
+# ============================================================================
+
+[tasks."clickhouse:config"]
+description = "Generate ClickHouse client config from 1Password"
+usage = '''
+arg "[output]" help="Output path" default="~/.clickhouse-client/config.xml"
+'''
+run = '''
+output="${usage_output?}"
+output=$(eval echo "$output")
+mkdir -p "$(dirname "$output")"
+op inject -i config/clickhouse-client/config.xml -o "$output"
+'''
+
+[tasks."clickhouse:connect"]
+description = "Connect to ClickHouse instance"
+usage = '''
+arg "<connection>" help="Connection name"
+arg "[args]" var=#true help="Additional clickhouse-client arguments"
+'''
+run = '''
+wezterm cli set-tab-title "clickhouse://${usage_connection?}" 2>/dev/null || true
+clickhouse client --connection ${usage_connection?} ${usage_args[@]+"${usage_args[@]}"}
+'''
+
+# ============================================================================
+# QMK Tasks
+# ============================================================================
+
+[tasks."qmk:shell"]
+description = "Enter QMK firmware development shell"
+usage = '''
+arg "[args]" var=#true help="Additional nix-shell arguments"
+'''
+env.QMK_FIRMWARE_REPO = "{{env.HOME}}/src/github.com/loganlinn/qmk_firmware}"
+run = '''
+cd "${SRC_HOME}/${QMK_FIRMWARE_REPO}"
+nix-shell --quiet ${usage_args[@]+"${usage_args[@]}"}
+'''
+
+[tasks.qmk]
+description = "Run qmk command in QMK shell"
+usage = '''
+arg "[args]" var=#true help="QMK command arguments"
+'''
+run = "mise run qmk:shell --command \"qmk ${usage_args[@]}\""
+
+[tasks."qmk:compile"]
+description = "Compile QMK firmware"
+usage = '''
+arg "[keyboard]" help="Keyboard name" default="mode/m256wh"
+arg "[keymap]" help="Keymap name" default="loganlinn"
+'''
+run = "mise run qmk compile -kb ${usage_keyboard?} -km ${usage_keymap?}"

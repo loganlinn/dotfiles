@@ -39,6 +39,10 @@ in {
     gw = "git show";
   };
 
+  # home.packages = with pkgs; [
+  #   git-xet
+  # ];
+
   my.shellScripts = {
     gsw = ''
       declare -i n=''${1:-0}
@@ -67,14 +71,14 @@ in {
     git-spice.enable = true;
     lfs.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
-    includes = [
+    includes = let
+      delta-themes = pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
+        sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
+      };
+    in [
       {path = ./include/gitalias.txt;}
-      {
-        path = pkgs.fetchurl {
-          url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
-          sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
-        };
-      }
+      {path = delta-themes;}
       {path = privateConfigFile;}
     ];
     signing.key = mkDefault null; # let GnuPG decide
