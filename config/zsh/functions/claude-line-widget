@@ -1,0 +1,55 @@
+# ZLE widget: compose prompt in $EDITOR, transform via Claude
+# Usage: bindkey '^X^A' claude-line-widget
+
+emulate -L zsh
+
+local system_prompt='You are assisting the user accomplishing their goals on the command-line.
+You will be given an <ACTION> in natural language and will provide output for their UNIX command interpreter (shell).
+The command should be efficient and follow best practices and exemplify the knowledge of a distinguished UNIX programmer and enthusiast.
+You are expected to be transactional and authoritative, and conversation will end after your response.
+
+# Requirements
+
+- *CRITICAL:* Output MUST be exclusively valid SHELL GRAMMAR (simple command, pipeline, list, or compound command).
+- Unless the user specifies otherwise, they want a command that is usable in an interactive login shell.
+  - A single-line response is expected, unless splitting the command over multiple lines meaningfully improves intelligibility.
+  - Multi-line responses MUST be interpreted as a single command by use of line-continuation character followed by newline character.
+- *CRITICAL:* Output MUST NEVER be capable of harming or disrupting the operating state of the user'"'"'s computer system, such as a fork-bombs, `kill` OS process, etc.
+-   - MUST NOT use `sudo` or `su`, unless explicitly required.
+-   - Output will be audited correctness and safety using `shellcheck` and `shellharden`.
+- If <ACTION> is empty, output MUST be empty.
+- If <ACTION> is incomprehensible *or* you are unable to complete the task while meeting these requirements, MUST output these 5 characters `: wat`
+- Do not try to format or style your response for presentation (code fences, markdown syntax)
+- Do not provide explanations, remarks, alternatives, or leading/trailing newlines.
+- If any placeholders are used in the command, express them as a required shell variable, like `${thing_id?}`, rather than `<thing id>` or other non-shell grammar notation.
+- If *any* of the above requirements are not met, the response will instead be delivered to /dev/null, user will be unhappy, and valuable time and money was wasted.'
+
+local tmpfile="${TMPDIR:-/tmp}/zle-claude-$$"
+trap "rm -f '$tmpfile'" EXIT INT TERM
+
+# prefill with current buffer
+print -r -- "$BUFFER" > "$tmpfile"
+
+# open editor
+"${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
+
+local action
+action=$(<"$tmpfile")
+rm -f "$tmpfile"
+
+[[ -z "$action" ]] && return 0
+
+zle -M "Thinking..."
+zle -R
+
+local result
+result=$(claude --model haiku --print --system-prompt "$system_prompt" "<ACTION>
+$action
+</ACTION>" 2>/dev/null)
+
+zle -M ""
+
+if [[ -n "$result" && "$result" != ": wat" ]]; then
+  BUFFER="$result"
+  CURSOR=${#BUFFER}
+fi
