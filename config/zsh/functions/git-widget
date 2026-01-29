@@ -1,4 +1,4 @@
-# vim: ft=zsh
+# -*- mode: sh -*- vim: ft=zsh
 # function git-widget {
 emulate -L zsh
 {

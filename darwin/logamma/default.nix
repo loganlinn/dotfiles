@@ -229,8 +229,13 @@
     programs.zsh = {
       enable = true;
       dirHashes = {
-        gamma-app = "$HOME/src/github.com/gamma-app";
+        wt = "$HOME/src/github.com/gamma-app/gamma/.worktrees";
         gamma = "$HOME/src/github.com/gamma-app/gamma";
+        gdrive1 = "$HOME/Library/CloudStorage/GoogleDrive-logan.linn@gmail.com/My Drive";
+        gdrive2 = "$HOME/Library/CloudStorage/GoogleDrive-logan@gamma.app/My Drive";
+        dropbox = "$HOME/Library/CloudStorage/Dropbox";
+        logseq = "$HOME/Library/CloudStorage/GoogleDrive-logan.linn@gmail.com/My Drive/apps/logseq";
+        books = "$HOME/Library/CloudStorage/Dropbox/books";
       };
     };
     xdg.enable = true;

@@ -39,7 +39,7 @@ src-repo() {
     src-repo "https://$1"
     ;;
   */*) # i.e. loganlinn/dotfiles
-    "https://github.com/$1"
+    printf "%s" "https://github.com/$1"
     ;;
   *)
     (
