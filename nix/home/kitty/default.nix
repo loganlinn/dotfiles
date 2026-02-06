@@ -85,12 +85,6 @@ in {
           }
         }/smart_scroll.py";
       };
-      "kitty/kitty_grab".source = pkgs.fetchFromGitHub {
-        owner = "yurikhan";
-        repo = "kitty_grab";
-        rev = "969e363295b48f62fdcbf29987c77ac222109c41";
-        hash = "sha256-DamZpYkyVjxRKNtW5LTLX1OU47xgd/ayiimDorVSamE=";
-      };
       "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
         extraPaths = ["../../src/github.com/kovidgoyal/kitty"]; # src-get kovidgoyal/kitty
       };
@@ -129,9 +123,13 @@ in {
 
     activation = {
       kittyConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
-          mkdir -p "${config.xdg.configHome}/kitty"
-        touch "${config.xdg.configHome}/kitty/kitty.local.conf"
-        chmod 600 "${config.xdg.configHome}/kitty/kitty.local.conf"
+        run mkdir $VERBOSE_ARG -p "${config.xdg.configHome}/kitty"
+        run touch "${config.xdg.configHome}/kitty/kitty.local.conf"
+        run chmod $VERBOSE_ARG 600 "${config.xdg.configHome}/kitty/kitty.local.conf"
+
+        if ! [ -d "${config.xdg.configHome}/kitty/kitty_grab" ]; then
+          run ${pkgs.git}/bin/git clone $VERBOSE_ARG "https://github.com/loganlinn/kitty_grab.git" "${config.xdg.configHome}/kitty/kitty_grab"
+        fi
       '';
     };
   };
