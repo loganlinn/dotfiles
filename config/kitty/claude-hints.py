@@ -5,6 +5,12 @@ Matches messages starting with ⏺ and continuing with 2-space indented lines.
 
 import re
 
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[()][AB012]")
+
+
+def strip_ansi(text):
+    return ANSI_ESCAPE.sub("", text)
+
 
 def mark(text, args, Mark, extra_cli_args, *a):
     # Find message starts (⏺ at line beginning)
@@ -45,7 +51,7 @@ def mark(text, args, Mark, extra_cli_args, *a):
             if line.startswith("  "):
                 line = line[2:]
             cleaned.append(line.rstrip())
-        mark_text = "\n".join(cleaned).strip()
+        mark_text = strip_ansi("\n".join(cleaned).strip())
 
         if mark_text:
             yield Mark(idx, start, end, mark_text, {})

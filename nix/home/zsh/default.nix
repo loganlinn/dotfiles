@@ -86,6 +86,7 @@ in {
       nix = "noglob nix";
       pbc = "pbcopy";
       pbp = "pbpaste";
+      zcp = "zmv -C";
     };
     shellGlobalAliases = {
       "..." = "../..";
@@ -144,8 +145,13 @@ in {
     profileExtra = ''
       unalias run-help
       autoload -Uz run-help
+      autoload -Uz zmv
 
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
+    '';
+    initExtraBeforeCompInit = ''
+      typeset -U fpath # Ensure fpath does not contain duplicates.
+      fpath+=("$HOME/.local/share/zsh/site-functions")
     '';
     completionInit = ''
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.

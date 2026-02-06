@@ -253,3 +253,6 @@ arg "[keyboard]" help="Keyboard name" default="mode/m256wh"
 arg "[keymap]" help="Keymap name" default="loganlinn"
 '''
 run = "mise run qmk compile -kb ${usage_keyboard?} -km ${usage_keymap?}"
+
+[tasks."nix:gc"]
+run = "nix-collect-garbage --delete-old"

@@ -14,6 +14,7 @@ in {
     self.darwinModules.home-manager
     ./system
     ./homebrew.nix
+    ./zsh.nix
   ];
 
   config = {

@@ -1,5 +1,6 @@
 local HOME = os.getenv("HOME")
 local DOTFILES_DIR = os.getenv("DOTFILES_DIR") or (HOME .. "/.dotfiles")
+local NOTES_DIR = os.getenv("XDG_NOTES_DIR") or (HOME .. "/Notes")
 package.path = package.path .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?.lua"
 package.path = package.path .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?/init.lua"
 package.cpath = package.cpath .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?.so"
@@ -180,6 +181,27 @@ local aerospaceEnableToggle = function()
 	hs.execute("aerospace enable toggle", true)
 	alert("✅ aerospace enable toggle")
 end
+local emacsPanelToggle = function()
+	local args = {
+		"kitty",
+		"--title='org-roam'",
+		"--single-instance",
+		"--instance-group='org-roam'",
+		"--listen-on='unix:/tmp/org-roam.kitty.sock'",
+		"--directory='" .. NOTES_DIR .. "'",
+		"--config='alternate-theme.conf'",
+		"--grab-keyboard",
+		-- "--move-to-active-monitor",
+		-- "--toggle-visibility",
+		-- "--focus-policy=exclusive",
+		-- "--layer=top",
+		-- "--edge=center-sized",
+		-- "--lines=768px",
+		-- "--columns=1024px",
+		[[emacsclient --tty --create-frame --alternate-editor='' --eval '(org-roam-dailies-goto-today)' ]],
+	}
+	log.i(hs.execute(table.concat(args, " "), true))
+end
 
 local modes = {}
 modes.main = hotkey.modal.new(HYPER, "k")
@@ -187,7 +209,8 @@ modes.main:bind(HYPER, "space", focusKitty)
 modes.main:bind(HYPER, "return", appSwitcher({ name = "Google Chrome" }))
 modes.main:bind(HYPER, "a", appSwitcher({ bundleID = "com.fastmail.mac.Fastmail", name = "Fastmail" }))
 modes.main:bind(HYPER, "d", hs.toggleConsole)
-modes.main:bind(HYPER, "e", appSwitcher({ name = "Emacs" }))
+-- modes.main:bind(HYPER, "e", appSwitcher({ name = "Emacs" }))
+modes.main:bind(HYPER, "e", emacsPanelToggle)
 modes.main:bind(HYPER, "i", appSwitcher({ name = "Linear" }))
 modes.main:bind(HYPER, "k", function()
 	modes.main:exit()

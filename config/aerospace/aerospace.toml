@@ -356,3 +356,7 @@ run = "layout tiling"
 [[on-window-detected]]
 if.app-id = "com.tinyspeck.slackmacgap"
 run = ["move-node-to-workspace 9"]
+
+[[on-window-detected]]
+if.app-name-regex-substring = "CleanShot X"
+run = "layout floating"
