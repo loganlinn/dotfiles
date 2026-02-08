@@ -54,3 +54,4 @@ target/
 .clj-kondo/
 .env
 .aider*
+mise.local.toml
