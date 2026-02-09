@@ -11,12 +11,24 @@ local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/claude-line"
 local mode=new
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -p|--prev)     mode=prev; shift ;;
-    -r|--regen)    mode=regen; shift ;;
-    -e|--edit)     mode=edit; shift ;;
-    -c|--continue) mode=continue; shift ;;
-    -h|--help)
-      cat >&2 <<'EOF'
+  -p | --prev)
+    mode=prev
+    shift
+    ;;
+  -r | --regen)
+    mode=regen
+    shift
+    ;;
+  -e | --edit)
+    mode=edit
+    shift
+    ;;
+  -c | --continue)
+    mode=continue
+    shift
+    ;;
+  -h | --help)
+    cat >&2 <<'EOF'
 cle — Claude Line Editor
 Translate natural language into ZSH via Claude and push onto the edit buffer.
 
@@ -29,15 +41,22 @@ Usage: cle [prompt...]          translate natural language to ZSH
 
 With no args and no flags, opens $EDITOR for prompt input.
 EOF
-      return 0 ;;
-    -*) echo >&2 "cle: unknown option: $1"; return 1 ;;
-    *)  break ;;
+    return 0
+    ;;
+  -*)
+    echo >&2 "cle: unknown option: $1"
+    return 1
+    ;;
+  *) break ;;
   esac
 done
 
 # --- restore: replay last result, no LLM call ---
 if [[ "$mode" == prev ]]; then
-  [[ -f "$state_dir/last-result" ]] || { echo >&2 "cle: no previous result"; return 1; }
+  [[ -f "$state_dir/last-result" ]] || {
+    echo >&2 "cle: no previous result"
+    return 1
+  }
   print -z -- "$(<"$state_dir/last-result")"
   return 0
 fi
@@ -45,7 +64,8 @@ fi
 local system_prompt='You translate user intent into ZSH for the line editor buffer.
 
 OUTPUT:
-- Valid ZSH only. No prose, no markdown, no backticks, no explanation.
+- *Critical:* Valid ZSH only, as plain text.
+  - MUST NOT output Markdown formatting, i.e. code fences, or explainations, commentary, or questions to the user.
 - Prefer a single pipeline. Join multiple commands with `&&`.
 - Multi-line output MUST use `\` continuation or valid multi-line syntax (heredoc, loop, subshell).
 - Placeholders MUST be required shell variables: `${name?}` — never `<name>` or `NAME_HERE`.
@@ -67,49 +87,56 @@ STYLE:
 local action="" msg=""
 
 case "$mode" in
-  new)
-    if [[ $# -gt 0 ]]; then
-      action="$*"
-    else
-      local tmpfile="${TMPDIR:-/tmp}/cle-$$"
-      trap "rm -f '${tmpfile}'" EXIT INT TERM
-      : >"$tmpfile"
-      "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
-      action=$(<"$tmpfile")
-      rm -f "$tmpfile"
-    fi
-    ;;
-  regen)
-    [[ -f "$state_dir/last-prompt" ]] || { echo >&2 "cle: no previous prompt"; return 1; }
-    action=$(<"$state_dir/last-prompt")
-    ;;
-  edit)
-    local tmpfile="${TMPDIR:-/tmp}/cle-$$"
-    trap "rm -f '${tmpfile}'" EXIT INT TERM
-    if [[ -f "$state_dir/last-prompt" ]]; then
-      cp "$state_dir/last-prompt" "$tmpfile"
-    else
-      : >"$tmpfile"
-    fi
-    "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
-    action=$(<"$tmpfile")
-    rm -f "$tmpfile"
-    ;;
-  continue)
-    [[ -f "$state_dir/last-result" ]] || { echo >&2 "cle: no previous result"; return 1; }
+new)
+  if [[ $# -gt 0 ]]; then
+    action="$*"
+  else
     local tmpfile="${TMPDIR:-/tmp}/cle-$$"
     trap "rm -f '${tmpfile}'" EXIT INT TERM
     : >"$tmpfile"
     "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
     action=$(<"$tmpfile")
     rm -f "$tmpfile"
-    [[ -n "$action" ]] && msg="<CONTEXT>
+  fi
+  ;;
+regen)
+  [[ -f "$state_dir/last-prompt" ]] || {
+    echo >&2 "cle: no previous prompt"
+    return 1
+  }
+  action=$(<"$state_dir/last-prompt")
+  ;;
+edit)
+  local tmpfile="${TMPDIR:-/tmp}/cle-$$"
+  trap "rm -f '${tmpfile}'" EXIT INT TERM
+  if [[ -f "$state_dir/last-prompt" ]]; then
+    cp "$state_dir/last-prompt" "$tmpfile"
+  else
+    : >"$tmpfile"
+  fi
+  "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
+  action=$(<"$tmpfile")
+  rm -f "$tmpfile"
+  ;;
+continue)
+  [[ -f "$state_dir/last-result" ]] || {
+    echo >&2 "cle: no previous result"
+    return 1
+  }
+  local tmpfile="${TMPDIR:-/tmp}/cle-$$"
+  trap "rm -f '${tmpfile}'" EXIT INT TERM
+  : >"$tmpfile"
+  "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
+  action=$(<"$tmpfile")
+  rm -f "$tmpfile"
+  [[ -n "$action" ]] && msg="<CONTEXT>
 $(<"$state_dir/last-result")
 </CONTEXT>
 <ACTION>
 $action
-</ACTION>"
-    ;;
+</ACTION>
+"
+  ;;
 esac
 
 [[ -z "$action" ]] && return 0
@@ -122,6 +149,12 @@ echo >&2 "Thinking..."
 
 local result
 result=$(claude --model haiku --print --system-prompt "$system_prompt" "$msg" 2>/dev/null)
+
+# strip markdown code fences if model ignores instructions
+if [[ "${result[(f)1]}" == '```'* && "${result[(f)-1]}" == '```' ]]; then
+  result="${result#*$'\n'}"
+  result="${result%$'\n'\`\`\`}"
+fi
 
 if [[ -n "$result" && "$result" != ": wat" ]]; then
   [[ "$mode" != continue ]] && print -r -- "$action" >"$state_dir/last-prompt"
