@@ -6,7 +6,8 @@
   ...
 }:
 with builtins;
-with lib; let
+with lib;
+let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -14,7 +15,8 @@ with lib; let
     #---------------------------------------------------------
     ${readFile file}
   '';
-in {
+in
+{
   imports = [
     ./options.nix
     ./plugins.nix
@@ -30,7 +32,7 @@ in {
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = {};
+    localVariables = { };
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -46,7 +48,15 @@ in {
       aliasez = ''alias | fzf'';
       commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
       commandz = ''commands | fzf'';
-      flake = "nix flake";
+
+      show-path = ''print -rl -- $path | nl -ba | less'';
+      show-fpath = ''print -rl -- $fpath | nl -ba | less'';
+      show-aliases = ''print -rl -- $aliases | nl -ba | less'';
+      show-source = ''zsh -o SOURCE_TRACE -l -c true'';
+
+      path_prepend = ''[[ -d $1 ]] && path=($1 ''${path:#$1})'';
+      path_append = ''[[ -d $1 ]] && path=(''${path:#$1} $1)'';
+
       showkey = ''bindkey -L | ${pkgs.bat}/bin/bat'';
       sudo = "sudo ";
       "?" = "whence -fs";
@@ -207,13 +217,15 @@ in {
 
         zle -N git-widget
         zle -N git-open-widget
+        cle-widget() { BUFFER="cle"; zle accept-line }
+        zle -N cle-widget
 
         bindkey '^X^G' git-widget
         bindkey '^Xg' git-widget
+        bindkey '^X^X' cle-widget
         bindkey '^X^H^K' describe-key-briefly
 
-        ${
-          lib.optionalString
+        ${lib.optionalString
           (
             config.programs.television.enable
             && config.programs.television.enableZshIntegration
@@ -237,46 +249,42 @@ in {
 
         ##########################################################
 
-        function edit-zshrc-local {
-          local a b f
-          f=$HOME/.zshrc.local
+        function zshrc_audit_local() {
+          emulate -L zsh
+          setopt typeset_silent
 
-          echo "editing $f"
-          a=$(< "$f")
-          b=$(vipe <<<"$a") || return 1
-          if [[ "$a" == "$b" ]]; then
-            echo "no changes detected"
-            return 0
-          fi
+          local tmp1 tmp2
+          tmp1=$(mktemp) || return 1
+          tmp2=$(mktemp) || { rm -f $tmp1; return 1; }
 
-          if hash delta &>/dev/null; then
-            diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b") | delta --paging=never
-          else
-            diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b")
-          fi
-          echo
+          # Snapshot state BEFORE
+          {
+            print -r -- "## vars"; typeset -pm
+            print -r -- "## aliases"; alias
+            print -r -- "## functions"; functions | sed 's/ .*$//'
+            print -r -- "## options"; setopt
+            print -r -- "## path"; print -rl -- $path
+          } >| $tmp1
 
-          if ! zsh -n <<<"$b"; then
-            echo >&2 "syntax error, aborting"
-            return 1
-          fi
+          # Source local
+          source ~/.zshrc.local
 
-          printf '%s\n' "$b" > "$f"
-          echo "wrote: $f"
+          # Snapshot state AFTER
+          {
+            print -r -- "## vars"; typeset -pm
+            print -r -- "## aliases"; alias
+            print -r -- "## functions"; functions | sed 's/ .*$//'
+            print -r -- "## options"; setopt
+            print -r -- "## path"; print -rl -- $path
+          } >| $tmp2
 
-          if hash gh &>/dev/null; then
-            local gistid=90b892b5069e95c2f893fab46177334a
-            gh gist edit "$gistid" "$f"
-            echo "updated: https://gist.github.com/$gistid"
-          fi
+          # Show what changed
+          diff -u $tmp1 $tmp2 | less
 
-          source "$f"
-          echo "sourced: $f"
-
-          echo 'done!'
+          rm -f $tmp1 $tmp2
         }
 
-        alias zlocal='edit-zshrc-local'
+        ########################################################## 
 
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '')

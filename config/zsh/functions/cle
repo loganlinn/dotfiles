@@ -1,0 +1,133 @@
+# -*- mode: sh -*- vim: ft=zsh
+# cle — Claude Line Editor
+# Translates natural language into ZSH commands via Claude.
+# Result is pushed onto ZLE buffer stack via `print -z`.
+
+emulate -L zsh
+
+local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/claude-line"
+[[ -d "$state_dir" ]] || mkdir -p "$state_dir"
+
+local mode=new
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -p|--prev)     mode=prev; shift ;;
+    -r|--regen)    mode=regen; shift ;;
+    -e|--edit)     mode=edit; shift ;;
+    -c|--continue) mode=continue; shift ;;
+    -h|--help)
+      cat >&2 <<'EOF'
+cle — Claude Line Editor
+Translate natural language into ZSH via Claude and push onto the edit buffer.
+
+Usage: cle [prompt...]          translate natural language to ZSH
+       cle -p|--prev            restore last result (no LLM call)
+       cle -r|--regen           regenerate from last prompt
+       cle -e|--edit            edit last prompt in $EDITOR, then regenerate
+       cle -c|--continue        follow-up: refine last result with new instruction
+       cle -h|--help            this help
+
+With no args and no flags, opens $EDITOR for prompt input.
+EOF
+      return 0 ;;
+    -*) echo >&2 "cle: unknown option: $1"; return 1 ;;
+    *)  break ;;
+  esac
+done
+
+# --- restore: replay last result, no LLM call ---
+if [[ "$mode" == prev ]]; then
+  [[ -f "$state_dir/last-result" ]] || { echo >&2 "cle: no previous result"; return 1; }
+  print -z -- "$(<"$state_dir/last-result")"
+  return 0
+fi
+
+local system_prompt='You translate user intent into ZSH for the line editor buffer.
+
+OUTPUT:
+- Valid ZSH only. No prose, no markdown, no backticks, no explanation.
+- Prefer a single pipeline. Join multiple commands with `&&`.
+- Multi-line output MUST use `\` continuation or valid multi-line syntax (heredoc, loop, subshell).
+- Placeholders MUST be required shell variables: `${name?}` — never `<name>` or `NAME_HERE`.
+- Empty input → empty output.
+- Incomprehensible or unsafe input → exactly `: wat`
+- When <CONTEXT> is present, it contains a previous command. Modify it according to <ACTION>.
+
+SAFETY:
+- NEVER output destructive system commands (fork-bombs, `rm -rf /`, `kill` system processes, disk wipes).
+- No `sudo`/`su` unless the user explicitly requests privilege escalation.
+- Prefer non-destructive alternatives: `ls` before `rm`, dry-run flags when available.
+
+STYLE:
+- Idiomatic, concise ZSH. Prefer builtins and standard POSIX utilities.
+- Compose small tools via pipes over monolithic commands.
+- Quote variables. Prefer `${var}` over `$var` in ambiguous contexts.
+- One command should be trivially recallable from shell history.'
+
+local action="" msg=""
+
+case "$mode" in
+  new)
+    if [[ $# -gt 0 ]]; then
+      action="$*"
+    else
+      local tmpfile="${TMPDIR:-/tmp}/cle-$$"
+      trap "rm -f '${tmpfile}'" EXIT INT TERM
+      : >"$tmpfile"
+      "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
+      action=$(<"$tmpfile")
+      rm -f "$tmpfile"
+    fi
+    ;;
+  regen)
+    [[ -f "$state_dir/last-prompt" ]] || { echo >&2 "cle: no previous prompt"; return 1; }
+    action=$(<"$state_dir/last-prompt")
+    ;;
+  edit)
+    local tmpfile="${TMPDIR:-/tmp}/cle-$$"
+    trap "rm -f '${tmpfile}'" EXIT INT TERM
+    if [[ -f "$state_dir/last-prompt" ]]; then
+      cp "$state_dir/last-prompt" "$tmpfile"
+    else
+      : >"$tmpfile"
+    fi
+    "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
+    action=$(<"$tmpfile")
+    rm -f "$tmpfile"
+    ;;
+  continue)
+    [[ -f "$state_dir/last-result" ]] || { echo >&2 "cle: no previous result"; return 1; }
+    local tmpfile="${TMPDIR:-/tmp}/cle-$$"
+    trap "rm -f '${tmpfile}'" EXIT INT TERM
+    : >"$tmpfile"
+    "${EDITOR:-vim}" "$tmpfile" </dev/tty >/dev/tty
+    action=$(<"$tmpfile")
+    rm -f "$tmpfile"
+    [[ -n "$action" ]] && msg="<CONTEXT>
+$(<"$state_dir/last-result")
+</CONTEXT>
+<ACTION>
+$action
+</ACTION>"
+    ;;
+esac
+
+[[ -z "$action" ]] && return 0
+
+[[ -z "$msg" ]] && msg="<ACTION>
+$action
+</ACTION>"
+
+echo >&2 "Thinking..."
+
+local result
+result=$(claude --model haiku --print --system-prompt "$system_prompt" "$msg" 2>/dev/null)
+
+if [[ -n "$result" && "$result" != ": wat" ]]; then
+  [[ "$mode" != continue ]] && print -r -- "$action" >"$state_dir/last-prompt"
+  print -r -- "$result" >"$state_dir/last-result"
+  print -z -- "$result"
+else
+  echo >&2 "cle: no result"
+  return 1
+fi

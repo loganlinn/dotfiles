@@ -1,0 +1,98 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "e09b6517-d64b-413c-b3d5-6fde4ca9edfa",
+        "type": "custom-command",
+        "color": "brightCyan",
+        "commandPath": "/usr/bin/env bash -c 'p=\"$(basename \"$(basename \"$(git rev-parse --show-toplevel)\")\")/$(git rev-parse --show-prefix)\"; echo \"${p%/}\"'"
+      },
+      {
+        "id": "f35621e0-8545-4783-866f-1d9d4b1a4edc",
+        "type": "custom-text",
+        "customText": " on "
+      },
+      {
+        "id": "7",
+        "type": "git-branch",
+        "color": "brightMagenta",
+        "metadata": {
+          "hideNoGit": "true"
+        }
+      },
+      {
+        "id": "cbab4d4a-21bc-4e48-ba31-33a955a293b7",
+        "type": "custom-text",
+        "color": "brightGreen",
+        "customText": " ("
+      },
+      {
+        "id": "5",
+        "type": "git-worktree",
+        "color": "brightGreen"
+      },
+      {
+        "id": "b3609eed-3e21-45d6-810d-d8a65fc6c443",
+        "type": "custom-text",
+        "color": "brightGreen",
+        "customText": ")"
+      }
+    ],
+    [
+      {
+        "id": "0c659f0c-0dc7-467e-91b6-36d179dd10cd",
+        "type": "context-percentage-usable",
+        "rawValue": true
+      },
+      {
+        "id": "742a9e99-bdf5-4a74-acfd-d5efda10aee0",
+        "type": "separator",
+        "character": "|"
+      },
+      {
+        "id": "67284685-d8f0-4078-b439-0a68466d3cf7",
+        "type": "session-cost",
+        "color": "yellow",
+        "rawValue": true
+      },
+      {
+        "id": "5c983126-87e8-479f-8fd5-fa95427d2adb",
+        "type": "separator"
+      },
+      {
+        "id": "a530b8e8-840a-4a7f-90cc-86b0f8f52c02",
+        "type": "model",
+        "rawValue": true
+      },
+      {
+        "id": "5f1f6e70-70c9-45e7-b4d6-9f18acc68865",
+        "type": "separator"
+      },
+      {
+        "id": "5d8d31ef-18e2-4160-8b58-9b09635b9ad0",
+        "type": "version",
+        "color": "brightBlack",
+        "rawValue": false
+      }
+    ],
+    []
+  ],
+  "flexMode": "full-until-compact",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false
+  }
+}
