@@ -4,7 +4,8 @@
   pkgs,
   ...
 }:
-with lib; {
+with lib;
+{
   config = {
     programs.emacs = {
       enable = mkDefault true;
@@ -25,19 +26,20 @@ with lib; {
       #
       #
       package = mkDefault pkgs.emacs-unstable; # most recent git tag
-      extraPackages = epkgs: [epkgs.vterm];
+      extraPackages = epkgs: [ epkgs.vterm ];
     };
 
     services.emacs = {
       package = mkDefault config.programs.emacs.package;
       client = {
         enable = mkDefault true;
-        arguments = ["-c"];
+        arguments = [ "-c" ];
       };
     };
 
-    home.packages = [
-      (pkgs.writeShellScriptBin "magit" (readFile ../../../bin/magit))
+    home.packages = with pkgs; [
+      (writeShellScriptBin "magit" (readFile ../../../bin/magit))
+      emacs-lsp-booster
     ];
 
     programs.zsh.initContent = ''

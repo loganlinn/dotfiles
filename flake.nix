@@ -13,6 +13,7 @@
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
+    emacs-lsp-booster.url = "github:slotThe/emacs-lsp-booster-flake";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
@@ -53,12 +54,13 @@
     quickshell.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs @ {
-    self,
-    flake-parts,
-    ...
-  }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
+  outputs =
+    inputs@{
+      self,
+      flake-parts,
+      ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         ./flake-module
         flake-parts.flakeModules.easyOverlay
@@ -71,85 +73,90 @@
         "aarch64-darwin"
       ];
 
-      perSystem = ctx @ {
-        inputs',
-        self',
-        config,
-        system,
-        pkgs,
-        lib,
-        ...
-      }: {
-        imports = [./options.nix];
+      perSystem =
+        ctx@{
+          inputs',
+          self',
+          config,
+          system,
+          pkgs,
+          lib,
+          ...
+        }:
+        {
+          imports = [ ./options.nix ];
 
-        _module.args.pkgs = import inputs.nixpkgs {
-          inherit system;
-          config = import ./config/nixpkgs/config.nix;
-          overlays = [
-            self.overlays.default
-            inputs.emacs-overlay.overlays.default
-          ];
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            config = import ./config/nixpkgs/config.nix;
+            overlays = [
+              self.overlays.default
+              inputs.emacs-overlay.overlays.default
+              inputs.emacs-lsp-booster.overlays.default
+            ];
+          };
+
+          packages = import ./nix/pkgs { inherit inputs' pkgs; };
+
+          overlayAttrs = {
+            inherit (inputs'.home-manager.packages) home-manager;
+            inherit (inputs'.emacs.packages) emacs-unstable;
+            inherit (inputs'.agenix.packages) agenix;
+            fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
+              version = inputs.fzf-git-sh.shortRev;
+              src = inputs.fzf-git-sh;
+            });
+          };
+
+          formatter = pkgs.alejandra;
+
+          devShells.default = pkgs.mkShell {
+            inputsFrom = [
+              config.flake-root.devShell # sets FLAKE_ROOT
+            ];
+            nativeBuildInputs = [
+              config.formatter
+              inputs'.agenix.packages.agenix
+              inputs'.home-manager.packages.home-manager
+              inputs'.opnix.packages.default
+              pkgs.age
+              pkgs.just
+              pkgs.sops
+              pkgs.ssh-to-age
+            ];
+          };
         };
 
-        packages = import ./nix/pkgs {inherit inputs' pkgs;};
-
-        overlayAttrs = {
-          inherit (inputs'.home-manager.packages) home-manager;
-          inherit (inputs'.emacs.packages) emacs-unstable;
-          inherit (inputs'.agenix.packages) agenix;
-          fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
-            version = inputs.fzf-git-sh.shortRev;
-            src = inputs.fzf-git-sh;
-          });
+      flake =
+        let
+          inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
+        in
+        {
+          nixosConfigurations.framework = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [ ./nixos/framework/configuration.nix ];
+          };
+          nixosConfigurations.nijusan = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [ ./nixos/nijusan/configuration.nix ];
+          };
+          darwinConfigurations.patchbook = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [ ./darwin/patchbook.nix ];
+          };
+          darwinConfigurations.logamma = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [ ./darwin/logamma ];
+          };
+          homeConfigurations."logan@nijusan" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [ ./home-manager/nijusan.nix ];
+          };
+          homeConfigurations."logan@wijusan" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [ ./home-manager/wijusan.nix ];
+          };
         };
-
-        formatter = pkgs.alejandra;
-
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            config.flake-root.devShell # sets FLAKE_ROOT
-          ];
-          nativeBuildInputs = [
-            config.formatter
-            inputs'.agenix.packages.agenix
-            inputs'.home-manager.packages.home-manager
-            inputs'.opnix.packages.default
-            pkgs.age
-            pkgs.just
-            pkgs.sops
-            pkgs.ssh-to-age
-          ];
-        };
-      };
-
-      flake = let
-        inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
-      in {
-        nixosConfigurations.framework = mkNixosSystem {
-          system = "x86_64-linux";
-          modules = [./nixos/framework/configuration.nix];
-        };
-        nixosConfigurations.nijusan = mkNixosSystem {
-          system = "x86_64-linux";
-          modules = [./nixos/nijusan/configuration.nix];
-        };
-        darwinConfigurations.patchbook = mkDarwinSystem {
-          system = "aarch64-darwin";
-          modules = [./darwin/patchbook.nix];
-        };
-        darwinConfigurations.logamma = mkDarwinSystem {
-          system = "aarch64-darwin";
-          modules = [./darwin/logamma];
-        };
-        homeConfigurations."logan@nijusan" = mkHomeConfiguration {
-          system = "x86_64-linux";
-          modules = [./home-manager/nijusan.nix];
-        };
-        homeConfigurations."logan@wijusan" = mkHomeConfiguration {
-          system = "x86_64-linux";
-          modules = [./home-manager/wijusan.nix];
-        };
-      };
 
       debug = true; # used by mkReplAttrs
     };

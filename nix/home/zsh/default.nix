@@ -159,15 +159,17 @@ in
 
       [[ ! -f ~/.zprofile.local ]] || source ~/.zprofile.local
     '';
-    initExtraBeforeCompInit = ''
-      typeset -U fpath # Ensure fpath does not contain duplicates.
-      fpath+=("$HOME/.local/share/zsh/site-functions")
-    '';
     completionInit = ''
       # Ensure XON signals are disabled to allow Ctrl-Q/Ctrl-S to be bound.
       stty -ixon
     '';
     initContent = mkMerge [
+      (mkOrder 500 # pre-compinit
+        ''
+          typeset -U fpath # Ensure fpath does not contain duplicates.
+          fpath+=("$HOME/.local/share/zsh/site-functions")
+        ''
+      )
       (mkBefore ''
         unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
         setopt IGNOREEOF            # Do not exit on end-of-file <C-d>

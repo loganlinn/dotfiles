@@ -3,12 +3,13 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   home-manager.sharedModules = lib.singleton (
-    {pkgs, ...}: {
+    { pkgs, ... }:
+    {
       programs.zsh = {
-        shellAliases = {};
-        initExtra = ''
+        initContent = ''
           pbtee() { tee >(pbcopy); }
           pbcopyenv() { printenv "$@" | pbcopy; }
           pbpasteenv() { export "''${1?}"="$(pbpaste)"; }
