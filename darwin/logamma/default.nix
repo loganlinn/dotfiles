@@ -211,6 +211,7 @@
         mkcert
         self'.packages.chrome-cli
         self'.packages.everything-fzf
+        typescript-language-server
       ];
 
       home.stateVersion = "22.11";
