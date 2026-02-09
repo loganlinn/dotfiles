@@ -4,7 +4,8 @@
   self',
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.darwinModules.common
     ../modules/aerospace
@@ -158,86 +159,87 @@
     '';
   };
 
-  home-manager.users.${config.my.user.name} = {pkgs, ...}: {
-    imports = [
-      self.homeModules.common
-      self.homeModules.nix-colors
-      # self.homeModules.opnix
-      ../../nix/home/aws
-      ../../nix/home/dev
-      ../../nix/home/dev/kubernetes.nix
-      ../../nix/home/dev/lua.nix
-      ../../nix/home/dev/javascript.nix
-      ../../nix/home/docker.nix
-      ../../nix/home/doom
-      ../../nix/home/ghostty.nix
-      ../../nix/home/just
-      ../../nix/home/neovide.nix
-      ../../nix/home/nixvim
-      ../../nix/home/pet.nix
-      ../../nix/home/pretty.nix
-      ../../nix/home/television.nix
-      ../../nix/home/terraform.nix
-      ../../nix/home/tmux.nix
-      ../../nix/home/wezterm
-      ../../nix/home/yazi
-      ../../nix/home/yt-dlp.nix
-    ];
+  home-manager.users.${config.my.user.name} =
+    { pkgs, ... }:
+    {
+      imports = [
+        self.homeModules.common
+        self.homeModules.nix-colors
+        # self.homeModules.opnix
+        ../../nix/home/aws
+        ../../nix/home/dev
+        ../../nix/home/dev/kubernetes.nix
+        ../../nix/home/dev/lua.nix
+        ../../nix/home/dev/javascript.nix
+        ../../nix/home/docker.nix
+        ../../nix/home/doom
+        ../../nix/home/ghostty.nix
+        ../../nix/home/just
+        ../../nix/home/neovide.nix
+        ../../nix/home/nixvim
+        ../../nix/home/pretty.nix
+        ../../nix/home/television.nix
+        ../../nix/home/terraform.nix
+        ../../nix/home/tmux.nix
+        ../../nix/home/wezterm
+        ../../nix/home/yazi
+        ../../nix/home/yt-dlp.nix
+      ];
 
-    # mandb takes too long build every generation switch...
-    # programs.fish.enable = true causes this to be set true by default
-    programs.man.generateCaches = false;
+      # mandb takes too long build every generation switch...
+      # programs.fish.enable = true causes this to be set true by default
+      programs.man.generateCaches = false;
 
-    home.packages = with pkgs; [
-      # step-cli
-      (writeShellScriptBin "copilot-language-server" ''npx @github/copilot-language-server "$@"'')
-      act
-      actionlint
-      checkov
-      dive
-      dry
-      flyctl
-      go-task
-      google-cloud-sdk
-      ipcalc
-      jc
-      jjui
-      jnv
-      jujutsu
-      kcat
-      mcat
-      mkcert
-      self'.packages.chrome-cli
-      self'.packages.everything-fzf
-    ];
+      home.packages = with pkgs; [
+        # step-cli
+        (writeShellScriptBin "copilot-language-server" ''npx @github/copilot-language-server "$@"'')
+        act
+        actionlint
+        checkov
+        dive
+        dry
+        flyctl
+        go-task
+        google-cloud-sdk
+        ipcalc
+        jc
+        jjui
+        jnv
+        jujutsu
+        kcat
+        mcat
+        mkcert
+        self'.packages.chrome-cli
+        self'.packages.everything-fzf
+      ];
 
-    home.stateVersion = "22.11";
+      home.stateVersion = "22.11";
 
-    programs.age-op.enable = true;
-    programs.asciinema.enable = true;
-    programs.fish.enable = false; # not used currently and slows builds down a bit.
-    programs.ghostty.enable = true;
-    programs.nixvim = {
-      enable = true;
-      defaultEditor = true;
-      plugins.lsp.servers.nixd.settings.options = {
-        darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
+      programs.age-op.enable = true;
+      programs.asciinema.enable = true;
+      programs.fish.enable = false; # not used currently and slows builds down a bit.
+      programs.ghostty.enable = true;
+      programs.nixvim = {
+        enable = true;
+        defaultEditor = true;
+        plugins.lsp.servers.nixd.settings.options = {
+          darwin.expr = ''(builtins.getFlake "${self}").darwinConfigurations.logamma.options'';
+        };
       };
-    };
-    programs.passage.enable = true;
-    programs.wezterm.enable = true;
-    programs.zsh = {
-      enable = true;
-      dirHashes = {
-        wt = "$HOME/src/github.com/gamma-app/gamma/.worktrees";
-        gamma = "$HOME/src/github.com/gamma-app/gamma";
-        gdrive1 = "$HOME/Library/CloudStorage/GoogleDrive-logan.linn@gmail.com/My Drive";
-        gdrive2 = "$HOME/Library/CloudStorage/GoogleDrive-logan@gamma.app/My Drive";
-        dropbox = "$HOME/Library/CloudStorage/Dropbox";
-        logseq = "$HOME/Library/CloudStorage/GoogleDrive-logan.linn@gmail.com/My Drive/apps/logseq";
-        books = "$HOME/Library/CloudStorage/Dropbox/books";
+      programs.passage.enable = true;
+      programs.wezterm.enable = true;
+      programs.zsh = {
+        enable = true;
+        dirHashes = {
+          wt = "$HOME/src/github.com/gamma-app/gamma/.worktrees";
+          gamma = "$HOME/src/github.com/gamma-app/gamma";
+          gdrive1 = "$HOME/Library/CloudStorage/GoogleDrive-logan.linn@gmail.com/My Drive";
+          gdrive2 = "$HOME/Library/CloudStorage/GoogleDrive-logan@gamma.app/My Drive";
+          dropbox = "$HOME/Library/CloudStorage/Dropbox";
+          logseq = "$HOME/Library/CloudStorage/GoogleDrive-logan.linn@gmail.com/My Drive/apps/logseq";
+          books = "$HOME/Library/CloudStorage/Dropbox/books";
+        };
       };
+      xdg.enable = true;
     };
-    xdg.enable = true;
-  };
 }
