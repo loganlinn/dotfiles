@@ -6,10 +6,12 @@
   ...
 }:
 with lib;
-with lib.my; let
+with lib.my;
+let
   cfg = config.programs.kitty;
-  json = pkgs.formats.json {};
-in {
+  json = pkgs.formats.json { };
+in
+{
   programs = mkIf cfg.enable {
     kitty = {
       enableGitIntegration = true;
@@ -26,46 +28,44 @@ in {
 
     rofi.terminal = mkDefault (getExe cfg.package);
 
-    zsh = {
-      initExtra = ''
-        kitty-user-vars() {
-          (($#)) || set -- --self
-          kitty @ ls "$@" | jq '.[].tabs[].windows[0].user_vars'
-        }
+    zsh.initContent = ''
+      kitty-user-vars() {
+        (($#)) || set -- --self
+        kitty @ ls "$@" | jq '.[].tabs[].windows[0].user_vars'
+      }
 
-        kitty-window-id() {
-          (($#)) || set -- --self
-          kitty @ ls "$@" | jq '.[].tabs[].windows[].id'
-        }
-      '';
-    };
+      kitty-window-id() {
+        (($#)) || set -- --self
+        kitty @ ls "$@" | jq '.[].tabs[].windows[].id'
+      }
+    '';
   };
 
   xdg.configFile = mkIf cfg.enable (
     (listToAttrs (
       map
-      (
-        name:
+        (
+          name:
           nameValuePair "kitty/${name}" {
             source = config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/kitty/${name}";
           }
-      )
-      [
-        "a.kitty-session"
-        "b.kitty-session"
-        "c.kitty-session"
-        "choose-files.conf"
-        "current-theme.conf"
-        "diff.conf"
-        "grab.conf"
-        "kitty.common.conf"
-        "kitty.linux.conf"
-        "kitty.macos.conf"
-        "launch-actions.conf"
-        "open-actions.conf"
-        "quick-access-terminal.conf"
-        "tab_bar.py"
-      ]
+        )
+        [
+          "a.kitty-session"
+          "b.kitty-session"
+          "c.kitty-session"
+          "choose-files.conf"
+          "current-theme.conf"
+          "diff.conf"
+          "grab.conf"
+          "kitty.common.conf"
+          "kitty.linux.conf"
+          "kitty.macos.conf"
+          "launch-actions.conf"
+          "open-actions.conf"
+          "quick-access-terminal.conf"
+          "tab_bar.py"
+        ]
     ))
     // {
       "kitty/dracula".source = pkgs.fetchFromGitHub {
@@ -86,13 +86,14 @@ in {
         }/smart_scroll.py";
       };
       "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
-        extraPaths = ["../../src/github.com/kovidgoyal/kitty"]; # src-get kovidgoyal/kitty
+        extraPaths = [ "../../src/github.com/kovidgoyal/kitty" ]; # src-get kovidgoyal/kitty
       };
     }
   );
 
   home = mkIf cfg.enable {
-    packages = with pkgs;
+    packages =
+      with pkgs;
       concatLists [
         [
           (writeShellScriptBin "kdiff" ''kitten diff "$@"'')
@@ -107,7 +108,7 @@ in {
     };
 
     activation = {
-      kittyConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      kittyConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run mkdir $VERBOSE_ARG -p "${config.xdg.configHome}/kitty"
         run touch "${config.xdg.configHome}/kitty/kitty.local.conf"
         run chmod $VERBOSE_ARG 600 "${config.xdg.configHome}/kitty/kitty.local.conf"
