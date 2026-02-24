@@ -32,6 +32,7 @@ in
     ./neotest.nix
     ./obsidian.nix
     ./oil.nix
+    ./pkl.nix
     ./project.nix
     ./snacks.nix
     ./supermaven

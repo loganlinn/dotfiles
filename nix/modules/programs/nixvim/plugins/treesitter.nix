@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   programs.nixvim = {
     # highlighting embedded languages contained in strings of home-manager config using treesitter. how niche.
     plugins.hmts.enable = true;
@@ -33,7 +34,7 @@
         yaml
       ];
       languageRegister = {
-        terraform = ["hcl"];
+        terraform = [ "hcl" ];
       };
       settings = {
         auto_install = false;
@@ -61,8 +62,11 @@
         # };
       };
     };
+
     plugins.treesitter-context.enable = true;
+
     plugins.treesitter-context.settings.max_lines = 2;
+
     plugins.rainbow-delimiters.enable = true;
 
     extraFiles."queries/typescript/injections.scm".text = ''
