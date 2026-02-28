@@ -31,7 +31,7 @@ def mark(text, args, Mark, extra_cli_args, *a):
                 line_end = text.find("\n", pos)
                 if line_end == -1:
                     line_end = len(text)
-                line = text[pos:line_end]
+                line = strip_ansi(text[pos:line_end])
                 # Stop if: another message, or non-blank line without 2-space indent
                 if line.startswith("⏺ "):
                     break
@@ -41,17 +41,12 @@ def mark(text, args, Mark, extra_cli_args, *a):
                 pos = line_end + 1
 
         # Extract content (skip the ⏺ prefix)
-        content = text[start + 2 : end]
-        content = content.replace("\0", "")
+        content = strip_ansi(text[start + 2 : end]).replace("\0", "")
 
-        # Clean up: remove 2-space indent, preserve structure
+        # Clean up: remove 2-space indent, trim trailing whitespace
         lines = content.split("\n")
-        cleaned = []
-        for line in lines:
-            if line.startswith("  "):
-                line = line[2:]
-            cleaned.append(line.rstrip())
-        mark_text = strip_ansi("\n".join(cleaned).strip())
+        cleaned = [line[2:].rstrip() if line.startswith("  ") else line.rstrip() for line in lines]
+        mark_text = "\n".join(cleaned).strip()
 
         if mark_text:
             yield Mark(idx, start, end, mark_text, {})

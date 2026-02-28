@@ -5,17 +5,20 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   privateConfigFile = "${config.xdg.configHome}/git/config.local";
   allowedSignersFile = "${pkgs.writeText "allowed_signers" ''
     ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
   ''}";
   gpg-ssh-program = (
-    if pkgs.stdenv.isDarwin
-    then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-    else "op-ssh-sign"
+    if pkgs.stdenv.isDarwin then
+      "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    else
+      "op-ssh-sign"
   );
-in {
+in
+{
   imports = [
     ../shell
     ./gh.nix
@@ -24,31 +27,22 @@ in {
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
   home.shellAliases = {
-    gc = "git commit -v";
     gca = "git commit -v -a";
     gcm = ''git switch "$(git default-branch || echo main)"'';
     gcob = "git switch -c";
-    gd = "git diff --color";
+    gd = "git diff";
     gdc = "gd --cached";
-    gfo = "git fetch --all";
-    gl = "git pull";
+    gdn = "git diff --name-only";
+    gfa = "git fetch --all";
     glg = "git log --oneline --decorate";
-    gp = "git push";
     grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
     gtl = ''git rev-parse --show-toplevel'';
     gw = "git show";
   };
 
-  # home.packages = with pkgs; [
-  #   git-xet
-  # ];
-
-  my.shellScripts = {
-    gsw = ''
-      declare -i n=''${1:-0}
-      git stash show -p "stash@{$n}"
-    '';
-  };
+  home.packages = with pkgs; [
+    gitu
+  ];
 
   programs.delta = {
     enable = true;
@@ -71,16 +65,18 @@ in {
     git-spice.enable = true;
     lfs.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
-    includes = let
-      delta-themes = pkgs.fetchurl {
-        url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
-        sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
-      };
-    in [
-      {path = ./include/gitalias.txt;}
-      {path = delta-themes;}
-      {path = privateConfigFile;}
-    ];
+    includes =
+      let
+        delta-themes = pkgs.fetchurl {
+          url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
+          sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
+        };
+      in
+      [
+        { path = ./include/gitalias.txt; }
+        { path = delta-themes; }
+        { path = privateConfigFile; }
+      ];
     signing.key = mkDefault null; # let GnuPG decide
     settings = {
       advice.detachedHead = false;
@@ -155,6 +151,22 @@ in {
   ];
 
   programs.zsh = {
+    initContent = ''
+      gc() {
+        local -a cmd=(git commit --verbose)
+        # shorthand: bare arg without leading '-' is message or filename
+        if [[ $# -eq 1 ]] && [[ ''${1-} != '-'* ]]; then
+          if [[ -e $1 ]]; then
+            cmd+=(-- "$1")
+          else
+            cmd+=(--message "$1")
+          fi
+        else
+          cmd+=("$@")
+        fi
+        "''${cmd[@]}"
+      }
+    '';
     sessionVariables = {
       FORGIT_NO_ALIASES = "1";
       FORGIT_CHECKOUT_BRANCH_BRANCH_GIT_OPTS = "--sort=-committerdate";
@@ -175,7 +187,7 @@ in {
       gcco = "forgit::checkout::commit ";
       grevert = "forgit::revert::commit ";
       gclean = "forgit::clean ";
-      gss = "forgit::stash::show ";
+      gsw = "forgit::stash::show ";
       gsp = "forgit::stash::push ";
       gcherry = "forgit::cherry::pick ";
       grebase = "forgit::rebase ";
