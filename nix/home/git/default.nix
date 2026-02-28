@@ -27,21 +27,21 @@ in
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
   home.shellAliases = {
-    gca = "git commit -v -a";
-    gcm = ''git switch "$(git default-branch || echo main)"'';
-    gcob = "git switch -c";
+    gmain = ''git switch "$(git default-branch || echo main)"'';
+    gtop = ''cd -- "$(git rev-parse --show-toplevel || echo .)" && pwd'';
+    groot = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)" && pwd'';
+    gco = "git switch -c";
     gd = "git diff";
     gdc = "gd --cached";
     gdn = "git diff --name-only";
     gfa = "git fetch --all";
     glg = "git log --oneline --decorate";
-    grt = ''cd -- "$(git rev-parse --show-toplevel || pwd)"''; # "goto root"
     gtl = ''git rev-parse --show-toplevel'';
     gw = "git show";
   };
 
   home.packages = with pkgs; [
-    gitu
+    # gitu
   ];
 
   programs.delta = {

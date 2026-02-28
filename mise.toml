@@ -256,3 +256,31 @@ run = "mise run qmk compile -kb ${usage_keyboard?} -km ${usage_keymap?}"
 
 [tasks."nix:gc"]
 run = "nix-collect-garbage --delete-old"
+
+# ============================================================================
+# Misc Tasks
+# ============================================================================
+
+[tasks."link:config"]
+description = "Create symbolic link: ./config -> ~/.config"
+dir = "config"
+quiet = true
+usage = '''
+flag "-f --force" global=#true
+flag "-i --interactive" global=#true
+arg "<files>" var=#true
+'''
+run = '''
+eval "files=($usage_files)"
+
+ln_opts=(-s -v -T)
+[[ -z $usage_force ]] || ln_opts+=(-f)
+[[ -z $usage_interactive ]] || ln_opts+=(-i)
+[[ -z ${usage_force-$usage_interactive} ]] || ln_opts+=(--backup=numbered)
+
+for file in "${files[@]}"; do
+  source=$(realpath --canonicalize-existing "$file")
+  target=${XDG_CONFIG_HOME:-$HOME/.config}/$(realpath --relative-to=. "$file")
+  ln "${ln_opts[@]}" "$source" "$target"
+done
+'''

@@ -85,6 +85,12 @@ in
           }
         }/smart_scroll.py";
       };
+      "kitty/kitten_search".source = pkgs.fetchFromGitHub {
+        owner = "trygveaa";
+        repo = "kitty-kitten-search";
+        rev = "992c1f3d220dc3e1ae18a24b15fcaf47f4e61ff8";
+        hash = "sha256-Xy4dH2fzEQmKfqhmotVDEszuTqoISONGNfC1yfcdevs=";
+      };
       "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
         extraPaths = [ "../../src/github.com/kovidgoyal/kitty" ]; # src-get kovidgoyal/kitty
       };
