@@ -40,11 +40,8 @@ run = "nix flake check"
 
 [tasks."nix:update"]
 description = "Update flake inputs"
-usage = '''
-arg "[inputs]" var=#true help="Specific inputs to update (default: all)"
-'''
 run = '''
-nix flake update --commit-lock-file ${usage_inputs[@]+"${usage_inputs[@]}"}
+nix flake update --commit-lock-file "$@"
 '''
 
 [tasks."nix:repl"]

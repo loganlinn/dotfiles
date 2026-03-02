@@ -35,7 +35,7 @@
       coreutils-full # installs gnu versions
       curl
       dig
-      dogdns # dig on steroids
+      doggo # dig alternative
       dua
       dust # du alternative
       duf # df alternative
