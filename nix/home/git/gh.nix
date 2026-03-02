@@ -34,6 +34,8 @@ with lib.my;
 
         markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
 
+        octocat = "api /octocat";
+
         my-org = ''
           !gh api graphql -F owner='{owner}' -F name='{repo}' -f query='
             query($name: String!, $owner: String!) {

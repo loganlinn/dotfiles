@@ -68,8 +68,6 @@
       "felixkratz/formulae/sketchybar"
       "gcc"
       "gh"
-      "git"
-      "git-xet"
       "gnu-getopt"
       "grafana"
       "hashicorp/tap/terraform-ls"
