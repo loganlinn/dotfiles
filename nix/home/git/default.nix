@@ -36,6 +36,7 @@ in
     gdn = "git diff --name-only";
     gfa = "git fetch --all";
     glg = "git log --oneline --decorate";
+    gp = "git push";
     gtl = ''git rev-parse --show-toplevel'';
     gw = "git show";
   };
