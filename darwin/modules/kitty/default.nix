@@ -6,7 +6,7 @@
   ...
 }: let
   cfg = config.modules.kitty;
-  brewPrefix = config.homebrew.brewPrefix;
+  brewPrefix = "${config.homebrew.prefix}/bin";
 in {
   options.modules.kitty = {
     enable = lib.mkEnableOption "kitty";

@@ -51,7 +51,7 @@ let
     app_bundle_id=''${1:?app-bundle-id}
 
     window_id=$(
-      ${config.homebrew.brewPrefix}/aerospace list-windows \
+      ${config.homebrew.prefix}/bin/aerospace list-windows \
         --app-bundle-id "$app_bundle_id" \
         --monitor all \
         --format '%{window-id}' |
@@ -61,7 +61,7 @@ let
 
     if [[ -n $window_id ]]; then
       echo >&2 "Focusing window: $window_id"
-      ${config.homebrew.brewPrefix}/aerospace focus --window-id "$window_id"
+      ${config.homebrew.prefix}/bin/aerospace focus --window-id "$window_id"
     else
       echo >&2 "Launching app: $app_bundle_id"
       /usr/bin/open -b "$app_bundle_id"
@@ -249,7 +249,7 @@ let
   };
 in
 {
-  after-startup-command = optional cfg.borders.enable "exec-and-forget ${config.homebrew.brewPrefix}/borders ${
+  after-startup-command = optional cfg.borders.enable "exec-and-forget ${config.homebrew.prefix}/bin/borders ${
     # https://github.com/FelixKratz/JankyBorders/wiki/Man-Page#options
     cli.toGNUCommandLineShell {
       mkBool = key: val: [

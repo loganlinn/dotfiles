@@ -158,7 +158,7 @@
   };
 
   home-manager.users.${config.my.user.name} =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     {
       imports = [
         self.homeModules.common
@@ -213,6 +213,7 @@
       ];
 
       home.stateVersion = "22.11";
+      programs.zsh.dotDir = config.home.homeDirectory;
 
       programs.age-op.enable = true;
       programs.asciinema.enable = true;

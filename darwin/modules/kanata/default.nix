@@ -43,7 +43,7 @@ in
 
             <key>ProgramArguments</key>
             <array>
-                <string>${config.homebrew.brewPrefix}/kanata</string>
+                <string>${config.homebrew.prefix}/bin/kanata</string>
                 ${concatLines (
                   map f ''
                     <string>--cfg</string>

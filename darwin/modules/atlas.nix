@@ -14,9 +14,9 @@
       nativeBuildInputs = [pkgs.installShellFiles];
       postInstall = ''
         installShellCompletion --cmd atlas \
-        --bash <(${config.homebrew.brewPrefix}/atlas completion bash) \
-        --fish <(${config.homebrew.brewPrefix}/atlas completion fish) \
-        --zsh <(${config.homebrew.brewPrefix}/atlas completion zsh)
+        --bash <(${config.homebrew.prefix}/bin/atlas completion bash) \
+        --fish <(${config.homebrew.prefix}/bin/atlas completion fish) \
+        --zsh <(${config.homebrew.prefix}/bin/atlas completion zsh)
       '';
     })
   ];

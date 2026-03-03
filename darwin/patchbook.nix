@@ -5,7 +5,7 @@
   ];
 
   homebrew.enable = true;
-  homebrew.brewPrefix = "/opt/homebrew/bin";
+  homebrew.prefix = "/opt/homebrew";
 
   home-manager.users.logan = {
     options,

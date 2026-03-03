@@ -34,17 +34,17 @@ in {
     home-manager.users.${config.my.user.name} = {
       programs.bash.initExtra = mkIf cfg.enableBashIntegration ''
         if [[ $TERM != "dumb" ]]; then
-          eval "$(${config.homebrew.brewPrefix}/sunbeam completion bash)"
+          eval "$(${config.homebrew.prefix}/bin/sunbeam completion bash)"
         fi
       '';
       programs.zsh.initContent = mkIf cfg.enableZshIntegration (mkBefore ''
         if [[ $TERM != "dumb" ]]; then
-          eval "$(${config.homebrew.brewPrefix}/sunbeam completion zsh)"
+          eval "$(${config.homebrew.prefix}/bin/sunbeam completion zsh)"
         fi
       '');
       programs.fish.interactiveShellInit = mkIf cfg.enableFishIntegration ''
         if test "$TERM" != "dumb"
-          eval "$(${config.homebrew.brewPrefix}/sunbeam completion fish)"
+          eval "$(${config.homebrew.prefix}/bin/sunbeam completion fish)"
         end
       '';
     };

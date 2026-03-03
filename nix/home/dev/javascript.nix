@@ -17,7 +17,7 @@ let
 in
 {
   options = {
-    programs.npm = {
+    my.npm = {
       settings = mkOption {
         # use same type constraints as global section of INI format,
         type = npmrcFormat.type;
@@ -73,7 +73,7 @@ in
       })"
     '';
 
-    programs.npm.settings = {
+    my.npm.settings = {
       fund = false;
       update-notifier = false; # suppress the update notification when using an older version of npm than the latest.
       usage = false;
@@ -84,7 +84,7 @@ in
 
     home.sessionVariables = {
       # XDG, please
-      NPM_CONFIG_USERCONFIG = config.programs.npm.settings.userconfig;
+      NPM_CONFIG_USERCONFIG = config.my.npm.settings.userconfig;
       # Privacy, please
       GRAPHITE_DISABLE_TELEMETRY = "1";
       APOLLO_TELEMETRY_DISABLED = "1";
@@ -93,10 +93,10 @@ in
     };
 
     home.sessionPath = [
-      "${config.programs.npm.settings.prefix}/bin"
+      "${config.my.npm.settings.prefix}/bin"
     ];
 
     # i.e. userconfig file (aka npmrc)
-    xdg.configFile."npm/config".source = npmrcFormat.generate "npmrc" config.programs.npm.settings;
+    xdg.configFile."npm/config".source = npmrcFormat.generate "npmrc" config.my.npm.settings;
   };
 }
