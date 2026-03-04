@@ -230,6 +230,10 @@
       programs.wezterm.enable = true;
       programs.zsh = {
         enable = true;
+        shellAliases = {
+          ecr-login = "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com";
+          ddb-local = "env -u AWS_ENDPOINT_DYNAMODB_URL aws dynamodb --endpoint-url http://localhost:8000";
+        };
         dirHashes = {
           wt = "$HOME/src/github.com/gamma-app/gamma/.worktrees";
           gamma = "$HOME/src/github.com/gamma-app/gamma";

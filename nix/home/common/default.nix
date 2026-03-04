@@ -81,7 +81,16 @@
   ];
 
   programs.home-manager.enable = true;
-  programs.less.enable = true;
+  programs.less = {
+    enable = true;
+    package = pkgs.less.overrideAttrs (_: {
+      version = "692";
+      src = pkgs.fetchurl {
+        url = "https://www.greenwoodsoftware.com/less/less-692.tar.gz";
+        hash = "sha256-YTAPYDeY7PHXeGVweJ8P8/WhrPB1pvufdWg30WbjfRQ=";
+      };
+    });
+  };
   programs.man.enable = true;
   programs.fd.enable = true;
   programs.btop.enable = true;

@@ -36,6 +36,14 @@
         "type": "version",
         "color": "brightBlack",
         "rawValue": false
+      },
+      {
+        "id": "d7a3c469-3f75-461d-ab5e-c9c037d87d16",
+        "type": "separator"
+      },
+      {
+        "id": "f0a05996-179a-40de-b4ef-e64ca8c88d62",
+        "type": "session-name"
       }
     ],
     [

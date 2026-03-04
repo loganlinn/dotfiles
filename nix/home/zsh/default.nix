@@ -45,19 +45,19 @@ in
       save = 100000;
     };
     shellAliases = {
-      aliasez = ''alias | fzf'';
+      aliasez = "alias | fzf";
       commands = ''${pkgs.coreutils}/bin/basename -a "''${commands[@]}" | sort | uniq'';
-      commandz = ''commands | fzf'';
+      commandz = "commands | fzf";
 
-      show-path = ''print -rl -- $path | nl -ba | less'';
-      show-fpath = ''print -rl -- $fpath | nl -ba | less'';
-      show-aliases = ''print -rl -- $aliases | nl -ba | less'';
-      show-source = ''zsh -o SOURCE_TRACE -l -c true'';
+      show-path = "print -rl -- $path | nl -ba | less";
+      show-fpath = "print -rl -- $fpath | nl -ba | less";
+      show-aliases = "print -rl -- $aliases | nl -ba | less";
+      show-source = "zsh -o SOURCE_TRACE -l -c true";
 
-      path_prepend = ''[[ -d $1 ]] && path=($1 ''${path:#$1})'';
-      path_append = ''[[ -d $1 ]] && path=(''${path:#$1} $1)'';
+      path_prepend = "[[ -d $1 ]] && path=($1 \${path:#$1})";
+      path_append = "[[ -d $1 ]] && path=(\${path:#$1} $1)";
 
-      showkey = ''bindkey -L | ${pkgs.bat}/bin/bat'';
+      showkey = "bindkey -L | ${pkgs.bat}/bin/bat";
       sudo = "sudo ";
       "?" = "whence -fs";
       asu = "aws-sso-util";
@@ -68,20 +68,18 @@ in
       ch = "noglob clickhouse";
 
       cl = "claude";
+      clc = "claude --continue";
+      clr = "claude --resume";
       cla = "claude --allow-dangerously-skip-permissions";
       clcd = "mkdir -p ~/.claude && cd ~/.claude";
-      clcfg = "editor ~/.claude/settings.json";
+      clsettings = "editor ~/.claude/settings.json";
       clres = "claude --resume";
       yolo = "claude --dangerously-skip-permissions";
       sonnet = "claude --model sonnet";
       opus = "claude --model opus";
       haiku = "claude --model haiku";
-      sonnet1m = "claude --model 'sonnet[1m]'";
       opusplan = "claude --model opusplan";
 
-      d = "docker";
-      ddb-local = "aws dynamodb --endpoint-url http://localhost:$${DYNAMODB_LOCAL_PORT: -8000}";
-      ecr-login = "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com";
       gh = "env -u GITHUB_TOKEN gh";
       gist = "gh gist";
       hg = "kitten hyperlinked-grep";
@@ -103,37 +101,37 @@ in
       "....." = "../../../..";
       "......" = "../../../../..";
       # https://github.com/sharkdp/bat/blob/master/README.md#highlighting---help-messages
-      "-?" = ''--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain'';
+      "-?" = "--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain";
       # "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
     };
     dirHashes = mergeAttrsList [
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
       (filterAttrs (_: value: value != null) config.my.userDirs)
       rec {
-        cache = ''''${XDG_CACHE_HOME:-$HOME/.cache}'';
-        cfg = ''''${XDG_CONFIG_HOME:-$HOME/.config}'';
-        cl = ''''$HOME/.claude'';
-        data = ''''${XDG_DATA_HOME:-$HOME/.local/share}'';
-        dl = ''''${XDG_DOWNLOADS_DIR:-$HOME/Downloads}'';
-        doom = ''''${DOOMDIR:-${cfg}/doom}'';
-        dot = ''''${DOTFILES_DIR:-$HOME/.dotfiles}'';
-        emacs = ''''${EMACSDIR:-${cfg}/emacs}'';
-        gh = ''${src}/github.com'';
-        kitty = ''''${XDG_CONFIG_HOME:-$HOME/.config}/kitty'';
+        cache = "\${XDG_CACHE_HOME:-$HOME/.cache}";
+        cfg = "\${XDG_CONFIG_HOME:-$HOME/.config}";
+        config = "\${XDG_CONFIG_HOME:-$HOME/.config}";
+        claude = "\$HOME/.claude";
+        data = "\${XDG_DATA_HOME:-$HOME/.local/share}";
+        dl = "\${XDG_DOWNLOADS_DIR:-$HOME/Downloads}";
+        doom = "\${DOOMDIR:-${cfg}/doom}";
+        dot = "\${DOTFILES_DIR:-$HOME/.dotfiles}";
+        emacs = "\${EMACSDIR:-${cfg}/emacs}";
+        gh = "${src}/github.com";
+        kitty = "\${XDG_CONFIG_HOME:-$HOME/.config}/kitty";
         nvim = ''${cfg}/nvim''${NVIM_APPNAME:+"_$NVIM_APPNAME"}'';
-        src = ''''${SRC_HOME:-$HOME/src}'';
-        state = ''''${XDG_DATA_HOME:-$HOME/.local/state}'';
-        tv = ''''${XDG_CONFIG_HOME:-$HOME/.config}/television'';
-        wez = ''''${WEZTERM_CONFIG_DIR:-${cfg}/wezterm}'';
+        src = "\${SRC_HOME:-$HOME/src}";
+        state = "\${XDG_DATA_HOME:-$HOME/.local/state}";
+        tv = "\${XDG_CONFIG_HOME:-$HOME/.config}/television";
       }
       (optionalAttrs pkgs.stdenv.targetPlatform.isDarwin {
-        app = ''$HOME/Library/Application Support'';
-        launch = ''$HOME/Library/LaunchAgents'';
-        logs = ''$HOME/Library/Logs'';
-        lib = ''$HOME/Library'';
-        prefs = ''$HOME/Library/Preferences'';
-        chrome = ''$HOME/Library/Application Support/Google/Chrome'';
-        ff = ''$HOME/Library/Application Support/Firefox'';
+        app = "$HOME/Library/Application Support";
+        launch = "$HOME/Library/LaunchAgents";
+        logs = "$HOME/Library/Logs";
+        lib = "$HOME/Library";
+        prefs = "$HOME/Library/Preferences";
+        chrome = "$HOME/Library/Application Support/Google/Chrome";
+        ff = "$HOME/Library/Application Support/Firefox";
       })
     ];
     envExtra = ''
