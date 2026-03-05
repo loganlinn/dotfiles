@@ -31,10 +31,11 @@
     initContent = lib.mkMerge [
       (lib.mkAfter (lib.readFile ./aws-sso.zsh))
       (lib.mkAfter ''
-        @aws() {
+        +aws() {
           emulate -L zsh
 
           local profile
+
           profile=$(
             aws configure list-profiles --output text |
               ${lib.getExe pkgs.gum} choose \
@@ -47,6 +48,10 @@
           export AWS_PROFILE=$profile
 
           ${lib.getExe pkgs.gum} log --structured export AWS_PROFILE "$AWS_PROFILE"
+        }
+
+        ++aws() {
+          +aws "$@" && aws sso login
         }
       '')
     ];
