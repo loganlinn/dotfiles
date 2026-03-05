@@ -15,7 +15,7 @@ with lib.my;
     gitCredentialHelper.enable = true;
     settings = {
       aliases = {
-        release-checkout = ''!tag=$(gh release view "$@" --json tagName --jq '.tagName') && git fetch origin tag "$tag" && git checkout "$tag"'';
+        release-checkout = ''!tag=$(gh release view "$@" --json tagName --jq '.tagName') && git fetch origin tag "$tag" && git checkout --detach "$tag"'';
         cor = ''!gh checkout release "$@"'';
         o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" .'';
         diff = "pr diff";
