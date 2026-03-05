@@ -29,18 +29,18 @@
       # }
     ];
     initContent = lib.mkMerge [
-      ''
-        alias aws-profiles='aws configure list-profiles'
-
-        aws-profile() {
+      (lib.mkAfter (lib.readFile ./aws-sso.zsh))
+      (lib.mkAfter ''
+        @aws() {
           emulate -L zsh
+
           local profile
           profile=$(
             aws configure list-profiles --output text |
               ${lib.getExe pkgs.gum} choose \
                 --header="Choose profile:" \
                 --ordered \
-                --limit=1 \
+                --selected="''${1:-''${AWS_PROFILE:-default}}" \
                 --select-if-one
           ) || return $?
 
@@ -48,8 +48,7 @@
 
           ${lib.getExe pkgs.gum} log --structured export AWS_PROFILE "$AWS_PROFILE"
         }
-      ''
-      (lib.mkAfter (lib.readFile ./aws-sso.zsh))
+      '')
     ];
   };
 }
