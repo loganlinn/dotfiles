@@ -27,17 +27,18 @@ in
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
   home.shellAliases = {
-    gco = "git switch -c";
     gcm = ''git switch "$(git default-branch || echo main)"'';
+    gco = "git switch -c";
     gd = "git diff";
     gdc = "gd --cached";
     gdn = "git diff --name-only";
     gfa = "git fetch --all";
-    ggtl = ''cd -- "$(git rev-parse --show-toplevel || echo .)"'';
+    ggrt = ''cd -- "$(grt)"'';
+    ggtl = ''cd -- "$(gtl)"'';
     gl = "git pull";
     glg = "git log --oneline --decorate";
     gp = "git push";
-    groot = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)" && pwd'';
+    grt = ''git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .'';
     gtl = "git rev-parse --show-toplevel";
     gw = "git show";
   };
