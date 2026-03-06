@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import sqlite3
 from dataclasses import dataclass, field
@@ -19,6 +20,7 @@ from typing import Any
 
 import click
 from rich.console import Console
+from rich.style import Style
 from rich.text import Text
 
 # --- paths ---
@@ -28,6 +30,10 @@ _xdg_data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "sh
 DB_PATH = _xdg_data / "trs" / "index.db"
 
 FILE_TOOLS = {"Write", "Edit", "Read", "MultiEdit"}
+
+INDEX_INCREMENTAL = "index"
+INDEX_FULL = "reindex"
+INDEX_SKIP = "no-index"
 
 console = Console()
 
@@ -65,12 +71,13 @@ CREATE VIRTUAL TABLE IF NOT EXISTS sessions_fts USING fts5(
 """
 
 
-def open_db(path: Path) -> sqlite3.Connection:
+def open_db(path: Path, init: bool = False) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(path)
     con.row_factory = sqlite3.Row
-    con.executescript(SCHEMA)
-    con.commit()
+    if init:
+        con.executescript(SCHEMA)
+        con.commit()
     return con
 
 
@@ -103,6 +110,12 @@ def _text_from_content(content: Any) -> str:
                 parts.append(block.get("text", ""))
         return " ".join(parts)
     return ""
+
+
+def _rec_content(rec: dict) -> Any:
+    """Extract message content from a JSONL record."""
+    msg = rec.get("message") or {}
+    return msg.get("content") if isinstance(msg, dict) else None
 
 
 def parse_session(path: Path) -> Session:
@@ -138,8 +151,7 @@ def parse_session(path: Path) -> Session:
                 sess.end_time = ts
 
             if rtype == "user":
-                msg = rec.get("message") or {}
-                content = msg.get("content") if isinstance(msg, dict) else None
+                content = _rec_content(rec)
                 if content is None:
                     content = rec.get("content")
                 text = _text_from_content(content)
@@ -150,8 +162,7 @@ def parse_session(path: Path) -> Session:
                     sess.body_parts.append(text[:1000])
 
             elif rtype == "assistant":
-                msg = rec.get("message") or {}
-                content = msg.get("content") if isinstance(msg, dict) else None
+                content = _rec_content(rec)
                 if not isinstance(content, list):
                     continue
                 sess.message_count += 1
@@ -271,17 +282,39 @@ def _short_date(ts: str) -> str:
     return ts[:10]
 
 
-def _files_summary(files_json: str) -> str:
+_URL_RE = re.compile(r"https?://\S+")
+
+
+def _linkify(text: str) -> Text:
+    """Return a Text object with http(s) URLs turned into clickable links."""
+    result = Text()
+    last = 0
+    for m in _URL_RE.finditer(text):
+        result.append(text[last : m.start()])
+        url = m.group()
+        result.append(url, style=Style(link=url))
+        last = m.end()
+    result.append(text[last:])
+    return result
+
+
+def _files_summary(files_json: str) -> Text | None:
     try:
         files = json.loads(files_json or "[]")
     except Exception:
-        return ""
+        return None
     if not files:
-        return ""
-    basenames = [Path(f).name for f in files]
-    if len(basenames) <= 3:
-        return ", ".join(basenames)
-    return f"{', '.join(basenames[:3])} (+{len(basenames) - 3})"
+        return None
+    show = files[:3]
+    extra = len(files) - 3 if len(files) > 3 else 0
+    result = Text()
+    for i, fpath in enumerate(show):
+        if i:
+            result.append(", ")
+        result.append(Path(fpath).name, style=Style(link=f"file://{fpath}"))
+    if extra:
+        result.append(f" (+{extra})", style="dim")
+    return result
 
 
 def display_result(row: sqlite3.Row) -> None:
@@ -298,7 +331,7 @@ def display_result(row: sqlite3.Row) -> None:
 
     date = _short_date(start)
     dur = _duration(start, end)
-    files_str = _files_summary(files_json)
+    files_text = _files_summary(files_json)
 
     header = Text()
     header.append("● ", style="bold green")
@@ -312,7 +345,7 @@ def display_result(row: sqlite3.Row) -> None:
     console.print(header)
 
     meta = Text("  ")
-    meta.append(cwd, style="cyan")
+    meta.append(cwd, style=Style(color="cyan", link=f"file://{cwd}") if cwd else "cyan")
     if branches:
         meta.append("  ⎇  ", style="dim")
         meta.append(", ".join(branches), style="yellow")
@@ -323,10 +356,15 @@ def display_result(row: sqlite3.Row) -> None:
         desc = desc.replace("\n", " ").strip()
         if len(desc) > 120:
             desc = desc[:117] + "..."
-        console.print(f"  {desc}", style="italic")
+        desc_text = Text("  ")
+        desc_text.append_text(_linkify(desc))
+        console.print(desc_text, style="italic")
 
-    if files_str:
-        console.print(f"  [dim]Files:[/dim] {files_str}")
+    if files_text is not None:
+        line = Text("  ")
+        line.append("Files: ", style="dim")
+        line.append_text(files_text)
+        console.print(line)
 
     console.print(f"  [dim]claude --resume {session_id}[/dim]")
     console.print()
@@ -354,7 +392,7 @@ def normalize_fts_query(query: str) -> str:
 # --- indexer (run) ---
 
 def run_index(db_path: Path, full: bool = False) -> None:
-    con = open_db(db_path)
+    con = open_db(db_path, init=True)
 
     stored: dict[str, float] = {}
     db_ids: set[str] = set()
@@ -531,9 +569,9 @@ SEARCH_OPTIONS = [
     click.option("--branch", "-b", "branch_pat", default=None, help="Filter by git branch substring"),
     click.option("--project", "-p", "project_pat", default=None, help="Filter by cwd/project substring"),
     click.option("--limit", "-n", default=20, show_default=True, help="Max results"),
-    click.option("--index", "index_mode", flag_value="index", help="Incremental index before search (default when query given)"),
-    click.option("--reindex", "index_mode", flag_value="reindex", help="Full reindex before search"),
-    click.option("--no-index", "index_mode", flag_value="no-index", help="Skip indexing, use existing index as-is"),
+    click.option("--index", "index_mode", flag_value=INDEX_INCREMENTAL, help="Incremental index before search (default when query given)"),
+    click.option("--reindex", "index_mode", flag_value=INDEX_FULL, help="Full reindex before search"),
+    click.option("--no-index", "index_mode", flag_value=INDEX_SKIP, help="Skip indexing, use existing index as-is"),
     click.option("--clean", is_flag=True, default=False, help="Delete the index database"),
     click.option("--export", "export_path", default=None, type=click.Path(), metavar="PATH", help="Export index DB to PATH"),
     click.option("--import", "import_path", default=None, type=click.Path(), metavar="PATH", help="Import index DB from PATH"),
@@ -619,10 +657,10 @@ def cli(
         return
 
     # default: auto-heal (incremental) when a query is present
-    effective_mode = index_mode if index_mode is not None else ("index" if raw_query else None)
+    effective_mode = index_mode if index_mode is not None else (INDEX_INCREMENTAL if raw_query else None)
 
-    if effective_mode in ("index", "reindex"):
-        run_index(db_path, full=(effective_mode == "reindex"))
+    if effective_mode in (INDEX_INCREMENTAL, INDEX_FULL):
+        run_index(db_path, full=(effective_mode == INDEX_FULL))
         if not raw_query:
             return
 
