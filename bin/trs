@@ -1,0 +1,564 @@
+#!/usr/bin/env -S uv run --script
+# -*- mode: python-*- vim: ft=python
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click>=8", "rich>=13"]
+# ///
+"""trs — transcript search over Claude Code sessions (SQLite FTS5)"""
+
+from __future__ import annotations
+
+import json
+import sqlite3
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import click
+from rich.console import Console
+from rich.text import Text
+
+# --- paths ---
+
+PROJECTS_DIR = Path.home() / ".claude" / "projects"
+DB_PATH = Path.home() / ".local" / "share" / "trs" / "index.db"
+
+FILE_TOOLS = {"Write", "Edit", "Read", "MultiEdit"}
+
+console = Console()
+
+
+# --- schema ---
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS sessions (
+    session_id    TEXT PRIMARY KEY,
+    source        TEXT NOT NULL DEFAULT 'claude-code',
+    cwd           TEXT,
+    slug          TEXT,
+    git_branches  TEXT,
+    start_time    TEXT,
+    end_time      TEXT,
+    files_touched TEXT,
+    tools_used    TEXT,
+    message_count INTEGER DEFAULT 0,
+    first_message TEXT,
+    summary       TEXT,
+    indexed_at    TEXT NOT NULL,
+    source_mtime  REAL NOT NULL
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS sessions_fts USING fts5(
+    session_id   UNINDEXED,
+    cwd,
+    git_branches,
+    summary,
+    first_message,
+    files_touched,
+    body,
+    tokenize = 'porter unicode61'
+);
+"""
+
+
+def open_db(path: Path) -> sqlite3.Connection:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(path)
+    con.row_factory = sqlite3.Row
+    con.executescript(SCHEMA)
+    con.commit()
+    return con
+
+
+# --- JSONL parsing ---
+
+@dataclass
+class Session:
+    session_id: str
+    slug: str
+    source: str = "claude-code"
+    cwd: str = ""
+    git_branches: list[str] = field(default_factory=list)
+    start_time: str = ""
+    end_time: str = ""
+    files_touched: list[str] = field(default_factory=list)
+    tools_used: list[str] = field(default_factory=list)
+    message_count: int = 0
+    first_message: str = ""
+    summary: str = ""
+    body_parts: list[str] = field(default_factory=list)
+
+
+def _text_from_content(content: Any) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict) and block.get("type") == "text":
+                parts.append(block.get("text", ""))
+        return " ".join(parts)
+    return ""
+
+
+def parse_session(path: Path) -> Session:
+    slug = path.parent.name
+    session_id = path.stem
+    sess = Session(session_id=session_id, slug=slug)
+
+    branches: set[str] = set()
+    files: set[str] = set()
+    tools: set[str] = set()
+
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for raw in f:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                rec = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+
+            rtype = rec.get("type")
+
+            # common metadata present on most records
+            if rec.get("cwd") and not sess.cwd:
+                sess.cwd = rec["cwd"]
+            if rec.get("gitBranch"):
+                branches.add(rec["gitBranch"])
+            ts = rec.get("timestamp", "")
+            if ts:
+                if not sess.start_time:
+                    sess.start_time = ts
+                sess.end_time = ts
+
+            if rtype == "user":
+                msg = rec.get("message") or {}
+                content = msg.get("content") if isinstance(msg, dict) else None
+                if content is None:
+                    content = rec.get("content")
+                text = _text_from_content(content)
+                if text:
+                    sess.message_count += 1
+                    if not sess.first_message:
+                        sess.first_message = text[:500]
+                    sess.body_parts.append(text[:1000])
+
+            elif rtype == "assistant":
+                msg = rec.get("message") or {}
+                content = msg.get("content") if isinstance(msg, dict) else None
+                if not isinstance(content, list):
+                    continue
+                sess.message_count += 1
+                for block in content:
+                    if not isinstance(block, dict):
+                        continue
+                    btype = block.get("type")
+                    if btype == "text":
+                        text = block.get("text", "")
+                        if text:
+                            sess.body_parts.append(text[:1000])
+                    elif btype == "tool_use":
+                        name = block.get("name", "")
+                        inp = block.get("input") or {}
+                        if name:
+                            tools.add(name)
+                        if name in FILE_TOOLS:
+                            fp = inp.get("file_path", "")
+                            if fp:
+                                files.add(fp)
+                        elif name == "Bash":
+                            cmd = inp.get("command", "")
+                            if cmd:
+                                sess.body_parts.append(cmd[:200])
+
+            elif rtype == "summary":
+                summ = rec.get("summary", "")
+                if summ:
+                    sess.summary = summ  # keep last
+
+    sess.git_branches = sorted(branches)
+    sess.files_touched = sorted(files)
+    sess.tools_used = sorted(tools)
+    return sess
+
+
+# --- indexer ---
+
+def glob_sessions() -> list[Path]:
+    paths = []
+    for p in PROJECTS_DIR.rglob("*.jsonl"):
+        parts = p.parts
+        # skip subagents/ and tool-results/ directories
+        if "subagents" in parts or "tool-results" in parts:
+            continue
+        paths.append(p)
+    return paths
+
+
+def upsert_session(con: sqlite3.Connection, sess: Session, mtime: float) -> None:
+    now = datetime.now(timezone.utc).isoformat()
+    branches_json = json.dumps(sess.git_branches)
+    files_json = json.dumps(sess.files_touched)
+    tools_json = json.dumps(sess.tools_used)
+    body = " ".join(sess.body_parts)
+
+    con.execute(
+        """
+        INSERT INTO sessions
+            (session_id, source, cwd, slug, git_branches, start_time, end_time,
+             files_touched, tools_used, message_count, first_message, summary,
+             indexed_at, source_mtime)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT(session_id) DO UPDATE SET
+            source=excluded.source, cwd=excluded.cwd, slug=excluded.slug,
+            git_branches=excluded.git_branches, start_time=excluded.start_time,
+            end_time=excluded.end_time, files_touched=excluded.files_touched,
+            tools_used=excluded.tools_used, message_count=excluded.message_count,
+            first_message=excluded.first_message, summary=excluded.summary,
+            indexed_at=excluded.indexed_at, source_mtime=excluded.source_mtime
+        """,
+        (
+            sess.session_id, sess.source, sess.cwd, sess.slug,
+            branches_json, sess.start_time, sess.end_time,
+            files_json, tools_json, sess.message_count,
+            sess.first_message, sess.summary, now, mtime,
+        ),
+    )
+    # FTS: delete + reinsert
+    con.execute("DELETE FROM sessions_fts WHERE session_id = ?", (sess.session_id,))
+    con.execute(
+        """
+        INSERT INTO sessions_fts
+            (session_id, cwd, git_branches, summary, first_message, files_touched, body)
+        VALUES (?,?,?,?,?,?,?)
+        """,
+        (
+            sess.session_id, sess.cwd or "", branches_json, sess.summary,
+            sess.first_message, " ".join(sess.files_touched), body,
+        ),
+    )
+
+
+# --- display ---
+
+def _duration(start: str, end: str) -> str:
+    if not start or not end:
+        return ""
+    try:
+        fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+        t0 = datetime.strptime(start, fmt)
+        t1 = datetime.strptime(end, fmt)
+        secs = int((t1 - t0).total_seconds())
+        if secs < 60:
+            return f"{secs}s"
+        mins = secs // 60
+        if mins < 60:
+            return f"{mins}m"
+        return f"{mins // 60}h {mins % 60}m"
+    except Exception:
+        return ""
+
+
+def _short_date(ts: str) -> str:
+    if not ts:
+        return ""
+    return ts[:10]
+
+
+def _files_summary(files_json: str) -> str:
+    try:
+        files = json.loads(files_json or "[]")
+    except Exception:
+        return ""
+    if not files:
+        return ""
+    basenames = [Path(f).name for f in files]
+    if len(basenames) <= 3:
+        return ", ".join(basenames)
+    return f"{', '.join(basenames[:3])} (+{len(basenames) - 3})"
+
+
+def display_result(row: sqlite3.Row) -> None:
+    session_id = row["session_id"]
+    slug = row["slug"] or ""
+    cwd = row["cwd"] or ""
+    branches = json.loads(row["git_branches"] or "[]")
+    start = row["start_time"] or ""
+    end = row["end_time"] or ""
+    msgs = row["message_count"] or 0
+    first_msg = row["first_message"] or ""
+    summary = row["summary"] or ""
+    files_json = row["files_touched"] or "[]"
+
+    date = _short_date(start)
+    dur = _duration(start, end)
+    files_str = _files_summary(files_json)
+
+    header = Text()
+    header.append("● ", style="bold green")
+    header.append(slug or session_id, style="bold")
+    if date:
+        header.append(f"  {date}", style="dim")
+    if dur:
+        header.append(f"  {dur}", style="dim")
+    if msgs:
+        header.append(f"  {msgs} msgs", style="dim")
+    console.print(header)
+
+    meta = Text("  ")
+    meta.append(cwd, style="cyan")
+    if branches:
+        meta.append("  ⎇  ", style="dim")
+        meta.append(", ".join(branches), style="yellow")
+    console.print(meta)
+
+    desc = summary or first_msg
+    if desc:
+        desc = desc.replace("\n", " ").strip()
+        if len(desc) > 120:
+            desc = desc[:117] + "..."
+        console.print(f"  {desc}", style="italic")
+
+    if files_str:
+        console.print(f"  [dim]Files:[/dim] {files_str}")
+
+    console.print(f"  [dim]claude --resume {session_id}[/dim]")
+    console.print()
+
+
+# --- query normalization ---
+
+def normalize_fts_query(query: str) -> str:
+    """Quote hyphenated tokens to prevent FTS5 interpreting '-' as NOT operator.
+
+    Only normalizes if the user hasn't already used explicit FTS5 syntax
+    (quoted phrases, column scoping, etc.).
+    """
+    if '"' in query:
+        return query  # user is being explicit
+    parts = []
+    for token in query.split():
+        if not token.startswith("-") and "-" in token:
+            parts.append(f'"{token}"')
+        else:
+            parts.append(token)
+    return " ".join(parts)
+
+
+# --- search ---
+
+def run_search(
+    query: str,
+    db_path: Path,
+    file_pat: str | None,
+    branch_pat: str | None,
+    project_pat: str | None,
+    limit: int,
+) -> None:
+    if not db_path.exists():
+        console.print("[yellow]Index not found. Run [bold]trs index[/bold] first.[/yellow]")
+        return
+
+    con = open_db(db_path)
+
+    where_clauses = []
+    params: list[Any] = [query]
+    if file_pat:
+        where_clauses.append("s.files_touched LIKE ?")
+        params.append(f"%{file_pat}%")
+    if branch_pat:
+        where_clauses.append("s.git_branches LIKE ?")
+        params.append(f"%{branch_pat}%")
+    if project_pat:
+        where_clauses.append("s.cwd LIKE ?")
+        params.append(f"%{project_pat}%")
+
+    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+    params.append(limit)
+
+    sql = f"""
+        WITH matches AS (
+            SELECT session_id, rank
+            FROM sessions_fts
+            WHERE sessions_fts MATCH ?
+        )
+        SELECT s.*, m.rank
+        FROM matches m
+        JOIN sessions s USING (session_id)
+        {where_sql}
+        ORDER BY m.rank
+        LIMIT ?
+    """
+
+    try:
+        rows = con.execute(sql, params).fetchall()
+    except sqlite3.OperationalError as e:
+        console.print(f"[red]Query error:[/red] {e}")
+        console.print(
+            "[dim]Hint: wrap multi-word queries in quotes, e.g. trs '\"my phrase\"'[/dim]"
+        )
+        return
+
+    if not rows:
+        console.print("[dim]No results.[/dim]")
+        return
+
+    console.print(f"[dim]{len(rows)} result(s)[/dim]\n")
+    for row in rows:
+        display_result(row)
+
+
+# --- CLI ---
+
+# Custom group that gracefully handles unknown subcommands (treats them as
+# search queries instead of raising UsageError).
+class TrsGroup(click.Group):
+    def invoke(self, ctx: click.Context) -> Any:
+        import warnings
+
+        # click 8: first remaining positional → ctx.protected_args; rest → ctx.args
+        # click 9: everything → ctx.args (protected_args deprecated)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            all_positional = list(ctx.protected_args) + list(ctx.args)
+
+        if not all_positional:
+            return super().invoke(ctx)
+
+        first = all_positional[0]
+        if self.get_command(ctx, first) is None:
+            # Not a known subcommand: use first positional as search query.
+            ctx.meta["trs_query"] = first
+            ctx.invoked_subcommand = None
+            return click.Command.invoke(self, ctx)
+
+        return super().invoke(ctx)
+
+
+SEARCH_OPTIONS = [
+    click.option("--file", "file_pat", default=None, help="Filter by file path substring"),
+    click.option("--branch", "branch_pat", default=None, help="Filter by git branch substring"),
+    click.option("--project", "project_pat", default=None, help="Filter by cwd/project substring"),
+    click.option("--limit", "-n", default=20, show_default=True, help="Max results"),
+    click.option(
+        "--db",
+        default=str(DB_PATH),
+        help="Database path",
+        show_default=True,
+        envvar="TRS_DB",
+    ),
+]
+
+
+def add_options(options: list) -> Any:
+    def decorator(f: Any) -> Any:
+        for opt in reversed(options):
+            f = opt(f)
+        return f
+    return decorator
+
+
+@click.group(
+    cls=TrsGroup,
+    invoke_without_command=True,
+    context_settings=dict(
+        allow_interspersed_args=True,
+        ignore_unknown_options=True,
+    ),
+)
+@add_options(SEARCH_OPTIONS)
+@click.pass_context
+def cli(
+    ctx: click.Context,
+    file_pat: str | None,
+    branch_pat: str | None,
+    project_pat: str | None,
+    limit: int,
+    db: str,
+) -> None:
+    """Full-text search over Claude Code session transcripts.
+
+    \b
+    Positional args become the FTS5 query. Supports:
+      plain words:     trs "LaunchDarkly migration"
+      quoted phrase:   trs '"exact phrase"'
+      prefix:          trs "migrat*"
+      column scope:    trs "first_message:dynamo"
+
+    \b
+    Examples:
+      trs "LaunchDarkly migration"
+      trs "DynamoDB" --branch "saved-media"
+      trs "kitty" --project "dotfiles"
+      trs index
+      trs index --full
+    """
+    if ctx.invoked_subcommand is not None:
+        return
+
+    raw_query = ctx.meta.get("trs_query") or ""
+    if not raw_query:
+        click.echo(ctx.get_help())
+        return
+
+    query = normalize_fts_query(raw_query)
+    run_search(query, Path(db), file_pat, branch_pat, project_pat, limit)
+
+
+@cli.command()
+@click.option("--full", is_flag=True, help="Full re-index (ignore stored mtimes)")
+@click.option(
+    "--db",
+    default=str(DB_PATH),
+    help="Database path",
+    show_default=True,
+    envvar="TRS_DB",
+)
+def index(full: bool, db: str) -> None:
+    """Build or update the session index."""
+    db_path = Path(db)
+    con = open_db(db_path)
+
+    stored: dict[str, float] = {}
+    if not full:
+        for row in con.execute("SELECT session_id, source_mtime FROM sessions"):
+            stored[row["session_id"]] = row["source_mtime"]
+
+    paths = glob_sessions()
+    total = len(paths)
+    skipped = indexed = 0
+
+    with click.progressbar(paths, label="Indexing", width=40) as bar:
+        for path in bar:
+            try:
+                mtime = path.stat().st_mtime
+            except OSError:
+                continue
+
+            sid = path.stem
+            if not full and stored.get(sid, 0.0) >= mtime:
+                skipped += 1
+                continue
+
+            try:
+                sess = parse_session(path)
+                upsert_session(con, sess, mtime)
+                indexed += 1
+                if indexed % 50 == 0:
+                    con.commit()
+            except Exception as e:
+                console.print(f"\n[yellow]Warning:[/yellow] {path.name}: {e}")
+
+    con.commit()
+    console.print(
+        f"Done. [green]{indexed}[/green] indexed, [dim]{skipped} skipped[/dim] "
+        f"(of {total} total)."
+    )
+    console.print(f"[dim]DB: {db_path}[/dim]")
+
+
+if __name__ == "__main__":
+    cli()
