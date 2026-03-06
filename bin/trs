@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -22,7 +24,8 @@ from rich.text import Text
 # --- paths ---
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
-DB_PATH = Path.home() / ".local" / "share" / "trs" / "index.db"
+_xdg_data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share")
+DB_PATH = _xdg_data / "trs" / "index.db"
 
 FILE_TOOLS = {"Write", "Edit", "Read", "MultiEdit"}
 
@@ -348,6 +351,91 @@ def normalize_fts_query(query: str) -> str:
     return " ".join(parts)
 
 
+# --- indexer (run) ---
+
+def run_index(db_path: Path, full: bool = False) -> None:
+    con = open_db(db_path)
+
+    stored: dict[str, float] = {}
+    db_ids: set[str] = set()
+    for row in con.execute("SELECT session_id, source_mtime FROM sessions"):
+        db_ids.add(row["session_id"])
+        if not full:
+            stored[row["session_id"]] = row["source_mtime"]
+
+    paths = glob_sessions()
+    live_ids = {p.stem for p in paths}
+    total = len(paths)
+    skipped = indexed = 0
+
+    with click.progressbar(paths, label="Indexing", width=40) as bar:
+        for path in bar:
+            try:
+                mtime = path.stat().st_mtime
+            except OSError:
+                continue
+
+            sid = path.stem
+            if not full and stored.get(sid, 0.0) >= mtime:
+                skipped += 1
+                continue
+
+            try:
+                sess = parse_session(path)
+                upsert_session(con, sess, mtime)
+                indexed += 1
+                if indexed % 50 == 0:
+                    con.commit()
+            except Exception as e:
+                console.print(f"\n[yellow]Warning:[/yellow] {path.name}: {e}")
+
+    # prune sessions whose source files have been deleted
+    dead_ids = list(db_ids - live_ids)
+    if dead_ids:
+        placeholders = ",".join("?" * len(dead_ids))
+        con.execute(f"DELETE FROM sessions WHERE session_id IN ({placeholders})", dead_ids)
+        con.execute(f"DELETE FROM sessions_fts WHERE session_id IN ({placeholders})", dead_ids)
+
+    con.commit()
+    parts = [f"[green]{indexed}[/green] indexed", f"[dim]{skipped} skipped[/dim]"]
+    if dead_ids:
+        parts.append(f"[red]{len(dead_ids)} pruned[/red]")
+    console.print(f"Done. {', '.join(parts)} (of {total} total).")
+    console.print(f"[dim]DB: {db_path}[/dim]")
+
+
+# --- db management ---
+
+def run_clean(db_path: Path) -> None:
+    if not db_path.exists():
+        console.print("[dim]No index found.[/dim]")
+        return
+    click.confirm(f"Delete index at {db_path}?", abort=True)
+    db_path.unlink()
+    console.print(f"[green]Deleted[/green] {db_path}")
+
+
+def run_export(db_path: Path, dest: Path) -> None:
+    if not db_path.exists():
+        console.print("[yellow]No index to export.[/yellow]")
+        return
+    dest = dest if dest.suffix else dest / db_path.name
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(db_path, dest)
+    console.print(f"Exported [cyan]{db_path}[/cyan] → [cyan]{dest}[/cyan]")
+
+
+def run_import(db_path: Path, src: Path) -> None:
+    if not src.exists():
+        console.print(f"[red]Source not found:[/red] {src}")
+        return
+    if db_path.exists():
+        click.confirm(f"Overwrite existing index at {db_path}?", abort=True)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, db_path)
+    console.print(f"Imported [cyan]{src}[/cyan] → [cyan]{db_path}[/cyan]")
+
+
 # --- search ---
 
 def run_search(
@@ -359,7 +447,7 @@ def run_search(
     limit: int,
 ) -> None:
     if not db_path.exists():
-        console.print("[yellow]Index not found. Run [bold]trs index[/bold] first.[/yellow]")
+        console.print("[yellow]Index not found. Run [bold]trs --index[/bold] first.[/yellow]")
         return
 
     con = open_db(db_path)
@@ -443,10 +531,16 @@ SEARCH_OPTIONS = [
     click.option("--branch", "-b", "branch_pat", default=None, help="Filter by git branch substring"),
     click.option("--project", "-p", "project_pat", default=None, help="Filter by cwd/project substring"),
     click.option("--limit", "-n", default=20, show_default=True, help="Max results"),
+    click.option("--index", "index_mode", flag_value="index", help="Incremental index before search (default when query given)"),
+    click.option("--reindex", "index_mode", flag_value="reindex", help="Full reindex before search"),
+    click.option("--no-index", "index_mode", flag_value="no-index", help="Skip indexing, use existing index as-is"),
+    click.option("--clean", is_flag=True, default=False, help="Delete the index database"),
+    click.option("--export", "export_path", default=None, type=click.Path(), metavar="PATH", help="Export index DB to PATH"),
+    click.option("--import", "import_path", default=None, type=click.Path(), metavar="PATH", help="Import index DB from PATH"),
     click.option(
         "--db",
         default=str(DB_PATH),
-        help="Database path",
+        help="Index database path",
         show_default=True,
         envvar="TRS_DB",
     ),
@@ -477,6 +571,10 @@ def cli(
     branch_pat: str | None,
     project_pat: str | None,
     limit: int,
+    index_mode: str | None,
+    clean: bool,
+    export_path: str | None,
+    import_path: str | None,
     db: str,
 ) -> None:
     """Full-text search over Claude Code session transcripts.
@@ -489,75 +587,51 @@ def cli(
       column scope:    trs "first_message:dynamo"
 
     \b
+    Index is stored at $XDG_DATA_HOME/trs/index.db
+    (default: ~/.local/share/trs/index.db); override with --db or $TRS_DB.
+
+    \b
     Examples:
       trs "LaunchDarkly migration"
       trs "DynamoDB" --branch "saved-media"
       trs "kitty" --project "dotfiles"
-      trs index
-      trs index --full
+      trs --index
+      trs --reindex
+      trs --export ~/backup.db
+      trs --clean
     """
     if ctx.invoked_subcommand is not None:
         return
 
     raw_query = ctx.meta.get("trs_query") or ""
+    db_path = Path(db)
+
+    if import_path:
+        run_import(db_path, Path(import_path))
+        return
+
+    if clean:
+        run_clean(db_path)
+        return
+
+    if export_path:
+        run_export(db_path, Path(export_path))
+        return
+
+    # default: auto-heal (incremental) when a query is present
+    effective_mode = index_mode if index_mode is not None else ("index" if raw_query else None)
+
+    if effective_mode in ("index", "reindex"):
+        run_index(db_path, full=(effective_mode == "reindex"))
+        if not raw_query:
+            return
+
     if not raw_query:
         click.echo(ctx.get_help())
         return
 
     query = normalize_fts_query(raw_query)
-    run_search(query, Path(db), file_pat, branch_pat, project_pat, limit)
-
-
-@cli.command()
-@click.option("--full", is_flag=True, help="Full re-index (ignore stored mtimes)")
-@click.option(
-    "--db",
-    default=str(DB_PATH),
-    help="Database path",
-    show_default=True,
-    envvar="TRS_DB",
-)
-def index(full: bool, db: str) -> None:
-    """Build or update the session index."""
-    db_path = Path(db)
-    con = open_db(db_path)
-
-    stored: dict[str, float] = {}
-    if not full:
-        for row in con.execute("SELECT session_id, source_mtime FROM sessions"):
-            stored[row["session_id"]] = row["source_mtime"]
-
-    paths = glob_sessions()
-    total = len(paths)
-    skipped = indexed = 0
-
-    with click.progressbar(paths, label="Indexing", width=40) as bar:
-        for path in bar:
-            try:
-                mtime = path.stat().st_mtime
-            except OSError:
-                continue
-
-            sid = path.stem
-            if not full and stored.get(sid, 0.0) >= mtime:
-                skipped += 1
-                continue
-
-            try:
-                sess = parse_session(path)
-                upsert_session(con, sess, mtime)
-                indexed += 1
-                if indexed % 50 == 0:
-                    con.commit()
-            except Exception as e:
-                console.print(f"\n[yellow]Warning:[/yellow] {path.name}: {e}")
-
-    con.commit()
-    console.print(
-        f"Done. [green]{indexed}[/green] indexed, [dim]{skipped} skipped[/dim] "
-        f"(of {total} total)."
-    )
-    console.print(f"[dim]DB: {db_path}[/dim]")
+    run_search(query, db_path, file_pat, branch_pat, project_pat, limit)
 
 
 if __name__ == "__main__":
