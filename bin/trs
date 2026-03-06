@@ -439,9 +439,9 @@ class TrsGroup(click.Group):
 
 
 SEARCH_OPTIONS = [
-    click.option("--file", "file_pat", default=None, help="Filter by file path substring"),
-    click.option("--branch", "branch_pat", default=None, help="Filter by git branch substring"),
-    click.option("--project", "project_pat", default=None, help="Filter by cwd/project substring"),
+    click.option("--file", "-f", "file_pat", default=None, help="Filter by file path substring"),
+    click.option("--branch", "-b", "branch_pat", default=None, help="Filter by git branch substring"),
+    click.option("--project", "-p", "project_pat", default=None, help="Filter by cwd/project substring"),
     click.option("--limit", "-n", default=20, show_default=True, help="Max results"),
     click.option(
         "--db",
