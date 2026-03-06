@@ -38,7 +38,7 @@
 
           profile=$(
             aws configure list-profiles --output text |
-              ${lib.getExe pkgs.gum} choose \
+              ${lib.getExe pkgs.gum} filter \
                 --header="Choose profile:" \
                 --ordered \
                 --selected="''${1:-''${AWS_PROFILE:-default}}" \
