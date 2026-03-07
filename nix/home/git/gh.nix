@@ -35,6 +35,7 @@ with lib.my;
         markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
 
         octocat = "api /octocat";
+        license = ''!gh api --paginate --jq 'if type == "object" then .body else .[].name end' licenses/"''${1-}"'';
 
         my-org = ''
           !gh api graphql -F owner='{owner}' -F name='{repo}' -f query='

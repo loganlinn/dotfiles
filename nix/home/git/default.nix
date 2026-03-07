@@ -33,13 +33,11 @@ in
     gdc = "gd --cached";
     gdn = "git diff --name-only";
     gfa = "git fetch --all";
-    ggrt = ''cd -- "$(grt)"'';
-    ggtl = ''cd -- "$(gtl)"'';
     gl = "git pull";
     glg = "git log --oneline --decorate";
     gp = "git push";
-    grt = ''git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .'';
-    gtl = "git rev-parse --show-toplevel";
+    grt = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)"'';
+    gtl = ''cd -- "$(git rev-parse --show-toplevel)"'';
     gw = "git show";
   };
 
