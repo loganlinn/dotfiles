@@ -2,7 +2,7 @@
 # -*- mode: python-*- vim: ft=python
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["click>=8", "rich>=13"]
+# dependencies = ["click>=8", "rich>=13", "pydantic>=2"]
 # ///
 """trs — transcript search over Claude Code sessions (SQLite FTS5)"""
 
@@ -13,12 +13,14 @@ import os
 import re
 import shutil
 import sqlite3
-from dataclasses import dataclass, field
+import sys
+import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import click
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from rich.console import Console
 from rich.style import Style
 from rich.text import Text
@@ -27,7 +29,9 @@ from rich.text import Text
 
 PROJECTS_DIR = Path.home() / ".claude" / "projects"
 _xdg_data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share")
+_xdg_config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
 DB_PATH = _xdg_data / "trs" / "index.db"
+PROFILES_PATH = _xdg_config / "trs" / "profiles.toml"
 
 FILE_TOOLS = {"Write", "Edit", "Read", "MultiEdit"}
 
@@ -55,7 +59,9 @@ CREATE TABLE IF NOT EXISTS sessions (
     first_message TEXT,
     summary       TEXT,
     indexed_at    TEXT NOT NULL,
-    source_mtime  REAL NOT NULL
+    source_mtime  REAL NOT NULL,
+    content_hash  TEXT,
+    metadata      TEXT
 );
 
 CREATE VIRTUAL TABLE IF NOT EXISTS sessions_fts USING fts5(
@@ -68,7 +74,34 @@ CREATE VIRTUAL TABLE IF NOT EXISTS sessions_fts USING fts5(
     body,
     tokenize = 'porter unicode61'
 );
+
+CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY);
 """
+
+CURRENT_VERSION = 2
+
+MIGRATIONS: dict[int, list[str]] = {
+    2: [
+        "ALTER TABLE sessions ADD COLUMN content_hash TEXT",
+        "ALTER TABLE sessions ADD COLUMN metadata TEXT",
+    ],
+}
+
+
+def _run_migrations(con: sqlite3.Connection) -> None:
+    con.execute("CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY)")
+    row = con.execute("SELECT MAX(version) AS v FROM schema_version").fetchone()
+    current = row["v"] or 0
+    for version in sorted(MIGRATIONS):
+        if version <= current:
+            continue
+        for stmt in MIGRATIONS[version]:
+            try:
+                con.execute(stmt)
+            except sqlite3.OperationalError:
+                pass  # duplicate column or no such table — safe to ignore
+        con.execute("INSERT OR IGNORE INTO schema_version (version) VALUES (?)", (version,))
+        con.commit()
 
 
 def open_db(path: Path, init: bool = False) -> sqlite3.Connection:
@@ -78,27 +111,106 @@ def open_db(path: Path, init: bool = False) -> sqlite3.Connection:
     if init:
         con.executescript(SCHEMA)
         con.commit()
+    _run_migrations(con)
     return con
 
 
-# --- JSONL parsing ---
+# --- models ---
 
-@dataclass
-class Session:
+class Session(BaseModel):
     session_id: str
-    slug: str
+    slug: str = ""
     source: str = "claude-code"
     cwd: str = ""
-    git_branches: list[str] = field(default_factory=list)
+    git_branches: list[str] = Field(default_factory=list)
     start_time: str = ""
     end_time: str = ""
-    files_touched: list[str] = field(default_factory=list)
-    tools_used: list[str] = field(default_factory=list)
+    files_touched: list[str] = Field(default_factory=list)
+    tools_used: list[str] = Field(default_factory=list)
     message_count: int = 0
     first_message: str = ""
     summary: str = ""
-    body_parts: list[str] = field(default_factory=list)
+    body: str = ""
+    content_hash: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
+
+class IngestRecord(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    session_id: str = Field(description="Stable unique ID for this conversation")
+    source: str = Field(description='Application name (e.g. "codex", "slack")')
+    body: str = Field(description="Full text content for full-text search")
+    start_time: str = Field(default="", description="ISO 8601 timestamp")
+    end_time: str = Field(default="", description="ISO 8601 timestamp")
+    first_message: str = Field(default="", description="Opening message (shown in search results)")
+    summary: str = Field(default="", description="Short description (shown in search results)")
+    message_count: int = Field(default=0, description="Number of messages in conversation")
+    cwd: str = Field(default="", description="Working directory or context path")
+    slug: str = Field(default="", description="Conversation title / channel name")
+    git_branches: list[str] = Field(default_factory=list, description="Git branches active during session")
+    files_touched: list[str] = Field(default_factory=list, description="File paths referenced")
+    tools_used: list[str] = Field(default_factory=list, description="Tool/command names used")
+    content_hash: str | None = Field(default=None, description="SHA-256 of source content (enables dedup on re-ingest)")
+
+    def to_session(self) -> Session:
+        known = set(IngestRecord.model_fields)
+        return Session(
+            **{k: getattr(self, k) for k in known},
+            metadata=self.model_extra or {},
+        )
+
+
+# --- profile config ---
+
+class FieldProfile(BaseModel):
+    source: str | None = None
+    fields: dict[str, str] = Field(default_factory=dict)
+    defaults: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProfilesConfig(BaseModel):
+    profiles: dict[str, FieldProfile] = Field(default_factory=dict)
+
+
+def _load_profiles(config_path: Path) -> ProfilesConfig:
+    if not config_path.exists():
+        return ProfilesConfig()
+    with open(config_path, "rb") as f:
+        data = tomllib.load(f)
+    return ProfilesConfig.model_validate(data)
+
+
+def _resolve_dot_path(obj: Any, path: str) -> Any:
+    """Walk a.b.c path into nested dicts; return None if any key missing."""
+    for part in path.split("."):
+        if not isinstance(obj, dict):
+            return None
+        obj = obj.get(part)
+    return obj
+
+
+def apply_profile(record: dict[str, Any], profile: FieldProfile) -> dict[str, Any]:
+    result: dict[str, Any] = dict(profile.defaults)
+    remapped_keys: set[str] = set()
+
+    for src_path, dst_field in profile.fields.items():
+        value = _resolve_dot_path(record, src_path)
+        if value is not None:
+            result[dst_field] = value
+        remapped_keys.add(src_path.split(".")[0])
+
+    for key, value in record.items():
+        if key not in remapped_keys and key not in result:
+            result[key] = value
+
+    if profile.source:
+        result["source"] = profile.source
+
+    return result
+
+
+# --- JSONL parsing ---
 
 def _text_from_content(content: Any) -> str:
     if isinstance(content, str):
@@ -121,11 +233,16 @@ def _rec_content(rec: dict) -> Any:
 def parse_session(path: Path) -> Session:
     slug = path.parent.name
     session_id = path.stem
-    sess = Session(session_id=session_id, slug=slug)
-
+    body_parts: list[str] = []
     branches: set[str] = set()
     files: set[str] = set()
     tools: set[str] = set()
+    cwd = ""
+    start_time = ""
+    end_time = ""
+    message_count = 0
+    first_message = ""
+    summary = ""
 
     with open(path, encoding="utf-8", errors="replace") as f:
         for raw in f:
@@ -139,16 +256,15 @@ def parse_session(path: Path) -> Session:
 
             rtype = rec.get("type")
 
-            # common metadata present on most records
-            if rec.get("cwd") and not sess.cwd:
-                sess.cwd = rec["cwd"]
+            if rec.get("cwd") and not cwd:
+                cwd = rec["cwd"]
             if rec.get("gitBranch"):
                 branches.add(rec["gitBranch"])
             ts = rec.get("timestamp", "")
             if ts:
-                if not sess.start_time:
-                    sess.start_time = ts
-                sess.end_time = ts
+                if not start_time:
+                    start_time = ts
+                end_time = ts
 
             if rtype == "user":
                 content = _rec_content(rec)
@@ -156,16 +272,16 @@ def parse_session(path: Path) -> Session:
                     content = rec.get("content")
                 text = _text_from_content(content)
                 if text:
-                    sess.message_count += 1
-                    if not sess.first_message:
-                        sess.first_message = text[:500]
-                    sess.body_parts.append(text[:1000])
+                    message_count += 1
+                    if not first_message:
+                        first_message = text[:500]
+                    body_parts.append(text[:1000])
 
             elif rtype == "assistant":
                 content = _rec_content(rec)
                 if not isinstance(content, list):
                     continue
-                sess.message_count += 1
+                message_count += 1
                 for block in content:
                     if not isinstance(block, dict):
                         continue
@@ -173,7 +289,7 @@ def parse_session(path: Path) -> Session:
                     if btype == "text":
                         text = block.get("text", "")
                         if text:
-                            sess.body_parts.append(text[:1000])
+                            body_parts.append(text[:1000])
                     elif btype == "tool_use":
                         name = block.get("name", "")
                         inp = block.get("input") or {}
@@ -186,17 +302,27 @@ def parse_session(path: Path) -> Session:
                         elif name == "Bash":
                             cmd = inp.get("command", "")
                             if cmd:
-                                sess.body_parts.append(cmd[:200])
+                                body_parts.append(cmd[:200])
 
             elif rtype == "summary":
                 summ = rec.get("summary", "")
                 if summ:
-                    sess.summary = summ  # keep last
+                    summary = summ
 
-    sess.git_branches = sorted(branches)
-    sess.files_touched = sorted(files)
-    sess.tools_used = sorted(tools)
-    return sess
+    return Session(
+        session_id=session_id,
+        slug=slug,
+        cwd=cwd,
+        start_time=start_time,
+        end_time=end_time,
+        message_count=message_count,
+        first_message=first_message,
+        summary=summary,
+        git_branches=sorted(branches),
+        files_touched=sorted(files),
+        tools_used=sorted(tools),
+        body=" ".join(body_parts),
+    )
 
 
 # --- indexer ---
@@ -205,7 +331,6 @@ def glob_sessions() -> list[Path]:
     paths = []
     for p in PROJECTS_DIR.rglob("*.jsonl"):
         parts = p.parts
-        # skip subagents/ and tool-results/ directories
         if "subagents" in parts or "tool-results" in parts:
             continue
         paths.append(p)
@@ -217,31 +342,32 @@ def upsert_session(con: sqlite3.Connection, sess: Session, mtime: float) -> None
     branches_json = json.dumps(sess.git_branches)
     files_json = json.dumps(sess.files_touched)
     tools_json = json.dumps(sess.tools_used)
-    body = " ".join(sess.body_parts)
+    metadata_json = json.dumps(sess.metadata) if sess.metadata else None
 
     con.execute(
         """
         INSERT INTO sessions
             (session_id, source, cwd, slug, git_branches, start_time, end_time,
              files_touched, tools_used, message_count, first_message, summary,
-             indexed_at, source_mtime)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+             indexed_at, source_mtime, content_hash, metadata)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ON CONFLICT(session_id) DO UPDATE SET
             source=excluded.source, cwd=excluded.cwd, slug=excluded.slug,
             git_branches=excluded.git_branches, start_time=excluded.start_time,
             end_time=excluded.end_time, files_touched=excluded.files_touched,
             tools_used=excluded.tools_used, message_count=excluded.message_count,
             first_message=excluded.first_message, summary=excluded.summary,
-            indexed_at=excluded.indexed_at, source_mtime=excluded.source_mtime
+            indexed_at=excluded.indexed_at, source_mtime=excluded.source_mtime,
+            content_hash=excluded.content_hash, metadata=excluded.metadata
         """,
         (
             sess.session_id, sess.source, sess.cwd, sess.slug,
             branches_json, sess.start_time, sess.end_time,
             files_json, tools_json, sess.message_count,
             sess.first_message, sess.summary, now, mtime,
+            sess.content_hash, metadata_json,
         ),
     )
-    # FTS: delete + reinsert
     con.execute("DELETE FROM sessions_fts WHERE session_id = ?", (sess.session_id,))
     con.execute(
         """
@@ -251,9 +377,64 @@ def upsert_session(con: sqlite3.Connection, sess: Session, mtime: float) -> None
         """,
         (
             sess.session_id, sess.cwd or "", branches_json, sess.summary,
-            sess.first_message, " ".join(sess.files_touched), body,
+            sess.first_message, " ".join(sess.files_touched), sess.body,
         ),
     )
+
+
+# --- ingest ---
+
+def run_ingest(
+    db_path: Path,
+    source_filter: str | None,
+    profile: FieldProfile | None,
+) -> None:
+    con = open_db(db_path, init=True)
+
+    existing: dict[str, str] = {
+        row["session_id"]: row["content_hash"]
+        for row in con.execute(
+            "SELECT session_id, content_hash FROM sessions WHERE content_hash IS NOT NULL"
+        )
+        if row["content_hash"]
+    }
+
+    indexed = skipped = errors = 0
+    for lineno, raw in enumerate(sys.stdin, 1):
+        raw = raw.strip()
+        if not raw:
+            continue
+        try:
+            if profile is not None:
+                raw_dict = json.loads(raw)
+                raw_dict = apply_profile(raw_dict, profile)
+                record = IngestRecord.model_validate(raw_dict)
+            else:
+                record = IngestRecord.model_validate_json(raw)
+        except (ValidationError, json.JSONDecodeError, ValueError) as e:
+            console.print(f"[yellow]Line {lineno}: validation error — {e}[/yellow]")
+            errors += 1
+            continue
+
+        if source_filter and record.source != source_filter:
+            skipped += 1
+            continue
+
+        if record.content_hash and existing.get(record.session_id) == record.content_hash:
+            skipped += 1
+            continue
+
+        sess = record.to_session()
+        upsert_session(con, sess, mtime=0.0)
+        indexed += 1
+        if indexed % 50 == 0:
+            con.commit()
+
+    con.commit()
+    parts = [f"[green]{indexed}[/green] indexed", f"[dim]{skipped} skipped[/dim]"]
+    if errors:
+        parts.append(f"[red]{errors} errors[/red]")
+    console.print(f"Done. {', '.join(parts)}.")
 
 
 # --- display ---
@@ -366,7 +547,11 @@ def display_result(row: sqlite3.Row) -> None:
         line.append_text(files_text)
         console.print(line)
 
-    console.print(f"  [dim]claude --resume {session_id}[/dim]")
+    source = row["source"] or "claude-code"
+    if source.startswith("claude"):
+        console.print(f"  [dim]claude --resume {session_id}[/dim]")
+    else:
+        console.print(f"  [dim]{source}  {session_id}[/dim]")
     console.print()
 
 
@@ -427,7 +612,6 @@ def run_index(db_path: Path, full: bool = False) -> None:
             except Exception as e:
                 console.print(f"\n[yellow]Warning:[/yellow] {path.name}: {e}")
 
-    # prune sessions whose source files have been deleted
     dead_ids = list(db_ids - live_ids)
     if dead_ids:
         placeholders = ",".join("?" * len(dead_ids))
@@ -539,14 +723,10 @@ def run_search(
 
 # --- CLI ---
 
-# Custom group that gracefully handles unknown subcommands (treats them as
-# search queries instead of raising UsageError).
 class TrsGroup(click.Group):
     def invoke(self, ctx: click.Context) -> Any:
         import warnings
 
-        # click 8: first remaining positional → ctx.protected_args; rest → ctx.args
-        # click 9: everything → ctx.args (protected_args deprecated)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             all_positional = list(ctx.protected_args) + list(ctx.args)
@@ -556,7 +736,6 @@ class TrsGroup(click.Group):
 
         first = all_positional[0]
         if self.get_command(ctx, first) is None:
-            # Not a known subcommand: use first positional as search query.
             ctx.meta["trs_query"] = first
             ctx.invoked_subcommand = None
             return click.Command.invoke(self, ctx)
@@ -656,7 +835,6 @@ def cli(
         run_export(db_path, Path(export_path))
         return
 
-    # default: auto-heal (incremental) when a query is present
     effective_mode = index_mode if index_mode is not None else (INDEX_INCREMENTAL if raw_query else None)
 
     if effective_mode in (INDEX_INCREMENTAL, INDEX_FULL):
@@ -670,6 +848,95 @@ def cli(
 
     query = normalize_fts_query(raw_query)
     run_search(query, db_path, file_pat, branch_pat, project_pat, limit)
+
+
+@cli.command()
+@click.option("--profile", "-P", default=None, help="Profile name from profiles.toml")
+@click.option("--config", "config_path", default=None, type=click.Path(), help="Path to profiles TOML")
+@click.option("--source", "-s", default=None, help="Only accept records with this source value")
+@click.option("--db", default=str(DB_PATH), envvar="TRS_DB", show_default=True)
+def ingest(profile: str | None, config_path: str | None, source: str | None, db: str) -> None:
+    """Index transcripts from stdin (NDJSON, one session per line).
+
+    Each line must be a JSON object with at minimum:
+      session_id (str), source (str), body (str)
+
+    Optional: start_time, end_time, first_message, summary, message_count,
+              cwd, slug, git_branches, files_touched, tools_used, content_hash.
+    Any extra fields are stored in the metadata column.
+    """
+    resolved_profile: FieldProfile | None = None
+    if profile is not None:
+        cfg_path = Path(config_path) if config_path else PROFILES_PATH
+        cfg = _load_profiles(cfg_path)
+        if profile not in cfg.profiles:
+            raise click.ClickException(f"Profile {profile!r} not found in {cfg_path}")
+        resolved_profile = cfg.profiles[profile]
+
+    run_ingest(Path(db), source, resolved_profile)
+
+
+@cli.command(name="profiles")
+@click.option("--config", "config_path", default=None, type=click.Path(), help="Path to profiles TOML")
+def list_profiles(config_path: str | None) -> None:
+    """List profiles from profiles.toml."""
+    cfg_path = Path(config_path) if config_path else PROFILES_PATH
+    cfg = _load_profiles(cfg_path)
+    if not cfg.profiles:
+        console.print(f"[dim]No profiles found in {cfg_path}[/dim]")
+        return
+    console.print(f"[dim]{len(cfg.profiles)} profile(s) in {cfg_path}[/dim]\n")
+    for name, prof in cfg.profiles.items():
+        src = f"source={prof.source}" if prof.source else "—"
+        field_count = len(prof.fields)
+        default_count = len(prof.defaults)
+        parts = [f"[bold]{name:<16}[/bold]", f"[dim]{src:<20}[/dim]"]
+        if field_count:
+            parts.append(f"{field_count} field mapping{'s' if field_count != 1 else ''}")
+        if default_count:
+            parts.append(f"{default_count} default{'s' if default_count != 1 else ''}")
+        console.print("  " + "  ".join(parts))
+
+
+@cli.command()
+@click.option("--json", "as_json", is_flag=True, help="Emit raw JSON Schema")
+def schema(as_json: bool) -> None:
+    """Print canonical IngestRecord JSON schema."""
+    if as_json:
+        console.print(json.dumps(IngestRecord.model_json_schema(), indent=2))
+        return
+
+    console.print("[bold]IngestRecord[/bold] — canonical trs ingest format\n")
+    console.print("[bold]Required fields:[/bold]")
+    for fname in ("session_id", "source", "body"):
+        f = IngestRecord.model_fields[fname]
+        ftype = "string"
+        console.print(f"  [cyan]{fname:<16}[/cyan] [dim]{ftype:<8}[/dim] {f.description}")
+
+    console.print()
+    console.print("[bold]Optional fields:[/bold]")
+    optional_info = [
+        ("start_time", "string"),
+        ("end_time", "string"),
+        ("first_message", "string"),
+        ("summary", "string"),
+        ("message_count", "integer"),
+        ("cwd", "string"),
+        ("slug", "string"),
+        ("git_branches", "array"),
+        ("files_touched", "array"),
+        ("tools_used", "array"),
+        ("content_hash", "string"),
+    ]
+    for fname, ftype in optional_info:
+        f = IngestRecord.model_fields[fname]
+        console.print(f"  [cyan]{fname:<16}[/cyan] [dim]{ftype:<8}[/dim] {f.description}")
+
+    console.print()
+    console.print("[dim]Extra fields: stored verbatim in metadata column (source-specific data).[/dim]")
+    console.print()
+    console.print("[bold]Example:[/bold]")
+    console.print('  [dim]{"session_id":"abc","source":"codex","body":"full text","content_hash":"sha256..."}[/dim]')
 
 
 if __name__ == "__main__":
