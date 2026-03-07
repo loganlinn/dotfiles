@@ -25,6 +25,7 @@ with lib.my;
         prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
         pro = ''!gh pr view --web "$@"'';
         prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
+        needs-testing = ''!gh pr list --search "is:merged label:needs-testing ''${1-'author:@me'}"'';
 
         checks = "pr checks";
         # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';
