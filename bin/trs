@@ -582,7 +582,10 @@ def run_index(db_path: Path, full: bool = False) -> None:
     stored: dict[str, float] = {}
     db_ids: set[str] = set()
     for row in con.execute("SELECT session_id, source_mtime FROM sessions"):
-        db_ids.add(row["session_id"])
+        # Only file-backed sessions (mtime > 0) are eligible for pruning;
+        # externally-ingested sessions (mtime == 0) are managed by content_hash.
+        if row["source_mtime"] > 0.0:
+            db_ids.add(row["session_id"])
         if not full:
             stored[row["session_id"]] = row["source_mtime"]
 
