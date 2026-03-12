@@ -35,7 +35,7 @@ DB_PATH = _xdg_data / "trs" / "index.db"
 PROFILES_PATH = _xdg_config / "trs" / "profiles.toml"
 
 FILE_TOOLS = {"Write", "Edit", "Read", "MultiEdit"}
-ROLE_COLORS = {"user": "green", "assistant": "blue", "summary": "yellow"}
+ROLE_COLORS = {"user": "green", "assistant": "blue", "summary": "yellow", "teammate": "cyan"}
 GROUP_SEP = "--"
 
 INDEX_INCREMENTAL = "index"
@@ -215,6 +215,50 @@ def apply_profile(record: dict[str, Any], profile: FieldProfile) -> dict[str, An
 
 # --- JSONL parsing ---
 
+_TEAMMATE_RE = re.compile(
+    r"<teammate-message\b([^>]*)>(.*?)</teammate-message>",
+    re.DOTALL,
+)
+_TEAMMATE_ATTR_RE = re.compile(r'(\w+)="([^"]*)"')
+
+
+@dataclass
+class TeammateMsg:
+    teammate_id: str
+    summary: str
+    body: str
+    color: str
+
+
+def _parse_teammate_messages(text: str) -> tuple[str, list[TeammateMsg]]:
+    """Extract <teammate-message> blocks from text. Returns (remaining_text, teammates)."""
+    teammates: list[TeammateMsg] = []
+    remaining = text
+    for m in _TEAMMATE_RE.finditer(text):
+        attrs = dict(_TEAMMATE_ATTR_RE.findall(m.group(1)))
+        tid = attrs.get("teammate_id", "")
+        summary = attrs.get("summary", "")
+        color = attrs.get("color", "")
+        body = m.group(2).strip()
+        # Skip system/lifecycle noise
+        if tid == "system":
+            remaining = remaining.replace(m.group(0), "", 1)
+            continue
+        if not summary and body.startswith("{"):
+            try:
+                jbody = json.loads(body)
+                noise_types = {"idle_notification", "shutdown_approved", "shutdown_request",
+                               "teammate_terminated", "teammate_started"}
+                if jbody.get("type") in noise_types:
+                    remaining = remaining.replace(m.group(0), "", 1)
+                    continue
+            except (json.JSONDecodeError, ValueError):
+                pass
+        teammates.append(TeammateMsg(tid, summary, body, color))
+        remaining = remaining.replace(m.group(0), "", 1)
+    return remaining.strip(), teammates
+
+
 def _text_from_content(content: Any) -> str:
     if isinstance(content, str):
         return content
@@ -275,10 +319,15 @@ def parse_session(path: Path) -> Session:
                     content = rec.get("content")
                 text = _text_from_content(content)
                 if text:
-                    message_count += 1
-                    if not first_message:
-                        first_message = text[:500]
-                    body_parts.append(text[:1000])
+                    remaining, teammates = _parse_teammate_messages(text)
+                    for tm in teammates:
+                        message_count += 1
+                        body_parts.append(f"{tm.teammate_id}: {tm.summary} {tm.body[:500]}")
+                    if remaining:
+                        message_count += 1
+                        if not first_message:
+                            first_message = remaining[:500]
+                        body_parts.append(remaining[:1000])
 
             elif rtype == "assistant":
                 content = _rec_content(rec)
@@ -445,8 +494,11 @@ def run_ingest(
 @dataclass
 class Message:
     index: int
-    role: str  # "user", "assistant", "summary"
+    role: str  # "user", "assistant", "summary", "teammate"
     text: str
+    teammate_id: str = ""
+    teammate_summary: str = ""
+    teammate_color: str = ""
 
 
 def _extract_messages(path: Path) -> list[Message]:
@@ -470,8 +522,18 @@ def _extract_messages(path: Path) -> list[Message]:
                     content = rec.get("content")
                 text = _text_from_content(content)
                 if text:
-                    messages.append(Message(idx, "user", text))
-                    idx += 1
+                    remaining, teammates = _parse_teammate_messages(text)
+                    for tm in teammates:
+                        messages.append(Message(
+                            idx, "teammate", tm.body,
+                            teammate_id=tm.teammate_id,
+                            teammate_summary=tm.summary,
+                            teammate_color=tm.color,
+                        ))
+                        idx += 1
+                    if remaining:
+                        messages.append(Message(idx, "user", remaining))
+                        idx += 1
             elif rtype == "assistant":
                 content = _rec_content(rec)
                 if not isinstance(content, list):
@@ -590,15 +652,30 @@ def _format_message_line(
 ) -> Text:
     """Format a single message line, ripgrep-style."""
     num_width = 4
-    role_color = ROLE_COLORS.get(msg.role, "white")
     sep = ":" if is_match else "-"
     sep_style = "bold" if is_match else "dim"
+
+    # Determine role label and color
+    if msg.role == "teammate":
+        role_label = f"claude[{msg.teammate_id}]" if msg.teammate_id else "claude[teammate]"
+        role_color = msg.teammate_color or ROLE_COLORS["teammate"]
+    elif msg.role == "assistant":
+        role_label = "claude"
+        role_color = ROLE_COLORS["assistant"]
+    else:
+        role_label = msg.role
+        role_color = ROLE_COLORS.get(msg.role, "white")
 
     line = Text()
     line.append(f"{msg.index + 1:>{num_width}}", style="dim green" if is_match else "dim")
     line.append(sep, style=sep_style)
-    line.append(f"{msg.role}", style=f"bold {role_color}" if is_match else f"dim {role_color}")
+    line.append(role_label, style=f"bold {role_color}" if is_match else f"dim {role_color}")
     line.append(sep, style=sep_style)
+
+    # Teammate context: show summary only
+    if msg.role == "teammate" and not is_match and msg.teammate_summary:
+        line.append(f" {msg.teammate_summary}", style="dim")
+        return line
 
     # Truncate long messages, show first N lines
     text = msg.text.strip()
