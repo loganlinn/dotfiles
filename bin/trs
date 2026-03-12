@@ -15,6 +15,7 @@ import shutil
 import sqlite3
 import sys
 import tomllib
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,8 @@ DB_PATH = _xdg_data / "trs" / "index.db"
 PROFILES_PATH = _xdg_config / "trs" / "profiles.toml"
 
 FILE_TOOLS = {"Write", "Edit", "Read", "MultiEdit"}
+ROLE_COLORS = {"user": "green", "assistant": "blue", "summary": "yellow"}
+GROUP_SEP = "--"
 
 INDEX_INCREMENTAL = "index"
 INDEX_FULL = "reindex"
@@ -437,6 +440,105 @@ def run_ingest(
     console.print(f"Done. {', '.join(parts)}.")
 
 
+# --- message extraction ---
+
+@dataclass
+class Message:
+    index: int
+    role: str  # "user", "assistant", "summary"
+    text: str
+
+
+def _extract_messages(path: Path) -> list[Message]:
+    """Re-parse a session JSONL to extract ordered messages."""
+    messages: list[Message] = []
+    idx = 0
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for raw in f:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                rec = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+
+            rtype = rec.get("type")
+            if rtype == "user":
+                content = _rec_content(rec)
+                if content is None:
+                    content = rec.get("content")
+                text = _text_from_content(content)
+                if text:
+                    messages.append(Message(idx, "user", text))
+                    idx += 1
+            elif rtype == "assistant":
+                content = _rec_content(rec)
+                if not isinstance(content, list):
+                    continue
+                parts: list[str] = []
+                for block in content:
+                    if not isinstance(block, dict):
+                        continue
+                    btype = block.get("type")
+                    if btype == "text":
+                        t = block.get("text", "")
+                        if t:
+                            parts.append(t)
+                    elif btype == "tool_use":
+                        name = block.get("name", "")
+                        inp = block.get("input") or {}
+                        if name in FILE_TOOLS:
+                            fp = inp.get("file_path", "")
+                            if fp:
+                                parts.append(f"[{name} {fp}]")
+                        elif name == "Bash":
+                            cmd = inp.get("command", "")
+                            if cmd:
+                                parts.append(f"$ {cmd[:120]}")
+                if parts:
+                    messages.append(Message(idx, "assistant", "\n".join(parts)))
+                    idx += 1
+            elif rtype == "summary":
+                summ = rec.get("summary", "")
+                if summ:
+                    messages.append(Message(idx, "summary", summ))
+                    idx += 1
+    return messages
+
+
+def _query_terms(query: str) -> list[str]:
+    """Extract plain search terms from an FTS5 query for highlighting."""
+    # Strip FTS5 operators and quotes, extract words
+    cleaned = re.sub(r'["\']', " ", query)
+    cleaned = re.sub(r"\b(AND|OR|NOT|NEAR)\b", " ", cleaned, flags=re.IGNORECASE)
+    terms = []
+    for t in cleaned.split():
+        t = t.strip("*(){}[]")
+        if t and len(t) > 1:
+            terms.append(t.lower())
+    return terms
+
+
+def _message_matches(msg: Message, terms: list[str]) -> bool:
+    text_lower = msg.text.lower()
+    return any(t in text_lower for t in terms)
+
+
+def _session_jsonl_path(session_id: str, slug: str) -> Path | None:
+    """Locate the JSONL file for a session."""
+    if slug:
+        candidate = PROJECTS_DIR / slug / f"{session_id}.jsonl"
+        if candidate.exists():
+            return candidate
+    # fallback: search all project dirs
+    for p in PROJECTS_DIR.iterdir():
+        candidate = p / f"{session_id}.jsonl"
+        if candidate.exists():
+            return candidate
+    return None
+
+
 # --- display ---
 
 def _duration(start: str, end: str) -> str:
@@ -463,96 +565,180 @@ def _short_date(ts: str) -> str:
     return ts[:10]
 
 
-_URL_RE = re.compile(r"https?://\S+")
-
-
-def _linkify(text: str) -> Text:
-    """Return a Text object with http(s) URLs turned into clickable links."""
+def _highlight_terms(text: str, terms: list[str]) -> Text:
+    """Highlight matching terms in text, like ripgrep's match highlighting."""
+    if not terms:
+        return Text(text)
+    # Build a regex matching any term (case insensitive)
+    escaped = [re.escape(t) for t in terms]
+    pattern = re.compile("|".join(escaped), re.IGNORECASE)
     result = Text()
     last = 0
-    for m in _URL_RE.finditer(text):
+    for m in pattern.finditer(text):
         result.append(text[last : m.start()])
-        url = m.group()
-        result.append(url, style=Style(link=url))
+        result.append(m.group(), style="bold red")
         last = m.end()
     result.append(text[last:])
     return result
 
 
-def _files_summary(files_json: str) -> Text | None:
-    try:
-        files = json.loads(files_json or "[]")
-    except Exception:
-        return None
-    if not files:
-        return None
-    show = files[:3]
-    extra = len(files) - 3 if len(files) > 3 else 0
-    result = Text()
-    for i, fpath in enumerate(show):
-        if i:
-            result.append(", ")
-        result.append(Path(fpath).name, style=Style(link=f"file://{fpath}"))
-    if extra:
-        result.append(f" (+{extra})", style="dim")
-    return result
+def _format_message_line(
+    msg: Message,
+    terms: list[str],
+    is_match: bool,
+    max_lines: int = 6,
+) -> Text:
+    """Format a single message line, ripgrep-style."""
+    num_width = 4
+    role_color = ROLE_COLORS.get(msg.role, "white")
+    sep = ":" if is_match else "-"
+    sep_style = "bold" if is_match else "dim"
+
+    line = Text()
+    line.append(f"{msg.index + 1:>{num_width}}", style="dim green" if is_match else "dim")
+    line.append(sep, style=sep_style)
+    line.append(f"{msg.role}", style=f"bold {role_color}" if is_match else f"dim {role_color}")
+    line.append(sep, style=sep_style)
+
+    # Truncate long messages, show first N lines
+    text = msg.text.strip()
+    text_lines = text.split("\n")
+    if len(text_lines) > max_lines:
+        text_lines = text_lines[:max_lines]
+        text_lines.append(f"  ... (+{len(msg.text.split(chr(10))) - max_lines} lines)")
+    display_text = "\n".join(text_lines)
+
+    if is_match and terms:
+        line.append(" ")
+        line.append_text(_highlight_terms(display_text, terms))
+    else:
+        line.append(f" {display_text}", style="dim" if not is_match else "")
+    return line
 
 
-def display_result(row: sqlite3.Row) -> None:
+def _print_session_header(row: sqlite3.Row) -> None:
+    """Print ripgrep-style session header (like a filename line)."""
     session_id = row["session_id"]
-    slug = row["slug"] or ""
     cwd = row["cwd"] or ""
     branches = json.loads(row["git_branches"] or "[]")
     start = row["start_time"] or ""
     end = row["end_time"] or ""
     msgs = row["message_count"] or 0
-    first_msg = row["first_message"] or ""
-    summary = row["summary"] or ""
-    files_json = row["files_touched"] or "[]"
 
     date = _short_date(start)
     dur = _duration(start, end)
-    files_text = _files_summary(files_json)
 
+    # Primary line: cwd path (like ripgrep's filename in magenta)
     header = Text()
-    header.append("● ", style="bold green")
-    header.append(slug or session_id, style="bold")
+    if cwd:
+        header.append(cwd, style=Style(bold=True, color="magenta", link=f"file://{cwd}"))
+    else:
+        header.append(session_id, style="bold magenta")
+
+    # Metadata on same line, dimmed
+    meta_parts: list[str] = []
+    if branches:
+        meta_parts.append(f"⎇ {', '.join(branches)}")
     if date:
-        header.append(f"  {date}", style="dim")
+        meta_parts.append(date)
     if dur:
-        header.append(f"  {dur}", style="dim")
+        meta_parts.append(dur)
     if msgs:
-        header.append(f"  {msgs} msgs", style="dim")
+        meta_parts.append(f"{msgs} msgs")
+    if meta_parts:
+        header.append("  ")
+        header.append("  ".join(meta_parts), style="dim")
     console.print(header)
 
-    meta = Text("  ")
-    meta.append(cwd, style=Style(color="cyan", link=f"file://{cwd}") if cwd else "cyan")
-    if branches:
-        meta.append("  ⎇  ", style="dim")
-        meta.append(", ".join(branches), style="yellow")
-    console.print(meta)
 
+def _print_session_footer(row: sqlite3.Row) -> None:
+    """Print resume command."""
+    session_id = row["session_id"]
+    source = row["source"] or "claude-code"
+    if source.startswith("claude"):
+        console.print(f"[dim]claude --resume {session_id}[/dim]")
+    else:
+        console.print(f"[dim]{source}  {session_id}[/dim]")
+
+
+def display_result(
+    row: sqlite3.Row,
+    terms: list[str] | None = None,
+    context_before: int = 0,
+    context_after: int = 0,
+) -> None:
+    terms = terms or []
+    session_id = row["session_id"]
+    slug = row["slug"] or ""
+
+    _print_session_header(row)
+
+    # Try to load and display matching messages with context
+    jsonl_path = _session_jsonl_path(session_id, slug)
+    if jsonl_path and terms and (context_before > 0 or context_after > 0 or True):
+        messages = _extract_messages(jsonl_path)
+        if messages:
+            _display_conversation(messages, terms, context_before, context_after)
+            _print_session_footer(row)
+            console.print()
+            return
+
+    # Fallback: show first_message/summary (no JSONL or no terms)
+    first_msg = row["first_message"] or ""
+    summary = row["summary"] or ""
     desc = summary or first_msg
     if desc:
         desc = desc.replace("\n", " ").strip()
-        if len(desc) > 120:
-            desc = desc[:117] + "..."
-        desc_text = Text("  ")
-        desc_text.append_text(_linkify(desc))
-        console.print(desc_text, style="italic")
+        if len(desc) > 200:
+            desc = desc[:197] + "..."
+        line = Text("     ")
+        if terms:
+            line.append_text(_highlight_terms(desc, terms))
+        else:
+            line.append(desc)
+        console.print(line, style="italic")
 
-    if files_text is not None:
-        line = Text("  ")
-        line.append("Files: ", style="dim")
-        line.append_text(files_text)
-        console.print(line)
-
-    source = row["source"] or "claude-code"
-    if source.startswith("claude"):
-        console.print(f"  [dim]claude --resume {session_id}[/dim]")
-    else:
-        console.print(f"  [dim]{source}  {session_id}[/dim]")
+    _print_session_footer(row)
     console.print()
+
+
+def _display_conversation(
+    messages: list[Message],
+    terms: list[str],
+    before: int,
+    after: int,
+) -> None:
+    """Display matching messages with context, ripgrep-style."""
+    # Find matching message indices
+    match_indices = {m.index for m in messages if _message_matches(m, terms)}
+    if not match_indices:
+        # No individual matches; show first message as fallback
+        if messages:
+            line = _format_message_line(messages[0], terms, is_match=False)
+            console.print(line)
+        return
+
+    # Build set of indices to show (matches + context)
+    show_indices: set[int] = set()
+    for mi in match_indices:
+        for offset in range(-before, after + 1):
+            show_indices.add(mi + offset)
+
+    # Clamp to valid range
+    valid = {m.index for m in messages}
+    show_indices &= valid
+
+    # Display with group separators
+    sorted_show = sorted(show_indices)
+    prev_idx: int | None = None
+    for idx in sorted_show:
+        msg = messages[idx]
+        if prev_idx is not None and idx > prev_idx + 1:
+            console.print(f"[dim]{GROUP_SEP}[/dim]")
+        is_match = idx in match_indices
+        line = _format_message_line(msg, terms, is_match)
+        console.print(line)
+        prev_idx = idx
 
 
 # --- query normalization ---
@@ -670,6 +856,8 @@ def run_search(
     branch_pat: str | None,
     project_pat: str | None,
     limit: int,
+    context_before: int = 1,
+    context_after: int = 1,
 ) -> None:
     if not db_path.exists():
         console.print("[yellow]Index not found. Run [bold]trs --index[/bold] first.[/yellow]")
@@ -719,9 +907,10 @@ def run_search(
         console.print("[dim]No results.[/dim]")
         return
 
+    terms = _query_terms(query)
     console.print(f"[dim]{len(rows)} result(s)[/dim]\n")
     for row in rows:
-        display_result(row)
+        display_result(row, terms, context_before, context_after)
 
 
 # --- CLI ---
@@ -751,6 +940,9 @@ SEARCH_OPTIONS = [
     click.option("--branch", "-b", "branch_pat", default=None, help="Filter by git branch substring"),
     click.option("--project", "-p", "project_pat", default=None, help="Filter by cwd/project substring"),
     click.option("--limit", "-n", default=20, show_default=True, help="Max results"),
+    click.option("-A", "context_after", default=1, show_default=True, help="Messages to show after each match"),
+    click.option("-B", "context_before", default=1, show_default=True, help="Messages to show before each match"),
+    click.option("-C", "context_both", default=None, type=int, help="Messages to show before and after each match"),
     click.option("--index", "index_mode", flag_value=INDEX_INCREMENTAL, help="Incremental index before search (default when query given)"),
     click.option("--reindex", "index_mode", flag_value=INDEX_FULL, help="Full reindex before search"),
     click.option("--no-index", "index_mode", flag_value=INDEX_SKIP, help="Skip indexing, use existing index as-is"),
@@ -791,6 +983,9 @@ def cli(
     branch_pat: str | None,
     project_pat: str | None,
     limit: int,
+    context_after: int,
+    context_before: int,
+    context_both: int | None,
     index_mode: str | None,
     clean: bool,
     export_path: str | None,
@@ -850,7 +1045,9 @@ def cli(
         return
 
     query = normalize_fts_query(raw_query)
-    run_search(query, db_path, file_pat, branch_pat, project_pat, limit)
+    if context_both is not None:
+        context_before = context_after = context_both
+    run_search(query, db_path, file_pat, branch_pat, project_pat, limit, context_before, context_after)
 
 
 @cli.command()
