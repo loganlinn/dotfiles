@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Find and delete a macOS launch agent using fzf
+
+require() { hash "$1" &>/dev/null || exit 1; }
+require fzf
+require launchctl
+
+main() {
+	local agent_path
+	local agent_name
+
+	# Find all launch agents and select one with fzf
+	agent_path=$(find ~/Library/LaunchAgents -maxdepth 1 -name '*.plist' -type f 2>/dev/null | \
+		xargs -I {} basename {} | \
+		fzf --preview "cat ~/Library/LaunchAgents/{}" --height 50% --border) || {
+		echo >&2 "No agent selected"
+		return 1
+	}
+
+	# Extract the agent name (without .plist extension)
+	agent_name="${agent_path%.plist}"
+
+	# Unload the agent if it's running
+	if launchctl list | grep -q "^[0-9]*.*$agent_name" 2>/dev/null; then
+		echo "Unloading agent: $agent_name"
+		launchctl unload ~/Library/LaunchAgents/"$agent_path" || true
+	fi
+
+	# Delete the plist file
+	echo "Deleting: ~/Library/LaunchAgents/$agent_path"
+	rm -f ~/Library/LaunchAgents/"$agent_path"
+
+	echo "Launch agent '$agent_name' deleted successfully"
+}
+
+main "$@"

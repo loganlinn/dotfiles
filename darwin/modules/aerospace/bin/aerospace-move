@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+select_window() {
+  aerospace list-windows --all --format '"%{workspace}",%{window-id},%{window-title}' |
+    gum table --columns='workspace,window-id,window-title' --return-column=1 --fields-per-record=4
+}
+
+select_workspace() {
+  aerospace list-workspaces --all --format '"%{workspace}",%{monitor-id}' |
+    gum table --columns 'workspace,monitor-id' --return-column=1
+
+}

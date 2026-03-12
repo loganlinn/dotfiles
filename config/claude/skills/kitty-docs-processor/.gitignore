@@ -1,0 +1,13 @@
+# Documentation cache - can be regenerated
+docs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# uv cache
+.venv/
+
+# Distribution packages
+dist/

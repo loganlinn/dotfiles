@@ -1,0 +1,51 @@
+;; vim: filetype=lisp
+;; https://github.com/jtroo/kanata/blob/main/docs/fancy_symbols.md
+
+;; (defalias
+;;   cm1 (cmd rm -fr /tmp/testing)
+;;
+;;   ;; You can use bash -c and then a quoted string to execute arbitrary text in
+;;   ;; bash. All text within double-quotes is treated as a single string.
+;;   cm2 (cmd bash -c "echo hello world")
+;;
+;;   ;; You can prefix commands with sudo -u USER
+;;   ;; to execute commands as a different user.
+;;   cm3 (cmd sudo -u other_user bash -c "echo goodbye")
+;; )
+
+;; (deflocalkeys-macos pwr 116)
+
+(defsrc
+  ⎋     f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  ;;pwr
+  `    1    2    3    4    5    6    7    8    9    0    -    =    ␈
+  ⭾     q    w    e    r    t    y    u    i    o    p    [    ]    \
+  ⇪      a    s    d    f    g    h    j    k    l    ;    '     ⏎
+  ‹⇧      z    x    c    v    b    n    m    ,    .    /    ⇧›  ▲
+  fn ‹⎈  ‹⎇   ‹⌘              ␠              ⌘›    ⎇›         ◀ ▼ ▶
+)
+
+(deflayer default
+  ⎋     f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  ;;pwr
+  `    1    2    3    4    5    6    7    8    9    0    -    =    ␈
+  ‹⎈    q    w    e    r    t    y    u    i    o    p    [    ]    \
+  ⇪      a    s    d    f    g    h    j    k    l    ;    '     ⏎
+  ‹⇧      z    x    c    v    b    n    m    ,    .    /    ⎋   ▲
+  fn ‹⎈  ‹⎇   ‹⌘              ␠              ⌘›    ⎇›         ◀ ▼ ▶
+)
+
+(deflayer vimish
+  -    -    -    -    -    -    -    -    -    -    -    -    -    ;;-
+  -     -   -    -    -    -    -    -    -    -    -    -    -    -
+  -     -    -    -    -    -    -    -    -    -    -    -    -    -
+  -      -    -    -    -    -    ◀    ▼    ▲    ▶    -    -     -
+  -       -    -    -    -    -    -    -    -    -    -    -   -
+  -  -   -    -               -              -     -          - - -
+)
+
+(defalias
+  vspc (tap-hold-press 200 200 ␠ (layer-toggle vimish))
+  ;; capctl  (tap-hold 200 200 caps lctl)
+)
+
+(defcfg process-unmapped-keys yes)
+;; (defcfg process-unmapped-keys (all-except lctl ralt))

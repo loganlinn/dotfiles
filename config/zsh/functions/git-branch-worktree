@@ -1,0 +1,12 @@
+# -*- mode: zsh ; vim: ft=zsh -*-
+emulate -L zsh
+
+branch=$(git branch --sort=-committerdate --format='%(refname:short)' | fzf)
+root=$(dirname "$(git rev-parse --show-toplevel)")
+base=$(basename "$(git rev-parse --show-toplevel)")
+suffix=$(<<<"$branch" sed -e 's,logan/,,' | sed 's,/,-,g')
+dir="${root}/${base}@${suffix}"
+
+[[ -d $dir ]] || git worktree add "$dir" "$branch"
+
+cd "$dir"

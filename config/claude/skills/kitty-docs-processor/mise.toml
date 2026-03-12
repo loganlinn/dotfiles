@@ -1,0 +1,253 @@
+[tools]
+"uv" = "latest"
+
+[tasks.convert-all]
+description = "Convert all kitty HTML documentation to markdown"
+run = "uv run scripts/get_doc.py --convert-all"
+
+[tasks.list]
+description = "List all available kitty documentation"
+run = "uv run scripts/get_doc.py --list"
+
+[tasks.index]
+description = "Generate documentation index"
+run = "uv run scripts/get_doc.py --index"
+
+[tasks.doc]
+description = "Fetch and convert a specific documentation file"
+run = "uv run scripts/get_doc.py \"$@\""
+
+[tasks.clean]
+description = "Remove all cached documentation"
+run = "rm -rf docs/*"
+
+[tasks.refresh]
+description = "Clean and regenerate all documentation"
+depends = ["clean", "convert-all"]
+
+[tasks.test]
+description = "Test the documentation conversion with a few key docs"
+run = """
+set -euo pipefail
+echo "Testing documentation conversion..."
+echo ""
+echo "1. Testing conf.html..."
+uv run scripts/get_doc.py conf > /dev/null && echo "   ✓ conf.html converted"
+echo ""
+echo "2. Testing actions.html..."
+uv run scripts/get_doc.py actions > /dev/null && echo "   ✓ actions.html converted"
+echo ""
+echo "3. Testing kittens/themes.html..."
+uv run scripts/get_doc.py kittens/themes > /dev/null && echo "   ✓ kittens/themes.html converted"
+echo ""
+echo "4. Checking cache..."
+[ -f docs/conf.md ] && echo "   ✓ Cache working"
+echo ""
+echo "All tests passed!"
+"""
+
+[tasks.setup]
+description = "Initial setup: convert all documentation"
+run = """
+set -euo pipefail
+echo "Setting up kitty skill..."
+echo ""
+echo "Converting all documentation (this may take a minute)..."
+uv run scripts/get_doc.py --convert-all
+echo ""
+echo "Setup complete! Documentation cached in docs/"
+echo ""
+echo "Available tasks:"
+echo "  mise run list        - List all available docs"
+echo "  mise run doc <name>  - Fetch specific doc"
+echo "  mise run index       - View documentation index"
+"""
+
+[tasks.validate]
+description = "Validate skill structure and required files"
+run = """
+set -euo pipefail
+echo "Validating kitty skill structure..."
+echo ""
+
+errors=0
+
+# Check required files
+required_files=("SKILL.md" "README.md" "scripts/get_doc.py" "mise.toml")
+for file in "${required_files[@]}"; do
+    if [ -f "$file" ]; then
+        echo "✓ $file exists"
+    else
+        echo "✗ $file missing"
+        errors=$((errors + 1))
+    fi
+done
+
+echo ""
+
+# Check SKILL.md has required frontmatter
+if grep -q "^name: kitty$" SKILL.md && grep -q "^description:" SKILL.md; then
+    echo "✓ SKILL.md has valid frontmatter"
+else
+    echo "✗ SKILL.md missing required frontmatter (name, description)"
+    errors=$((errors + 1))
+fi
+
+echo ""
+
+if [ $errors -eq 0 ]; then
+    echo "✓ All validations passed!"
+    exit 0
+else
+    echo "✗ Validation failed with $errors error(s)"
+    exit 1
+fi
+"""
+
+[tasks.package]
+description = "Package skill with pre-converted documentation"
+depends = ["validate", "convert-all", "index"]
+run = """
+set -euo pipefail
+
+skill_name="kitty"
+version=$(date +%Y%m%d)
+output_dir="dist"
+archive_name="${skill_name}-skill-${version}.tar.gz"
+
+echo "Packaging kitty skill..."
+echo ""
+
+# Create dist directory
+mkdir -p "$output_dir"
+
+# Create temporary packaging directory
+temp_dir=$(mktemp -d)
+skill_dir="$temp_dir/$skill_name"
+mkdir -p "$skill_dir"
+
+echo "Copying skill files..."
+# Copy required files
+cp SKILL.md README.md EXAMPLES.md mise.toml .gitignore "$skill_dir/"
+cp -r scripts "$skill_dir/"
+cp -r docs "$skill_dir/"
+
+echo "Creating archive..."
+cd "$temp_dir"
+tar -czf "$archive_name" "$skill_name"
+cd - > /dev/null
+
+mv "$temp_dir/$archive_name" "$output_dir/"
+
+# Cleanup
+rm -rf "$temp_dir"
+
+echo ""
+echo "✓ Package created: $output_dir/$archive_name"
+echo ""
+echo "Package includes:"
+echo "  - Skill definition and documentation"
+echo "  - Conversion scripts"
+echo "  - Pre-converted kitty documentation (~10MB)"
+echo ""
+echo "To install, extract to ~/.claude/skills/ or .claude/skills/"
+"""
+
+[tasks.package-minimal]
+description = "Package skill without documentation cache (smaller)"
+depends = ["validate"]
+run = """
+set -euo pipefail
+
+skill_name="kitty"
+version=$(date +%Y%m%d)
+output_dir="dist"
+archive_name="${skill_name}-skill-minimal-${version}.tar.gz"
+
+echo "Packaging kitty skill (minimal)..."
+echo ""
+
+# Create dist directory
+mkdir -p "$output_dir"
+
+# Create temporary packaging directory
+temp_dir=$(mktemp -d)
+skill_dir="$temp_dir/$skill_name"
+mkdir -p "$skill_dir"
+
+echo "Copying skill files..."
+# Copy required files
+cp SKILL.md README.md EXAMPLES.md mise.toml .gitignore "$skill_dir/"
+cp -r scripts "$skill_dir/"
+
+# Create empty docs directory with .gitkeep
+mkdir -p "$skill_dir/docs"
+touch "$skill_dir/docs/.gitkeep"
+
+echo "Creating archive..."
+cd "$temp_dir"
+tar -czf "$archive_name" "$skill_name"
+cd - > /dev/null
+
+mv "$temp_dir/$archive_name" "$output_dir/"
+
+# Cleanup
+rm -rf "$temp_dir"
+
+echo ""
+echo "✓ Package created: $output_dir/$archive_name"
+echo ""
+echo "Package includes:"
+echo "  - Skill definition and documentation"
+echo "  - Conversion scripts"
+echo "  - No pre-converted docs (docs will be converted on first use)"
+echo ""
+echo "To install:"
+echo "  1. Extract to ~/.claude/skills/ or .claude/skills/"
+echo "  2. Run: mise run setup"
+"""
+
+[tasks.install-local]
+description = "Install skill to local Claude skills directory"
+depends = ["validate", "convert-all", "index"]
+run = """
+set -euo pipefail
+
+skill_name="kitty"
+install_dir="$HOME/.claude/skills/$skill_name"
+
+echo "Installing kitty skill locally..."
+echo ""
+
+# Create skills directory if it doesn't exist
+mkdir -p "$HOME/.claude/skills"
+
+# Check if skill already exists
+if [ -d "$install_dir" ]; then
+    echo "⚠️  Skill already exists at $install_dir"
+    read -p "Overwrite? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Installation cancelled"
+        exit 1
+    fi
+    rm -rf "$install_dir"
+fi
+
+# Create skill directory
+mkdir -p "$install_dir"
+
+echo "Copying skill files..."
+cp SKILL.md README.md EXAMPLES.md mise.toml .gitignore "$install_dir/"
+cp -r scripts "$install_dir/"
+cp -r docs "$install_dir/"
+
+echo ""
+echo "✓ Skill installed to: $install_dir"
+echo ""
+echo "The skill is now available to Claude Code!"
+"""
+
+[env]
+# Ensure Python output is unbuffered
+PYTHONUNBUFFERED = "1"
