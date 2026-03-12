@@ -36,8 +36,8 @@ in
     gl = "git pull";
     glg = "git log --oneline --decorate";
     gp = "git push";
-    grt = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)"'';
-    gtl = ''cd -- "$(git rev-parse --show-toplevel)"'';
+    grt = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)" && pwd'';
+    gtl = ''cd -- "$(git rev-parse --show-toplevel)" && pwd'';
     gw = "git show";
   };
 

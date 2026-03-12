@@ -9,6 +9,7 @@ with lib.my;
 {
   home.shellAliases = {
     gist = "gh gist";
+    gistc = "gh gist create --web";
   };
   programs.gh = {
     enable = true;
