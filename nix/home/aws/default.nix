@@ -22,12 +22,6 @@
   ];
 
   programs.zsh = {
-    plugins = [
-      # {
-      #   name = "aws-help-linkify";
-      #   src = ./help-linkify;
-      # }
-    ];
     initContent = lib.mkMerge [
       (lib.mkAfter (lib.readFile ./aws-sso.zsh))
       (lib.mkAfter ''

@@ -1005,7 +1005,7 @@ class TrsGroup(click.Group):
 
         first = all_positional[0]
         if self.get_command(ctx, first) is None:
-            ctx.meta["trs_query"] = first
+            ctx.meta["trs_query"] = " ".join(all_positional)
             ctx.invoked_subcommand = None
             return click.Command.invoke(self, ctx)
 
