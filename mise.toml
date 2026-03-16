@@ -45,6 +45,7 @@ nix flake update --commit-lock-file "$@"
 '''
 
 [tasks."nix:repl"]
+alias = "repl"
 description = "Start flake repl"
 usage = '''
 arg "[file]" help="Repl file to load" default="./repl.nix"

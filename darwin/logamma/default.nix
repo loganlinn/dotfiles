@@ -56,6 +56,7 @@
       }
       # "abhinav/tap/restack"
       "aspell"
+      "docker-credential-helper-ecr"
       "aws/tap/eksctl"
       # "bridgecrewio/tap/yor"
       "caddy"
@@ -65,6 +66,7 @@
       "direnv"
       # "drewdeponte/oss/git-ps-rs"
       "duti"
+      "finch"
       "felixkratz/formulae/sketchybar"
       "gcc"
       "gh"
@@ -231,7 +233,7 @@
       programs.zsh = {
         enable = true;
         shellAliases = {
-          ecr-login = "aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com";
+          ecr-login = "aws ecr get-login-password --region us-east-2 | pee 'docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com' 'finch login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com'";
           ddb-local = "env -u AWS_ENDPOINT_DYNAMODB_URL aws dynamodb --endpoint-url http://localhost:8000";
         };
         dirHashes = {
