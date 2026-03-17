@@ -1,138 +1,93 @@
-from datetime import datetime
+"""draw kitty tab"""
+# pyright: reportMissingImports=false,reportGeneralTypeIssues=false,reportAttributeAccessIssue=false,reportCallIssue=false
+# pylint: disable=E0401,C0116,C0103,W0603,R0913
+
+import datetime
+import json
+import os
+
 from kitty.boss import get_boss
-from kitty.fast_data_types import Screen, add_timer
-from kitty.rgb import to_color
-from kitty.tab_bar import (
-    DrawData,
-    ExtraData,
-    Formatter,
-    TabBarData,
-    as_rgb,
-    draw_attributed_string,
-    draw_tab_with_powerline,
-)
+from kitty.constants import config_dir
+from kitty.fast_data_types import Screen, get_options, current_focused_os_window_id, add_timer
+from kitty.tab_bar import DrawData, ExtraData, TabBarData, as_rgb, draw_title
+from kitty.utils import color_as_int
 
-LEFT_HALF_CIRCLE = ""
-CHARGING_ICON = "󰚥 "
-UNPLUGGED_ICONS = {
-    10: "󰂃 ",
-    20: "󰁻 ",
-    30: "󰁼 ",
-    40: "󰁽 ",
-    50: "󰁾 ",
-    60: "󰁿 ",
-    70: "󰂀 ",
-    80: "󰂁 ",
-    90: "󰂂 ",
-    100: "󱟢 ",
-}
-CALENDAR_CLOCK_ICON = "󰃰 "
-TERMINAL_ICON = " "
+opts = get_options()
 REFRESH_TIME = 1
+SESSION_FILE = os.path.join(config_dir, '.kitty-sessions.json')
 
-
-def _get_active_process_name_cell() -> dict:
-    cell = {"icon": TERMINAL_ICON, "icon_bg_color": "#a8e4a4", "text": ""}
-    boss = get_boss()
-
-    # Error 1: No boss instance found.
-    if not boss:
-        cell["text"] = "Err 1"
-        return cell
-
-    active_window = boss.active_window
-    # Error 2: No active window found
-    if not active_window:
-        cell["text"] = "Err 2"
-        return cell
-    # Error 3: No process is associated with the active window.
-    if not active_window.child:
-        cell["text"] = "Err 3"
-        return cell
-
-    foreground_processes = active_window.child.foreground_processes
-    # Error 4: No foreground process found.
-    if not foreground_processes or not foreground_processes[0]["cmdline"]:
-        cell["text"] = "Err 4"
-        return cell
-    long_process_name = foreground_processes[0]["cmdline"][0]
-    cell["text"] = long_process_name.rsplit("/", 1)[-1]
-
-    return cell
-
-
-def _get_datetime_cell() -> dict:
-    now = datetime.now().strftime("%d-%m-%Y %H:%M")
-    return {"icon": CALENDAR_CLOCK_ICON, "icon_bg_color": "#90b4fc", "text": now}
-
-
-def _get_battery_cell() -> dict:
-    cell = {"icon": "", "icon_bg_color": "#f9e2af", "text": ""}
-
+def get_current_session():
+    session_id = current_focused_os_window_id()
+    session_name = ""
     try:
-        with open("/sys/class/power_supply/BAT0/status", "r") as f:
-            status = f.read()
-        with open("/sys/class/power_supply/BAT0/capacity", "r") as f:
-            percent = int(f.read())
+        with open(SESSION_FILE) as f:
+            session_name = json.loads(f.read())[str(session_id)]
+    except:
+        for idx, window in enumerate(get_boss().list_os_windows()):
+            if window['id'] == session_id:
+                session_name = idx
+    return f"{session_name}"
 
-        if status == "Charging\n":
-            cell["icon"] = CHARGING_ICON
-        else:
-            cell["icon"] = UNPLUGGED_ICONS[
-                min(UNPLUGGED_ICONS.keys(), key=lambda x: abs(percent - x))
-            ]
-        cell["text"] = str(percent) + "%"
-
-    except FileNotFoundError:
-        cell["text"] = "Err"
-
-    return cell
-
-
-def _create_cells() -> list[dict]:
-    return [_get_battery_cell(), _get_active_process_name_cell(), _get_datetime_cell()]
-
-
-def _draw_right_status(screen: Screen, is_last: bool, draw_data: DrawData) -> int:
+def _draw_left_status(
+    draw_data: DrawData, screen: Screen, tab: TabBarData,
+    before: int, max_tab_length: int, index: int, is_last: bool,
+    extra_data: ExtraData
+) -> int:
+    if draw_data.leading_spaces:
+        screen.draw(' ' * draw_data.leading_spaces)
+    draw_title(draw_data, screen, tab, index, max_tab_length)
+    trailing_spaces = 0 # min(max_tab_length - 1, draw_data.trailing_spaces)
+    max_tab_length -= trailing_spaces
+    extra = screen.cursor.x - before - max_tab_length
+    if extra > 0:
+        screen.cursor.x -= extra + 1
+        screen.draw('…')
+    if trailing_spaces:
+        screen.draw(' ' * trailing_spaces)
+    end = screen.cursor.x
+    screen.cursor.bold = screen.cursor.italic = False
+    screen.cursor.fg = 0
     if not is_last:
-        return 0
-    draw_attributed_string(Formatter.reset, screen)
+        screen.cursor.bg = as_rgb(color_as_int(draw_data.inactive_bg))
+        screen.draw(draw_data.sep)
+    screen.cursor.bg = 0
+    return end
 
-    cells = _create_cells()
+def _draw_right_status(draw_data: DrawData, screen: Screen, is_last: bool) -> int:
+    if not is_last:
+        return screen.cursor.x
+
+    session_name = get_current_session()
+    DATE_FG = as_rgb(int("ffffff", 16))
+    cells = [
+        (DATE_FG, as_rgb(color_as_int(draw_data.default_bg)), f" {session_name} "),
+        (DATE_FG, as_rgb(color_as_int(draw_data.default_bg)), datetime.datetime.now().strftime(" %a %b %-d %H:%M ")),
+    ]
+
     right_status_length = 0
-    for c in cells:
-        right_status_length += 3 + len(c["icon"]) + len(c["text"])
+    for _, _, cell in cells:
+        right_status_length += len(cell)
 
-    screen.cursor.x = screen.columns - right_status_length
+    draw_spaces = screen.columns - screen.cursor.x - right_status_length
+    if draw_spaces > 0:
+        screen.draw(" " * draw_spaces)
 
-    default_bg = as_rgb(int(draw_data.default_bg))
-    tab_fg = as_rgb(int(draw_data.inactive_fg))
+    for fg, bg, cell in cells:
+        screen.cursor.fg = fg
+        screen.cursor.bg = bg
+        screen.draw(cell)
+    screen.cursor.fg = 0
+    screen.cursor.bg = 0
 
-    screen.cursor.bg = default_bg
-    for c in cells:
-        icon_bg_color = as_rgb(int(to_color(c["icon_bg_color"])))
-        screen.cursor.fg = icon_bg_color
-        screen.draw(LEFT_HALF_CIRCLE)
-
-        screen.cursor.bg = icon_bg_color
-        screen.cursor.fg = 1
-        screen.draw(c["icon"])
-
-        screen.cursor.bg = as_rgb(int(to_color("#383444")))
-        screen.cursor.fg = tab_fg
-        screen.draw(f" {c['text']} ")
-
+    screen.cursor.x = max(screen.cursor.x, screen.columns - right_status_length)
     return screen.cursor.x
 
-
-def _redraw_tab_bar(_) -> None:
+def _redraw_tab_bar(_):
     tm = get_boss().active_tab_manager
     if tm is not None:
         tm.mark_tab_bar_dirty()
 
-
 timer_id = None
-
 
 def draw_tab(
     draw_data: DrawData,
@@ -145,10 +100,24 @@ def draw_tab(
     extra_data: ExtraData,
 ) -> int:
     global timer_id
+    global right_status_length
     if timer_id is None:
         timer_id = add_timer(_redraw_tab_bar, REFRESH_TIME, True)
-    draw_tab_with_powerline(
-        draw_data, screen, tab, before, max_title_length, index, is_last, extra_data
+    # Set cursor to where `left_status` ends, instead `right_status`,
+    # to enable `open new tab` feature
+    end = _draw_left_status(
+        draw_data,
+        screen,
+        tab,
+        before,
+        max_title_length,
+        index,
+        is_last,
+        extra_data,
     )
-    _draw_right_status(screen, is_last, draw_data)
-    return screen.cursor.x
+    _draw_right_status(
+        draw_data,
+        screen,
+        is_last,
+    )
+    return end

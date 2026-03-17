@@ -51,20 +51,21 @@ in
           }
         )
         [
-          "a.kitty-session"
-          "b.kitty-session"
-          "c.kitty-session"
           "choose-files.conf"
           "current-theme.conf"
           "diff.conf"
           "grab.conf"
+          "home.kitty-session"
           "kitty.common.conf"
           "kitty.linux.conf"
           "kitty.macos.conf"
           "launch-actions.conf"
           "open-actions.conf"
+          "paste-actions.py"
           "quick-access-terminal.conf"
           "tab_bar.py"
+          "set-session-title.py"
+          "work.kitty-session"
         ]
     ))
     // {

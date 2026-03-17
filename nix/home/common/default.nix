@@ -32,13 +32,13 @@
       bc
       binutils
       cmake
-      coreutils-full # installs gnu versions
+      coreutils-full
       curl
       dig
-      doggo # dig alternative
+      doggo
       dua
-      dust # du alternative
-      duf # df alternative
+      dust
+      duf
       envsubst
       file
       gh
@@ -54,19 +54,20 @@
       lsof
       moreutils
       nix-output-monitor
-      pik # pkill, interactively
-      procs # ps alternative
+      pik
+      procs
       pstree
       repgrep
       rlwrap
-      sd # sed alternative
+      sd
       sops
+      stow
       tre-command
       tree
       trurl
       unzip
       wget
-      xh # httpie alternative
+      xh
       zip
     ]
     ++ (lib.catAttrs "package" (lib.attrValues config.my.shellScripts));

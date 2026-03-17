@@ -66,7 +66,6 @@
       "direnv"
       # "drewdeponte/oss/git-ps-rs"
       "duti"
-      "finch"
       "felixkratz/formulae/sketchybar"
       "gcc"
       "gh"

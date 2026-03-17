@@ -35,8 +35,8 @@ in
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {
       # package = inputs'.wezterm.packages.default or pkgs.wezterm;
-      enableBashIntegration = mkDefault true;
-      enableZshIntegration = mkDefault true;
+      enableBashIntegration = mkDefault false;
+      enableZshIntegration = mkDefault false;
       extraConfig = ''
         ${fennel-lua}
 

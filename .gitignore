@@ -55,3 +55,4 @@ target/
 .env
 .aider*
 mise.local.toml
+__pycache__/

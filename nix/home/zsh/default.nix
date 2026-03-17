@@ -41,7 +41,7 @@ in
       extended = true;
       path = "${config.xdg.dataHome}/zsh/history";
       share = true;
-      size = 100000;
+      size = 200000;
       save = 100000;
     };
     shellAliases = {
@@ -176,6 +176,7 @@ in
         setopt NOTIFY               # Report status of background jobs immediately.
         unsetopt BG_NICE            # Don't run all background jobs at a lower priority.
         unsetopt HUP                # Don't kill jobs on shell exit.
+        setopt HIST_FCNTL_LOCK      # Use fcntl locking on the history file.
         setopt AUTO_PUSHD           # Push the old directory onto the stack on cd.
         setopt PUSHD_IGNORE_DUPS    # Do not store duplicates in the stack.
         setopt PUSHD_SILENT         # Do not print the directory stack after pushd or popd.
@@ -186,6 +187,11 @@ in
       # (mkOrder 900 (includeFile ./clipcopy.zsh))
       # (mkAfter (includeFile ./nixpkgs.zsh))
       # (mkAfter (includeFile ./wezterm.zsh))
+      (mkAfter (lib.optionalString config.programs.wezterm.enable ''
+        if [[ "$TERM_PROGRAM" == "WezTerm" ]]; then
+          source "${config.programs.wezterm.package}/etc/profile.d/wezterm.sh"
+        fi
+      ''))
       (mkAfter (includeFile ./sudo-prompt.zsh))
       (mkAfter ''
         ##########################################################
