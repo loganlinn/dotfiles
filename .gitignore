@@ -56,3 +56,4 @@ target/
 .aider*
 mise.local.toml
 __pycache__/
+config/kitty/kitty.local.conf
