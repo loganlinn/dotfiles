@@ -75,9 +75,9 @@ def _draw_left_status(
     end = screen.cursor.x
     screen.cursor.bold = screen.cursor.italic = False
     screen.cursor.fg = 0
-    screen.cursor.bg = as_rgb(color_as_int(draw_data.default_bg))
     if not is_last:
-        screen.draw("  ")
+        screen.cursor.bg = as_rgb(color_as_int(draw_data.inactive_bg))
+        screen.draw(draw_data.sep)
     screen.cursor.bg = 0
     return end
 
