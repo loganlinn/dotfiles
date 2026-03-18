@@ -3,30 +3,58 @@
 # pylint: disable=E0401,C0116,C0103,W0603,R0913
 
 import datetime
-import json
-import os
 
 from kitty.boss import get_boss
-from kitty.constants import config_dir
-from kitty.fast_data_types import Screen, get_options, current_focused_os_window_id, add_timer
+from kitty.fast_data_types import Screen, get_options, add_timer
 from kitty.tab_bar import DrawData, ExtraData, TabBarData, as_rgb, draw_title
 from kitty.utils import color_as_int
 
 opts = get_options()
 REFRESH_TIME = 1
-SESSION_FILE = os.path.join(config_dir, '.kitty-sessions.json')
 
-def get_current_session():
-    session_id = current_focused_os_window_id()
-    session_name = ""
-    try:
-        with open(SESSION_FILE) as f:
-            session_name = json.loads(f.read())[str(session_id)]
-    except:
-        for idx, window in enumerate(get_boss().list_os_windows()):
-            if window['id'] == session_id:
-                session_name = idx
-    return f"{session_name}"
+def _draw_mode_indicator(draw_data: DrawData, screen: Screen) -> int:
+    boss = get_boss()
+    mode = boss.mappings.current_keyboard_mode_name if boss and boss.mappings else ""
+    if mode == "":
+        label = "NORMAL"
+    elif mode == "__sequence__":
+        label = "SEQ"
+    else:
+        label = mode
+
+    is_active = label != "NORMAL"
+    fg = as_rgb(int("21222c", 16))
+    bg = as_rgb(int("bd93f9", 16)) if is_active else as_rgb(int("6272a4", 16))
+
+    cell = f" {label} "
+    screen.cursor.fg = fg
+    screen.cursor.bg = bg
+    screen.cursor.bold = True
+    screen.draw(cell)
+    screen.cursor.bold = False
+    screen.cursor.fg = 0
+    screen.cursor.bg = as_rgb(color_as_int(draw_data.default_bg))
+    screen.draw(" ")
+    return len(cell) + 1
+
+
+def _draw_session_indicator(draw_data: DrawData, screen: Screen, tab: TabBarData) -> int:
+    session_name = tab.session_name
+    if not session_name:
+        return 0
+
+    fg = as_rgb(int("f8f8f2", 16))
+    bg = as_rgb(int("44475a", 16))
+
+    cell = f" {session_name} "
+    screen.cursor.fg = fg
+    screen.cursor.bg = bg
+    screen.draw(cell)
+    screen.cursor.fg = 0
+    screen.cursor.bg = as_rgb(color_as_int(draw_data.default_bg))
+    screen.draw(" ")
+    return len(cell) + 1
+
 
 def _draw_left_status(
     draw_data: DrawData, screen: Screen, tab: TabBarData,
@@ -41,15 +69,15 @@ def _draw_left_status(
     extra = screen.cursor.x - before - max_tab_length
     if extra > 0:
         screen.cursor.x -= extra + 1
-        screen.draw('…')
+        screen.draw('\u2026')
     if trailing_spaces:
         screen.draw(' ' * trailing_spaces)
     end = screen.cursor.x
     screen.cursor.bold = screen.cursor.italic = False
     screen.cursor.fg = 0
+    screen.cursor.bg = as_rgb(color_as_int(draw_data.default_bg))
     if not is_last:
-        screen.cursor.bg = as_rgb(color_as_int(draw_data.inactive_bg))
-        screen.draw(draw_data.sep)
+        screen.draw("  ")
     screen.cursor.bg = 0
     return end
 
@@ -57,11 +85,9 @@ def _draw_right_status(draw_data: DrawData, screen: Screen, is_last: bool) -> in
     if not is_last:
         return screen.cursor.x
 
-    session_name = get_current_session()
     DATE_FG = as_rgb(int("ffffff", 16))
     cells = [
-        (DATE_FG, as_rgb(color_as_int(draw_data.default_bg)), f" {session_name} "),
-        (DATE_FG, as_rgb(color_as_int(draw_data.default_bg)), datetime.datetime.now().strftime(" %a %b %-d %H:%M ")),
+        (DATE_FG, as_rgb(color_as_int(draw_data.default_bg)), datetime.datetime.now().strftime("\ue0b3 %a %b %-d %H:%M ")),
     ]
 
     right_status_length = 0
@@ -103,6 +129,17 @@ def draw_tab(
     global right_status_length
     if timer_id is None:
         timer_id = add_timer(_redraw_tab_bar, REFRESH_TIME, True)
+    # Draw static indicators before first tab
+    if index == 1:
+        before += _draw_mode_indicator(draw_data, screen)
+        before += _draw_session_indicator(draw_data, screen, tab)
+    # Reset cursor colors to match the tab about to be drawn
+    if tab.is_active:
+        screen.cursor.bg = as_rgb(color_as_int(draw_data.active_bg))
+        screen.cursor.fg = as_rgb(color_as_int(draw_data.active_fg))
+    else:
+        screen.cursor.bg = as_rgb(color_as_int(draw_data.inactive_bg))
+        screen.cursor.fg = as_rgb(color_as_int(draw_data.inactive_fg))
     # Set cursor to where `left_status` ends, instead `right_status`,
     # to enable `open new tab` feature
     end = _draw_left_status(
