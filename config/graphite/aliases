@@ -1,0 +1,12 @@
+ab abort
+bco checkout
+con continue
+ct continue
+ll log long
+ls log short --stack
+mc modify --commit
+mcm modify --commit --message
+onto move --onto
+s submit --ai
+ss submit --stack
+sup submit --stack --update-only

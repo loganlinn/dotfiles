@@ -1,0 +1,39 @@
+{
+  "branchPrefix": "logan/",
+  "branchDate": false,
+  "branchReplacement": "-",
+  "skipApplyingPrefixToNonGeneratedBranchNames": true,
+  "authToken": "Aqb5M5pjIl4iBLrYrjw1r6x6bG0iMgLRfsZVSSbbYKnO5aQZrLNZSVeNQWt3",
+  "submitViaCli": true,
+  "gtiConfigs": [
+    {
+      "key": "gti.install-uuid",
+      "value": "490823a2-f6d6-404c-8c6c-6ef2ce852c4c"
+    },
+    {
+      "key": "gti.is-onboarded",
+      "value": "true"
+    }
+  ],
+  "systemTrayConfig": {
+    "sections": [
+      {
+        "sectionId": "QDFCGMfPnu5zY7dqcA3y",
+        "display": false
+      },
+      {
+        "sectionId": "XWI3cgyQlqOJSvUfRdfM",
+        "display": false
+      },
+      {
+        "sectionId": "Idp0YjoKsmYQDX5Uv4A2",
+        "display": false
+      },
+      {
+        "sectionId": "Z3HFU6O9YQ5ehPrXkjYU",
+        "display": false
+      }
+    ]
+  },
+  "updateAutomatically": true
+}
