@@ -25,7 +25,12 @@ with lib.my;
         prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
         prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
         pro = ''!gh pr view --web "$@"'';
-        prO = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
+        prc = ''
+          !gh pr --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,closingIssuesReferences,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url
+                  --jq "''${1:-.url}" | ${pkgs.moreutils}/bin/pee ${
+                    if pkgs.stdenv.isDarwin then "pbcopy" else "${pkgs.xclip}/bin/xclip -sel clip"
+                  }'';
+        pr-copy = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
         needs-testing = ''!gh pr list --search "is:merged label:needs-testing ''${1-'author:@me'}"'';
 
         checks = "pr checks";
@@ -88,42 +93,7 @@ with lib.my;
 
         # orr = ''!gh open-review-requested "$@"'';
 
-        open-review-requested =
-          let
-            searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
-            openCmd = if pkgs.stdenv.isDarwin then "open" else "xdg-open";
-            fzfOpts = {
-              multi = true;
-              select-1 = true;
-              exit-0 = true;
-              border = true;
-              ansi = true;
-              height = "50%";
-              layout = "reverse";
-              preview = "CLICOLOR_FORCE=1 gh pr view {}";
-              preview-window = "down,85%";
-            };
-          in
-          ''
-            !f() {
-              gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
-                query ReviewsRequested($searchQuery: String!) {
-                  search(query: $searchQuery, type: ISSUE, first: 20) {
-                    edges {
-                      node {
-                        ... on PullRequest {
-                          url
-                        }
-                      }
-                    }
-                  }
-                }
-              ' |
-              ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-              ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toGNUCommandLine { } fzfOpts)} |
-              tee /dev/stderr |
-              xargs ${openCmd};
-            }; f'';
+        open-review-requested = "!gh-open-review-requested \"$@\"";
       };
     };
   };
@@ -159,6 +129,42 @@ with lib.my;
   };
 
   home.packages = [
+    (
+      let
+        searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
+        openCmd = if pkgs.stdenv.isDarwin then "open" else "xdg-open";
+        fzfOpts = {
+          multi = true;
+          select-1 = true;
+          exit-0 = true;
+          border = true;
+          ansi = true;
+          height = "50%";
+          layout = "reverse";
+          preview = "CLICOLOR_FORCE=1 gh pr view {}";
+          preview-window = "down,85%";
+        };
+      in
+      pkgs.writeShellScriptBin "gh-open-review-requested" ''
+        gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
+          query ReviewsRequested($searchQuery: String!) {
+            search(query: $searchQuery, type: ISSUE, first: 20) {
+              edges {
+                node {
+                  ... on PullRequest {
+                    url
+                  }
+                }
+              }
+            }
+          }
+        ' |
+        ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
+        ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toGNUCommandLine { } fzfOpts)} |
+        tee /dev/stderr |
+        xargs ${openCmd}
+      ''
+    )
     (
       let
         openCmd = if pkgs.stdenv.isDarwin then "open" else "xdg-open";

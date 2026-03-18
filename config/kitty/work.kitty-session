@@ -1,4 +1,1 @@
 cd ~/src/github.com/gamma-app/gamma
-
-layout tall:bias=66
-launch --type=window
