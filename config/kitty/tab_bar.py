@@ -20,6 +20,7 @@ CURRENT = int("44475a", 16)
 COMMENT = int("6272a4", 16)
 PURPLE  = int("bd93f9", 16)
 DARK    = int("21222c", 16)
+INACTIVE_TAB_BG = int("2a2a37", 16)
 
 PL = "\ue0b0"
 PL_THIN = "\ue0b1"
@@ -63,11 +64,12 @@ def _draw_session_indicator(draw_data: DrawData, screen: Screen, tab: TabBarData
     screen.cursor.fg = as_rgb(FG)
     screen.cursor.bg = as_rgb(CURRENT)
     screen.draw(cell)
-    _pl(screen, CURRENT, BG)
+    _pl(screen, CURRENT, INACTIVE_TAB_BG)
     return len(cell) + 1
 
 
-def _tab_title(tab: TabBarData) -> str:
+def _tab_title(tab: TabBarData) -> tuple[str, str]:
+    """Return (prefix, name) for the tab title. prefix includes trailing /."""
     boss = get_boss()
     cwd = None
     if boss:
@@ -75,12 +77,12 @@ def _tab_title(tab: TabBarData) -> str:
         if t:
             cwd = t.get_cwd_of_active_window()
     if cwd:
-        basename = os.path.basename(cwd)
+        name = os.path.basename(cwd)
         parent = os.path.basename(os.path.dirname(cwd))
-        if parent and basename:
-            return f"{parent}/{basename}"
-        return basename or cwd
-    return tab.title
+        if parent and name:
+            return f"{parent}/", name
+        return "", name or cwd
+    return "", tab.title
 
 
 def _draw_right_status(draw_data: DrawData, screen: Screen, is_last: bool) -> int:
@@ -118,6 +120,7 @@ def _redraw_tab_bar(_):
         tm.mark_tab_bar_dirty()
 
 timer_id = None
+prev_tab_was_active = False
 
 def draw_tab(
     draw_data: DrawData,
@@ -129,39 +132,56 @@ def draw_tab(
     is_last: bool,
     extra_data: ExtraData,
 ) -> int:
-    global timer_id
+    global timer_id, prev_tab_was_active
     if timer_id is None:
         timer_id = add_timer(_redraw_tab_bar, REFRESH_TIME, True)
 
     if index == 1:
+        prev_tab_was_active = False
         has_session = bool(tab.session_name)
-        mode_next_bg = CURRENT if has_session else BG
+        mode_next_bg = CURRENT if has_session else INACTIVE_TAB_BG
         before += _draw_mode_indicator(draw_data, screen, mode_next_bg)
         before += _draw_session_indicator(draw_data, screen, tab)
         if not has_session:
             # space after mode arrow when no session
-            screen.cursor.bg = as_rgb(BG)
+            screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
             screen.draw(" ")
             before += 1
 
-    title = _tab_title(tab)
-    cell = f" {index} {title} "
+    prefix, name = _tab_title(tab)
+    idx = f" {index} "
+
+    after_bg = BG if is_last else INACTIVE_TAB_BG
 
     if tab.is_active:
-        # powerline arrow into active tab
-        _pl(screen, BG, PURPLE)
-        screen.cursor.fg = as_rgb(DARK)
+        _pl(screen, INACTIVE_TAB_BG, PURPLE)
         screen.cursor.bg = as_rgb(PURPLE)
+        screen.cursor.fg = as_rgb(DARK)
         screen.cursor.bold = True
-        screen.draw(cell)
+        screen.draw(idx)
         screen.cursor.bold = False
-        _pl(screen, PURPLE, BG)
+        screen.cursor.fg = as_rgb(int("3a3450", 16))
+        screen.draw(prefix)
+        screen.cursor.fg = as_rgb(DARK)
+        screen.cursor.bold = True
+        screen.draw(f"{name} ")
+        screen.cursor.bold = False
+        _pl(screen, PURPLE, after_bg)
         end = screen.cursor.x
     else:
-        screen.cursor.fg = as_rgb(color_as_int(draw_data.inactive_fg))
-        screen.cursor.bg = as_rgb(BG)
-        screen.draw(cell)
+        screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
+        if not prev_tab_was_active:
+            screen.cursor.fg = as_rgb(CURRENT)
+            screen.draw(PL_THIN)
+        screen.cursor.fg = as_rgb(FG)
+        screen.draw(idx)
+        screen.cursor.fg = as_rgb(int("b0b4c8", 16))
+        screen.draw(prefix)
+        screen.cursor.fg = as_rgb(int("c0c4d8", 16))
+        screen.draw(f"{name} ")
+        _pl(screen, INACTIVE_TAB_BG, BG) if is_last else None
         end = screen.cursor.x
 
+    prev_tab_was_active = tab.is_active
     _draw_right_status(draw_data, screen, is_last)
     return end
