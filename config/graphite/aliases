@@ -10,3 +10,4 @@ onto move --onto
 s submit --ai
 ss submit --stack
 sup submit --stack --update-only
+c create --ai
