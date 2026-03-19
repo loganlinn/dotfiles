@@ -71,17 +71,18 @@ def _draw_session_indicator(draw_data: DrawData, screen: Screen, tab: TabBarData
 def _tab_title(tab: TabBarData) -> tuple[str, str]:
     """Return (prefix, name) for the tab title. prefix includes trailing /."""
     boss = get_boss()
-    cwd = None
     if boss:
         t = boss.tab_for_id(tab.tab_id)
+        if t and t.name:
+            return "", t.name
         if t:
             cwd = t.get_cwd_of_active_window()
-    if cwd:
-        name = os.path.basename(cwd)
-        parent = os.path.basename(os.path.dirname(cwd))
-        if parent and name:
-            return f"{parent}/", name
-        return "", name or cwd
+            if cwd:
+                name = os.path.basename(cwd)
+                parent = os.path.basename(os.path.dirname(cwd))
+                if parent and name:
+                    return f"{parent}/", name
+                return "", name or cwd
     return "", tab.title
 
 
