@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat >&2 <<-EOF
+		Usage: claude-project-dir [-a|-A] [path] [-x|-X <command...>]
+
+		Output the ~/.claude/projects/ directory for a given path.
+
+		Options:
+		  -a, --all     List all project dirs matching the path and its subdirectories
+		  -A             List all project dirs
+		  -x <cmd...>   Run command once per matching directory (implies -a)
+		  -X <cmd...>   Run command once with all matching directories as arguments (implies -a)
+		  -h, --help    Show this help
+	EOF
+}
+
+dir=.
+all=false
+all_projects=false
+exec_mode=
+exec_cmd=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  -a | --all)
+    all=true
+    shift
+    ;;
+  -A)
+    all_projects=true
+    shift
+    ;;
+  -x | -X)
+    exec_mode="$1"
+    all=true
+    shift
+    exec_cmd=("$@")
+    break
+    ;;
+  -*)
+    echo >&2 "Unknown option: $1"
+    exit 1
+    ;;
+  *)
+    dir="$1"
+    shift
+    ;;
+  esac
+done
+
+projects="${HOME}/.claude/projects"
+
+if [[ "$all_projects" == true ]]; then
+  printf '%s\n' "$projects"/*/
+  exit 0
+fi
+
+dir="$(cd "$dir" && pwd)"
+slug="${dir//[^[:alnum:]]/-}"
+
+if [[ "$all" == true ]]; then
+  dirs=("$projects/${slug}"*/)
+  if [[ ${#exec_cmd[@]} -gt 0 ]]; then
+    if [[ "$exec_mode" == "-X" ]]; then
+      exec "${exec_cmd[@]}" "${dirs[@]}"
+    else
+      for d in "${dirs[@]}"; do
+        (cd "$d" && "${exec_cmd[@]}")
+      done
+    fi
+  else
+    printf '%s\n' "${dirs[@]}"
+  fi
+else
+  project_dir="${projects}/${slug}"
+  if [[ ${#exec_cmd[@]} -gt 0 ]]; then
+    cd "$project_dir" && exec "${exec_cmd[@]}"
+  else
+    echo "$project_dir"
+  fi
+fi

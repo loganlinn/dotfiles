@@ -35,23 +35,20 @@ def _pl(screen, prev_bg, next_bg):
 def _draw_mode_indicator(draw_data: DrawData, screen: Screen, next_bg: int) -> int:
     boss = get_boss()
     mode = boss.mappings.current_keyboard_mode_name if boss and boss.mappings else ""
-    if mode == "":
-        label = "NORMAL"
+    if mode == "" or mode is None:
+        return 0
     elif mode == "__sequence__":
         label = "SEQ"
     else:
         label = mode
 
-    is_active = label != "NORMAL"
-    mode_bg = PURPLE if is_active else COMMENT
-
     cell = f" {label} "
     screen.cursor.fg = as_rgb(DARK)
-    screen.cursor.bg = as_rgb(mode_bg)
+    screen.cursor.bg = as_rgb(PURPLE)
     screen.cursor.bold = True
     screen.draw(cell)
     screen.cursor.bold = False
-    _pl(screen, mode_bg, next_bg)
+    _pl(screen, PURPLE, next_bg)
     return len(cell) + 1
 
 

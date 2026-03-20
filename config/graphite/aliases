@@ -1,4 +1,5 @@
 ab abort
+bail abort
 bco checkout
 con continue
 ct continue

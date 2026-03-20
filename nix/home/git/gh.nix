@@ -94,6 +94,7 @@ with lib.my;
         # orr = ''!gh open-review-requested "$@"'';
 
         open-review-requested = "!gh-open-review-requested \"$@\"";
+        land = "!gh-land \"$@\"";
       };
     };
   };

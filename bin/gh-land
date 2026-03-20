@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+require() { hash "$1" &>/dev/null || { echo >&2 "Required: $1"; exit 1; }; }
+require gh
+require gum
+
+usage() {
+  echo >&2 "Usage: gh-land [-R REPO] [-m METHOD]"
+  echo >&2 ""
+  echo >&2 "Interactively select mergeable PRs to merge."
+  echo >&2 ""
+  echo >&2 "Options:"
+  echo >&2 "  -R REPO    Repository (owner/repo), default: current repo"
+  echo >&2 "  -m METHOD  Merge method: merge|squash|rebase (default: squash)"
+  echo >&2 "  -h         Show this help"
+}
+
+repo_flag=()
+method="squash"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -R) repo_flag=(--repo "$2"); shift ;;
+    -m) method="$2"; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) gum log -l error "Unknown option: $1"; exit 1 ;;
+  esac
+  shift
+done
+
+case "$method" in
+  merge|squash|rebase) ;;
+  *) gum log -l error "Invalid method: $method"; exit 1 ;;
+esac
+
+now=$(date +%s)
+
+prs=$(gh pr list "${repo_flag[@]}" --author @me \
+  --json number,title,headRefName,mergeable,reviewDecision,latestReviews \
+  --jq "
+  .[] | select(.mergeable == \"MERGEABLE\" and .reviewDecision != \"REVIEW_REQUIRED\") |
+  ([.latestReviews[] | select(.state == \"APPROVED\") |
+    { name: .author.login,
+      ago: (${now} - (.submittedAt | sub(\"\\\\.[0-9]+\"; \"\") | sub(\"Z\$\"; \"+00:00\") | fromdate)) }
+  ] | map(
+    if .ago < 60 then \"\\(.ago)s\"
+    elif .ago < 3600 then \"\\(.ago / 60 | floor)m\"
+    elif .ago < 86400 then \"\\(.ago / 3600 | floor)h\"
+    elif .ago < 604800 then \"\\(.ago / 86400 | floor)d\"
+    else \"\\(.ago / 604800 | floor)w\"
+    end as \$t | \"\\(.name) \\(\$t) ago\"
+  ) | join(\", \")) as \$approvers |
+  \"\\(.number)\t\\(.headRefName)\t\\(.title)\t\\(\$approvers)\"")
+
+if [[ -z "$prs" ]]; then
+  gum log -l warn "No mergeable PRs found."
+  exit 0
+fi
+
+current_branch=""
+if [[ ${#repo_flag[@]} -eq 0 ]]; then
+  current_branch=$(git branch --show-current 2>/dev/null || true)
+fi
+
+current_items=()
+other_items=()
+preselected=""
+while IFS=$'\t' read -r num branch title approvers; do
+  label="$(gum style --foreground 36 "#${num}")  $(gum style --foreground 32 "$branch")  $(gum style --foreground 33 "$title")  $(gum style --foreground 35 "$approvers")"
+  item="${label}:${num}"
+  if [[ "$branch" == "$current_branch" ]]; then
+    current_items+=("$item")
+    preselected="$num"
+  else
+    other_items+=("$item")
+  fi
+done <<< "$prs"
+
+items=("${current_items[@]}" "${other_items[@]}")
+
+choose_flags=(--no-limit --label-delimiter=":" --header "Select PRs to merge (space to select, enter to confirm):")
+if [[ -n "$preselected" ]]; then
+  choose_flags+=(--selected "$preselected")
+fi
+
+selected=$(printf '%s\n' "${items[@]}" | gum choose "${choose_flags[@]}")
+
+if [[ -z "$selected" ]]; then
+  gum log -l warn "No PRs selected."
+  exit 0
+fi
+
+while IFS= read -r pr_num; do
+  gum log -l info "Merging PR" --structured pr "#${pr_num}" method "${method}"
+  if ! gh pr merge "${repo_flag[@]}" "$pr_num" "--${method}" --delete-branch 2>/dev/null; then
+    gh pr merge "${repo_flag[@]}" "$pr_num" "--${method}"
+  fi
+done <<< "$selected"
