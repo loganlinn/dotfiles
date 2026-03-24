@@ -86,8 +86,16 @@ class DrawTabContext:
         self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
         return len(cell) + 1
 
+    def _get_session_name(self) -> str:
+        boss = get_boss()
+        if boss:
+            tm = boss.active_tab_manager
+            if tm:
+                return getattr(tm, "created_in_session_name", "") or ""
+        return ""
+
     def _draw_session_indicator(self, next_bg: int = BG) -> int:
-        session_name = self.tab.session_name
+        session_name = self._get_session_name()
         if not session_name:
             return 0
 
@@ -156,7 +164,7 @@ class DrawTabContext:
 
         if self.tab_index == 1:
             self.prev_tab_was_active = False
-            has_session = bool(self.tab.session_name)
+            has_session = bool(self._get_session_name())
             mode_next_bg = CURRENT if has_session else INACTIVE_TAB_BG
             self.before += self._draw_mode_indicator(mode_next_bg)
             self.before += self._draw_session_indicator()
