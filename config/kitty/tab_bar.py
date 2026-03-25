@@ -116,7 +116,7 @@ class DrawTabContext:
             if t and t.name:
                 return "", t.name
             if t:
-                cwd = t.get_cwd_of_active_window()
+                cwd = t.get_cwd_of_active_window(oldest=True)
                 if cwd:
                     name = os.path.basename(cwd)
                     parent = os.path.basename(os.path.dirname(cwd))
