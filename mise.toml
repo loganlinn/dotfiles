@@ -1,3 +1,6 @@
+[env]
+_.file = [".mise/tasks/git/gpg/claude/config.env"]
+
 [settings]
 experimental = true
 jobs = 4
@@ -166,6 +169,20 @@ usage = '''
 arg "[args]" var=#true help="Git arguments"
 '''
 run = "git ${usage_args[@]}"
+
+# ----------------------------------------------------------------------------
+# GPG: Claude Code signing
+# ----------------------------------------------------------------------------
+
+[tasks."git:gpg:claude:install"]
+description = "Register GPG key with GitHub and configure Claude Code"
+depends = ["git:gpg:claude:install:gh", "git:gpg:claude:install:claude"]
+run = "echo \"Done. Run 'mise run git:gpg:claude:doctor' to verify.\""
+
+[tasks."git:gpg:claude:doctor"]
+description = "Check Claude GPG signing configuration"
+depends = ["git:gpg:claude:doctor:gpg", "git:gpg:claude:doctor:claude", "git:gpg:claude:doctor:github", "git:gpg:claude:doctor:git"]
+run = 'echo "All checks passed."'
 
 # ============================================================================
 # Credential & Secret Management

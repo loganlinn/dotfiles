@@ -115,13 +115,10 @@
     ];
     casks = [
       "1password-cli"
-      "dagger/tap/container-use"
       "discord"
       "ghostty"
       "hammerspoon"
-      "hiddenbar"
       "jordanbaird-ice"
-      "mocki-toki/formulae/barik"
       "nikitabobko/tap/aerospace"
       "pearcleaner"
       "sf-symbols"
