@@ -64,6 +64,7 @@ in
           "paste-actions.py"
           "quick-access-terminal.conf"
           "tab_bar.py"
+          "select_tab.py"
           "set-session-title.py"
           "work.kitty-session"
         ]

@@ -89,9 +89,11 @@ class DrawTabContext:
     def _get_session_name(self) -> str:
         boss = get_boss()
         if boss:
-            tm = boss.active_tab_manager
-            if tm:
-                return getattr(tm, "created_in_session_name", "") or ""
+            t = boss.tab_for_id(self.tab.tab_id)
+            if t:
+                tm = t.tab_manager_ref()
+                if tm:
+                    return getattr(tm, "created_in_session_name", "") or ""
         return ""
 
     def _draw_session_indicator(self, next_bg: int = BG) -> int:
