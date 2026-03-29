@@ -3,9 +3,15 @@
   "lines": [
     [
       {
+        "id": "f3273439-daaf-4ff2-9016-f4edd043ac34",
+        "type": "custom-command",
+        "color": "green",
+        "commandPath": "jq -r 'if .fastMode then [\"🔥\"] else [] end + [.model // \"default\"] | join(\" \")' ~/.claude/settings.json"
+      },
+      {
         "id": "0c659f0c-0dc7-467e-91b6-36d179dd10cd",
         "type": "context-percentage-usable",
-        "color": "brightMagenta",
+        "color": "ansi256:4",
         "rawValue": true,
         "metadata": {
           "inverse": "false",
@@ -13,91 +19,72 @@
         }
       },
       {
-        "id": "8da98f89-9d90-4011-9e44-235c7d28e97a",
-        "type": "tokens-total",
-        "rawValue": true
-      },
-      {
         "id": "67284685-d8f0-4078-b439-0a68466d3cf7",
         "type": "session-cost",
         "color": "yellow",
+        "bold": false,
         "rawValue": true
-      },
-      {
-        "id": "f3273439-daaf-4ff2-9016-f4edd043ac34",
-        "type": "custom-command",
-        "color": "green",
-        "commandPath": "jq -r 'if .fastMode // false then \"[🔥] \\(.model)\" else .model end' ~/.claude/settings.json"
       },
       {
         "id": "f0a05996-179a-40de-b4ef-e64ca8c88d62",
         "type": "thinking-effort",
-        "color": "brightCyan",
+        "color": "cyan",
         "rawValue": true
       },
       {
         "id": "bf266a30-2b23-4d3e-9681-20079e2b635f",
         "type": "skills",
+        "color": "brightBlue",
         "rawValue": true,
         "metadata": {
           "mode": "current",
-          "hideWhenEmpty": "false"
+          "hideWhenEmpty": "true"
         }
       },
       {
-        "id": "ee86b7e1-18d9-4ea6-b9d5-51f3324607d7",
-        "type": "flex-separator"
+        "id": "6184e4ea-a68c-40fa-afac-abdde108de2a",
+        "type": "version",
+        "color": "ansi256:95"
       },
       {
-        "id": "e09b6517-d64b-413c-b3d5-6fde4ca9edfa",
-        "type": "git-root-dir",
-        "color": "brightWhite",
-        "commandPath": "/usr/bin/env bash -c 'p=\"$(basename \"$(basename \"$(git rev-parse --show-toplevel)\")\")/$(git rev-parse --show-prefix)\"; echo \"${p%/}\"'",
-        "metadata": {
-          "hideNoGit": "true"
-        },
-        "backgroundColor": "bgBrightMagenta",
-        "bold": true
-      },
-      {
-        "id": "5",
-        "type": "git-worktree",
-        "color": "brightWhite",
-        "rawValue": false,
-        "metadata": {
-          "hideNoGit": "true"
-        },
-        "backgroundColor": "bgMagenta",
-        "bold": true
-      },
-      {
-        "id": "7",
-        "type": "git-branch",
-        "color": "magenta",
-        "rawValue": false,
-        "metadata": {
-          "hideNoGit": "true",
-          "linkToGitHub": "true"
-        },
-        "backgroundColor": "bgBrightWhite"
+        "id": "717a59d4-23ce-4bd2-b1f3-049ed384addb",
+        "type": "claude-session-id",
+        "color": "ansi256:102",
+        "rawValue": true
       }
     ],
     [
       {
-        "id": "ad6ea08b-9275-4524-afd6-96aff1de020e",
-        "type": "claude-session-id",
-        "color": "brightBlack",
-        "rawValue": true
+        "id": "5",
+        "type": "git-worktree",
+        "color": "ansi256:6",
+        "backgroundColor": "",
+        "bold": false,
+        "rawValue": false,
+        "metadata": {
+          "hideNoGit": "true"
+        }
       },
       {
-        "id": "6b828c01-05a2-45f1-b920-404a76399902",
-        "type": "flex-separator"
+        "id": "7",
+        "type": "git-branch",
+        "color": "ansi256:5",
+        "backgroundColor": "",
+        "bold": true,
+        "rawValue": false,
+        "metadata": {
+          "hideNoGit": "true",
+          "linkToGitHub": "true"
+        }
       },
       {
-        "id": "087459ab-27e2-4f77-80bd-157ae21591a9",
-        "type": "version",
-        "color": "brightBlack",
-        "rawValue": false
+        "id": "97d302fd-88db-455b-9fd3-2e1f42532126",
+        "type": "current-working-dir",
+        "color": "ansi256:8",
+        "rawValue": true,
+        "metadata": {
+          "abbreviateHome": "true"
+        }
       }
     ],
     []
@@ -105,6 +92,8 @@
   "flexMode": "full-until-compact",
   "compactThreshold": 60,
   "colorLevel": 2,
+  "defaultSeparator": " ",
+  "defaultPadding": "",
   "inheritSeparatorColors": false,
   "globalBold": false,
   "powerline": {
@@ -118,6 +107,5 @@
     "startCaps": [],
     "endCaps": [],
     "autoAlign": false
-  },
-  "defaultPadding": " "
+  }
 }
