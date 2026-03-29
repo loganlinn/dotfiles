@@ -1,359 +1,559 @@
-#!/usr/bin/env -S uv run --script
-# -*- mode: python-*- vim: ft=python
-# /// script
-# requires-python = ">=3.12"
-# dependencies = ["click>=8"]
-# ///
-"""claude-desktop — open Claude Desktop via deep-link URIs.
-
-Claude Desktop registers the `claude://` URL scheme. On macOS, `open(1)` hands
-the URI to the app; on Linux, `xdg-open(1)` does the same.
-
-The supported routes were discovered two ways:
-
-  1. Extracting the Electron main-process JS from app.asar and reading the URL
-     handler switch statement (parse asar header → locate main JS by offset →
-     find the `open-url` event handler → map host/pathname cases to params).
-
-  2. Right-clicking elements in Claude Desktop → "Copy Link" yields https://
-     URLs whose paths map 1:1 to deep links (substitute https → claude).
-
-Both methods are reproducible on future versions.
-"""
-
-from __future__ import annotations
-
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import urllib.parse
-
-import click
-
-UUID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-MAX_PROMPT_LEN = 16384 - 2048  # ~14KB, enforced by the app
-
-
-def _open_url(url: str) -> None:
-    """Open a URL with the platform launcher."""
-    system = platform.system()
-    if system == "Darwin":
-        cmd = "open"
-    elif system == "Linux":
-        cmd = "xdg-open"
-    else:
-        click.echo(f"Unsupported platform: {system}", err=True)
-        sys.exit(1)
-
-    if not shutil.which(cmd):
-        click.echo(f"{cmd} not found", err=True)
-        sys.exit(1)
-
-    subprocess.run([cmd, url], check=True)
-
-
-def _build_url(host: str, path: str = "", **params: str | list[str]) -> str:
-    """Build a claude:// URL with query parameters."""
-    filtered: dict[str, str | list[str]] = {
-        k: v for k, v in params.items() if v
-    }
-    qs = urllib.parse.urlencode(filtered, doseq=True)
-    url = f"claude://{host}{path}"
-    if qs:
-        url += f"?{qs}"
-    return url
-
-
-def _resolve_prompt(prompt: str | None, query: str | None) -> str | None:
-    """Resolve prompt from positional arg, --query flag, or stdin."""
-    text = prompt or query
-    if text == "-":
-        text = click.get_text_stream("stdin").read()
-    if text and len(text) > MAX_PROMPT_LEN:
-        click.echo(
-            f"Prompt truncated to {MAX_PROMPT_LEN} chars ({len(text)} given)",
-            err=True,
-        )
-        text = text[:MAX_PROMPT_LEN]
-    return text
-
-
-def _require_uuid(value: str, label: str = "UUID") -> None:
-    """Exit with error if value is not a valid UUID."""
-    if not re.match(UUID_PATTERN, value):
-        click.echo(f"Invalid {label}: {value}", err=True)
-        sys.exit(1)
-
-
-def _normalize_claude_url(url: str) -> str:
-    """Normalize a claude.ai URL/path to a claude:// deep link.
-
-    Accepts:
-      https://claude.ai/chat/...
-      claude://claude.ai/chat/...
-      claude.ai/chat/...
-      /claude.ai/chat/...
-      chat/...
-    """
-    url = url.strip()
-    if url.startswith("claude://"):
-        return url
-    if url.startswith("https://claude.ai/"):
-        return "claude://" + url[len("https://"):]
-    # strip leading slash
-    path = url.lstrip("/")
-    if path.startswith("claude.ai/"):
-        return f"claude://{path}"
-    # bare path like "chat/..." — assume claude.ai host
-    return f"claude://claude.ai/{path}"
-
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
-
-@click.group()
-def cli() -> None:
-    """Open Claude Desktop views via deep-link URIs."""
-
-
-@cli.command("open")
-@click.argument("url")
-def open_cmd(url: str) -> None:
-    """Open any claude.ai URL in Claude Desktop.
-
-    Converts https://claude.ai/... URLs (or partial paths) to claude://
-    deep links and opens them.
-
-    \b
-    Examples:
-      claude-desktop open https://claude.ai/chat/2a77c02d-...
-      claude-desktop open claude.ai/project/...
-      claude-desktop open chat/2a77c02d-...
-    """
-    _open_url(_normalize_claude_url(url))
-
-
-# -- conversations ----------------------------------------------------------
-
-
-@cli.command()
-@click.argument("prompt", required=False)
-@click.option("-q", "--query", help="Prompt text (alternative to positional arg).")
-@click.option("--org", is_flag=True, help="Start in ask-your-org mode.")
-def new(prompt: str | None, query: str | None, org: bool) -> None:
-    """Start a new conversation.
-
-    \b
-    Examples:
-      claude-desktop new "explain monads"
-      claude-desktop new --org
-      echo "review this" | claude-desktop new -q -
-    """
-    if org:
-        _open_url(_build_url("claude.ai", "/ask-your-org"))
-        return
-    text = _resolve_prompt(prompt, query)
-    _open_url(_build_url("claude.ai", "/new", q=text or ""))
-
-
-@cli.command()
-@click.argument("conversation_id")
-def chat(conversation_id: str) -> None:
-    """Open an existing conversation by UUID.
-
-    \b
-    Example:
-      claude-desktop chat 550e8400-e29b-41d4-a716-446655440000
-    """
-    _require_uuid(conversation_id, "conversation UUID")
-    _open_url(_build_url("claude.ai", f"/chat/{conversation_id}"))
-
-
-@cli.command()
-@click.argument("project_id")
-def project(project_id: str) -> None:
-    """Open a project by UUID.
-
-    \b
-    Example:
-      claude-desktop project 550e8400-e29b-41d4-a716-446655440000
-    """
-    _require_uuid(project_id, "project UUID")
-    _open_url(_build_url("claude.ai", f"/project/{project_id}"))
-
-
-@cli.command()
-def recents() -> None:
-    """Open recent conversations and projects."""
-    _open_url(_build_url("claude.ai", "/recents"))
-
-
-@cli.command()
-def artifacts() -> None:
-    """Open the artifacts gallery."""
-    _open_url(_build_url("claude.ai", "/artifacts"))
-
-
-# -- Claude Code Desktop ----------------------------------------------------
-
-
-@cli.group(invoke_without_command=True)
-@click.pass_context
-def code(ctx: click.Context) -> None:
-    """Open Claude Code Desktop.
-
-    Without a subcommand, opens the main Claude Code Desktop view.
-    """
-    if ctx.invoked_subcommand is None:
-        _open_url(_build_url("claude.ai", "/claude-code-desktop"))
-
-
-@code.command()
-def scheduled() -> None:
-    """Open scheduled tasks in Claude Code Desktop."""
-    _open_url(_build_url("claude.ai", "/claude-code-desktop/scheduled"))
-
-
-# -- cowork -----------------------------------------------------------------
-
-
-@cli.command()
-@click.argument("prompt", required=False)
-@click.option("-q", "--query", help="Prompt text (alternative to positional arg).")
-@click.option(
-    "-f", "--file", "files", multiple=True,
-    type=click.Path(), help="File to include (repeatable).",
-)
-@click.option(
-    "-d", "--folder", "folders", multiple=True,
-    type=click.Path(file_okay=False), help="Folder to include (repeatable).",
-)
-def cowork(
-    prompt: str | None,
-    query: str | None,
-    files: tuple[str, ...],
-    folders: tuple[str, ...],
-) -> None:
-    """Start a Cowork session (Claude Code Desktop).
-
-    Pre-fills the prompt and selected files/folders without auto-submitting.
-
-    \b
-    Examples:
-      claude-desktop cowork "refactor auth" -d src/auth -f src/config.ts
-      claude-desktop cowork -q "fix tests" -d .
-    """
-    text = _resolve_prompt(prompt, query)
-    params: dict[str, str | list[str]] = {}
-    if text:
-        params["q"] = text
-    if files:
-        params["file"] = list(files)
-    if folders:
-        params["folder"] = list(folders)
-    _open_url(_build_url("cowork", "/new", **params))
-
-
-# -- resume -----------------------------------------------------------------
-
-
-@cli.command()
-@click.argument("session_id")
-@click.option(
-    "--cwd", type=click.Path(exists=True, file_okay=False),
-    help="Working directory for the resumed session.",
-)
-def resume(session_id: str, cwd: str | None) -> None:
-    """Resume a Claude Code CLI session in Desktop.
-
-    \b
-    Example:
-      claude-desktop resume 550e8400-e29b-41d4-a716-446655440000 --cwd .
-    """
-    _require_uuid(session_id, "session UUID")
-    params: dict[str, str] = {"session": session_id}
-    if cwd:
-        params["cwd"] = str(cwd)
-    _open_url(_build_url("resume", "", **params))
-
-
-# -- settings ---------------------------------------------------------------
-
-SETTINGS_PAGES = [
-    "general", "account", "usage", "capabilities", "connectors",
-    "claude-code", "cowork", "desktop", "desktop/extensions",
-    "desktop/developer",
-]
-
-
-@cli.command()
-@click.argument(
-    "page", required=False, default=None,
-    type=click.Choice(SETTINGS_PAGES, case_sensitive=False),
-)
-def settings(page: str | None) -> None:
-    """Open Claude Desktop settings.
-
-    \b
-    Pages:
-      general, account, usage, capabilities, connectors,
-      claude-code, cowork, desktop, desktop/extensions,
-      desktop/developer
-
-    \b
-    Examples:
-      claude-desktop settings
-      claude-desktop settings account
-      claude-desktop settings desktop/extensions
-    """
-    path = f"/settings/{page}" if page else "/settings"
-    _open_url(_build_url("claude.ai", path))
-
-
-# -- customize --------------------------------------------------------------
-
-
-@cli.group(invoke_without_command=True)
-@click.pass_context
-def customize(ctx: click.Context) -> None:
-    """Open customization pages.
-
-    Without a subcommand, opens the main customize view.
-    """
-    if ctx.invoked_subcommand is None:
-        _open_url(_build_url("claude.ai", "/customize"))
-
-
-@customize.command()
-def skills() -> None:
-    """Open the skills customization page."""
-    _open_url(_build_url("claude.ai", "/customize/skills"))
-
-
-@customize.command()
-def connectors() -> None:
-    """Open the connectors customization page."""
-    _open_url(_build_url("claude.ai", "/customize/connectors"))
-
-
-# -- misc -------------------------------------------------------------------
-
-
-@cli.command()
-def console() -> None:
-    """Open the Anthropic developer console (platform.claude.com)."""
-    _open_url("https://platform.claude.com/")
-
-
-@cli.command()
-def logout() -> None:
-    """Log out of Claude Desktop."""
-    _open_url(_build_url("claude.ai", "/logout"))
-
-
-if __name__ == "__main__":
-    cli()
+#!/usr/bin/env bash
+# claude-desktop — open Claude Desktop via deep-link URIs.
+#
+# Claude Desktop registers the `claude://` URL scheme. On macOS, `open(1)` hands
+# the URI to the app; on Linux, `xdg-open(1)` does the same.
+#
+# The supported routes were discovered two ways:
+#
+#   1. Extracting the Electron main-process JS from app.asar and reading the URL
+#      handler switch statement (parse asar header → locate main JS by offset →
+#      find the `open-url` event handler → map host/pathname cases to params).
+#
+#   2. Right-clicking elements in Claude Desktop → "Copy Link" yields https://
+#      URLs whose paths map 1:1 to deep links (substitute https → claude).
+#
+# Both methods are reproducible on future versions.
+
+set -euo pipefail
+
+readonly MAX_PROMPT_LEN=14336 # ~14KB, enforced by the app
+readonly UUID_RE='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+readonly SETTINGS_PAGES='general account usage capabilities connectors claude-code cowork desktop desktop/extensions desktop/developer'
+
+# --------------------------------------------------------------------------- #
+# Helpers
+# --------------------------------------------------------------------------- #
+
+urlencode() {
+  local str="$1" encoded='' i char
+  for ((i = 0; i < ${#str}; i++)); do
+    char="${str:$i:1}"
+    case "$char" in
+    [a-zA-Z0-9._~-]) encoded+="$char" ;;
+    *) printf -v encoded '%s%%%02X' "$encoded" "'$char" ;;
+    esac
+  done
+  printf '%s' "$encoded"
+}
+
+open_url() {
+  local url="$1"
+  case "$(uname -s)" in
+  Darwin) open "$url" ;;
+  Linux) xdg-open "$url" ;;
+  *)
+    echo >&2 "Unsupported platform: $(uname -s)"
+    return 1
+    ;;
+  esac
+}
+
+is_uuid() {
+  [[ "$1" =~ $UUID_RE ]]
+}
+
+require_uuid() {
+  local value="$1" label="${2:-UUID}"
+  if ! is_uuid "$value"; then
+    echo >&2 "Invalid $label: $value"
+    exit 1
+  fi
+}
+
+# Build a claude:// URL: build_url HOST [PATH] [key=value ...]
+build_url() {
+  local host="$1" path="${2:-}" url qs='' sep='?'
+  shift 2 || shift "$#"
+  url="claude://${host}${path}"
+  while [[ $# -gt 0 ]]; do
+    local kv="$1"
+    shift
+    local key="${kv%%=*}" val="${kv#*=}"
+    [[ -z "$val" ]] && continue
+    qs+="${sep}$(urlencode "$key")=$(urlencode "$val")"
+    sep='&'
+  done
+  printf '%s%s' "$url" "$qs"
+}
+
+normalize_url() {
+  local url
+  url="$(printf '%s' "$1" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+  if [[ "$url" == claude://* ]]; then
+    printf '%s' "$url"
+    return
+  fi
+  if [[ "$url" == https://claude.ai/* ]]; then
+    printf 'claude://%s' "${url#https://}"
+    return
+  fi
+  # Strip leading slashes then check for claude.ai/ prefix
+  local stripped="${url#/}"
+  if [[ "$stripped" == claude.ai/* ]]; then
+    printf 'claude://%s' "$stripped"
+    return
+  fi
+  printf 'claude://claude.ai/%s' "$stripped"
+}
+
+resolve_prompt() {
+  local text="$1"
+  if [[ "$text" == '-' ]]; then
+    text="$(cat)"
+  fi
+  if [[ ${#text} -gt $MAX_PROMPT_LEN ]]; then
+    echo >&2 "Prompt truncated to ${MAX_PROMPT_LEN} chars (${#text} given)"
+    text="${text:0:$MAX_PROMPT_LEN}"
+  fi
+  printf '%s' "$text"
+}
+
+is_url_like() {
+  [[ "$1" == https://* || "$1" == claude://* || "$1" == claude.ai/* || "$1" == /claude.ai/* ]]
+}
+
+# --------------------------------------------------------------------------- #
+# Usage
+# --------------------------------------------------------------------------- #
+
+usage() {
+  cat <<'EOF'
+Usage: claude-desktop <command> [args]
+
+Open Claude Desktop views via deep-link URIs.
+
+Commands:
+  open <url>                     Normalize and open a claude.ai URL
+  new [PROMPT] [-q QUERY]        Open new conversation, optionally with prompt
+  chat <UUID>                    Open a conversation by UUID
+  project <UUID>                 Open a project by UUID
+  recents                        Open recents view
+  code [scheduled]               Open Claude Code desktop view
+  cowork [PROMPT] [-q|-f|-d]     Open cowork new session
+  resume <UUID> [--cwd DIR]      Resume a session by UUID
+  settings [PAGE]                Open settings page
+  customize [skills|connectors]  Open customize view
+  console                        Open platform.claude.com in browser
+  logout                         Open logout page
+
+Pass -h or --help after a command for detailed usage.
+EOF
+}
+
+usage_open() {
+  cat <<'EOF'
+Usage: claude-desktop open [URL]
+
+Open Claude Desktop from any claude.ai URL or path.
+
+Accepted forms:
+  https://claude.ai/...    Full HTTPS URL
+  claude://...             Claude deep-link URL
+  /claude.ai/..            Domain-relative
+  /chat/...                Bare path (relative to claude.ai)
+EOF
+}
+
+usage_new() {
+  cat <<'EOF'
+Usage: claude-desktop new [PROMPT] [-q QUERY]
+
+Open a new conversation, optionally pre-filled with a prompt.
+
+Options:
+  -q, --query QUERY    Prompt text (use '-' to read from stdin)
+EOF
+}
+
+usage_chat() {
+  cat <<'EOF'
+Usage: claude-desktop chat <UUID>
+
+Open a conversation by its UUID.
+EOF
+}
+
+usage_project() {
+  cat <<'EOF'
+Usage: claude-desktop project <UUID>
+
+Open a project by its UUID.
+EOF
+}
+
+usage_recents() {
+  cat <<'EOF'
+Usage: claude-desktop recents
+
+Open the recents view.
+EOF
+}
+
+usage_code() {
+  cat <<'EOF'
+Usage: claude-desktop code [scheduled]
+
+Open Claude Code desktop view.
+
+Subcommands:
+  scheduled    Open the scheduled tasks view
+EOF
+}
+
+usage_cowork() {
+  cat <<'EOF'
+Usage: claude-desktop cowork [PROMPT] [-q QUERY] [-f FILE...] [-d FOLDER...]
+
+Open a new cowork session.
+
+Options:
+  -q, --query QUERY      Prompt text (use '-' to read from stdin)
+  -f, --file FILE        Attach a file (repeatable)
+  -d, --folder FOLDER    Attach a folder (repeatable)
+EOF
+}
+
+usage_resume() {
+  cat <<'EOF'
+Usage: claude-desktop resume <UUID> [--cwd DIR]
+
+Resume a Claude Code session by UUID.
+
+Options:
+  --cwd DIR    Working directory for resumed session
+EOF
+}
+
+usage_settings() {
+  cat <<'EOF'
+Usage: claude-desktop settings [PAGE]
+
+Open settings, optionally to a specific page.
+
+Valid pages:
+  general  account  usage  capabilities  connectors  claude-code
+  cowork   desktop  desktop/extensions  desktop/developer
+EOF
+}
+
+usage_customize() {
+  cat <<'EOF'
+Usage: claude-desktop customize [skills|connectors]
+
+Open customize view, optionally to a sub-page.
+
+Subcommands:
+  skills      Open skills customize page
+  connectors  Open connectors customize page
+EOF
+}
+
+usage_console() {
+  cat <<'EOF'
+Usage: claude-desktop console
+
+Open https://platform.claude.com/ in the default browser.
+EOF
+}
+
+usage_logout() {
+  cat <<'EOF'
+Usage: claude-desktop logout
+
+Open the Claude logout page.
+EOF
+}
+
+# --------------------------------------------------------------------------- #
+# Commands
+# --------------------------------------------------------------------------- #
+
+cmd_open() {
+  [[ "${1:-}" == '-h' || "${1:-}" == '--help' ]] && {
+    usage_open
+    return
+  }
+  open_url "$(normalize_url "${1:-/}")"
+}
+
+cmd_new() {
+  local prompt='' query=''
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -h | --help)
+      usage_new
+      return
+      ;;
+    -q | --query)
+      shift
+      query="${1:-}"
+      ;;
+    -*)
+      echo >&2 "Unknown option: $1"
+      exit 1
+      ;;
+    *)
+      [[ -n "$prompt" ]] && {
+        echo >&2 "Unexpected argument: $1"
+        exit 1
+      }
+      prompt="$1"
+      ;;
+    esac
+    shift
+  done
+  local text
+  text="$(resolve_prompt "${prompt:-$query}")"
+  open_url "$(build_url 'claude.ai' '/new' "q=${text}")"
+}
+
+cmd_chat() {
+  [[ "${1:-}" == '-h' || "${1:-}" == '--help' ]] && {
+    usage_chat
+    return
+  }
+  [[ $# -lt 1 ]] && {
+    usage_chat >&2
+    exit 1
+  }
+  require_uuid "$1" 'conversation UUID'
+  open_url "$(build_url 'claude.ai' "/chat/$1")"
+}
+
+cmd_project() {
+  [[ "${1:-}" == '-h' || "${1:-}" == '--help' ]] && {
+    usage_project
+    return
+  }
+  [[ $# -lt 1 ]] && {
+    usage_project >&2
+    exit 1
+  }
+  require_uuid "$1" 'project UUID'
+  open_url "$(build_url 'claude.ai' "/project/$1")"
+}
+
+cmd_recents() {
+  [[ "${1:-}" == '-h' || "${1:-}" == '--help' ]] && {
+    usage_recents
+    return
+  }
+  open_url "$(build_url 'claude.ai' '/recents')"
+}
+
+cmd_code() {
+  case "${1:-}" in
+  -h | --help)
+    usage_code
+    return
+    ;;
+  scheduled) open_url "$(build_url 'claude.ai' '/claude-code-desktop/scheduled')" ;;
+  '') open_url "$(build_url 'claude.ai' '/claude-code-desktop')" ;;
+  *)
+    echo >&2 "Unknown subcommand: $1"
+    usage_code >&2
+    exit 1
+    ;;
+  esac
+}
+
+cmd_cowork() {
+  local prompt='' query=''
+  local -a files=() folders=()
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -h | --help)
+      usage_cowork
+      return
+      ;;
+    -q | --query)
+      shift
+      query="${1:-}"
+      ;;
+    -f | --file)
+      shift
+      files+=("${1:-}")
+      ;;
+    -d | --folder)
+      shift
+      folders+=("${1:-}")
+      ;;
+    -*)
+      echo >&2 "Unknown option: $1"
+      exit 1
+      ;;
+    *)
+      [[ -n "$prompt" ]] && {
+        echo >&2 "Unexpected argument: $1"
+        exit 1
+      }
+      prompt="$1"
+      ;;
+    esac
+    shift
+  done
+  local text
+  text="$(resolve_prompt "${prompt:-$query}")"
+
+  # Build URL with potentially multiple file= and folder= params
+  local url="claude://cowork/new" sep='?'
+  if [[ -n "$text" ]]; then
+    url+="${sep}q=$(urlencode "$text")"
+    sep='&'
+  fi
+  for f in "${files[@]+"${files[@]}"}"; do
+    url+="${sep}file=$(urlencode "$f")"
+    sep='&'
+  done
+  for d in "${folders[@]+"${folders[@]}"}"; do
+    url+="${sep}folder=$(urlencode "$d")"
+    sep='&'
+  done
+  open_url "$url"
+}
+
+cmd_resume() {
+  local session_id='' cwd=''
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -h | --help)
+      usage_resume
+      return
+      ;;
+    --cwd)
+      shift
+      cwd="${1:-}"
+      ;;
+    -*)
+      echo >&2 "Unknown option: $1"
+      exit 1
+      ;;
+    *)
+      [[ -n "$session_id" ]] && {
+        echo >&2 "Unexpected argument: $1"
+        exit 1
+      }
+      session_id="$1"
+      ;;
+    esac
+    shift
+  done
+  [[ -z "$session_id" ]] && {
+    usage_resume >&2
+    exit 1
+  }
+  require_uuid "$session_id" 'session UUID'
+  local url
+  url="$(build_url 'resume' '' "session=${session_id}")"
+  if [[ -n "$cwd" ]]; then
+    url+="&$(urlencode 'cwd')=$(urlencode "$cwd")"
+  fi
+  open_url "$url"
+}
+
+cmd_settings() {
+  case "${1:-}" in
+  -h | --help)
+    usage_settings
+    return
+    ;;
+  '')
+    open_url "$(build_url 'claude.ai' '/settings')"
+    ;;
+  *)
+    local page="$1"
+    local valid=0
+    for p in $SETTINGS_PAGES; do
+      [[ "$p" == "$page" ]] && valid=1 && break
+    done
+    if [[ $valid -eq 0 ]]; then
+      echo >&2 "Invalid settings page: $page"
+      echo >&2 "Valid pages: $SETTINGS_PAGES"
+      exit 1
+    fi
+    open_url "$(build_url 'claude.ai' "/settings/$page")"
+    ;;
+  esac
+}
+
+cmd_customize() {
+  case "${1:-}" in
+  -h | --help)
+    usage_customize
+    return
+    ;;
+  '') open_url "$(build_url 'claude.ai' '/customize')" ;;
+  skills) open_url "$(build_url 'claude.ai' '/customize/skills')" ;;
+  connectors) open_url "$(build_url 'claude.ai' '/customize/connectors')" ;;
+  *)
+    echo >&2 "Unknown subcommand: $1"
+    usage_customize >&2
+    exit 1
+    ;;
+  esac
+}
+
+cmd_console() {
+  [[ "${1:-}" == '-h' || "${1:-}" == '--help' ]] && {
+    usage_console
+    return
+  }
+  open_url 'https://platform.claude.com/'
+}
+
+cmd_logout() {
+  [[ "${1:-}" == '-h' || "${1:-}" == '--help' ]] && {
+    usage_logout
+    return
+  }
+  open_url "$(build_url 'claude.ai' '/logout')"
+}
+
+# --------------------------------------------------------------------------- #
+# Main dispatch
+# --------------------------------------------------------------------------- #
+
+main() {
+  if [[ $# -eq 0 ]]; then
+    usage
+    exit 0
+  fi
+
+  case "$1" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  esac
+
+  # URL-like first arg → implicit `open`
+  if is_url_like "$1"; then
+    cmd_open "$@"
+    return
+  fi
+
+  local cmd="$1"
+  shift
+  case "$cmd" in
+  open) cmd_open "$@" ;;
+  new) cmd_new "$@" ;;
+  chat) cmd_chat "$@" ;;
+  project) cmd_project "$@" ;;
+  recents) cmd_recents "$@" ;;
+  code) cmd_code "$@" ;;
+  cowork) cmd_cowork "$@" ;;
+  resume) cmd_resume "$@" ;;
+  settings) cmd_settings "$@" ;;
+  customize) cmd_customize "$@" ;;
+  console) cmd_console "$@" ;;
+  logout) cmd_logout "$@" ;;
+  *)
+    echo >&2 "Unknown command: $cmd"
+    usage >&2
+    exit 1
+    ;;
+  esac
+}
+
+[[ "${CLAUDE_DESKTOP_SOURCED:-}" == '1' ]] || main "$@"
