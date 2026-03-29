@@ -94,7 +94,6 @@ in {
       [
         bat
         curl
-        dogdns
         fd
         killall
         nixos-option
