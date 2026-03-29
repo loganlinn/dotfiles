@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   boot.loader = {
     timeout = 3;
     efi.canTouchEfiVariables = true;
@@ -25,16 +26,18 @@
     # ];
   };
 
-  boot.supportedFilesystems = ["ntfs"];
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.supportedFilesystems = [ "ntfs" ];
+  boot.kernelPackages = pkgs.linuxPackages;
   boot.kernelParams = [
     "i915.enable_psr=1"
     "i915.force_probe=a780"
+    # Resolves Z790-I ACPI `_DSM` timeout on `\_SB.PC00.PEG1.PEGP`.
+    "acpi_osi=Linux"
     # https://lore.kernel.org/linux-pci/20190821124519.71594-1-mika.westerberg@linux.intel.com/
     # https://lore.kernel.org/linux-pci/20190927090202.1468-1-drake@endlessm.com/
     "mem_sleep_default=deep"
   ];
-  boot.blacklistedKernelModules = ["spd5118"]; # DDR5 SPD hub temp sensor; fails on resume (ENXIO)
+  boot.blacklistedKernelModules = [ "spd5118" ]; # DDR5 SPD hub temp sensor; fails on resume (ENXIO)
   boot.kernelModules = [
     "kvm-intel"
     "v4l2loopback"
