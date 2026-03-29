@@ -4,6 +4,7 @@
   ...
 }: {
   imports = [
+    self.nixosModules._1password
     self.nixosModules.common
     self.nixosModules.docker
     self.nixosModules.networking
@@ -21,10 +22,11 @@
   services.xserver.enable = true;
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-
   services.printing.enable = true;
   services.tailscale.enable = true;
 
+  programs._1password.enable = true;
+  programs._1password-gui.enable = true;
   programs.firefox.enable = true;
   programs.htop.enable = true;
   programs.dconf.enable = true;
