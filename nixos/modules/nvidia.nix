@@ -20,9 +20,9 @@
     prime.nvidiaBusId = lib.mkDefault "PCI:1:0:0";
   };
 
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
     extraPackages = with pkgs; [
       libva-vdpau-driver
     ];
