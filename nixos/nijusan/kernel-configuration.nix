@@ -34,6 +34,7 @@
     # https://lore.kernel.org/linux-pci/20190927090202.1468-1-drake@endlessm.com/
     "mem_sleep_default=deep"
   ];
+  boot.blacklistedKernelModules = ["spd5118"]; # DDR5 SPD hub temp sensor; fails on resume (ENXIO)
   boot.kernelModules = [
     "kvm-intel"
     "v4l2loopback"

@@ -22,6 +22,10 @@
   services.xserver.enable = true;
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
+
+  # desktop — disable GNOME auto-suspend (not a laptop)
+  services.power-profiles-daemon.enable = true;
+
   services.printing.enable = true;
   services.tailscale.enable = true;
 
