@@ -14,7 +14,7 @@ TAGS
 *.iws
 *.local
 *.local
-*.swp
+*.sw[op]
 *.zwc
 *.tokens
 *.interp
