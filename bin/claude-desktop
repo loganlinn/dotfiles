@@ -1,0 +1,359 @@
+#!/usr/bin/env -S uv run --script
+# -*- mode: python-*- vim: ft=python
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click>=8"]
+# ///
+"""claude-desktop — open Claude Desktop via deep-link URIs.
+
+Claude Desktop registers the `claude://` URL scheme. On macOS, `open(1)` hands
+the URI to the app; on Linux, `xdg-open(1)` does the same.
+
+The supported routes were discovered two ways:
+
+  1. Extracting the Electron main-process JS from app.asar and reading the URL
+     handler switch statement (parse asar header → locate main JS by offset →
+     find the `open-url` event handler → map host/pathname cases to params).
+
+  2. Right-clicking elements in Claude Desktop → "Copy Link" yields https://
+     URLs whose paths map 1:1 to deep links (substitute https → claude).
+
+Both methods are reproducible on future versions.
+"""
+
+from __future__ import annotations
+
+import platform
+import re
+import shutil
+import subprocess
+import sys
+import urllib.parse
+
+import click
+
+UUID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+MAX_PROMPT_LEN = 16384 - 2048  # ~14KB, enforced by the app
+
+
+def _open_url(url: str) -> None:
+    """Open a URL with the platform launcher."""
+    system = platform.system()
+    if system == "Darwin":
+        cmd = "open"
+    elif system == "Linux":
+        cmd = "xdg-open"
+    else:
+        click.echo(f"Unsupported platform: {system}", err=True)
+        sys.exit(1)
+
+    if not shutil.which(cmd):
+        click.echo(f"{cmd} not found", err=True)
+        sys.exit(1)
+
+    subprocess.run([cmd, url], check=True)
+
+
+def _build_url(host: str, path: str = "", **params: str | list[str]) -> str:
+    """Build a claude:// URL with query parameters."""
+    filtered: dict[str, str | list[str]] = {
+        k: v for k, v in params.items() if v
+    }
+    qs = urllib.parse.urlencode(filtered, doseq=True)
+    url = f"claude://{host}{path}"
+    if qs:
+        url += f"?{qs}"
+    return url
+
+
+def _resolve_prompt(prompt: str | None, query: str | None) -> str | None:
+    """Resolve prompt from positional arg, --query flag, or stdin."""
+    text = prompt or query
+    if text == "-":
+        text = click.get_text_stream("stdin").read()
+    if text and len(text) > MAX_PROMPT_LEN:
+        click.echo(
+            f"Prompt truncated to {MAX_PROMPT_LEN} chars ({len(text)} given)",
+            err=True,
+        )
+        text = text[:MAX_PROMPT_LEN]
+    return text
+
+
+def _require_uuid(value: str, label: str = "UUID") -> None:
+    """Exit with error if value is not a valid UUID."""
+    if not re.match(UUID_PATTERN, value):
+        click.echo(f"Invalid {label}: {value}", err=True)
+        sys.exit(1)
+
+
+def _normalize_claude_url(url: str) -> str:
+    """Normalize a claude.ai URL/path to a claude:// deep link.
+
+    Accepts:
+      https://claude.ai/chat/...
+      claude://claude.ai/chat/...
+      claude.ai/chat/...
+      /claude.ai/chat/...
+      chat/...
+    """
+    url = url.strip()
+    if url.startswith("claude://"):
+        return url
+    if url.startswith("https://claude.ai/"):
+        return "claude://" + url[len("https://"):]
+    # strip leading slash
+    path = url.lstrip("/")
+    if path.startswith("claude.ai/"):
+        return f"claude://{path}"
+    # bare path like "chat/..." — assume claude.ai host
+    return f"claude://claude.ai/{path}"
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+
+@click.group()
+def cli() -> None:
+    """Open Claude Desktop views via deep-link URIs."""
+
+
+@cli.command("open")
+@click.argument("url")
+def open_cmd(url: str) -> None:
+    """Open any claude.ai URL in Claude Desktop.
+
+    Converts https://claude.ai/... URLs (or partial paths) to claude://
+    deep links and opens them.
+
+    \b
+    Examples:
+      claude-desktop open https://claude.ai/chat/2a77c02d-...
+      claude-desktop open claude.ai/project/...
+      claude-desktop open chat/2a77c02d-...
+    """
+    _open_url(_normalize_claude_url(url))
+
+
+# -- conversations ----------------------------------------------------------
+
+
+@cli.command()
+@click.argument("prompt", required=False)
+@click.option("-q", "--query", help="Prompt text (alternative to positional arg).")
+@click.option("--org", is_flag=True, help="Start in ask-your-org mode.")
+def new(prompt: str | None, query: str | None, org: bool) -> None:
+    """Start a new conversation.
+
+    \b
+    Examples:
+      claude-desktop new "explain monads"
+      claude-desktop new --org
+      echo "review this" | claude-desktop new -q -
+    """
+    if org:
+        _open_url(_build_url("claude.ai", "/ask-your-org"))
+        return
+    text = _resolve_prompt(prompt, query)
+    _open_url(_build_url("claude.ai", "/new", q=text or ""))
+
+
+@cli.command()
+@click.argument("conversation_id")
+def chat(conversation_id: str) -> None:
+    """Open an existing conversation by UUID.
+
+    \b
+    Example:
+      claude-desktop chat 550e8400-e29b-41d4-a716-446655440000
+    """
+    _require_uuid(conversation_id, "conversation UUID")
+    _open_url(_build_url("claude.ai", f"/chat/{conversation_id}"))
+
+
+@cli.command()
+@click.argument("project_id")
+def project(project_id: str) -> None:
+    """Open a project by UUID.
+
+    \b
+    Example:
+      claude-desktop project 550e8400-e29b-41d4-a716-446655440000
+    """
+    _require_uuid(project_id, "project UUID")
+    _open_url(_build_url("claude.ai", f"/project/{project_id}"))
+
+
+@cli.command()
+def recents() -> None:
+    """Open recent conversations and projects."""
+    _open_url(_build_url("claude.ai", "/recents"))
+
+
+@cli.command()
+def artifacts() -> None:
+    """Open the artifacts gallery."""
+    _open_url(_build_url("claude.ai", "/artifacts"))
+
+
+# -- Claude Code Desktop ----------------------------------------------------
+
+
+@cli.group(invoke_without_command=True)
+@click.pass_context
+def code(ctx: click.Context) -> None:
+    """Open Claude Code Desktop.
+
+    Without a subcommand, opens the main Claude Code Desktop view.
+    """
+    if ctx.invoked_subcommand is None:
+        _open_url(_build_url("claude.ai", "/claude-code-desktop"))
+
+
+@code.command()
+def scheduled() -> None:
+    """Open scheduled tasks in Claude Code Desktop."""
+    _open_url(_build_url("claude.ai", "/claude-code-desktop/scheduled"))
+
+
+# -- cowork -----------------------------------------------------------------
+
+
+@cli.command()
+@click.argument("prompt", required=False)
+@click.option("-q", "--query", help="Prompt text (alternative to positional arg).")
+@click.option(
+    "-f", "--file", "files", multiple=True,
+    type=click.Path(), help="File to include (repeatable).",
+)
+@click.option(
+    "-d", "--folder", "folders", multiple=True,
+    type=click.Path(file_okay=False), help="Folder to include (repeatable).",
+)
+def cowork(
+    prompt: str | None,
+    query: str | None,
+    files: tuple[str, ...],
+    folders: tuple[str, ...],
+) -> None:
+    """Start a Cowork session (Claude Code Desktop).
+
+    Pre-fills the prompt and selected files/folders without auto-submitting.
+
+    \b
+    Examples:
+      claude-desktop cowork "refactor auth" -d src/auth -f src/config.ts
+      claude-desktop cowork -q "fix tests" -d .
+    """
+    text = _resolve_prompt(prompt, query)
+    params: dict[str, str | list[str]] = {}
+    if text:
+        params["q"] = text
+    if files:
+        params["file"] = list(files)
+    if folders:
+        params["folder"] = list(folders)
+    _open_url(_build_url("cowork", "/new", **params))
+
+
+# -- resume -----------------------------------------------------------------
+
+
+@cli.command()
+@click.argument("session_id")
+@click.option(
+    "--cwd", type=click.Path(exists=True, file_okay=False),
+    help="Working directory for the resumed session.",
+)
+def resume(session_id: str, cwd: str | None) -> None:
+    """Resume a Claude Code CLI session in Desktop.
+
+    \b
+    Example:
+      claude-desktop resume 550e8400-e29b-41d4-a716-446655440000 --cwd .
+    """
+    _require_uuid(session_id, "session UUID")
+    params: dict[str, str] = {"session": session_id}
+    if cwd:
+        params["cwd"] = str(cwd)
+    _open_url(_build_url("resume", "", **params))
+
+
+# -- settings ---------------------------------------------------------------
+
+SETTINGS_PAGES = [
+    "general", "account", "usage", "capabilities", "connectors",
+    "claude-code", "cowork", "desktop", "desktop/extensions",
+    "desktop/developer",
+]
+
+
+@cli.command()
+@click.argument(
+    "page", required=False, default=None,
+    type=click.Choice(SETTINGS_PAGES, case_sensitive=False),
+)
+def settings(page: str | None) -> None:
+    """Open Claude Desktop settings.
+
+    \b
+    Pages:
+      general, account, usage, capabilities, connectors,
+      claude-code, cowork, desktop, desktop/extensions,
+      desktop/developer
+
+    \b
+    Examples:
+      claude-desktop settings
+      claude-desktop settings account
+      claude-desktop settings desktop/extensions
+    """
+    path = f"/settings/{page}" if page else "/settings"
+    _open_url(_build_url("claude.ai", path))
+
+
+# -- customize --------------------------------------------------------------
+
+
+@cli.group(invoke_without_command=True)
+@click.pass_context
+def customize(ctx: click.Context) -> None:
+    """Open customization pages.
+
+    Without a subcommand, opens the main customize view.
+    """
+    if ctx.invoked_subcommand is None:
+        _open_url(_build_url("claude.ai", "/customize"))
+
+
+@customize.command()
+def skills() -> None:
+    """Open the skills customization page."""
+    _open_url(_build_url("claude.ai", "/customize/skills"))
+
+
+@customize.command()
+def connectors() -> None:
+    """Open the connectors customization page."""
+    _open_url(_build_url("claude.ai", "/customize/connectors"))
+
+
+# -- misc -------------------------------------------------------------------
+
+
+@cli.command()
+def console() -> None:
+    """Open the Anthropic developer console (platform.claude.com)."""
+    _open_url("https://platform.claude.com/")
+
+
+@cli.command()
+def logout() -> None:
+    """Log out of Claude Desktop."""
+    _open_url(_build_url("claude.ai", "/logout"))
+
+
+if __name__ == "__main__":
+    cli()
