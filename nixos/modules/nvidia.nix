@@ -24,7 +24,7 @@
     enable = true;
     driSupport32Bit = true;
     extraPackages = with pkgs; [
-      vaapiVdpau
+      libva-vdpau-driver
     ];
   };
 
