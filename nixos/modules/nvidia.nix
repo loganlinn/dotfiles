@@ -5,6 +5,7 @@
   ...
 }: {
   hardware.nvidia = {
+    open = lib.mkDefault true;
     powerManagement.enable = lib.mkDefault true;
     modesetting.enable = lib.mkDefault true;
     package = config.boot.kernelPackages.nvidiaPackages.production;
