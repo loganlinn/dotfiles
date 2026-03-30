@@ -11,7 +11,7 @@
 in {
   imports = [
     self.homeModules.common
-    # self.homeModules.nix-colors
+    self.homeModules.nix-colors
     # self.homeModules.secrets
     # ../nix/home/awesomewm.nix
     ../nix/home/common
