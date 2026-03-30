@@ -57,3 +57,6 @@ target/
 mise.local.toml
 __pycache__/
 config/kitty/kitty.local.conf
+
+# Vectimus governance receipts (local evidence)
+.vectimus/receipts/
