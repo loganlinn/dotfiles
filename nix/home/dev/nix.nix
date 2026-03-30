@@ -16,7 +16,7 @@
     nix-tree # interactively browse dependency graphs of Nix derivations
     nix-update # swiss-knife for updating nix packages
     nixd # language server
-    nixfmt-rfc-style
+    nixfmt
     nurl
     nvd # nix package version diffs (e.x. nvd diff /run/current-system result)
     nil # language server
