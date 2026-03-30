@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Displays remaining time until AWS SSO session expires
+# Usage: aws-sso-timeout [--human-readable] [--help]
+
+set -e
+
+# Check dependencies
+if ! command -v jq >/dev/null 2>&1; then
+	echo >&2 "Error: jq is required but not installed. Please install jq."
+	exit 1
+fi
+
+# Show help
+usage() {
+	cat <<'EOF'
+Usage: aws-sso-timeout [OPTIONS]
+
+Displays remaining time until AWS SSO session expires.
+
+OPTIONS:
+  -h, --human-readable    Display time in human-readable format
+      --help              Show this help message
+EOF
+}
+
+pretty=0
+for arg; do
+	case $arg in
+	-p | --pretty)
+		pretty=1
+		shift
+		;;
+	--help)
+		usage
+		exit 0
+		;;
+	*)
+		echo >&2 "Unknown argument '$arg'"
+		echo >&2 "Use --help for usage information."
+		exit 1
+		;;
+	esac
+done
+
+# Check if AWS SSO cache directory exists
+if [[ ! -d ~/.aws/sso/cache ]]; then
+	echo >&2 "Error: AWS SSO cache directory not found. Please run 'aws sso login' first."
+	exit 1
+fi
+
+# Find most recent expiry time from cache files
+expiry=$(
+	find ~/.aws/sso/cache -type f -name '*.json' -mtime 0 -print0 2>/dev/null |
+		xargs -0 -I {} jq -r '.expiresAt | select(. != null) | fromdateiso8601' {} 2>/dev/null |
+		sort -nr |
+		head -n1
+)
+
+# Handle case where no valid expiry found
+if [[ -z "$expiry" || "$expiry" == "null" ]]; then
+	echo >&2 "Error: No valid AWS SSO session found. Please run 'aws sso login' first."
+	exit 1
+fi
+
+timeout=$((expiry - $(date +%s)))
+timeout=$((timeout < 0 ? 0 : timeout))
+if [[ $pretty == 0 ]]; then
+	echo -n "$timeout"
+	exit
+fi
+days=$((timeout / 60 / 60 / 24))
+hours=$((timeout / 60 / 60 % 24))
+minutes=$((timeout / 60 % 60))
+seconds=$((timeout % 60))
+# Color codes - only use if outputting to terminal
+GREEN='' YELLOW='' RED='' NORMAL=''
+if [[ -t 1 ]]; then
+	GREEN='\033[0;32m'
+	YELLOW='\033[0;33m'
+	RED='\033[0;31m'
+	NORMAL='\033[0m'
+fi
+if ((timeout > 3600)); then # > 1 hour
+	echo -ne "${GREEN}"
+elif ((timeout > 60)); then # > 1 minute
+	echo -ne "${YELLOW}"
+else
+	echo -ne "${RED}"
+fi
+((days < 1)) || echo -n "${days}d "
+((hours < 1)) || echo -n "${hours}h "
+((minutes < 1)) || echo -n "${minutes}m "
+echo -e "${seconds}s${NORMAL}"

@@ -1,0 +1,236 @@
+#!/bin/bash
+# git-stash-find - Search git stashes by path and/or content
+# Usage: git-stash-find [options] [pattern]
+
+set -euo pipefail
+[[ -z ${TRACE:-} ]] || set -x
+
+show_help() {
+  cat <<EOF
+Usage: git-stash-find [options] [pattern] [--] [path...]
+
+Search git stashes by path and/or content.
+
+OPTIONS:
+    -h, --help          Show this help message
+    -G, --grep PATTERN  Search stash content for PATTERN (regex)
+    -S, --string TEXT   Search stash content for literal string TEXT
+    -i, --ignore-case   Case insensitive search
+    -l, --list          List all stashes with basic info
+    -v, --verbose       Show full stash diff output
+    -a, --all           Search all stashes (default: last 10)
+
+EXAMPLES:
+    git-stash-find                      # List recent stashes
+    git-stash-find "*.js"               # Find stashes with JS files
+    git-stash-find -G "function.*foo"   # Find stashes with regex pattern
+    git-stash-find -S "TODO"            # Find stashes containing "TODO"
+    git-stash-find -S "bug" src/        # Find stashes in src/ containing "bug"
+    git-stash-find --all -i -S "error"  # Search all stashes for "error" (case insensitive)
+    git-stash-find "TODO" -- "*.js" "*.ts"  # Find "TODO" in JS/TS files
+
+EOF
+}
+
+# Default values
+path_patterns=()
+grep_pattern=""
+string_pattern=""
+ignore_case=""
+verbose=false
+list_only=false
+search_all=false
+positional_args=()
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+  -h | --help)
+    show_help
+    exit 0
+    ;;
+  -G | --grep)
+    grep_pattern="$2"
+    shift 2
+    ;;
+  -S | --string)
+    string_pattern="$2"
+    shift 2
+    ;;
+  -i | --ignore-case)
+    ignore_case="-i"
+    shift
+    ;;
+  -l | --list)
+    list_only=true
+    shift
+    ;;
+  -v | --verbose)
+    verbose=true
+    shift
+    ;;
+  -a | --all)
+    search_all=true
+    shift
+    ;;
+  --)
+    shift
+    break
+    ;;
+  -*)
+    echo "Unknown option: $1" >&2
+    exit 1
+    ;;
+  *)
+    positional_args+=("$1")
+    shift
+    ;;
+  esac
+done
+
+# # If positional argument provided and no explicit pattern, use it as string search
+# if [[ ${#positional_args[@]} -gt 0 && -z "$grep_pattern" && -z "$string_pattern" ]]; then
+#   string_pattern="${positional_args[0]}"
+#   # Remove first positional arg (search pattern) and use rest as path patterns
+#   path_patterns=("${positional_args[@]:1}")
+# else
+#   # All positional args are path patterns
+#   path_patterns=("${positional_args[@]}")
+# fi
+
+# Add any remaining args after -- as path patterns
+path_patterns+=("$@")
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  echo "Error: Not in a git repository" >&2
+  exit 1
+fi
+
+# Get stash list
+if $search_all; then
+  stash_list=$(git stash list)
+else
+  stash_list=$(git stash list --max-count=10)
+fi
+
+if [[ -z "$stash_list" ]]; then
+  echo >&2 "No stashes found"
+  exit 0
+fi
+
+# If just listing, show stashes and exit
+if $list_only; then
+  echo "$stash_list"
+  exit 0
+fi
+
+found_matches=false
+
+# Process each stash
+while IFS= read -r stash_line; do
+  stash_ref=$(<<<"$stash_line" cut -d: -f1)
+  stash_desc=$(<<<"$stash_line" cut -d: -f2-)
+
+  # Get stash diff
+  stash_diff=$(git stash show -p "$stash_ref" 2>/dev/null) || continue
+
+  # Apply path filter if specified
+  if [[ "${#path_patterns[@]}" -gt 0 ]]; then
+    # Get list of files in this stash
+    stash_files=$(git stash show --name-only "$stash_ref" 2>/dev/null) || continue
+
+    # Check if any files match the path pattern
+    path_match=false
+    while IFS= read -r file; do
+      for path_pattern in "${path_patterns[@]}"; do
+        if [[ "$file" == "$path_pattern" ]]; then
+          path_match=true
+          break
+        fi
+      done
+    done <<<"$stash_files"
+
+    # If no path match, skip this stash
+    if ! $path_match; then
+      continue
+    fi
+
+    # Filter diff to only show matching files
+    if [[ -n "$stash_diff" ]]; then
+      # Build awk pattern string for multiple patterns
+      awk_patterns=""
+      for pattern in "${path_patterns[@]}"; do
+        if [[ -n "$awk_patterns" ]]; then
+          awk_patterns="$awk_patterns || "
+        fi
+        awk_patterns="${awk_patterns}(current_file ~ \"$pattern\")"
+      done
+
+      stash_diff=$(<<<"$stash_diff" awk -v patterns="$awk_patterns" '
+                /^diff --git/ {
+                    current_file = $0
+                    gsub(/^diff --git a\//, "", current_file)
+                    gsub(/ b\/.*$/, "", current_file)
+                    show_block = ('"$awk_patterns"')
+                    if (show_block) print $0
+                    next
+                }
+                show_block { print $0 }
+            ')
+    fi
+  fi
+
+  # Apply content filters
+  content_match=true
+
+  if [[ -n $grep_pattern ]]; then
+    if ! <<<"$stash_diff" grep -q $ignore_case -E "$grep_pattern"; then
+      content_match=false
+    fi
+  fi
+
+  if [[ -n "$string_pattern" ]]; then
+    if ! <<<"$stash_diff" grep -q $ignore_case -F "$string_pattern"; then
+      content_match=false
+    fi
+  fi
+
+  # If no content search specified, show all (after path filtering)
+  if [[ -z "$grep_pattern" && -z "$string_pattern" ]]; then
+    content_match=true
+  fi
+
+  # If this stash matches, display it
+  if $content_match; then
+    found_matches=true
+    echo "=== $stash_ref:$stash_desc ==="
+
+    if $verbose; then
+      echo "$stash_diff"
+    else
+      # Show just the file names and a brief excerpt
+      echo "Files:"
+      git stash show --name-only "$stash_ref" 2>/dev/null | sed 's/^/  /'
+
+      if [[ -n "$grep_pattern" || -n "$string_pattern" ]]; then
+        echo
+        echo "Matching lines:"
+        pattern="$grep_pattern$string_pattern"
+        echo "$stash_diff" | grep $ignore_case -E "${pattern:-.*}" | head -5 | sed 's/^/  /'
+
+        match_count=$(echo "$stash_diff" | grep $ignore_case -cE "${pattern:-.*}" || echo "0")
+        if [[ $match_count -gt 5 ]]; then
+          echo "  ... and $((match_count - 5)) more matches"
+        fi
+      fi
+    fi
+    echo
+  fi
+
+done <<<"$stash_list"
+
+if ! $found_matches; then
+  echo "No matching stashes found"
+  exit 1
+fi

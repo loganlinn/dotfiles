@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# DESCRIPTION
+#     Outputs complete list of actions available to use in AWS IAM policy documents.
+#
+#     This is helpful way to discover all actions an AWS service supports,
+#     or simulate what is matched by wildcard (*) expressions.
+#
+#     The data is sourced from [AWS Policy Generator](https://awspolicygen.s3.amazonaws.com/policygen.html).
+#
+
+hash curl jq fzf || exit 1
+
+set -e
+set -u
+set -o pipefail
+
+fzf_opts=(--delimiter=: --scheme=path)
+args=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+  -f | --filter)
+    fzf_opts+=("$1" "${2?}")
+    shift 2
+    ;;
+  --filter=* | -m | --multi | --multi=* | -x | --extended | --no-sort | +s | --print0 | --sync | --style=* | --no-color | --no-bold | --black | --height=* | --layout=* | --margin=* | --padding=* | --border=*)
+    fzf_opts+=("$1")
+    shift
+    ;;
+  *)
+    args+=("$1")
+    shift
+    ;;
+  esac
+done
+
+if ((${#args})); then
+  fzf_opts+=("--query=${args[*]}")
+fi
+
+curl -sSLf --compressed \
+  -H 'Pragma: no-cache' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Referer: https://awspolicygen.s3.amazonaws.com/policygen.html' \
+  'https://awspolicygen.s3.amazonaws.com/js/policies.js' |
+  cut -d= -f2 |
+  jq -r '.serviceMap[] | .StringPrefix as $prefix | .Actions[] | "\($prefix):\(.)"' |
+  sort -u |
+  fzf "${fzf_opts[@]}"

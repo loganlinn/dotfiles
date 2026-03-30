@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Compact git status view - groups files by directory and status
+# Shows counts with optional filename previews
+
+usage() {
+	cat <<-EOF
+		Usage: git-status-compact [OPTIONS]
+
+		Options:
+		  -v, --verbose     Show all filenames in preview
+		  -n, --no-preview  Don't show filename previews
+		  -h, --help        Show this help
+	EOF
+}
+
+SHOW_PREVIEW=1
+MAX_PREVIEW=3
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	-v | --verbose)
+		MAX_PREVIEW=999
+		shift
+		;;
+	-n | --no-preview)
+		SHOW_PREVIEW=0
+		shift
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		echo >&2 "Unknown option: $1"
+		exit 1
+		;;
+	esac
+done
+
+# Check if we're in a git repo
+if ! git rev-parse --git-dir &>/dev/null; then
+	echo >&2 "Not a git repository"
+	exit 1
+fi
+
+# Color codes
+DIM='\033[2m'
+RESET='\033[0m'
+
+# Get branch info
+branch_info=$(git status --short --branch | head -n 1)
+echo "$branch_info"
+echo
+
+# Get status lines
+readarray -t status_lines < <(git status --short | grep -v '^##')
+
+if [[ ${#status_lines[@]} -eq 0 ]]; then
+	echo "Working tree clean"
+	exit 0
+fi
+
+# Parse status codes
+status_label() {
+	case "$1" in
+	"M " | " M") echo "M" ;;
+	"A " | " A") echo "A" ;;
+	"D " | " D") echo "D" ;;
+	"R " | " R") echo "R" ;;
+	"C " | " C") echo "C" ;;
+	"??") echo "?" ;;
+	"!!") echo "!" ;;
+	"UU" | "AA" | "DD") echo "X" ;;
+	*) echo "?" ;;
+	esac
+}
+
+# Group files by directory and status
+declare -A dir_status_files
+declare -A dir_status_count
+
+for line in "${status_lines[@]}"; do
+	status="${line:0:2}"
+	file="${line:3}"
+
+	# Get directory (or "." for root files)
+	if [[ "$file" == */* ]]; then
+		dir="${file%/*}"
+	else
+		dir="."
+	fi
+
+	# Get basename
+	base="${file##*/}"
+
+	status_code=$(status_label "$status")
+	key="${dir}|${status_code}"
+
+	dir_status_files[$key]+="${base}"$'\n'
+	if [[ -v dir_status_count[$key] ]]; then
+		((dir_status_count[$key]++))
+	else
+		dir_status_count[$key]=1
+	fi
+done
+
+# Sort keys by directory, then status
+readarray -t sorted_keys < <(
+	for key in "${!dir_status_count[@]}"; do
+		echo "$key"
+	done | sort
+)
+
+# Display grouped results
+for key in "${sorted_keys[@]}"; do
+	dir="${key%|*}"
+	status="${key#*|}"
+	count=${dir_status_count[$key]}
+	files=${dir_status_files[$key]}
+
+	# Format output
+	if [[ "$dir" == "." ]]; then
+		printf "%s  (%d)\n" "$status" "$count"
+	else
+		printf "%s  %s/ (%d)\n" "$status" "$dir" "$count"
+	fi
+
+	# Show preview if enabled
+	if [[ $SHOW_PREVIEW -eq 1 ]]; then
+		readarray -t file_array <<<"$files"
+		shown=0
+		for file in "${file_array[@]}"; do
+			if [[ -z "$file" ]]; then
+				continue
+			fi
+			if [[ $shown -lt $MAX_PREVIEW ]]; then
+				printf "${DIM}   %s${RESET}\n" "$file"
+			fi
+			((shown++)) || true
+		done
+		if [[ $shown -gt $MAX_PREVIEW ]]; then
+			printf "${DIM}   ... and %d more${RESET}\n" $((shown - MAX_PREVIEW))
+		fi
+	fi
+done

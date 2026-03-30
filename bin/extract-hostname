@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+url="${1:-}"
+[[ -n "$url" ]] || { echo >&2 "Usage: $0 <url>"; exit 1; }
+
+# Add protocol if missing
+[[ "$url" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*:// ]] || url="http://$url"
+
+# Extract hostname using parameter expansion
+hostname="${url#*://}"      # Remove protocol
+hostname="${hostname#*@}"   # Remove user info
+hostname="${hostname%%:*}"  # Remove port
+hostname="${hostname%%/*}"  # Remove path
+hostname="${hostname%%\?*}" # Remove query
+hostname="${hostname%%#*}"  # Remove fragment
+
+echo "$hostname"
