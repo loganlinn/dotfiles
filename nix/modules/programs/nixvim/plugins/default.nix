@@ -35,7 +35,7 @@ in
     ./pkl.nix
     ./project.nix
     ./snacks.nix
-    ./supermaven
+    # ./supermaven
     ./telescope.nix
     ./treesitter.nix
     ./trouble

@@ -34,6 +34,7 @@ in {
     # ../nix/home/mpd.nix
     # ../nix/home/mpv.nix
     # ../nix/home/nnn.nix
+    ../nix/home/nixvim
     ../nix/home/pretty.nix
     # ../nix/home/qalculate
     ../nix/home/ssh.nix
@@ -93,6 +94,8 @@ in {
   programs.firefox.enable = true;
   # programs.librewolf.enable = true;
   # programs.qutebrowser.enable = true;
+  programs.nixvim.enable = true;
+  programs.nixvim.defaultEditor = true;
   programs.ssh.enable = true;
   # programs.nix-index.enable = false;
   # programs.nix-index.enableZshIntegration = config.programs.nix-index.enable;
