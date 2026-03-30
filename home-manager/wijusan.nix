@@ -124,18 +124,7 @@
 
   nix.enable = true;
   nix.package = pkgs.nixVersions.latest;
-  nix.settings = {
-    trusted-users = [
-      "root"
-      config.home.username
-    ];
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-    warn-dirty = false;
-    accept-flake-config = true;
-    run-diff-hook = true;
-    show-trace = true;
+  nix.settings = config.my.nix.settings // {
+    trusted-users = ["root" config.home.username];
   };
 }

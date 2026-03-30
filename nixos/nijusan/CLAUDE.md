@@ -61,27 +61,6 @@ Needs these changes:
 
 ---
 
-## nix settings
-
-Add to `configuration.nix` or a shared module:
-
-```nix
-nix.settings = {
-  experimental-features = [ "nix-command" "flakes" ];
-  substituters = [
-    "https://cache.nixos.org"
-    "https://nix-community.cachix.org"
-  ];
-  trusted-public-keys = [
-    "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    "nix-community.cachix.org-1:mB9FSh9qf2dde0946WDTTkh8+bZQITgBR7ZMEH2eyJw="
-  ];
-  trusted-users = [ "root" "logan" ];
-};
-```
-
----
-
 ## Known issues / boot quirks
 
 - **ACPI Error on boot**: `Aborting method \_SB.PC00.PEG1.PEGP._DSM (AE_AML_LOOP_TIMEOUT)` — cosmetic after adding `acpi_osi=Linux`, but present without it
@@ -94,7 +73,6 @@ nix.settings = {
 
 - [ ] Copy fresh `hardware-configuration.nix` from `/etc/nixos/` on nijusan into repo
 - [ ] Update `kernel-configuration.nix` (see above)
-- [ ] Add `nix.settings` block
 - [ ] Run `sudo nixos-rebuild switch --flake .#nijusan`
 - [ ] Verify display output switches to A4000 after rebuild
 - [ ] Verify GNOME / xsession launches correctly

@@ -165,16 +165,7 @@ in {
 
   nix.enable = true;
   nix.package = pkgs.nixUnstable;
-  nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-    warn-dirty = false;
-    accept-flake-config = true;
-    run-diff-hook = true;
-    show-trace = true;
-  };
+  nix.settings = config.my.nix.settings;
 
   # nixpkgs.config.permittedInsecurePackages = [ "openssl-1.1.1u" ];
 }

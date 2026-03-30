@@ -11,32 +11,32 @@
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
-    ../../nix/home/dev # TODO module
-    ../../nix/home/emacs
-    ../../nix/home/doom
-    ../../nix/home/home-manager.nix
-    # ../../nix/home/intellij.nix
-    ../../nix/home/deadd
-    ../../nix/home/kitty
-    # ../../nix/home/mpd.nix
-    # ../../nix/home/mpv.nix
-    # ../../nix/home/nnn.nix
-    # ../../nix/home/polkit.nix
-    ../../nix/home/pretty.nix
-    # ../../nix/home/qalculate
-    ../../nix/home/secrets.nix
-    ../../nix/home/ssh.nix
-    # ../../nix/home/sync.nix
-    # ../../nix/home/urxvt.nix
-    # ../../nix/home/vpn.nix
-    # ../../nix/home/vscode.nix
-    ../../nix/home/x11.nix
-    ../../nix/home/yt-dlp.nix
-    ../../nix/home/yubikey.nix
-    ../../nix/modules/services
-    ../../nix/modules/spellcheck.nix
-    ../../nix/modules/desktop
-    ../../nix/modules/desktop/i3
+    ../nix/home/dev # TODO module
+    ../nix/home/emacs
+    ../nix/home/doom
+    ../nix/home/home-manager.nix
+    # ../nix/home/intellij.nix
+    ../nix/home/deadd
+    ../nix/home/kitty
+    # ../nix/home/mpd.nix
+    # ../nix/home/mpv.nix
+    # ../nix/home/nnn.nix
+    # ../nix/home/polkit.nix
+    ../nix/home/pretty.nix
+    # ../nix/home/qalculate
+    ../nix/home/secrets.nix
+    ../nix/home/ssh.nix
+    # ../nix/home/sync.nix
+    # ../nix/home/urxvt.nix
+    # ../nix/home/vpn.nix
+    # ../nix/home/vscode.nix
+    ../nix/home/x11.nix
+    ../nix/home/yt-dlp.nix
+    ../nix/home/yubikey.nix
+    ../nix/modules/services
+    ../nix/modules/spellcheck.nix
+    ../nix/modules/desktop
+    ../nix/modules/desktop/i3
     # inputs.hyprland.homeManagerModules.default
     # {
     #   wayland.windowManager.hyprland = {
@@ -189,5 +189,7 @@
     discord
   ];
 
+  home.username = "logan";
+  home.homeDirectory = "/home/logan";
   home.stateVersion = "22.11";
 }

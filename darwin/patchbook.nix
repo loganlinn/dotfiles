@@ -7,17 +7,5 @@
   homebrew.enable = true;
   homebrew.prefix = "/opt/homebrew";
 
-  home-manager.users.logan = {
-    options,
-    config,
-    ...
-  }: {
-    imports = [
-      self.homeModules.common
-      self.homeModules.nix-colors
-      ../nix/home/dev
-      ../nix/home/pretty.nix
-    ];
-    home.stateVersion = "22.11";
-  };
+  home-manager.users.logan = import ../home-manager/patchbook.nix;
 }

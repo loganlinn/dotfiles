@@ -44,7 +44,7 @@ with lib; {
     # }
   ];
 
-  home-manager.users.logan = import ./home.nix; # TODO unify with nijusan
+  home-manager.users.logan = import ../../home-manager/framework.nix;
 
   # my.tailscale.ssh.enable = true;
   # my.davfs2.davs."fastmail".url = "https://myfiles.fastmail.com";
