@@ -31,6 +31,7 @@
       as-tree
       bc
       binutils
+      bkt
       cmake
       coreutils-full
       curl

@@ -4,7 +4,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -44,6 +45,7 @@
     flyctl
     go-task
     google-cloud-sdk
+    hl-log-viewer
     ipcalc
     jc
     jjui
