@@ -3,7 +3,7 @@ date: 2026-03-29
 git_revision: 6a928fa7
 model: claude-opus-4-6
 claude_version: 2.1.86
-status: todo
+status: done
 ---
 
 # Plan: Unify Home-Manager Configurations Across Hosts
