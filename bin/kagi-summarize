@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# kagi-summarize - Summarize URLs or text via the Kagi Universal Summarizer API
+
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: kagi-summarize [OPTIONS] [URL]
+       kagi-summarize [OPTIONS] --file <path|->
+       kagi-summarize [OPTIONS] --text <string>
+       ... | kagi-summarize [OPTIONS] --file -
+
+Options:
+  --api-token <token>  API token (overrides \$KAGI_API_TOKEN)
+  --url <url>          URL to summarize (also accepted as first positional arg)
+  --file <path|->      File to summarize (- for stdin)
+  --text <string>      Inline text to summarize
+  --engine <engine>    cecil (default), agnes, daphne, muriel  [\$KAGI_SUMMARIZE_ENGINE]
+  --type <type>        summary (default) or takeaway            [\$KAGI_SUMMARIZE_TYPE]
+  --lang <code>        Target language (e.g. EN, DE, JA)        [\$KAGI_SUMMARIZE_LANG]
+  --no-cache           Disable caching (for sensitive content)  [\$KAGI_SUMMARIZE_CACHE=false]
+  --raw                Output raw JSON                          [\$KAGI_SUMMARIZE_RAW=true]
+  --quiet              Suppress progress output                 [\$KAGI_SUMMARIZE_QUIET=true]
+  -h, --help           Show this help message
+
+Environment:
+  KAGI_API_TOKEN       API token (required unless --api-token is given)
+
+Examples:
+  kagi-summarize https://example.com/article
+  op run -- kagi-summarize https://example.com/article
+  kagi-summarize --api-token "\$(op read op://Private/Kagi/credential)" --url https://example.com
+EOF
+  exit "${1:-0}"
+}
+
+# Check for help before sourcing library (avoids dep checks)
+for arg in "$@"; do
+  case "$arg" in
+  -h | --help) usage 0 ;;
+  esac
+done
+
+# shellcheck source=kagi-summarize.bash
+source "$(dirname "$0")/kagi-summarize.bash"
+
+# Allow bare positional URL: kagi-summarize https://...
+args=()
+for arg in "$@"; do
+  if [[ ${#args[@]} -eq 0 && "$arg" != -* && "$arg" =~ ^https?:// ]]; then
+    args+=(--url "$arg")
+  else
+    args+=("$arg")
+  fi
+done
+
+kagi_summarize "${args[@]}"
