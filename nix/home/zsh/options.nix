@@ -27,7 +27,8 @@ in
         ${concatLines (mapAttrsToList (name: value: ''bindkey -s '${name}' '${value}'') cfg.bindkeys)}
 
         fpath=("${config.xdg.dataHome}/zsh/functions" $fpath)
-        autoload -U $fpath[1]/*(N:t)
+        local -a _zfuncs=($fpath[1]/*(N:t))
+        (( $#_zfuncs )) && autoload -U "$_zfuncs[@]"
       '';
     };
 

@@ -218,7 +218,8 @@ in
         ##########################################################
 
         fpath=("${config.my.flakeDirectory}/config/zsh/functions" $fpath)
-        autoload -U $fpath[1]/*(.:t)
+        local -a _zfuncs=($fpath[1]/*(N.:t))
+        (( $#_zfuncs )) && autoload -U "$_zfuncs[@]"
 
         zle -N git-widget
         zle -N git-open-widget
