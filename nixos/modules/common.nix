@@ -127,6 +127,14 @@ in {
 
     fonts.fontconfig.enable = mkDefault true;
     fonts.enableDefaultPackages = mkDefault true;
+    fonts.packages =
+      [
+        my.fonts.mono.package
+        my.fonts.sans.package
+        my.fonts.serif.package
+        my.fonts.terminal.package
+      ]
+      ++ my.fonts.packages;
 
     documentation.enable = mkDefault true;
     documentation.dev.enable = mkDefault config.documentation.enable;
