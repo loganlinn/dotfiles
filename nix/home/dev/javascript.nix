@@ -51,7 +51,7 @@ in
       initContent = ''
         # initialize fnm (node.js version manager)
         eval "$(fnm env --shell zsh ${
-          concatStringsSep " " (cli.toCommandLine { } config.programs.fnm.settings)
+          cli.toCommandLineShellGNU { } config.programs.fnm.settings
         })"
 
         # If the completion file doesn't exist yet, we need to autoload it and
@@ -69,7 +69,7 @@ in
     programs.bash.initExtra = ''
       # initialize fnm (node.js version manager)
       eval "$(fnm env --shell bash ${
-        concatStringsSep " " (cli.toCommandLine { } config.programs.fnm.settings)
+        cli.toCommandLineShellGNU { } config.programs.fnm.settings
       })"
     '';
 

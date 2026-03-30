@@ -161,7 +161,7 @@ with lib.my;
           }
         ' |
         ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-        ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toCommandLine { } fzfOpts)} |
+        ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU { } fzfOpts} |
         tee /dev/stderr |
         xargs ${openCmd}
       ''
@@ -199,7 +199,7 @@ with lib.my;
 
         gh api graphql -F limit=10 -f query="$graphql_query" |
         ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-        ${getExe pkgs.fzf} ${concatStringsSep " " (cli.toCommandLine { } fzfOpts)} |
+        ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU { } fzfOpts} |
         tee /dev/stderr |
         xargs ${openCmd};
       ''

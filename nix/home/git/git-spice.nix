@@ -65,6 +65,7 @@ in
     };
     programs.zsh = {
       completionInit = ''
+        autoload -U +X bashcompinit && bashcompinit
         complete -C ${cfg.package}/bin/gs gs
       '';
       initContent = mkAfter (lib.readFile ./git-spice.zsh);
