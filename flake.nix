@@ -159,18 +159,12 @@
             system = "x86_64-linux";
             modules = [ ./home-manager/framework.nix ];
           };
-          homeConfigurations."logan@logamma" = mkHomeConfiguration {
-            system = "aarch64-darwin";
-            modules = [ ./home-manager/logamma.nix ];
-          };
+
           homeConfigurations."logan@nijusan" = mkHomeConfiguration {
             system = "x86_64-linux";
             modules = [ ./home-manager/nijusan.nix ];
           };
-          homeConfigurations."logan@patchbook" = mkHomeConfiguration {
-            system = "aarch64-darwin";
-            modules = [ ./home-manager/patchbook.nix ];
-          };
+
           homeConfigurations."logan@wijusan" = mkHomeConfiguration {
             system = "x86_64-linux";
             modules = [ ./home-manager/wijusan.nix ];

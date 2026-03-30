@@ -1,7 +1,6 @@
 {self, ...}: {
   imports = [
     self.darwinModules.common
-    self.darwinModules.home-manager
   ];
 
   homebrew.enable = true;
