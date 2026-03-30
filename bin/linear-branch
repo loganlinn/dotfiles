@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+	cat >&2 <<EOF
+Usage: $(basename "$0") [-s] <ISSUE_ID>
+
+Generate a git branch name for a Linear issue.
+
+Options:
+  -s, --switch   Switch to branch, creating if it doesn't exist
+  -h, --help     Show this help
+
+Format: \$USER/<identifier>-<title-slug>
+EOF
+}
+
+SWITCH=0
+ISSUE_ID=
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	-s | --switch) SWITCH=1 ;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	-*) echo >&2 "Unknown option: $1" && usage && exit 1 ;;
+	*) ISSUE_ID=$1 ;;
+	esac
+	shift
+done
+
+[[ -z "$ISSUE_ID" ]] && { echo >&2 "error: ISSUE_ID required"; usage; exit 1; }
+
+json=$(linear issue get "$ISSUE_ID" -o json)
+identifier=$(jq -r '.identifier' <<<"$json")
+title=$(jq -r '.title' <<<"$json")
+
+# slugify: lowercase, non-alnum -> hyphen, collapse/trim hyphens
+slug=$(
+	echo "$title" |
+		tr '[:upper:]' '[:lower:]' |
+		sed 's/[^a-z0-9]/-/g; s/-\+/-/g; s/^-//; s/-$//'
+)
+
+prefix="${USER}/$(echo "$identifier" | tr '[:upper:]' '[:lower:]')-"
+max_slug=$(( 60 - ${#prefix} ))
+
+if [[ ${#slug} -gt $max_slug ]]; then
+	slug=$(echo "${slug:0:$max_slug}" | sed 's/-*$//')
+fi
+
+branch="${prefix}${slug}"
+
+if [[ $SWITCH -eq 1 ]]; then
+	git switch -c "$branch" 2>/dev/null || git switch "$branch"
+else
+	echo "$branch"
+fi
