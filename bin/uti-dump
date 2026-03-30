@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+lsregister=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+
+if [[ ! -x "$lsregister" ]]; then
+	echo >&2 "lsregister not found at expected path: $lsregister"
+	echo >&2 "Apple may have moved it in this macOS version."
+	exit 1
+fi
+
+"$lsregister" -dump | awk '/^uti:/ || /^[[:space:]]+uti:/ { print $2 }' | sort -u
