@@ -34,7 +34,7 @@ in {
     # ../nix/home/mpd.nix
     # ../nix/home/mpv.nix
     # ../nix/home/nnn.nix
-    # ../nix/home/pretty.nix
+    ../nix/home/pretty.nix
     # ../nix/home/qalculate
     ../nix/home/ssh.nix
     # ../nix/home/urxvt.nix
