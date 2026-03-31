@@ -126,16 +126,13 @@ in
           run $_git clone $VERBOSE_ARG "https://github.com/loganlinn/kitty_grab.git" "$_kitty_grab"
         else
           if ! $_git -C "$_kitty_grab" diff --quiet HEAD 2>/dev/null; then
-            errorEcho "error: kitty_grab: dirty worktree, skipping update"
-            exit 1
+            warnEcho "kitty_grab: dirty worktree, skipping update"
+          elif _branch="$($_git -C "$_kitty_grab" symbolic-ref --short HEAD 2>/dev/null || true)" && [ "$_branch" != "main" ]; then
+            warnEcho "kitty_grab: not on main (on '$_branch'), skipping update"
+          else
+            run $_git -C "$_kitty_grab" fetch $VERBOSE_ARG origin main
+            run $_git -C "$_kitty_grab" merge --ff-only origin/main
           fi
-          _branch="$($_git -C "$_kitty_grab" symbolic-ref --short HEAD 2>/dev/null || true)"
-          if [ "$_branch" != "main" ]; then
-            errorEcho "error: kitty_grab: not on main (on '$_branch'), skipping update"
-            exit 1
-          fi
-          run $_git -C "$_kitty_grab" fetch $VERBOSE_ARG origin main
-          run $_git -C "$_kitty_grab" merge --ff-only origin/main
         fi
       '';
     };
