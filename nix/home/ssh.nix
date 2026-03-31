@@ -4,6 +4,9 @@
   pkgs,
   ...
 }:
+let
+  inherit (pkgs.stdenv) isDarwin;
+in
 {
   programs.ssh = {
     enableDefaultConfig = false;
@@ -42,9 +45,10 @@
       ConnectionAttempts 3
       ConnectTimeout 10
       TCPKeepAlive yes
-      GSSAPIAuthentication no
       VisualHostKey yes
       IdentityAgent ~/.1password/agent.sock
+    '' + lib.optionalString isDarwin ''
+      GSSAPIAuthentication no
     '';
   };
   home.packages = with pkgs; [

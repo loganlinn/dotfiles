@@ -53,6 +53,7 @@
       inetutils
       just
       lsof
+      mise
       moreutils
       nix-output-monitor
       pik

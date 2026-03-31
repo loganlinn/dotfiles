@@ -2,13 +2,17 @@
   self,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.nixosModules._1password
+    self.nixosModules.comfyui
     self.nixosModules.common
     self.nixosModules.docker
     self.nixosModules.networking
     self.nixosModules.nvidia
+    self.nixosModules.ollama
+    self.nixosModules.open-webui
     self.nixosModules.pipewire
     self.nixosModules.tailscale
     self.nixosModules.xserver
@@ -22,10 +26,7 @@
   services.xserver.enable = true;
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-
-  # desktop — disable GNOME auto-suspend (not a laptop)
   services.power-profiles-daemon.enable = true;
-
   services.printing.enable = true;
   services.tailscale.enable = true;
 
@@ -40,7 +41,7 @@
 
   virtualisation.docker.enable = true;
 
-  nix.settings.trusted-users = ["root"];
+  nix.settings.trusted-users = [ "root" ]; # this is in addition to my.user.name (needed?)
 
   environment.systemPackages = with pkgs; [
     pciutils

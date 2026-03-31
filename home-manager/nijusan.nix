@@ -6,24 +6,32 @@
   lib,
   nix-colors,
   ...
-}: let
-  inherit (nix-colors.lib.contrib {inherit pkgs;}) nixWallpaperFromScheme;
-in {
+}:
+let
+  inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
+in
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
     # self.homeModules.secrets
     # ../nix/home/awesomewm.nix
+    ../nix/home/ccstatusline.nix
+    ../nix/home/aws
     ../nix/home/common
     ../nix/home/clipboard.nix
     # ../nix/home/conky
     # ../nix/home/davfs2.nix
     # ../nix/home/deadd
     ../nix/home/dev # TODO module
+    ../nix/home/dev/javascript.nix
+    ../nix/home/dev/kubernetes.nix
+    ../nix/home/docker.nix
     # ../nix/home/dunst
     ../nix/home/emacs
     ../nix/home/doom
     # ../nix/home/eww
+    ../nix/home/ghostty.nix
     # ../nix/home/git/graphite.nix
     ../nix/home/home-manager.nix
     # ../nix/home/hexchat.nix
@@ -36,6 +44,10 @@ in {
     # ../nix/home/nnn.nix
     ../nix/home/nixvim
     ../nix/home/pretty.nix
+    ../nix/home/rofi
+    ../nix/home/television.nix
+    ../nix/home/terraform.nix
+    ../nix/home/tmux.nix
     # ../nix/home/qalculate
     ../nix/home/ssh.nix
     # ../nix/home/urxvt.nix
@@ -43,7 +55,8 @@ in {
     # ../nix/home/vscode.nix
     # ../nix/home/wezterm
     # ../nix/home/x11.nix
-    # ../nix/home/yt-dlp.nix
+    ../nix/home/yazi
+    ../nix/home/yt-dlp.nix
     # ../nix/home/yubikey.nix
     # ../nix/modules/services
     # ../nix/modules/spellcheck.nix
@@ -89,7 +102,7 @@ in {
   programs.kitty.enable = true;
   programs.emacs.enable = true;
   programs.emacs.package = pkgs.emacs-git;
-  # programs.rofi.enable = true;
+  programs.rofi.enable = true;
   programs.google-chrome.enable = true;
   programs.firefox.enable = true;
   # programs.librewolf.enable = true;

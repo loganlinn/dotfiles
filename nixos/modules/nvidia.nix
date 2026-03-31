@@ -24,7 +24,7 @@
     enable = true;
     enable32Bit = true;
     extraPackages = with pkgs; [
-      libva-vdpau-driver
+      nvidia-vaapi-driver
     ];
   };
 
@@ -35,6 +35,7 @@
   # The direct backend is currently required on NVIDIA driver series 525 due to a regression
   # (see https://github.com/elFarto/nvidia-vaapi-driver/issues/126)
   environment.variables.NVD_BACKEND = "direct";
+  # environment.variables.EGL_PLATFORM = "x11"; # may be needed if nvidia-vaapi-driver crashes on X11
   # https://github.com/elFarto/nvidia-vaapi-driver/tree/d628720416812b8db9d62519892b3fdb31076ece
   environment.etc."libva.conf".text = ''
     LIBVA_MESSAGING_LEVEL=1

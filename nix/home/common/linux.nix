@@ -20,15 +20,16 @@ lib.mkIf pkgs.stdenv.isLinux {
   };
 
   home.packages = with pkgs; [
-    gcc
     cached-nix-shell
-    usbutils # usb-devices
+    gcc
+    handlr # better xdg-utils (xdg-open, etc) [https://github.com/chmln/handlr]
+    logger
     sysz
     trashy
+    usbutils # usb-devices
     xdg-utils
-    handlr # better xdg-utils (xdg-open, etc) [https://github.com/chmln/handlr]
     (writeShellScriptBin "open" ''exec ${handlr}/bin/handlr open "$@"'')
-    (writeShellScriptBin ''CAPSLOCK'' ''${xdotool}/bin/xdotool key Caps_Lock'') # just in case ;)
+    (writeShellScriptBin "CAPSLOCK" "${xdotool}/bin/xdotool key Caps_Lock") # just in case ;)
   ];
 
   # xdg.configFile."handlr/handlr.toml".text = ''

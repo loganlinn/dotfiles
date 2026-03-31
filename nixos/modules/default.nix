@@ -2,6 +2,7 @@
   _1password = ./1password.nix;
   apple-keyboard = ./apple-keyboard.nix;
   bluetooth = ./bluetooth.nix;
+  comfyui = ./comfyui.nix;
   common = ./common.nix;
   davfs2 = ./davfs2.nix;
   docker = ./docker.nix;
@@ -11,6 +12,8 @@
   monitor-brightness = ./monitor-brightness.nix;
   networking = ./networking;
   nvidia = ./nvidia.nix;
+  ollama = ./ollama.nix;
+  open-webui = ./open-webui.nix;
   pipewire = ./pipewire.nix;
   printing = ./printing;
   remarkable = ./remarkable.nix;
