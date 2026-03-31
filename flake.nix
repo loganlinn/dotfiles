@@ -11,7 +11,6 @@
     # claude-desktop.inputs.nixpkgs.follows = "nixpkgs";
     # claude-desktop.url = "github:k3d3/claude-desktop-linux-flake";
     comfyui-nix.url = "github:utensils/comfyui-nix";
-    comfyui-nix.inputs.nixpkgs.follows = "nixpkgs";
     agenix.url = "github:ryantm/agenix";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
