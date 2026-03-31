@@ -8,7 +8,7 @@ ls log short --stack
 mc modify --commit
 mcm modify --commit --message
 onto move --onto
-s submit --ai
+s submit --ai --no-edit
 ss submit --stack
 sup submit --stack --update-only
-c create --ai
+c create --ai --no-edit

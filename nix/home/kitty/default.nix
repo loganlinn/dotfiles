@@ -55,7 +55,6 @@ in
           "current-theme.conf"
           "diff.conf"
           "grab.conf"
-          "home.kitty-session"
           "kitty.common.conf"
           "kitty.linux.conf"
           "kitty.macos.conf"
@@ -63,10 +62,11 @@ in
           "open-actions.conf"
           "paste-actions.py"
           "quick-access-terminal.conf"
+          "sessions"
+          "ssh.conf"
           "tab_bar.py"
-          "select_tab.py"
-          "set-session-title.py"
-          "work.kitty-session"
+          "themes"
+          "user-var-hints.py"
         ]
     ))
     // {
@@ -118,11 +118,24 @@ in
     activation = {
       kittyConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run mkdir $VERBOSE_ARG -p "${config.xdg.configHome}/kitty"
-        run touch "${config.xdg.configHome}/kitty/kitty.local.conf"
-        run chmod $VERBOSE_ARG 600 "${config.xdg.configHome}/kitty/kitty.local.conf"
 
-        if ! [ -d "${config.xdg.configHome}/kitty/kitty_grab" ]; then
-          run ${pkgs.git}/bin/git clone $VERBOSE_ARG "https://github.com/loganlinn/kitty_grab.git" "${config.xdg.configHome}/kitty/kitty_grab"
+        _kitty_grab="${config.xdg.configHome}/kitty/kitty_grab"
+        _git="${pkgs.git}/bin/git"
+
+        if ! [ -d "$_kitty_grab" ]; then
+          run $_git clone $VERBOSE_ARG "https://github.com/loganlinn/kitty_grab.git" "$_kitty_grab"
+        else
+          if ! $_git -C "$_kitty_grab" diff --quiet HEAD 2>/dev/null; then
+            errorEcho "error: kitty_grab: dirty worktree, skipping update"
+            exit 1
+          fi
+          _branch="$($_git -C "$_kitty_grab" symbolic-ref --short HEAD 2>/dev/null || true)"
+          if [ "$_branch" != "main" ]; then
+            errorEcho "error: kitty_grab: not on main (on '$_branch'), skipping update"
+            exit 1
+          fi
+          run $_git -C "$_kitty_grab" fetch $VERBOSE_ARG origin main
+          run $_git -C "$_kitty_grab" merge --ff-only origin/main
         fi
       '';
     };
