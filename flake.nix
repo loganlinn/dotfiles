@@ -123,6 +123,7 @@
               config.flake-root.devShell # sets FLAKE_ROOT
             ];
             nativeBuildInputs = [
+              pkgs.bashInteractive
               config.formatter
               inputs'.agenix.packages.agenix
               inputs'.home-manager.packages.home-manager

@@ -5,7 +5,7 @@
   ...
 }: {
   home.packages = with pkgs; [
-    bashInteractive # otherwise we get bashNonInteractive (?)
+    bashInteractive
   ];
 
   programs.bash = {

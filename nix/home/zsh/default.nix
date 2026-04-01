@@ -164,7 +164,13 @@ in
       (mkOrder 500 # pre-compinit
         ''
           typeset -U fpath # Ensure fpath does not contain duplicates.
-          fpath+=("$HOME/.local/share/zsh/site-functions")
+          fpath+=(
+            "$HOME/.local/share/zsh/site-functions"
+            "${config.my.flakeDirectory}/config/zsh/functions"
+          )
+
+          local -a _zfuncs=($fpath[1]/*(N.:t))
+          (( $#_zfuncs )) && autoload -U "$_zfuncs[@]"
         ''
       )
       (mkBefore ''
@@ -184,52 +190,51 @@ in
       '')
       # Preempt things like fzf integration: https://github.com/nix-community/home-manager/blob/f21d9167782c086a33ad53e2311854a8f13c281e/modules/programs/fzf.nix#L223
       (mkOrder 900 (includeFile ./line-editor.zsh)) # FIXME: declutter this flile
-      # (mkOrder 900 (includeFile ./clipcopy.zsh))
-      # (mkAfter (includeFile ./nixpkgs.zsh))
-      # (mkAfter (includeFile ./wezterm.zsh))
-      (mkAfter (lib.optionalString config.programs.wezterm.enable ''
-        if [[ "$TERM_PROGRAM" == "WezTerm" ]]; then
-          source "${config.programs.wezterm.package}/etc/profile.d/wezterm.sh"
-        fi
-      ''))
+      (mkOrder 900 ''
+        ##########################################################
+
+        bindkey '^X^H^K' describe-key-briefly
+
+        copy-buffer-to-clipboard() {
+          emulate -L zsh
+          printf '\e]52;c;%s\a' "$(print -rn -- "$BUFFER" | base64)"
+        }
+        zle -N copy-buffer-to-clipboard
+        bindkey '^X^Y' copy-buffer-to-clipboard
+      '')
+      (mkAfter (
+        lib.optionalString config.programs.wezterm.enable ''
+          ##########################################################
+          # ${includeFile ./wezterm.zsh}
+          if [[ "$TERM_PROGRAM" == "WezTerm" ]]; then
+            source "${config.programs.wezterm.package}/etc/profile.d/wezterm.sh"
+          fi
+        ''
+      ))
       (mkAfter (includeFile ./sudo-prompt.zsh))
       (mkAfter ''
         ##########################################################
 
         function +nixpkgs () {
+          emulate -L zsh
           command nix shell "''${@/#/nixpkgs#}"
         }
 
         function @nixpkgs () {
-          command nix run "''${@/#/nixpkgs#}"
+          emulate -L zsh
+          command nix run "nixpkgs#''${1?}" "''${@:2}"
         }
 
         ${lib.optionalString config.programs.bat.enable ''
           ##########################################################
-
-          # eval "$(batman --export-env)"
-
-          # Disabled due to: 'ps: time: requires entitlement'
-          # eval "$(batpipe)"
-
-          function help  { "$@" --help 2>&1 | bat --plain --language=help; }
-
+          function help  {
+            emulate -L zsh
+            "$@" --help 2>&1 | bat --plain --language=help
+          }
         ''}
+
         ##########################################################
 
-        fpath=("${config.my.flakeDirectory}/config/zsh/functions" $fpath)
-        local -a _zfuncs=($fpath[1]/*(N.:t))
-        (( $#_zfuncs )) && autoload -U "$_zfuncs[@]"
-
-        zle -N git-widget
-        zle -N git-open-widget
-        cle-widget() { BUFFER="cle"; zle accept-line }
-        zle -N cle-widget
-
-        bindkey '^X^G' git-widget
-        bindkey '^Xg' git-widget
-        bindkey '^X^X' cle-widget
-        bindkey '^X^H^K' describe-key-briefly
 
         ${lib.optionalString
           (
@@ -255,40 +260,40 @@ in
 
         ##########################################################
 
-        function zshrc_audit_local() {
-          emulate -L zsh
-          setopt typeset_silent
-
-          local tmp1 tmp2
-          tmp1=$(mktemp) || return 1
-          tmp2=$(mktemp) || { rm -f $tmp1; return 1; }
-
-          # Snapshot state BEFORE
-          {
-            print -r -- "## vars"; typeset -pm
-            print -r -- "## aliases"; alias
-            print -r -- "## functions"; functions | sed 's/ .*$//'
-            print -r -- "## options"; setopt
-            print -r -- "## path"; print -rl -- $path
-          } >| $tmp1
-
-          # Source local
-          source ~/.zshrc.local
-
-          # Snapshot state AFTER
-          {
-            print -r -- "## vars"; typeset -pm
-            print -r -- "## aliases"; alias
-            print -r -- "## functions"; functions | sed 's/ .*$//'
-            print -r -- "## options"; setopt
-            print -r -- "## path"; print -rl -- $path
-          } >| $tmp2
-
-          # Show what changed
-          diff -u $tmp1 $tmp2 | less
-
-          rm -f $tmp1 $tmp2
-        }
+        # function zshrc_audit_local() {
+        #   emulate -L zsh
+        #   setopt typeset_silent
+        #
+        #   local tmp1 tmp2
+        #   tmp1=$(mktemp) || return 1
+        #   tmp2=$(mktemp) || { rm -f $tmp1; return 1; }
+        #
+        #   # Snapshot state BEFORE
+        #   {
+        #     print -r -- "## vars"; typeset -pm
+        #     print -r -- "## aliases"; alias
+        #     print -r -- "## functions"; functions | sed 's/ .*$//'
+        #     print -r -- "## options"; setopt
+        #     print -r -- "## path"; print -rl -- $path
+        #   } >| $tmp1
+        #
+        #   # Source local
+        #   source ~/.zshrc.local
+        #
+        #   # Snapshot state AFTER
+        #   {
+        #     print -r -- "## vars"; typeset -pm
+        #     print -r -- "## aliases"; alias
+        #     print -r -- "## functions"; functions | sed 's/ .*$//'
+        #     print -r -- "## options"; setopt
+        #     print -r -- "## path"; print -rl -- $path
+        #   } >| $tmp2
+        #
+        #   # Show what changed
+        #   diff -u $tmp1 $tmp2 | less
+        #
+        #   rm -f $tmp1 $tmp2
+        # }
 
         ########################################################## 
 

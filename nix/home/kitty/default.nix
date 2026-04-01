@@ -93,6 +93,7 @@ in
         rev = "992c1f3d220dc3e1ae18a24b15fcaf47f4e61ff8";
         hash = "sha256-Xy4dH2fzEQmKfqhmotVDEszuTqoISONGNfC1yfcdevs=";
       };
+      "kitty/kitty_grab".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/src/github.com/loganlinn/kitty_grab";
       "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
         extraPaths = [ "../../src/github.com/kovidgoyal/kitty" ]; # src-get kovidgoyal/kitty
       };
@@ -119,10 +120,11 @@ in
       kittyConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         run mkdir $VERBOSE_ARG -p "${config.xdg.configHome}/kitty"
 
-        _kitty_grab="${config.xdg.configHome}/kitty/kitty_grab"
+        _kitty_grab="${config.home.homeDirectory}/src/github.com/loganlinn/kitty_grab"
         _git="${pkgs.git}/bin/git"
 
         if ! [ -d "$_kitty_grab" ]; then
+          run mkdir $VERBOSE_ARG -p "$(dirname "$_kitty_grab")"
           run $_git clone $VERBOSE_ARG "https://github.com/loganlinn/kitty_grab.git" "$_kitty_grab"
         else
           if ! $_git -C "$_kitty_grab" diff --quiet HEAD 2>/dev/null; then

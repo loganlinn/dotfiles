@@ -149,7 +149,13 @@ in
 
   programs.zsh = {
     initContent = ''
+      zle -N git-widget
+      zle -N git-open-widget
+      bindkey '^X^G' git-widget
+      bindkey '^Xg' git-widget
+
       gc() {
+        emulate -L zsh
         local -a cmd=(git commit --verbose)
         # shorthand: bare arg without leading '-' is message or filename
         if [[ $# -eq 1 ]] && [[ ''${1-} != '-'* ]]; then
