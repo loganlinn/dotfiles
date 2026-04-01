@@ -3,16 +3,37 @@
   lib,
   ...
 }:
-with lib; {
-  services.printing.cups-pdf.enable = mkDefault true;
-  services.printing.startWhenNeeded = mkDefault true;
-  services.printing.webInterface = mkDefault false;
-  services.printing.drivers = with pkgs; [
-    brlaser
-    brgenml1lpr
-    brgenml1cupswrapper
-  ];
-  # services.avahi.enable = mkDefault config.networking.networkmanager.enable;
-  # services.avahi.nssmdns4 = mkDefault config.networking.networkmanager.enable; # resolve .local domains of printers
-  # services.avahi.openFirewall = mkDefault config.networking.networkmanager.enable; # for a WiFi printer
+with lib;
+{
+  services.printing = {
+    enable = mkDefault true;
+    startWhenNeeded = mkDefault true;
+    webInterface = mkDefault false;
+    cups-pdf.enable = mkDefault false;
+
+    # Share printers over the local network
+    browsing = mkDefault true;
+    listenAddresses = mkDefault ["*:631"];
+    allowFrom = mkDefault [ "all" ];
+    defaultShared = mkDefault true;
+
+    drivers = with pkgs; [
+      brlaser
+      brgenml1lpr
+      brgenml1cupswrapper
+    ];
+  };
+
+  # mDNS/Bonjour for printer discovery
+  services.avahi = {
+    enable = mkDefault true;
+    nssmdns4 = mkDefault true; # resolve .local domains
+    publish = {
+      enable = mkDefault true;
+      userServices = mkDefault true; # publish CUPS printers
+    };
+    openFirewall = mkDefault true;
+  };
+
+  networking.firewall.allowedTCPPorts = [ 631 ]; # IPP
 }

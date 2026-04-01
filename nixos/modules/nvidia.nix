@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   hardware.nvidia = {
     open = lib.mkDefault true;
     powerManagement.enable = lib.mkDefault true;
@@ -43,6 +44,7 @@
 
   environment.systemPackages = with pkgs; [
     libva-utils # vainfo
-    (writeShellScriptBin "nvidia-driver-version" ''cat /proc/driver/nvidia/version'')
+    nvtopPackages.nvidia
+    (writeShellScriptBin "nvidia-driver-version" "cat /proc/driver/nvidia/version")
   ];
 }

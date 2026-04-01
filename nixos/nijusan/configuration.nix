@@ -14,6 +14,7 @@
     self.nixosModules.ollama
     self.nixosModules.open-webui
     self.nixosModules.pipewire
+    self.nixosModules.printing
     self.nixosModules.tailscale
     self.nixosModules.xserver
     ./cachix.nix
@@ -30,11 +31,12 @@
   services.printing.enable = true;
   services.tailscale.enable = true;
 
-  programs._1password.enable = true;
   programs._1password-gui.enable = true;
+  programs._1password.enable = true;
+  programs.dconf.enable = true;
   programs.firefox.enable = true;
   programs.htop.enable = true;
-  programs.dconf.enable = true;
+  programs.nix-ld.enable = true;
   programs.zsh.enable = true;
 
   security.polkit.enable = true;
