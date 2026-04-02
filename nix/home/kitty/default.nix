@@ -52,6 +52,7 @@ in
         )
         [
           "choose-files.conf"
+          "claude-fork.py"
           "current-theme.conf"
           "diff.conf"
           "grab.conf"
@@ -93,7 +94,8 @@ in
         rev = "992c1f3d220dc3e1ae18a24b15fcaf47f4e61ff8";
         hash = "sha256-Xy4dH2fzEQmKfqhmotVDEszuTqoISONGNfC1yfcdevs=";
       };
-      "kitty/kitty_grab".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/src/github.com/loganlinn/kitty_grab";
+      "kitty/kitty_grab".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/src/github.com/loganlinn/kitty_grab";
       "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
         extraPaths = [ "../../src/github.com/kovidgoyal/kitty" ]; # src-get kovidgoyal/kitty
       };

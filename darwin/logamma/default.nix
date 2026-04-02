@@ -2,8 +2,29 @@
   config,
   self,
   pkgs,
+  lib,
   ...
 }:
+let
+  # Determinate Nix owns /etc/nix/nix.conf and includes nix.custom.conf
+  settingsToConf =
+    attrs:
+    lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        k: v:
+        let
+          val =
+            if lib.isList v then
+              lib.concatStringsSep " " (map toString v)
+            else if lib.isBool v then
+              lib.boolToString v
+            else
+              toString v;
+        in
+        "${k} = ${val}"
+      ) attrs
+    );
+in
 {
   imports = [
     self.darwinModules.common
@@ -92,6 +113,7 @@
       "minamijoyo/tfupdate/tfupdate"
       "mkcert"
       "nss"
+      "ollama"
       # "pngpaste"
       # "pomdtr/tap/sunbeam"
       "pulumi/tap/esc"
@@ -136,6 +158,7 @@
   };
   ids.gids.nixbld = 30000;
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
+  environment.etc."nix/nix.custom.conf".text = settingsToConf config.my.nix.settings;
   system.stateVersion = 5;
   system.duti = {
     enable = true;

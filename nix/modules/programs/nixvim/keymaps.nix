@@ -857,6 +857,15 @@ in
       action = ''<cmd>%bdelete<bar>edit #<bar>normal `"<cr>'';
       options.desc = "Kill all other buffers";
     }
+    {
+      mode = mode.v;
+      key = "<leader>bo";
+      action = "y:%d<cr>P";
+      options = {
+        silent = true;
+        desc = "Keep only selected text";
+      };
+    }
 
     # FILES
     {

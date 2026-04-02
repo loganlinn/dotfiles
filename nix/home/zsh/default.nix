@@ -235,7 +235,6 @@ in
 
         ##########################################################
 
-
         ${lib.optionalString
           (
             config.programs.television.enable

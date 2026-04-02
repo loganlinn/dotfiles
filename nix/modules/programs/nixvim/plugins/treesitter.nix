@@ -10,6 +10,11 @@
         bash
         caddy
         fennel
+        git_config
+        git_rebase
+        gitattributes
+        gitcommit
+        gitignore
         graphql
         javascript
         json
@@ -38,13 +43,6 @@
       };
       settings = {
         auto_install = false;
-        ensure_installed = [
-          "git_config"
-          "git_rebase"
-          "gitattributes"
-          "gitcommit"
-          "gitignore"
-        ];
         textobjects.enable = true;
         highlight = {
           enable = true;

@@ -62,6 +62,9 @@ in
         mkdir -p "$XDG_CACHE_HOME/zsh/functions"
         fnm completions --shell=zsh >| "$XDG_CACHE_HOME/zsh/functions/_fnm" &|
       '';
+      shellAliases = {
+        npx = "command npx --ignore-scripts=true";
+      };
     };
 
     programs.bash.initExtra = ''
