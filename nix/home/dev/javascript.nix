@@ -50,9 +50,7 @@ in
     programs.zsh = {
       initContent = ''
         # initialize fnm (node.js version manager)
-        eval "$(fnm env --shell zsh ${
-          cli.toCommandLineShellGNU { } config.programs.fnm.settings
-        })"
+        eval "$(fnm env --shell zsh ${cli.toCommandLineShellGNU { } config.programs.fnm.settings})"
 
         # If the completion file doesn't exist yet, we need to autoload it and
         # bind it to `fnm`. Otherwise, compinit will have already done that.
@@ -68,9 +66,7 @@ in
 
     programs.bash.initExtra = ''
       # initialize fnm (node.js version manager)
-      eval "$(fnm env --shell bash ${
-        cli.toCommandLineShellGNU { } config.programs.fnm.settings
-      })"
+      eval "$(fnm env --shell bash ${cli.toCommandLineShellGNU { } config.programs.fnm.settings})"
     '';
 
     my.npm.settings = {
@@ -80,6 +76,7 @@ in
       userconfig = "${config.xdg.configHome}/npm/config";
       prefix = "${config.xdg.dataHome}/npm";
       cache = "${config.xdg.cacheHome}/npm";
+      ignore-scripts = true;
     };
 
     home.sessionVariables = {

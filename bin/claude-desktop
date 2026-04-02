@@ -125,7 +125,7 @@ Open Claude Desktop views via deep-link URIs.
 
 Commands:
   open <url>                     Normalize and open a claude.ai URL
-  new [PROMPT] [-q QUERY]        Open new conversation, optionally with prompt
+  new [PROMPT...] [-q QUERY]     Open new conversation, optionally with prompt
   chat <UUID>                    Open a conversation by UUID
   project <UUID>                 Open a project by UUID
   recents                        Open recents view
@@ -157,9 +157,11 @@ EOF
 
 usage_new() {
   cat <<'EOF'
-Usage: claude-desktop new [PROMPT] [-q QUERY]
+Usage: claude-desktop new [PROMPT...] [-q QUERY]
 
 Open a new conversation, optionally pre-filled with a prompt.
+
+Positional arguments are joined with spaces into the prompt text.
 
 Options:
   -q, --query QUERY    Prompt text (use '-' to read from stdin)
@@ -278,7 +280,8 @@ cmd_open() {
 }
 
 cmd_new() {
-  local prompt='' query=''
+  local -a words=()
+  local query=''
   while [[ $# -gt 0 ]]; do
     case $1 in
     -h | --help)
@@ -294,15 +297,12 @@ cmd_new() {
       exit 1
       ;;
     *)
-      [[ -n "$prompt" ]] && {
-        echo >&2 "Unexpected argument: $1"
-        exit 1
-      }
-      prompt="$1"
+      words+=("$1")
       ;;
     esac
     shift
   done
+  local prompt="${words[*]}"
   local text
   text="$(resolve_prompt "${prompt:-$query}")"
   open_url "$(build_url 'claude.ai' '/new' "q=${text}")"
