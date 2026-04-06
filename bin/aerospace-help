@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+aerospace --help
+
+while IFS= read -r sub; do
+  echo
+  echo "═══ aerospace $sub ═══"
+  echo
+  aerospace "$sub" --help
+done < <(aerospace --help | sed -n '/^SUBCOMMANDS:/,/^$/{ s/^  \([a-z-]*\).*/\1/p }')
