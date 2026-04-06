@@ -1,1 +1,2 @@
-cd ~/Notes
+new_os_window
+launch --cwd=${XDG_NOTES_DIR}
