@@ -6,12 +6,14 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   systemdSupported = lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.systemd;
   audioEnabled = config.services.pulseaudio.enable || config.services.pipewire.enable;
   graphicsEnabled = config.services.xserver.enable || config.services.displayManager.enable;
   my = config.my;
-in {
+in
+{
   imports = [
     ../../options.nix
     ./security
@@ -19,8 +21,7 @@ in {
 
   config = {
     users.users.${my.user.name} = {
-      inherit
-        (my.user)
+      inherit (my.user)
         description
         shell
         openssh
@@ -30,18 +31,19 @@ in {
       home = mkDefault "/home/${my.user.name}";
       isNormalUser = true;
       createHome = mkDefault true;
-      extraGroups =
-        ["wheel"]
-        ++ optional graphicsEnabled "video"
-        ++ optional audioEnabled "audio"
-        ++ optional config.networking.networkmanager.enable "networkmanager"
-        ++ optional config.programs._1password-gui.enable "onepassword"
-        ++ optional config.programs._1password.enable "op"
-        ++ optional config.programs.corectrl.enable "corectrl"
-        ++ optional config.virtualisation.docker.enable "docker"
-        ++ optional config.virtualisation.podman.enable "podman"
-        ++ optional config.virtualisation.libvirtd.enable "libvirtd"
-        ++ optional config.services.davfs2.enable "${config.services.davfs2.davGroup}";
+      extraGroups = [
+        "wheel"
+      ]
+      ++ optional graphicsEnabled "video"
+      ++ optional audioEnabled "audio"
+      ++ optional config.networking.networkmanager.enable "networkmanager"
+      ++ optional config.programs._1password-gui.enable "onepassword"
+      ++ optional config.programs._1password.enable "op"
+      ++ optional config.programs.corectrl.enable "corectrl"
+      ++ optional config.virtualisation.docker.enable "docker"
+      ++ optional config.virtualisation.podman.enable "podman"
+      ++ optional config.virtualisation.libvirtd.enable "libvirtd"
+      ++ optional config.services.davfs2.enable "${config.services.davfs2.davGroup}";
     };
 
     networking.networkmanager.enable = mkDefault true;
@@ -59,7 +61,7 @@ in {
     services.openssh.settings.PasswordAuthentication = mkDefault false;
     services.openssh.settings.KbdInteractiveAuthentication = mkDefault false;
 
-    services.udev.packages = [pkgs.qmk-udev-rules];
+    services.udev.packages = [ pkgs.qmk-udev-rules ];
 
     programs.bash.completion.enable = mkDefault true;
     programs.bash.enableLsColors = mkDefault true;
@@ -90,9 +92,11 @@ in {
     environment.variables = my.environment.variables;
     environment.homeBinInPath = mkDefault true; # Add ~/bin to PATH
     environment.localBinInPath = mkDefault true; # Add ~/.local/bin to PATH
-    environment.systemPackages = with pkgs;
+    environment.systemPackages =
+      with pkgs;
       [
         bat
+        caligula # iso images
         curl
         fd
         killall
@@ -107,8 +111,8 @@ in {
       ++ optionals graphicsEnabled [
         mupdf # Simple PDF/EPUB/etc viewer
       ]
-      ++ optionals audioEnabled []
-      ++ optionals systemdSupported [sysz];
+      ++ optionals audioEnabled [ ]
+      ++ optionals systemdSupported [ sysz ];
 
     time.timeZone = mkDefault "America/Los_Angeles";
 
@@ -127,14 +131,13 @@ in {
 
     fonts.fontconfig.enable = mkDefault true;
     fonts.enableDefaultPackages = mkDefault true;
-    fonts.packages =
-      [
-        my.fonts.mono.package
-        my.fonts.sans.package
-        my.fonts.serif.package
-        my.fonts.terminal.package
-      ]
-      ++ my.fonts.packages;
+    fonts.packages = [
+      my.fonts.mono.package
+      my.fonts.sans.package
+      my.fonts.serif.package
+      my.fonts.terminal.package
+    ]
+    ++ my.fonts.packages;
 
     documentation.enable = mkDefault true;
     documentation.dev.enable = mkDefault config.documentation.enable;
