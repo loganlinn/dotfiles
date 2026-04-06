@@ -35,6 +35,8 @@ in
     gfa = "git fetch --all";
     gl = "git pull";
     glg = "git log --oneline --decorate";
+    glr = "git pull --rebase";
+    glrp = "git pull --rebase && git push";
     gp = "git push";
     grt = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)" && pwd'';
     gtl = ''cd -- "$(git rev-parse --show-toplevel)" && pwd'';
