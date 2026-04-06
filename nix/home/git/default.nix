@@ -62,6 +62,13 @@ in
     git-spice.enable = true;
     lfs.enable = true;
     package = mkDefault pkgs.gitFull; # gitk, ...
+    ignores = [
+      "*.local.md"
+      "*.local.json"
+      "*.local"
+      ".vectimus/receipts"
+      "___*"
+    ];
     includes =
       let
         delta-themes = pkgs.fetchurl {
@@ -97,7 +104,6 @@ in
       checkout.defaultRemote = "origin";
       commit.gpgsign = mkDefault true;
       commit.verbose = true; # include diff in commit message editor
-      core.excludesfile = "${config.xdg.configHome}/git/ignore";
       diff.noprefix = true;
       fetch.all = true;
       fetch.prune = true;
