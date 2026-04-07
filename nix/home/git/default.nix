@@ -23,6 +23,7 @@ in
     ../shell
     ./gh.nix
     ./git-spice.nix
+    ./ghq.nix
   ];
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
