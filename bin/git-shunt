@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# git-shunt — commit staged changes to a separate branch without switching
+#
+# "Shunt" as in railway shunting: moving cars onto a side track.
+#
+# Creates a commit from the current index on the given branch, then unstages
+# those changes from the current branch. Files remain in the working tree.
+#
+# Usage: git shunt [-b BASE] [-m MESSAGE] BRANCH
+
+set -euo pipefail
+
+usage() {
+  echo >&2 "usage: git shunt [-b <base>] [-m <message>] <branch>"
+  echo >&2 ""
+  echo >&2 "Commit staged changes to BRANCH without switching branches."
+  echo >&2 ""
+  echo >&2 "  -b BASE     parent commit for the new commit (default: HEAD)"
+  echo >&2 "  -m MESSAGE  commit message (default: 'stash staged changes')"
+}
+
+base=HEAD
+message="shunt staged changes"
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help) usage; exit 0 ;;
+    -b) base="${2:?missing argument for -b}"; shift ;;
+    -m) message="${2:?missing argument for -m}"; shift ;;
+    -*) echo >&2 "unknown option: $1"; exit 1 ;;
+    *)  branch="$1" ;;
+  esac
+  shift
+done
+
+if [[ -z "${branch:-}" ]]; then
+  echo >&2 "error: branch name required"
+  usage
+  exit 1
+fi
+
+# Ensure there are staged changes
+if git diff --cached --quiet; then
+  echo >&2 "error: nothing staged to commit"
+  exit 1
+fi
+
+base_sha=$(git rev-parse --verify "$base") || exit 1
+
+tree=$(git write-tree)
+commit=$(git commit-tree "$tree" -p "$base_sha" -m "$message")
+git update-ref "refs/heads/$branch" "$commit"
+git reset --quiet
+
+echo "created $branch ($(git rev-parse --short "$commit"))"

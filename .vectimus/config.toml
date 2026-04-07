@@ -1,0 +1,4 @@
+[rules]
+disabled = [
+    "vectimus-infra-008",
+]

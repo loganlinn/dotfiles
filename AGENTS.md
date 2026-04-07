@@ -1,4 +1,5 @@
-Never use absolute paths in shared (host/platform agnostic) config files, i.e. `/Users/logan/...` should be `~/...` or `$HOME/...`, depending on the context (tilde expansion is not supported everywhere and should be verified first.).
+- Never use absolute paths in shared (host/platform agnostic) config files, i.e. `/Users/logan/...` should be `~/...` or `$HOME/...`, depending on the context (tilde expansion is not supported everywhere and should be verified first.).
+- Maintain the order of alphabetized lists (examples: `packages` lists in nix, groupings of similar keybinds)
 
 ## Kitty
 

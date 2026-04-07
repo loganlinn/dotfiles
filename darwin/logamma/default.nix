@@ -31,6 +31,7 @@ in
     ../modules/aerospace
     ../modules/emacs-plus
     ../modules/hammerspoon
+    ../modules/homebrew-autoupdate.nix
     ../modules/kitty
     # ../modules/kanata
     # ../modules/opnix
@@ -47,6 +48,7 @@ in
   programs.hammerspoon.enable = true;
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
+  services.brewAutoupdate.enable = true;
   # services.kanata.enable = false;
   # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
