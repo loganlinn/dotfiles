@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# runcap — run a command and copy formatted output to clipboard
+# Captures stdout, stderr, exit code, and optionally piped stdin.
+# Output is formatted as markdown for pasting into Claude.
+
+set -u
+
+tmpout=$(mktemp) || exit 1
+tmperr=$(mktemp) || exit 1
+tmpin=
+trap 'rm -f "$tmpout" "$tmperr" ${tmpin:+"$tmpin"}' EXIT
+
+if [[ ! -t 0 ]]; then
+  tmpin=$(mktemp) || exit 1
+  tee "$tmpin" | "$@" > "$tmpout" 2> "$tmperr"
+  rc=${PIPESTATUS[1]}
+else
+  "$@" > "$tmpout" 2> "$tmperr"
+  rc=$?
+fi
+
+[[ -s $tmpout ]] && cat "$tmpout"
+[[ -s $tmperr ]] && cat >&2 "$tmperr"
+
+{
+  if [[ -n $tmpin && -s $tmpin ]]; then
+    printf 'stdin:\n```\n'
+    cat "$tmpin"
+    printf '\n```\n\n'
+  fi
+  printf '```\n$ %s\n' "$*"
+  [[ -s $tmpout ]] && cat "$tmpout"
+  printf '```\n'
+  if [[ -s $tmperr ]]; then
+    printf '\nstderr:\n```\n'
+    cat "$tmperr"
+    printf '```\n'
+  fi
+  (( rc != 0 )) && printf '\nexit code: %d\n' "$rc"
+} | cb
+
+echo >&2 "runcap: copied to clipboard"
+exit "$rc"

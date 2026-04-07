@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# https://raw.githubusercontent.com/4513ECHO/dotfiles/refs/heads/main/bin/colortable
+
+set -ue -o pipefail
+
+if [[ $# -gt 0 ]]; then
+  dir="$*"
+else
+  dir="$(cat /dev/stdin)"
+fi
+
+tilde='~'
+tildepath="${dir/#$HOME/$tilde}"
+read -ra patharray <<<"${tildepath//\// }"
+result=''
+
+for ((i = 0; i < ${#patharray[@]}; i++)); do
+  # shellcheck disable=SC2004
+  if [[ "$(($i + 1))" == "${#patharray[@]}" ]]; then
+    result+="${patharray[$i]}"
+    break
+  fi
+  if [[ ${patharray[$i]:0:1} =~ ^\. ]]; then
+    result+="${patharray[$i]:0:2}/"
+  else
+    result+="${patharray[$i]:0:1}/"
+  fi
+done
+
+echo -n "$result"

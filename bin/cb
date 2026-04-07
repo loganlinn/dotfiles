@@ -1,0 +1,66 @@
+#!/bin/sh
+# cb — copy stdin (or arguments) to system clipboard
+#
+# Prefers native clipboard commands (no size limit); falls back to OSC 52
+# terminal escape (~75 KB) which works over SSH and through tmux.
+#
+# Inside tmux, native commands bypass tmux's paste buffer entirely and write
+# straight to the OS clipboard — the user pastes with the OS shortcut
+# (Cmd-V / Ctrl-Shift-V), not `tmux paste-buffer`.
+
+set -eu
+
+# Read input from arguments or stdin
+if [ $# -gt 0 ]; then
+  input="$*"
+else
+  input=$(cat)
+fi
+
+[ -z "$input" ] && exit 0
+
+# Inside tmux, display variables may be stale after detach/reattach from a
+# different X/Wayland session. Refresh them so xclip/xsel/wl-copy connect
+# to the current display server.
+if [ -n "${TMUX:-}" ]; then
+  _val=$(tmux show-environment DISPLAY 2>/dev/null) || true
+  case "${_val:-}" in DISPLAY=*) export "${_val}" ;; esac
+  _val=$(tmux show-environment WAYLAND_DISPLAY 2>/dev/null) || true
+  case "${_val:-}" in WAYLAND_DISPLAY=*) export "${_val}" ;; esac
+fi
+
+# --- Native clipboard (preferred — no size limit) ---
+# pbcopy talks to the macOS pasteboard server; no display env needed.
+
+if command -v pbcopy >/dev/null 2>&1; then
+  printf '%s' "$input" | pbcopy
+  exit 0
+fi
+
+if [ -n "${WAYLAND_DISPLAY:-}" ] && command -v wl-copy >/dev/null 2>&1; then
+  printf '%s' "$input" | wl-copy
+  exit 0
+fi
+
+if [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null 2>&1; then
+  printf '%s' "$input" | xclip -selection clipboard
+  exit 0
+fi
+
+if [ -n "${DISPLAY:-}" ] && command -v xsel >/dev/null 2>&1; then
+  printf '%s' "$input" | xsel --clipboard --input
+  exit 0
+fi
+
+# --- OSC 52 fallback (~75 KB payload limit) ---
+# Terminal must support OSC 52 (kitty, iTerm2, alacritty, foot, etc.).
+# Inside tmux, a DCS passthrough forwards OSC 52 to the outer terminal.
+
+osc52=$(printf '%s' "$input" | head -c 74994 | base64 | tr -d '\r\n')
+
+if [ -n "${TMUX:-}" ]; then
+  tty=$(tmux list-panes -F '#{pane_active} #{pane_tty}' | awk '$1=="1"{print $2;exit}')
+  printf '\ePtmux;\e\e]52;c;%s\a\e\\' "$osc52" > "$tty"
+else
+  printf '\e]52;c;%s\a' "$osc52" > /dev/tty
+fi
