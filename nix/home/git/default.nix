@@ -28,7 +28,7 @@ in
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
   home.shellAliases = {
     gcm = ''git switch "$(git default-branch || echo main)"'';
-    gco = "git switch -c";
+    gco = "git checkout";
     gd = "git diff";
     gdc = "gd --cached";
     gdn = "git diff --name-only";
