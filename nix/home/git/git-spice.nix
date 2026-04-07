@@ -19,10 +19,6 @@ in
 
   config = mkIf cfg.enable {
     home.packages = [ cfg.package ];
-    home.shellAliases = {
-      gs = "command git-spice";
-      grs = "command git-spice repo sync --restack";
-    };
     programs.git = {
       settings = {
         spice.branchPrompt.sort = "comitteddate";
