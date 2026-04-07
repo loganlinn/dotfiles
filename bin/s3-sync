@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Sync S3 objects to local disk at a predictable path.
+# Usage: s3-sync <bucket[/key/prefix]> [aws s3 sync flags...]
+
+set -euo pipefail
+
+S3_DATA_HOME="${S3_DATA_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/$(basename "${BASH_SOURCE[0]}")}"
+
+usage() {
+	cat <<'EOF'
+Usage: s3-sync <bucket[/key/prefix]> [aws s3 sync flags...]
+
+Syncs S3 objects to a local mirror directory (S3 → local only).
+
+  s3-sync my-bucket                   → syncs s3://my-bucket/ to $S3_DATA_HOME/my-bucket/
+  s3-sync my-bucket/some/prefix       → syncs s3://my-bucket/some/prefix/ to $S3_DATA_HOME/my-bucket/some/prefix/
+  s3-sync my-bucket --delete          → cleans up local files deleted from S3
+
+Environment:
+  S3_DATA_HOME    Local root directory (default: ${XDG_DATA_HOME:-~/.local/share}/s3-sync)
+EOF
+}
+
+if [[ $# -eq 0 ]] || [[ $1 == --help ]] || [[ $1 == -h ]]; then
+	usage
+	exit 0
+fi
+
+path="$1"
+shift
+
+# Strip leading s3:// if provided out of habit
+path="${path#s3://}"
+# Strip trailing slash
+path="${path%/}"
+
+local_path="$S3_DATA_HOME/$path"
+mkdir -p "$local_path"
+
+exec aws s3 sync "s3://$path/" "$local_path/" "$@"
