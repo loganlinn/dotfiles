@@ -121,7 +121,6 @@ in
       "pulumi/tap/esc"
       "pulumi/tap/pulumi"
       "redis"
-      "reptyr"
       # "ripgrep"
       # "temporal"
       # "terminal-notifier"
