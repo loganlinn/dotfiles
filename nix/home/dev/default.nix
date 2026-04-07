@@ -27,7 +27,6 @@
     process-compose
     entr
     gum
-    reptyr
     sad
     tree
     unipicker
