@@ -3,7 +3,7 @@ function gs {
     if [[ -n $GIT_SPICE_GITHUB_TOKEN ]]; then
       env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" command gs "$@"
     else
-      env -u GITHUB_TOKEN command gs "$@"
+      env -u GITHUB_TOKEN command git spice "$@"
     fi
   else
     git status

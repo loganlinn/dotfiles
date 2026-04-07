@@ -20,11 +20,11 @@ in
   config = mkIf cfg.enable {
     home.packages = [ cfg.package ];
     home.shellAliases = {
-      grs = "command gs repo sync --restack";
+      gs = "command git-spice";
+      grs = "command git-spice repo sync --restack";
     };
     programs.git = {
       settings = {
-        alias.spice = "!${cfg.package}/bin/gs";
         spice.branchPrompt.sort = "comitteddate";
         spice.experiment.commitFixup = "true";
         spice.log.all = "false";
