@@ -49,6 +49,24 @@ in
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
   services.brewAutoupdate.enable = true;
+  services.brewAutoupdate.only = [
+    "aerospace"
+    "borders"
+    "codex"
+    "crush"
+    "curl"
+    "gh"
+    "git"
+    "graphite"
+    "hammerspoon"
+    "karabiner-elements"
+    "kitty"
+    "kubernetes-cli"
+    "llama.cpp"
+    "ollama"
+    "sem-cli"
+    "terraform-ls"
+  ];
   # services.kanata.enable = false;
   # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
