@@ -104,9 +104,9 @@ in
               fi
               if [[ "$_bau_desired" != "$_bau_current" ]]; then
                 echo >&2 "brew-autoupdate: (re)configuring service..."
-                sudo -u ${escapeShellArg user} "${brew}" autoupdate delete 2>/dev/null || true
+                sudo -Hu ${escapeShellArg user} "${brew}" autoupdate delete 2>/dev/null || true
                 # shellcheck disable=SC2086
-                sudo -u ${escapeShellArg user} "${brew}" autoupdate start $_bau_desired
+                sudo -Hu ${escapeShellArg user} "${brew}" autoupdate start $_bau_desired
                 mkdir -p "$(dirname "${stateFile}")"
                 printf '%s' "$_bau_desired" > "${stateFile}"
               else
@@ -122,7 +122,7 @@ in
             if [[ -f "${stateFile}" ]]; then
               echo >&2 "brew-autoupdate: disabling service..."
               if [[ -x "${brew}" ]]; then
-                sudo -u ${escapeShellArg user} "${brew}" autoupdate delete 2>/dev/null || true
+                sudo -Hu ${escapeShellArg user} "${brew}" autoupdate delete 2>/dev/null || true
               fi
               rm -f "${stateFile}"
             fi
