@@ -183,29 +183,30 @@ in
       FORGIT_CHECKOUT_BRANCH_BRANCH_GIT_OPTS = "--sort=-committerdate";
     };
     shellAliases = {
-      glog = "forgit::log ";
-      greflog = "forgit::reflog ";
-      gdiff = "forgit::diff ";
-      gshow = "forgit::show ";
       gadd = "forgit::add ";
-      greset = "forgit::reset::head ";
-      gignore = "forgit::ignore ";
       gattrs = "forgit::attributes ";
-      gfco = "forgit::checkout::file ";
       gbco = "forgit::checkout::branch ";
-      gbrm = "forgit::branch::delete ";
-      gtag = "forgit::checkout::tag ";
-      gcco = "forgit::checkout::commit ";
-      grevert = "forgit::revert::commit ";
-      gclean = "forgit::clean ";
-      gsw = "forgit::stash::show ";
-      gsp = "forgit::stash::push ";
-      gcherry = "forgit::cherry::pick ";
-      grebase = "forgit::rebase ";
       gblame = "forgit::blame ";
+      gbrm = "forgit::branch::delete ";
+      gcco = "forgit::checkout::commit ";
+      gcherry = "forgit::cherry::pick ";
+      gclean = "forgit::clean ";
+      gdiff = "forgit::diff ";
+      gfco = "forgit::checkout::file ";
       gfix = "forgit::fixup ";
-      gsquash = "forgit::squash ";
+      gfo = "git fetch origin";
+      gignore = "forgit::ignore ";
+      glog = "forgit::log ";
+      grebase = "forgit::rebase ";
+      greflog = "forgit::reflog ";
+      greset = "forgit::reset::head ";
+      grevert = "forgit::revert::commit ";
       greword = "forgit::reword ";
+      gshow = "forgit::show ";
+      gsp = "forgit::stash::push ";
+      gsquash = "forgit::squash ";
+      gsw = "forgit::stash::show ";
+      gtag = "forgit::checkout::tag ";
     };
 
     antidote = {

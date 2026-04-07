@@ -1,8 +1,8 @@
 start-at-login = false # Avoid duplicate AeroSpace processes (hopefully)
 
-enable-normalization-flatten-containers = true
+enable-normalization-flatten-containers = false
 
-enable-normalization-opposite-orientation-for-nested-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = false
 
 accordion-padding = 25
 
