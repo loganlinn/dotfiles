@@ -85,6 +85,10 @@
     };
   };
   programs.passage.enable = true;
+  programs.raycast = {
+    enable = true;
+    scriptCommandDirectory = "${config.home.homeDirectory}/Library/CloudStorage/Dropbox/raycast";
+  };
   programs.wezterm.enable = true;
   programs.zsh = {
     enable = true;

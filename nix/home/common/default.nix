@@ -15,6 +15,7 @@
     ../git
     ../gpg.nix
     ../nix-path.nix
+    ../raycast.nix
     ../readline.nix
     ../ripgrep.nix
     ../secrets.nix
