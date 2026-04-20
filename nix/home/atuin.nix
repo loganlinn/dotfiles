@@ -6,7 +6,6 @@
 }:
 {
   programs.atuin = {
-    enable = false;
     daemon.enable = lib.mkDefault config.programs.atuin.enable;
     settings = {
       auto_sync = false;
@@ -24,5 +23,6 @@
       "--disable-up-arrow"
     ];
     enableZshIntegration = true;
+    enableBashIntegration = true;
   };
 }

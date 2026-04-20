@@ -6,7 +6,12 @@
         "id": "f3273439-daaf-4ff2-9016-f4edd043ac34",
         "type": "custom-command",
         "color": "green",
-        "commandPath": "jq -r 'if .fastMode then [\"🔥\"] else [] end + [.model // \"default\"] | join(\" \")' ~/.claude/settings.json"
+        "commandPath": "jq -r 'if .fastMode then \"🔥\" else \"\" end' ~/.claude/settings.json"
+      },
+      {
+        "id": "9cae2c51-356d-4a0d-bd7c-8b8f074a3d29",
+        "type": "model",
+        "rawValue": true
       },
       {
         "id": "0c659f0c-0dc7-467e-91b6-36d179dd10cd",

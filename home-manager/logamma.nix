@@ -62,9 +62,18 @@
   home.username = "logan";
   home.homeDirectory = "/Users/logan";
   home.stateVersion = "22.11";
-  programs.zsh.dotDir = config.home.homeDirectory;
 
   programs.age-op.enable = true;
+  programs.atuin = {
+    enable = true;
+    daemon = {
+      enable = true;
+    };
+    flags = [
+      "--disable-up-arrow"
+    ];
+    enableZshIntegration = true;
+  };
   programs.asciinema.enable = true;
   programs.fish.enable = false; # not used currently and slows builds down a bit.
   programs.ghostty.enable = true;
@@ -79,6 +88,7 @@
   programs.wezterm.enable = true;
   programs.zsh = {
     enable = true;
+    dotDir = config.home.homeDirectory;
     shellAliases = {
       ecr-login = "aws ecr get-login-password --region us-east-2 | pee 'docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com' 'finch login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com'";
       ddb-local = "env -u AWS_ENDPOINT_DYNAMODB_URL aws dynamodb --endpoint-url http://localhost:8000";
