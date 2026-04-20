@@ -78,8 +78,8 @@ result=$(
     --with-nth=2,3 \
     --preview="$preview" \
     --preview-window=down:50% \
-    --expect=ctrl-enter \
-    --header=$'tab: multi-select \u00b7 enter: copy \u00b7 ctrl-enter: edit then copy' \
+    --expect=alt-enter \
+    --header=$'tab: multi-select \u00b7 enter: copy \u00b7 alt-enter: edit then copy' \
     <<<"$menu"
 ) || exit 130
 
@@ -97,7 +97,7 @@ output=$(
   done <<<"$selected"
 )
 
-if [[ "$key" == "ctrl-enter" ]]; then
+if [[ "$key" == "alt-enter" ]]; then
   output=$(printf '%s' "$output" | edit_content)
 fi
 
