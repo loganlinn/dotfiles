@@ -240,6 +240,7 @@ in
             config.programs.television.enable
             && config.programs.television.enableZshIntegration
             && config.programs.fzf.enableZshIntegration
+            && !(config.programs.atuin.enable && config.programs.atuin.enableZshIntegration)
           )
           ''
             ##########################################################
