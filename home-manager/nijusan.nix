@@ -113,7 +113,7 @@ in
   #   alternate = "${config.programs.librewolf.package}/bin/librewolf --private-window";
   # };
 
-  programs.atuin.enable = true;
+  programs.atuin.enable = false;
   programs.kitty.enable = true;
   programs.emacs.enable = true;
   programs.emacs.package = pkgs.emacs-git;

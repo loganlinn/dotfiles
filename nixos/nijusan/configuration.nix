@@ -25,7 +25,7 @@
 
   networking.hostName = "nijusan";
 
-  services.atuin.enable = true;
+  services.atuin.enable = false;
   services.atuin.host = "127.0.0.1";
   services.atuin.openFirewall = false;
   services.atuin.maxHistoryLength = 8192 * 4;
