@@ -36,6 +36,7 @@
     # https://lore.kernel.org/linux-pci/20190821124519.71594-1-mika.westerberg@linux.intel.com/
     # https://lore.kernel.org/linux-pci/20190927090202.1468-1-drake@endlessm.com/
     "mem_sleep_default=deep"
+    "pcie_aspm=off"
   ];
   boot.blacklistedKernelModules = [ "spd5118" ]; # DDR5 SPD hub temp sensor; fails on resume (ENXIO)
   boot.kernelModules = [
@@ -46,7 +47,7 @@
     # config.boot.kernelPackages.exfat-nofuse
   ];
   boot.extraModprobeConfig = ''
-    "options snd_hda_intel power_save=1" # idle audio card after one second
+    options snd_hda_intel power_save=1
   '';
 
   powerManagement = {
