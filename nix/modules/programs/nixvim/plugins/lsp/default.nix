@@ -38,6 +38,8 @@ in
     plugins.lsp = {
       enable = true;
       inlayHints = true;
+      # nixd stderr is extremely chatty; default log level captures it all
+      logLevel = "WARN";
       servers = {
         awk_ls.enable = false;
         bashls.enable = true;
