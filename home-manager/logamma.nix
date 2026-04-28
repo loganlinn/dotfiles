@@ -69,6 +69,10 @@
     daemon = {
       enable = true;
     };
+    settings = {
+      auto_sync = true;
+      sync_address = "https://nijusan.royal-bee.ts.net/atuin";
+    };
     flags = [
       "--disable-up-arrow"
     ];

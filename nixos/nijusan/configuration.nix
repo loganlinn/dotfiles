@@ -26,8 +26,21 @@
   networking.hostName = "nijusan";
 
   services.atuin.enable = true;
-  services.atuin.openFirewall = true;
+  services.atuin.host = "127.0.0.1";
+  services.atuin.openFirewall = false;
   services.atuin.maxHistoryLength = 8192 * 4;
+
+  services.caddy.enable = true;
+  services.caddy.virtualHosts."nijusan.royal-bee.ts.net" = {
+    extraConfig = ''
+      handle_path /atuin/* {
+        reverse_proxy localhost:8888
+      }
+      tls {
+        get_certificate tailscale
+      }
+    '';
+  };
   services.comfyui.enable = false;
   services.desktopManager.gnome.enable = true;
   services.displayManager.gdm.enable = true;
