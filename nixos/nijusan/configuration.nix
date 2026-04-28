@@ -9,6 +9,7 @@
     self.nixosModules.comfyui
     self.nixosModules.common
     self.nixosModules.docker
+    # self.nixosModules.hyprland
     self.nixosModules.networking
     self.nixosModules.nvidia
     self.nixosModules.ollama
@@ -24,12 +25,17 @@
 
   networking.hostName = "nijusan";
 
-  services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;
+  services.atuin.enable = true;
+  services.atuin.openFirewall = true;
+  services.atuin.maxHistoryLength = 8192 * 4;
+  services.comfyui.enable = false;
   services.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.open-webui.enable = false;
   services.power-profiles-daemon.enable = true;
   services.printing.enable = true;
   services.tailscale.enable = true;
+  services.xserver.enable = true;
 
   programs._1password-gui.enable = true;
   programs._1password.enable = true;
@@ -41,9 +47,14 @@
 
   security.polkit.enable = true;
 
-  virtualisation.docker.enable = true;
+  # virtualisation.docker.enable = true;
+  virtualisation.incus.enable = true;
+  networking.nftables.enable = true;
+  networking.firewall.trustedInterfaces = [ "incusbr0" ];
 
   nix.settings.trusted-users = [ "root" ]; # this is in addition to my.user.name (needed?)
+
+  users.users.logan.extraGroups = [ "incus-admin" ];
 
   environment.systemPackages = with pkgs; [
     pciutils

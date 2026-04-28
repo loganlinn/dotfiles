@@ -9,7 +9,6 @@
     daemon.enable = lib.mkDefault config.programs.atuin.enable;
     settings = {
       auto_sync = false;
-      sync_address = "https://atuin.llinn.dev";
       dialect = "us";
       enter_accept = false;
       inline_height = 20;

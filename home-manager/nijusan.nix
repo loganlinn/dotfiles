@@ -16,6 +16,7 @@ in
     self.homeModules.nix-colors
     # self.homeModules.secrets
     # ../nix/home/awesomewm.nix
+    ../nix/home/atuin.nix
     ../nix/home/ccstatusline.nix
     ../nix/home/aws
     ../nix/home/common
@@ -34,6 +35,19 @@ in
     ../nix/home/ghostty.nix
     # ../nix/home/git/graphite.nix
     ../nix/home/home-manager.nix
+
+    # -- Hyprland Wave 1: Core WM (keybindings, layout, input, animations)
+    # ../nix/home/hyprland
+
+    # -- Hyprland Wave 2: Shell Chrome (uncomment to enable)
+    # ../nix/home/waybar
+    # ../nix/home/wofi.nix
+    # ../nix/home/mako.nix
+
+    # -- Hyprland Wave 3: Lock/Idle/Wallpaper (uncomment to enable)
+    # ../nix/home/hyprlock.nix
+    # ../nix/home/hypridle.nix
+    # ../nix/home/hyprpaper.nix
     # ../nix/home/hexchat.nix
     # ../nix/home/intellij.nix
     # ../nix/home/kakoune.nix
@@ -99,6 +113,7 @@ in
   #   alternate = "${config.programs.librewolf.package}/bin/librewolf --private-window";
   # };
 
+  programs.atuin.enable = true;
   programs.kitty.enable = true;
   programs.emacs.enable = true;
   programs.emacs.package = pkgs.emacs-git;

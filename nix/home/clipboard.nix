@@ -9,6 +9,7 @@
 in {
   config = mkIf isLinux {
     home.packages = with pkgs; [
+      # X11
       xclip
       (writeShellApplication {
         name = "pbcopy";
@@ -20,6 +21,11 @@ in {
         runtimeInputs = [xclip];
         text = ''xclip -out -selection clipboard'';
       })
+
+      # Wayland
+      wl-clipboard
+      wl-clip-persist # keep clipboard after source window closes
+      clipse # clipboard manager
     ];
 
     services.clipmenu.enable = true;

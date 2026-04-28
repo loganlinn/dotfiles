@@ -2,9 +2,9 @@
   config,
   lib,
   ...
-}: {
+}:
+{
   services.open-webui = {
-    enable = true;
     port = 3000;
     openFirewall = false;
     environment = {
