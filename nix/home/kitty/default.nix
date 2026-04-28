@@ -53,6 +53,7 @@ in
         [
           "choose-files.conf"
           "claude-fork.py"
+          "cssh.py"
           "current-theme.conf"
           "diff.conf"
           "grab.conf"

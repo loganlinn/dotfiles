@@ -1,10 +1,12 @@
 """Fork the current Claude conversation into a new kitty window.
 
 Reads CLAUDE_SESSION_ID from user vars, extends the foreground cmdline
-with --resume SESSION_ID --fork-session, and launches a new window.
+with --resume PARENT --fork-session --session-id NEW, and launches a
+new window in the same kitty session with CLAUDE_SESSION_ID pre-set.
 """
 
 import os
+import uuid
 
 from kittens.tui.handler import result_handler
 
@@ -34,14 +36,25 @@ def handle_result(
         boss.show_error("claude-fork", "Could not find claude process in foreground group")
         return
 
+    new_session_id = str(uuid.uuid4())
     cmd = _strip_session_flags(list(proc["cmdline"]))
-    cmd.extend(["--resume", session_id, "--fork-session"])
+    cmd.extend([
+        "--resume", session_id,
+        "--fork-session",
+        "--session-id", new_session_id,
+    ])
 
     cwd = proc.get("cwd") or w.cwd_of_child or ""
 
     from kitty.launch import launch, parse_launch_args
 
-    opts, _ = parse_launch_args(args[1:] or ["--type=window", "--copy-env"])
+    default_args = [
+        "--type=window",
+        "--copy-env",
+        "--add-to-session=.",
+        f"--var=CLAUDE_SESSION_ID={new_session_id}",
+    ]
+    opts, _ = parse_launch_args(args[1:] or default_args)
     opts.cwd = cwd
     launch(boss, opts, cmd, target_tab=w.tabref(), rc_from_window=w)
 

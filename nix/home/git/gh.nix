@@ -84,7 +84,7 @@ in
         o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" .'';
         diff = "pr diff";
         prw = "pr list --web";
-        pco = "!gh prz | ifne xargs -n1 gh pr checkout";
+        co = "!gh prz | ifne xargs -n1 gh pr checkout";
         prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
         prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
         pro = ''!gh pr view --web "$@"'';
@@ -139,6 +139,7 @@ in
 
         my-team = "!gh my-org | sed '/${config.my.github.username}/d'";
         my-prs = "pr list --author ${config.my.github.username}";
+        coa = "!gh-pr-checkout-authored-by \"$@\"";
         my-runs = "run list --user ${config.my.github.username}";
 
         reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";

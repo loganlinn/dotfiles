@@ -6,6 +6,7 @@
 }:
 with lib; let
   inherit (config.lib.nixvim) listToUnkeyedAttrs;
+  notesDir = config.my.userDirs.notes;
 in {
   programs.nixvim = {
     plugins.conform-nvim = {
@@ -13,10 +14,15 @@ in {
       settings = {
         notify_on_error = true;
         notify_no_formatters = false;
-        format_on_save = {
-          timeout_ms = 500;
-          lsp_format = "fallback";
-        };
+        format_on_save.__raw = ''
+          function(bufnr)
+            local bufname = vim.api.nvim_buf_get_name(bufnr)
+            if vim.bo[bufnr].filetype == "markdown" and bufname:find(${builtins.toJSON notesDir}, 1, true) then
+              return
+            end
+            return { timeout_ms = 500, lsp_format = "fallback" }
+          end
+        '';
         default_format_opts = {
           lsp_format = "fallback";
           timeout_ms = 2000;
