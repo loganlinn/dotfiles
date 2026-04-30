@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s inherit_errexit
+
+usage() {
+  cat <<'EOF'
+Usage: devin-review [options] [ref]
+
+Open a pull request in Devin's review UI.
+
+Accepts ref as:
+  - (omitted)         Devin review home page
+  - `.` or path       PR for HEAD of that path's git repo (via `gh pr view`)
+  - Devin review URL  (https://app.devin.ai/review/<org>/<repo>/pull/<n>)
+  - GitHub PR URL     (https://github.com/<org>/<repo>/pull/<n>)
+  - PR number         (123, #123)            uses origin remote
+  - Cross-repo ref    (org/repo/pull/123, org/repo#123, repo#123)
+  - Branch name       (resolved via `gh pr list --head`)
+  - Linear issue      (e.g. SEC-115; resolved via `linear issue get`)
+
+Options:
+  -R, --repo <org/repo>   Fallback repo when ref omits it
+  -n, --dry-run           Print URL instead of opening
+  -h, --help              Show this help
+EOF
+}
+
+die() {
+  echo >&2 "devin-review: $*"
+  exit 1
+}
+
+dry_run=0
+repo_override=""
+ref=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    -n | --dry-run)
+      dry_run=1
+      shift
+      ;;
+    -R | --repo)
+      [[ $# -ge 2 ]] || die "--repo requires an argument"
+      repo_override="$2"
+      shift 2
+      ;;
+    --repo=*)
+      repo_override="${1#--repo=}"
+      shift
+      ;;
+    -R=*)
+      repo_override="${1#-R=}"
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      die "unknown option: $1"
+      ;;
+    *)
+      [[ -z "$ref" ]] || die "unexpected extra argument: $1"
+      ref="$1"
+      shift
+      ;;
+  esac
+done
+
+
+# Parse `git@github.com:org/repo.git`, `https://github.com/org/repo(.git)`,
+# `ssh://git@github.com/org/repo.git`. Echo "org/repo" or empty.
+parse_remote_url() {
+  local url="$1" path
+  path="${url#*github.com}"
+  path="${path#:}"
+  path="${path#/}"
+  path="${path%.git}"
+  path="${path%/}"
+  [[ "$path" == */* ]] || return 1
+  # Trim to first two segments only.
+  local owner repo rest
+  IFS='/' read -r owner repo rest <<<"$path"
+  [[ -n "$owner" && -n "$repo" ]] || return 1
+  echo "$owner/$repo"
+}
+
+origin_repo() {
+  local url
+  url="$(git config --get remote.origin.url 2>/dev/null || true)"
+  [[ -n "$url" ]] || return 1
+  parse_remote_url "$url"
+}
+
+resolve_default_repo() {
+  if [[ -n "$repo_override" ]]; then
+    echo "$repo_override"
+    return
+  fi
+  origin_repo || die "not in a git repo (and no --repo provided)"
+}
+
+resolve_default_org() {
+  local r
+  r="$(resolve_default_repo)"
+  echo "${r%%/*}"
+}
+
+build_url() {
+  local org="$1" repo="$2" num="$3"
+  echo "https://app.devin.ai/review/${org}/${repo}/pull/${num}"
+}
+
+resolve_url() {
+  local r="$ref"
+
+  # No ref → Devin review home.
+  if [[ -z "$r" ]]; then
+    echo "https://app.devin.ai/review"
+    return
+  fi
+
+  # Already a Devin review URL.
+  if [[ "$r" =~ ^https?://app\.devin\.ai/review/ ]]; then
+    echo "$r"
+    return
+  fi
+
+  # Full GitHub PR URL → swap host + insert /review.
+  if [[ "$r" =~ ^https?://github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+    build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
+    return
+  fi
+
+  # Linear issue key (e.g. SEC-115).
+  if [[ "$r" =~ ^[A-Z]{2,}-[0-9]+$ ]]; then
+    command -v linear >/dev/null || die "linear cli not found"
+    command -v jq >/dev/null || die "jq not found"
+    local pr_url
+    pr_url="$(linear issue get "$r" \
+      | jq -r '[.attachments[]? | select(.sourceType == "github") | .url] | last // empty')"
+    [[ -n "$pr_url" ]] || die "no GitHub PR attached to $r"
+    if [[ "$pr_url" =~ ^https?://github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+      build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
+      return
+    fi
+    die "unexpected attachment url: $pr_url"
+  fi
+
+  # Bare number or #number.
+  if [[ "$r" =~ ^#?([0-9]+)$ ]]; then
+    local num="${BASH_REMATCH[1]}"
+    local default_repo org repo
+    default_repo="$(resolve_default_repo)"
+    org="${default_repo%%/*}"
+    repo="${default_repo##*/}"
+    build_url "$org" "$repo" "$num"
+    return
+  fi
+
+  # org/repo/pull/123 (trailing /changes, #diff-…, etc. allowed)
+  if [[ "$r" =~ ^([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+    build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
+    return
+  fi
+
+  # org/repo#123
+  if [[ "$r" =~ ^([^/#]+)/([^/#]+)#([0-9]+)$ ]]; then
+    build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
+    return
+  fi
+
+  # repo#123  (cross-repo, same org as origin)
+  if [[ "$r" =~ ^([^/#]+)#([0-9]+)$ ]]; then
+    local repo="${BASH_REMATCH[1]}" num="${BASH_REMATCH[2]}"
+    local org
+    org="$(resolve_default_org)"
+    build_url "$org" "$repo" "$num"
+    return
+  fi
+
+  # File / directory path → PR for HEAD in that repo.
+  if [[ -e "$r" ]]; then
+    command -v gh >/dev/null || die "gh cli not found"
+    local dir
+    if [[ -d "$r" ]]; then dir="$r"; else dir="$(dirname -- "$r")"; fi
+    git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 \
+      || die "not a git repo: $r"
+    local pr_url
+    pr_url="$(cd "$dir" && gh pr view --json url --jq .url 2>/dev/null)" \
+      || die "no PR found for HEAD of $r"
+    if [[ "$pr_url" =~ ^https?://github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+      build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
+      return
+    fi
+    die "unexpected pr url: $pr_url"
+  fi
+
+  # Fallback: branch name.
+  command -v gh >/dev/null || die "gh cli not found"
+  local default_repo
+  default_repo="$(resolve_default_repo)"
+  local pr_json num
+  pr_json="$(gh pr list \
+    --repo "$default_repo" \
+    --head "$r" \
+    --state all \
+    --json number,headRefName \
+    --limit 1)"
+  num="$(jq -r '.[0].number // empty' <<<"$pr_json")"
+  [[ -n "$num" ]] || die "no PR found for branch '$r' in $default_repo"
+  local org repo
+  org="${default_repo%%/*}"
+  repo="${default_repo##*/}"
+  build_url "$org" "$repo" "$num"
+}
+
+url="$(resolve_url)"
+
+if ((dry_run)); then
+  echo "$url"
+  exit 0
+fi
+
+case "$OSTYPE" in
+  darwin*) open "$url" ;;
+  linux*) xdg-open "$url" >/dev/null 2>&1 ;;
+  *) echo "$url" ;;
+esac
