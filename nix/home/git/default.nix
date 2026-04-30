@@ -40,6 +40,7 @@ in
     glrp = "git pull --rebase && git push";
     gp = "git push";
     grt = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)" && pwd'';
+    grtp = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)/$(git rev-parse --show-prefix)" && pwd'';
     gtl = ''cd -- "$(git rev-parse --show-toplevel)" && pwd'';
     gw = "git show";
   };
