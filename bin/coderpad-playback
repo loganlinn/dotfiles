@@ -6,10 +6,13 @@ playback, extracts the Firepad OT (Operational Transform) history, and replays
 ops to reconstruct the document at arbitrary timestamps or op indices.
 
 Usage:
-    # Playback at 10x speed (default)
+    # Playback (completes in 1 minute by default)
     coderpad_replay.py playback.har
 
-    # Playback at custom speed
+    # Playback in 30 seconds
+    coderpad_replay.py playback.har -d 30
+
+    # Playback at fixed 20x speed
     coderpad_replay.py playback.har -s 20
 
     # Show state at a specific time offset
@@ -37,9 +40,14 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import re
+import select
+import signal
 import sys
+import termios
 import time as time_mod
+import tty
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -298,35 +306,90 @@ def write_script_files(
     return script_path, timing_path
 
 
+def _draw_status(out: object, rows: int, cols: int, frame: int, total: int, t0: float) -> None:
+    pct = frame * 100 // total if total else 0
+    elapsed = int(time_mod.time() - t0)
+    h, rem = divmod(elapsed, 3600)
+    m, s = divmod(rem, 60)
+    clock = f" {h:02d}:{m:02d}:{s:02d} "
+    label = f" {pct:3d}% {clock}"
+    bw = cols - len(label)
+    filled = bw * frame // total if total else 0
+    bar = "█" * filled + " " * (bw - filled)
+    out.write(f"\0337\033[{rows};1H{bar}{label}\0338".encode())
+
+
+def _wait_for_quit(out: object) -> None:
+    """Block until q is pressed or a shutdown signal arrives."""
+    quit = False
+
+    def _sig_quit(*_: object) -> None:
+        nonlocal quit
+        quit = True
+
+    prev_int = signal.signal(signal.SIGINT, _sig_quit)
+    prev_term = signal.signal(signal.SIGTERM, _sig_quit)
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        while not quit:
+            if select.select([fd], [], [], 0.1)[0]:
+                ch = os.read(fd, 1)
+                if ch in (b"q", b"Q", b"\x03"):
+                    break
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        signal.signal(signal.SIGINT, prev_int)
+        signal.signal(signal.SIGTERM, prev_term)
+
+
 def do_playback(
     script_path: Path,
     timing_path: Path,
-    speed: float = 10.0,
+    speed: float | None = None,
+    duration: float | None = None,
     max_delay: float = 2.0,
 ) -> None:
-    """Replay typescript at given speed multiplier."""
-    # alt screen + hide cursor + clear
-    sys.stdout.write("\033[?1049h\033[?25l\033[2J\033[H")
-    sys.stdout.flush()
+    """Replay typescript at given speed multiplier or within a target duration."""
+    cols, rows = os.get_terminal_size()
+
+    delays = []
+    sizes = []
+    with open(timing_path) as tf:
+        for line in tf:
+            parts = line.strip().split()
+            if len(parts) != 2:
+                continue
+            delays.append(float(parts[0]))
+            sizes.append(int(parts[1]))
+    total = len(delays)
+    recording_duration = sum(delays)
+
+    if duration is not None:
+        speed = recording_duration / duration if duration > 0 else 1.0
+    elif speed is None:
+        speed = recording_duration / 60.0 if recording_duration > 60 else 1.0
+
+    out = sys.stdout.buffer
+    out.write(b"\033[?1049h\033[?25l\033[2J\033[H")
+    out.flush()
     try:
-        with open(timing_path) as tf, open(script_path, "rb") as sf:
-            for line in tf:
-                parts = line.strip().split()
-                if len(parts) != 2:
-                    continue
-                delay = min(float(parts[0]) / speed, max_delay)
-                nbytes = int(parts[1])
-                if delay > 0.005:
-                    time_mod.sleep(delay)
-                chunk = sf.read(nbytes)
-                sys.stdout.buffer.write(chunk)
-                sys.stdout.buffer.flush()
+        wall_t0 = time_mod.time()
+        with open(script_path, "rb") as sf:
+            for i, (d, nbytes) in enumerate(zip(delays, sizes)):
+                wait = min(d / speed, max_delay)
+                if wait > 0.005:
+                    time_mod.sleep(wait)
+                out.write(sf.read(nbytes))
+                _draw_status(out, rows, cols, i + 1, total, wall_t0)
+                out.flush()
+        _wait_for_quit(out)
     except KeyboardInterrupt:
         pass
     finally:
-        # show cursor + leave alt screen
-        sys.stdout.write("\033[?25h\033[?1049l")
-        sys.stdout.flush()
+        out.write(b"\033[?25h\033[?1049l")
+        out.flush()
 
 
 # -- CLI -----------------------------------------------------------------------
@@ -343,7 +406,8 @@ def main():
     list_mode = False
     timeline_mode = False
     file_filter: str | None = None
-    speed: float = 10.0
+    speed: float | None = None
+    duration: float | None = None
 
     i = 1
     while i < len(args):
@@ -355,6 +419,9 @@ def main():
         elif a == "-s" and i + 1 < len(args):
             i += 1
             speed = float(args[i])
+        elif a == "-d" and i + 1 < len(args):
+            i += 1
+            duration = float(args[i])
         elif a == "-f" and i + 1 < len(args):
             i += 1
             file_filter = args[i]
@@ -364,6 +431,10 @@ def main():
             print(f"Unknown option: {a}", file=sys.stderr)
             sys.exit(1)
         i += 1
+
+    if speed is not None and duration is not None:
+        print("-s and -d are mutually exclusive", file=sys.stderr)
+        sys.exit(1)
 
     histories = extract_file_histories(har_file)
     if not histories:
@@ -382,8 +453,8 @@ def main():
             last_ts = h.ops[-1][2] if h.ops else None
             print(f"  {h.path}  ({h.env})  ops={len(h.ops)}", end="")
             if first_ts and last_ts:
-                duration = fmt_elapsed(last_ts - first_ts)
-                print(f"  {fmt_ts(first_ts)} -> {fmt_ts(last_ts)} ({duration})", end="")
+                span = fmt_elapsed(last_ts - first_ts)
+                print(f"  {fmt_ts(first_ts)} -> {fmt_ts(last_ts)} ({span})", end="")
             print()
         return
 
@@ -392,8 +463,8 @@ def main():
             if not h.ops:
                 continue
             t0 = h.ops[0][2]
-            duration = fmt_elapsed(h.ops[-1][2] - t0)
-            print(f"\n--- {h.path} ({len(h.ops)} ops, {duration}) ---")
+            span = fmt_elapsed(h.ops[-1][2] - t0)
+            print(f"\n--- {h.path} ({len(h.ops)} ops, {span}) ---")
             chunk_size = max(1, len(h.ops) // 20)
             for j in range(0, len(h.ops), chunk_size):
                 chunk_ops = h.ops[j : j + chunk_size]
@@ -430,13 +501,13 @@ def main():
     frames = generate_frames(h)
     output_base = har_file.with_suffix("")
     script_path, timing_path = write_script_files(frames, h, output_base)
+    rec_dur = fmt_elapsed(h.ops[-1][2] - h.ops[0][2])
     print(
         f"Wrote {script_path.name} + {timing_path.name} "
-        f"({len(frames)} frames, {fmt_elapsed(h.ops[-1][2] - h.ops[0][2])})",
+        f"({len(frames)} frames, {rec_dur})",
         file=sys.stderr,
     )
-    print(f"Playing at {speed:.0f}x (Ctrl-C to stop)", file=sys.stderr)
-    do_playback(script_path, timing_path, speed=speed)
+    do_playback(script_path, timing_path, speed=speed, duration=duration)
 
 
 if __name__ == "__main__":
