@@ -1,0 +1,443 @@
+#!/usr/bin/env python3
+"""Reconstruct code state at any point in time from a CoderPad playback HAR file.
+
+Parses Firebase Realtime Database WebSocket messages captured during CoderPad
+playback, extracts the Firepad OT (Operational Transform) history, and replays
+ops to reconstruct the document at arbitrary timestamps or op indices.
+
+Usage:
+    # Playback at 10x speed (default)
+    coderpad_replay.py playback.har
+
+    # Playback at custom speed
+    coderpad_replay.py playback.har -s 20
+
+    # Show state at a specific time offset
+    coderpad_replay.py playback.har 100ms
+    coderpad_replay.py playback.har 1m
+    coderpad_replay.py playback.har 1m30s
+    coderpad_replay.py playback.har -10m
+
+    # Show state at a specific progress point
+    coderpad_replay.py playback.har 0%
+    coderpad_replay.py playback.har 42%
+    coderpad_replay.py playback.har 100%
+
+    # List files in the recording
+    coderpad_replay.py playback.har -l
+
+    # Show a timeline summary
+    coderpad_replay.py playback.har -T
+
+Playback generates script(1)-compatible .script and .timing files
+that can also be replayed with: scriptreplay --timing=F.timing F.script
+"""
+
+from __future__ import annotations
+
+import base64
+import json
+import re
+import sys
+import time as time_mod
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+
+@dataclass
+class FileHistory:
+    path: str
+    env: str
+    checkpoint_text: str
+    checkpoint_id: str
+    ops: list[tuple[str, dict, int]]  # (key, op_dict, timestamp)
+
+
+def reassemble_ws_frames(messages: list[dict]) -> list[tuple[str, dict]]:
+    """Reassemble Firebase WS frames that are split across multiple messages."""
+    result = []
+    buf = None
+    for m in messages:
+        data = m["data"]
+        if buf is not None:
+            buf += data
+            try:
+                parsed = json.loads(buf)
+                result.append((m["type"], parsed))
+                buf = None
+            except json.JSONDecodeError:
+                pass
+        else:
+            try:
+                parsed = json.loads(data)
+                result.append((m["type"], parsed))
+            except json.JSONDecodeError:
+                buf = data
+    return result
+
+
+def extract_file_histories(har_path: Path) -> list[FileHistory]:
+    """Extract all file histories from a HAR capture."""
+    with open(har_path) as f:
+        har = json.load(f)
+
+    entries = har["log"]["entries"]
+    ws_entries = [e for e in entries if e.get("_webSocketMessages")]
+    def _is_coderpad_firebase(e: dict) -> bool:
+        url = e.get("request", {}).get("url", "")
+        if "firebaseio.com" not in url:
+            return False
+        ns = parse_qs(urlparse(url).query).get("ns", [""])[0]
+        return ns.startswith("coderpad")
+
+    firebase = [e for e in ws_entries if _is_coderpad_firebase(e)]
+    ws_entry = (firebase or ws_entries)[0] if (firebase or ws_entries) else entries[0]
+    messages = ws_entry.get("_webSocketMessages", [])
+    reassembled = reassemble_ws_frames(messages)
+
+    histories = {}
+    for _direction, data in reassembled:
+        if not isinstance(data, dict):
+            continue
+        d = data.get("d")
+        if not isinstance(d, dict):
+            continue
+        b = d.get("b")
+        if not isinstance(b, dict):
+            continue
+        p = b.get("p", "")
+        if "environmentFile" not in p:
+            continue
+        env_data = b.get("d", {})
+        if not isinstance(env_data, dict):
+            continue
+        for env_key, files in env_data.items():
+            if not isinstance(files, dict):
+                continue
+            for file_key_b64, file_val in files.items():
+                if not isinstance(file_val, dict) or "checkpoint" not in file_val:
+                    continue
+                try:
+                    fname = base64.b64decode(file_key_b64).decode()
+                except Exception:
+                    fname = file_key_b64
+
+                cp = file_val["checkpoint"]
+                hist = file_val.get("history", {})
+                ops = [
+                    (k, hist[k]["o"], hist[k]["t"]) for k in sorted(hist.keys())
+                ]
+                histories[(env_key, fname)] = FileHistory(
+                    path=fname,
+                    env=env_key,
+                    checkpoint_text=cp["o"].get("0", ""),
+                    checkpoint_id=cp.get("id", ""),
+                    ops=ops,
+                )
+    return list(histories.values())
+
+
+def apply_op(doc: str, op: dict) -> str:
+    """Apply a single Firepad OT operation to a document string.
+
+    Firepad op format (dict with sequential numeric string keys):
+      - positive int: retain N characters
+      - negative int: delete |N| characters
+      - string: insert text
+    """
+    components = []
+    idx = 0
+    while str(idx) in op:
+        components.append(op[str(idx)])
+        idx += 1
+
+    parts = []
+    pos = 0
+    for comp in components:
+        if isinstance(comp, int):
+            if comp > 0:
+                parts.append(doc[pos : pos + comp])
+                pos += comp
+            else:
+                pos += abs(comp)
+        elif isinstance(comp, str):
+            parts.append(comp)
+    parts.append(doc[pos:])
+    return "".join(parts)
+
+
+def parse_time_spec(spec: str, history: FileHistory) -> dict:
+    """Parse a time specifier into replay kwargs.
+
+    Supports:
+      - Percentage: "42%"
+      - Duration offset: "1m30s", "100ms", "-10m" (negative = from end)
+    """
+    if spec.endswith("%"):
+        return {"at_pct": float(spec[:-1])}
+
+    m = re.fullmatch(r"(-?)(?:(\d+)h)?(?:(\d+)m(?!s))?(?:(\d+)s)?(?:(\d+)ms)?", spec)
+    if not m or spec.lstrip("-") == "":
+        print(f"Invalid time spec: {spec}", file=sys.stderr)
+        print("Expected: 1m30s, 100ms, 42%, -10m, etc.", file=sys.stderr)
+        sys.exit(1)
+
+    neg = m.group(1) == "-"
+    ms = (
+        int(m.group(2) or 0) * 3600000
+        + int(m.group(3) or 0) * 60000
+        + int(m.group(4) or 0) * 1000
+        + int(m.group(5) or 0)
+    )
+
+    if not history.ops:
+        return {}
+
+    if neg:
+        target = history.ops[-1][2] - ms
+    else:
+        target = history.ops[0][2] + ms
+
+    return {"at_time": target}
+
+
+def replay(
+    history: FileHistory,
+    *,
+    at_op: int | None = None,
+    at_time: int | None = None,
+    at_pct: float | None = None,
+) -> tuple[str, int, int | None]:
+    """Replay ops and return (document, ops_applied, timestamp_of_last_op)."""
+    if at_pct is not None and history.ops:
+        at_op = round(len(history.ops) * at_pct / 100)
+    doc = ""
+    applied = 0
+    last_ts = None
+    for _key, op, ts in history.ops:
+        if at_op is not None and applied >= at_op:
+            break
+        if at_time is not None and ts > at_time:
+            break
+        doc = apply_op(doc, op)
+        applied += 1
+        last_ts = ts
+    return doc, applied, last_ts
+
+
+def fmt_ts(ts: int) -> str:
+    dt = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
+    return dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def fmt_elapsed(ms: int) -> str:
+    s = ms // 1000
+    if s < 60:
+        return f"{s}s"
+    m, s = divmod(s, 60)
+    if s:
+        return f"{m}m{s}s"
+    return f"{m}m"
+
+
+# -- Playback (script(1)-compatible) ------------------------------------------
+
+
+def generate_frames(
+    history: FileHistory, batch_ms: int = 100
+) -> list[tuple[int, str, int]]:
+    """Generate (timestamp_ms, document_text, op_count) frames.
+
+    Consecutive ops within batch_ms of each other are grouped into one frame.
+    """
+    if not history.ops:
+        return [(0, history.checkpoint_text, 0)]
+
+    doc = ""
+    frames = []
+
+    for i, (_key, op, ts) in enumerate(history.ops):
+        doc = apply_op(doc, op)
+        is_last = i == len(history.ops) - 1
+        if is_last or history.ops[i + 1][2] - ts > batch_ms:
+            frames.append((ts, doc, i + 1))
+
+    return frames
+
+
+def render_frame(doc: str, history: FileHistory, ts: int, op_count: int) -> bytes:
+    t0 = history.ops[0][2] if history.ops else ts
+    total = len(history.ops)
+    elapsed = fmt_elapsed(ts - t0)
+    pct = op_count * 100 // total if total else 0
+    status = f" {history.path} | +{elapsed} | {op_count}/{total} ({pct}%) "
+    # clear screen + home, inverse-video status bar, then document
+    return f"\033[2J\033[H\033[7m{status}\033[0m\n{doc}".encode()
+
+
+def write_script_files(
+    frames: list[tuple[int, str, int]],
+    history: FileHistory,
+    output_base: Path,
+) -> tuple[Path, Path]:
+    """Write script(1)-compatible typescript and timing files."""
+    script_path = output_base.with_suffix(".script")
+    timing_path = output_base.with_suffix(".timing")
+
+    with open(script_path, "wb") as sf, open(timing_path, "w") as tf:
+        prev_ts = frames[0][0]
+        for ts, doc, op_count in frames:
+            delay_s = (ts - prev_ts) / 1000.0
+            chunk = render_frame(doc, history, ts, op_count)
+            tf.write(f"{delay_s:.6f} {len(chunk)}\n")
+            sf.write(chunk)
+            prev_ts = ts
+
+    return script_path, timing_path
+
+
+def do_playback(
+    script_path: Path,
+    timing_path: Path,
+    speed: float = 10.0,
+    max_delay: float = 2.0,
+) -> None:
+    """Replay typescript at given speed multiplier."""
+    # alt screen + hide cursor + clear
+    sys.stdout.write("\033[?1049h\033[?25l\033[2J\033[H")
+    sys.stdout.flush()
+    try:
+        with open(timing_path) as tf, open(script_path, "rb") as sf:
+            for line in tf:
+                parts = line.strip().split()
+                if len(parts) != 2:
+                    continue
+                delay = min(float(parts[0]) / speed, max_delay)
+                nbytes = int(parts[1])
+                if delay > 0.005:
+                    time_mod.sleep(delay)
+                chunk = sf.read(nbytes)
+                sys.stdout.buffer.write(chunk)
+                sys.stdout.buffer.flush()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # show cursor + leave alt screen
+        sys.stdout.write("\033[?25h\033[?1049l")
+        sys.stdout.flush()
+
+
+# -- CLI -----------------------------------------------------------------------
+
+
+def main():
+    args = sys.argv[1:]
+    if not args or "-h" in args or "--help" in args:
+        print((__doc__ or "").strip())
+        sys.exit(0)
+
+    har_file = Path(args[0])
+    time_spec: str | None = None
+    list_mode = False
+    timeline_mode = False
+    file_filter: str | None = None
+    speed: float = 10.0
+
+    i = 1
+    while i < len(args):
+        a = args[i]
+        if a == "-l":
+            list_mode = True
+        elif a == "-T":
+            timeline_mode = True
+        elif a == "-s" and i + 1 < len(args):
+            i += 1
+            speed = float(args[i])
+        elif a == "-f" and i + 1 < len(args):
+            i += 1
+            file_filter = args[i]
+        elif not a.startswith("-") or re.match(r"^-\d", a):
+            time_spec = a
+        else:
+            print(f"Unknown option: {a}", file=sys.stderr)
+            sys.exit(1)
+        i += 1
+
+    histories = extract_file_histories(har_file)
+    if not histories:
+        print("No file histories found in HAR.", file=sys.stderr)
+        sys.exit(1)
+
+    if file_filter:
+        histories = [h for h in histories if file_filter in h.path]
+        if not histories:
+            print(f"No file matching '{file_filter}'", file=sys.stderr)
+            sys.exit(1)
+
+    if list_mode:
+        for h in histories:
+            first_ts = h.ops[0][2] if h.ops else None
+            last_ts = h.ops[-1][2] if h.ops else None
+            print(f"  {h.path}  ({h.env})  ops={len(h.ops)}", end="")
+            if first_ts and last_ts:
+                duration = fmt_elapsed(last_ts - first_ts)
+                print(f"  {fmt_ts(first_ts)} -> {fmt_ts(last_ts)} ({duration})", end="")
+            print()
+        return
+
+    if timeline_mode:
+        for h in histories:
+            if not h.ops:
+                continue
+            t0 = h.ops[0][2]
+            duration = fmt_elapsed(h.ops[-1][2] - t0)
+            print(f"\n--- {h.path} ({len(h.ops)} ops, {duration}) ---")
+            chunk_size = max(1, len(h.ops) // 20)
+            for j in range(0, len(h.ops), chunk_size):
+                chunk_ops = h.ops[j : j + chunk_size]
+                ts = chunk_ops[0][2]
+                doc, _, _ = replay(h, at_op=j + len(chunk_ops))
+                lines = doc.count("\n") + 1
+                chars = len(doc)
+                elapsed = fmt_elapsed(ts - t0)
+                print(f"  {elapsed:>7s}  op {j:5d}  {lines:4d} lines  {chars:5d} chars")
+        return
+
+    if time_spec:
+        for h in histories:
+            replay_kwargs = parse_time_spec(time_spec, h)
+            doc, applied, last_ts = replay(h, **replay_kwargs)
+            t0 = h.ops[0][2] if h.ops else None
+            elapsed = fmt_elapsed(last_ts - t0) if last_ts and t0 else ""
+            header = f"--- {h.path} (op {applied}/{len(h.ops)}"
+            if elapsed:
+                header += f", +{elapsed}"
+            if last_ts:
+                header += f", {fmt_ts(last_ts)}"
+            header += ") ---"
+            print(header)
+            print(doc)
+        return
+
+    # Default: playback mode
+    h = histories[0]
+    if not h.ops:
+        print("No ops to play back.", file=sys.stderr)
+        sys.exit(1)
+
+    frames = generate_frames(h)
+    output_base = har_file.with_suffix("")
+    script_path, timing_path = write_script_files(frames, h, output_base)
+    print(
+        f"Wrote {script_path.name} + {timing_path.name} "
+        f"({len(frames)} frames, {fmt_elapsed(h.ops[-1][2] - h.ops[0][2])})",
+        file=sys.stderr,
+    )
+    print(f"Playing at {speed:.0f}x (Ctrl-C to stop)", file=sys.stderr)
+    do_playback(script_path, timing_path, speed=speed)
+
+
+if __name__ == "__main__":
+    main()
