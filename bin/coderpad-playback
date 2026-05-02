@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = ["pygments"]
+# ///
 """Reconstruct code state at any point in time from a CoderPad playback HAR file.
 
 Parses Firebase Realtime Database WebSocket messages captured during CoderPad
@@ -52,6 +55,25 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+try:
+    from pygments import highlight as _pygments_hl
+    from pygments.formatters import Terminal256Formatter
+    from pygments.lexers import get_lexer_for_filename
+
+    _hl_fmt = Terminal256Formatter(style="monokai")
+
+    def _highlight(doc: str, filename: str) -> str:
+        try:
+            lexer = get_lexer_for_filename(filename)
+        except Exception:
+            return doc
+        return _pygments_hl(doc, lexer, _hl_fmt).rstrip("\n")
+
+except ImportError:
+
+    def _highlight(doc: str, filename: str) -> str:
+        return doc
+
 
 @dataclass
 class FileHistory:
@@ -92,6 +114,7 @@ def extract_file_histories(har_path: Path) -> list[FileHistory]:
 
     entries = har["log"]["entries"]
     ws_entries = [e for e in entries if e.get("_webSocketMessages")]
+
     def _is_coderpad_firebase(e: dict) -> bool:
         url = e.get("request", {}).get("url", "")
         if "firebaseio.com" not in url:
@@ -133,9 +156,7 @@ def extract_file_histories(har_path: Path) -> list[FileHistory]:
 
                 cp = file_val["checkpoint"]
                 hist = file_val.get("history", {})
-                ops = [
-                    (k, hist[k]["o"], hist[k]["t"]) for k in sorted(hist.keys())
-                ]
+                ops = [(k, hist[k]["o"], hist[k]["t"]) for k in sorted(hist.keys())]
                 histories[(env_key, fname)] = FileHistory(
                     path=fname,
                     env=env_key,
@@ -280,8 +301,8 @@ def render_frame(doc: str, history: FileHistory, ts: int, op_count: int) -> byte
     elapsed = fmt_elapsed(ts - t0)
     pct = op_count * 100 // total if total else 0
     status = f" {history.path} | +{elapsed} | {op_count}/{total} ({pct}%) "
-    # clear screen + home, inverse-video status bar, then document
-    return f"\033[2J\033[H\033[7m{status}\033[0m\n{doc}".encode()
+    highlighted = _highlight(doc, history.path)
+    return f"\033[2J\033[H\033[7m{status}\033[0m\n{highlighted}".encode()
 
 
 def write_script_files(
@@ -305,7 +326,9 @@ def write_script_files(
     return script_path, timing_path
 
 
-def _draw_status(out: object, rows: int, cols: int, frame: int, total: int, t0: float) -> None:
+def _draw_status(
+    out: object, rows: int, cols: int, frame: int, total: int, t0: float
+) -> None:
     pct = frame * 100 // total if total else 0
     elapsed = int(time_mod.time() - t0)
     h, rem = divmod(elapsed, 3600)
@@ -523,7 +546,7 @@ def main():
                 header += f", {fmt_ts(last_ts)}"
             header += ") ---"
             print(header)
-            print(doc)
+            print(_highlight(doc, h.path) if sys.stdout.isatty() else doc)
         return
 
     # Default: playback mode
