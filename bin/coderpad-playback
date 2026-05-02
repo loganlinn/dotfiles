@@ -43,7 +43,6 @@ import json
 import os
 import re
 import select
-import signal
 import sys
 import termios
 import time as time_mod
@@ -319,31 +318,6 @@ def _draw_status(out: object, rows: int, cols: int, frame: int, total: int, t0: 
     out.write(f"\0337\033[{rows};1H{bar}{label}\0338".encode())
 
 
-def _wait_for_quit(out: object) -> None:
-    """Block until q is pressed or a shutdown signal arrives."""
-    quit = False
-
-    def _sig_quit(*_: object) -> None:
-        nonlocal quit
-        quit = True
-
-    prev_int = signal.signal(signal.SIGINT, _sig_quit)
-    prev_term = signal.signal(signal.SIGTERM, _sig_quit)
-    fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        while not quit:
-            if select.select([fd], [], [], 0.1)[0]:
-                ch = os.read(fd, 1)
-                if ch in (b"q", b"Q", b"\x03"):
-                    break
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old)
-        signal.signal(signal.SIGINT, prev_int)
-        signal.signal(signal.SIGTERM, prev_term)
-
-
 def do_playback(
     script_path: Path,
     timing_path: Path,
@@ -371,23 +345,83 @@ def do_playback(
     elif speed is None:
         speed = recording_duration / 60.0 if recording_duration > 60 else 1.0
 
+    # Pre-compute byte offsets for random access
+    offsets = []
+    pos = 0
+    for s in sizes:
+        offsets.append(pos)
+        pos += s
+
+    fd = sys.stdin.fileno()
+    old_term = termios.tcgetattr(fd)
     out = sys.stdout.buffer
     out.write(b"\033[?1049h\033[?25l\033[2J\033[H")
     out.flush()
+    tty.setcbreak(fd)
+
+    paused = False
+    frame = 0
+
+    def render_at(sf: object, idx: int) -> None:
+        sf.seek(offsets[idx])
+        out.write(sf.read(sizes[idx]))
+
+    def handle_key(ch: bytes, sf: object) -> bool:
+        nonlocal paused, frame
+        if ch in (b"q", b"Q", b"\x03"):
+            return True
+        if ch == b" ":
+            paused = not paused
+        elif b"1" <= ch <= b"9":
+            target = max(1, total * int(ch) // 10)
+            render_at(sf, target - 1)
+            frame = target
+            _draw_status(out, rows, cols, frame, total, wall_t0)
+            out.flush()
+        elif ch == b"0":
+            render_at(sf, total - 1)
+            frame = total
+            _draw_status(out, rows, cols, frame, total, wall_t0)
+            out.flush()
+        return False
+
     try:
         wall_t0 = time_mod.time()
         with open(script_path, "rb") as sf:
-            for i, (d, nbytes) in enumerate(zip(delays, sizes)):
-                wait = min(d / speed, max_delay)
-                if wait > 0.005:
-                    time_mod.sleep(wait)
-                out.write(sf.read(nbytes))
-                _draw_status(out, rows, cols, i + 1, total, wall_t0)
-                out.flush()
-        _wait_for_quit(out)
-    except KeyboardInterrupt:
-        pass
+            while True:
+                # Drain pending input
+                while select.select([fd], [], [], 0)[0]:
+                    if handle_key(os.read(fd, 1), sf):
+                        return
+
+                # Paused or done: update clock and idle
+                if paused or frame >= total:
+                    _draw_status(out, rows, cols, min(frame, total), total, wall_t0)
+                    out.flush()
+                    select.select([fd], [], [], 0.1)
+                    continue
+
+                # Interruptible delay
+                wait = min(delays[frame] / speed, max_delay)
+                deadline = time_mod.time() + wait
+                interrupted = False
+                while time_mod.time() < deadline:
+                    remaining = deadline - time_mod.time()
+                    if remaining <= 0:
+                        break
+                    if select.select([fd], [], [], min(remaining, 0.05))[0]:
+                        if handle_key(os.read(fd, 1), sf):
+                            return
+                        interrupted = True
+                        break
+
+                if not interrupted and not paused and frame < total:
+                    render_at(sf, frame)
+                    frame += 1
+                    _draw_status(out, rows, cols, frame, total, wall_t0)
+                    out.flush()
     finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_term)
         out.write(b"\033[?25h\033[?1049l")
         out.flush()
 
