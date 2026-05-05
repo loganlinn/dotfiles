@@ -36,42 +36,41 @@ ref=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    -n | --dry-run)
-      dry_run=1
-      shift
-      ;;
-    -R | --repo)
-      [[ $# -ge 2 ]] || die "--repo requires an argument"
-      repo_override="$2"
-      shift 2
-      ;;
-    --repo=*)
-      repo_override="${1#--repo=}"
-      shift
-      ;;
-    -R=*)
-      repo_override="${1#-R=}"
-      shift
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -*)
-      die "unknown option: $1"
-      ;;
-    *)
-      [[ -z "$ref" ]] || die "unexpected extra argument: $1"
-      ref="$1"
-      shift
-      ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  -n | --dry-run)
+    dry_run=1
+    shift
+    ;;
+  -R | --repo)
+    [[ $# -ge 2 ]] || die "--repo requires an argument"
+    repo_override="$2"
+    shift 2
+    ;;
+  --repo=*)
+    repo_override="${1#--repo=}"
+    shift
+    ;;
+  -R=*)
+    repo_override="${1#-R=}"
+    shift
+    ;;
+  --)
+    shift
+    break
+    ;;
+  -*)
+    die "unknown option: $1"
+    ;;
+  *)
+    [[ -z "$ref" ]] || die "unexpected extra argument: $1"
+    ref="$1"
+    shift
+    ;;
   esac
 done
-
 
 # Parse `git@github.com:org/repo.git`, `https://github.com/org/repo(.git)`,
 # `ssh://git@github.com/org/repo.git`. Echo "org/repo" or empty.
@@ -142,8 +141,8 @@ resolve_url() {
     command -v linear >/dev/null || die "linear cli not found"
     command -v jq >/dev/null || die "jq not found"
     local pr_url
-    pr_url="$(linear issue get "$r" \
-      | jq -r '[.attachments[]? | select(.sourceType == "github") | .url] | last // empty')"
+    pr_url="$(linear issue get "$r" |
+      jq -r '[.attachments[]? | select(.sourceType == "github") | .url] | last // empty')"
     [[ -n "$pr_url" ]] || die "no GitHub PR attached to $r"
     if [[ "$pr_url" =~ ^https?://github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
       build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
@@ -189,11 +188,11 @@ resolve_url() {
     command -v gh >/dev/null || die "gh cli not found"
     local dir
     if [[ -d "$r" ]]; then dir="$r"; else dir="$(dirname -- "$r")"; fi
-    git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 \
-      || die "not a git repo: $r"
+    git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 ||
+      die "not a git repo: $r"
     local pr_url
-    pr_url="$(cd "$dir" && gh pr view --json url --jq .url 2>/dev/null)" \
-      || die "no PR found for HEAD of $r"
+    pr_url="$(cd "$dir" && gh pr view --json url --jq .url 2>/dev/null)" ||
+      die "no PR found for HEAD of $r"
     if [[ "$pr_url" =~ ^https?://github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
       build_url "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}"
       return
@@ -228,7 +227,7 @@ if ((dry_run)); then
 fi
 
 case "$OSTYPE" in
-  darwin*) open "$url" ;;
-  linux*) xdg-open "$url" >/dev/null 2>&1 ;;
-  *) echo "$url" ;;
+darwin*) open "$url" ;;
+linux*) xdg-open "$url" >/dev/null 2>&1 ;;
+*) echo "$url" ;;
 esac
