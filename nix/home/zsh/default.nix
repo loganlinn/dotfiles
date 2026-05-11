@@ -80,7 +80,6 @@ in
       haiku = "claude --model haiku";
       opusplan = "claude --model opusplan";
 
-      gh = "env -u GITHUB_TOKEN gh";
       gist = "gh gist";
       hg = "kitten hyperlinked-grep";
       k = "kubectl";
