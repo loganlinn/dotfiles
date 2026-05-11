@@ -94,6 +94,7 @@ in
       "minamijoyo/tfupdate"
       "pulumi/tap"
       "tsonglew/dutis"
+      "withgraphite/tap"
       "wedow/tools"
     ];
     brews = [
@@ -161,6 +162,7 @@ in
       # "podman-tui"
       "jbangdev/tap/jbang"
       "wedow/tools/ticket"
+      "withgraphite/tap/graphite"
     ];
     casks = [
       "1password-cli"
@@ -169,6 +171,7 @@ in
       "hammerspoon"
       "jordanbaird-ice"
       "nikitabobko/tap/aerospace"
+      "orbstack"
       "pearcleaner"
       "sf-symbols"
       "tailscale-app"
