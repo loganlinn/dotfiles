@@ -85,12 +85,16 @@ in
       "buildkite/buildkite"
       "dagger/tap"
       "hashicorp/tap"
+      "jbangdev/tap"
+      "keith/formulae"
+      "localstack/tap"
       "minamijoyo/hcledit"
       "minamijoyo/tfmigrate"
       "minamijoyo/tfschema"
       "minamijoyo/tfupdate"
       "pulumi/tap"
       "tsonglew/dutis"
+      "wedow/tools"
     ];
     brews = [
       {
