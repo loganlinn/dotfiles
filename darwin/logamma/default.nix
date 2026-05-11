@@ -44,6 +44,7 @@ in
   modules.kitty.enable = true;
 
   programs.aerospace.enable = true;
+  programs.aerospace.borders.enable = true;
   programs.emacs-plus.enable = true;
   programs.hammerspoon.enable = true;
   programs.sunbeam.enable = false;
@@ -83,6 +84,7 @@ in
       "bridgecrewio/tap"
       "buildkite/buildkite"
       "dagger/tap"
+      "hashicorp/tap"
       "minamijoyo/hcledit"
       "minamijoyo/tfmigrate"
       "minamijoyo/tfschema"
@@ -108,7 +110,7 @@ in
       "direnv"
       # "drewdeponte/oss/git-ps-rs"
       "duti"
-      "felixkratz/formulae/sketchybar"
+      # "felixkratz/formulae/sketchybar"
       "gcc"
       "gh"
       "gnu-getopt"
