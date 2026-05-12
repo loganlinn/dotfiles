@@ -12,6 +12,7 @@ in {
   home.sessionPath = ["${emacsdir}/bin"]; # doom cli
   home.sessionVariables.EMACSDIR = "${removeSuffix "/" emacsdir}/"; # trailing sep expected
   home.sessionVariables.DOOMDIR = "${removeSuffix "/" doomdir}/"; # trailing sep expected
+  # TODO: migrate to my.src-get.repos with links
   home.activation = {
     doomEmacs = hm.dag.entryAfter ["writeBoundary"] ''
       if ! [ -d "${emacsdir}" ]; then

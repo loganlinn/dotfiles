@@ -6,12 +6,10 @@
   ...
 }:
 with lib;
-with lib.my;
-let
+with lib.my; let
   cfg = config.programs.kitty;
-  json = pkgs.formats.json { };
-in
-{
+  json = pkgs.formats.json {};
+in {
   programs = mkIf cfg.enable {
     kitty = {
       enableGitIntegration = true;
@@ -44,32 +42,32 @@ in
   xdg.configFile = mkIf cfg.enable (
     (listToAttrs (
       map
-        (
-          name:
+      (
+        name:
           nameValuePair "kitty/${name}" {
             source = config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/kitty/${name}";
           }
-        )
-        [
-          "choose-files.conf"
-          "claude-fork.py"
-          "cssh.py"
-          "current-theme.conf"
-          "diff.conf"
-          "grab.conf"
-          "kitty.common.conf"
-          "kitty.linux.conf"
-          "kitty.macos.conf"
-          "launch-actions.conf"
-          "open-actions.conf"
-          "paste-actions.py"
-          "quick-access-terminal.conf"
-          "sessions"
-          "ssh.conf"
-          "tab_bar.py"
-          "themes"
-          "user-var-hints.py"
-        ]
+      )
+      [
+        "choose-files.conf"
+        "claude-fork.py"
+        "cssh.py"
+        "current-theme.conf"
+        "diff.conf"
+        "grab.conf"
+        "kitty.common.conf"
+        "kitty.linux.conf"
+        "kitty.macos.conf"
+        "launch-actions.conf"
+        "open-actions.conf"
+        "paste-actions.py"
+        "quick-access-terminal.conf"
+        "sessions"
+        "ssh.conf"
+        "tab_bar.py"
+        "themes"
+        "user-var-hints.py"
+      ]
     ))
     // {
       "kitty/dracula".source = pkgs.fetchFromGitHub {
@@ -98,14 +96,13 @@ in
       "kitty/kitty_grab".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/src/github.com/loganlinn/kitty_grab";
       "kitty/pyrightconfig.json".source = json.generate "pyrightconfig.json" {
-        extraPaths = [ "../../src/github.com/kovidgoyal/kitty" ]; # src-get kovidgoyal/kitty
+        extraPaths = ["../../src/github.com/kovidgoyal/kitty"]; # src-get kovidgoyal/kitty
       };
     }
   );
 
   home = mkIf cfg.enable {
-    packages =
-      with pkgs;
+    packages = with pkgs;
       concatLists [
         [
           (writeShellScriptBin "kdiff" ''kitten diff "$@"'')
@@ -123,26 +120,11 @@ in
     };
 
     activation = {
-      kittyConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      kittyConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
         run mkdir $VERBOSE_ARG -p "${config.xdg.configHome}/kitty"
-
-        _kitty_grab="${config.home.homeDirectory}/src/github.com/loganlinn/kitty_grab"
-        _git="${pkgs.git}/bin/git"
-
-        if ! [ -d "$_kitty_grab" ]; then
-          run mkdir $VERBOSE_ARG -p "$(dirname "$_kitty_grab")"
-          run $_git clone $VERBOSE_ARG "https://github.com/loganlinn/kitty_grab.git" "$_kitty_grab"
-        else
-          if ! $_git -C "$_kitty_grab" diff --quiet HEAD 2>/dev/null; then
-            warnEcho "kitty_grab: dirty worktree, skipping update"
-          elif _branch="$($_git -C "$_kitty_grab" symbolic-ref --short HEAD 2>/dev/null || true)" && [ "$_branch" != "main" ]; then
-            warnEcho "kitty_grab: not on main (on '$_branch'), skipping update"
-          else
-            run $_git -C "$_kitty_grab" fetch $VERBOSE_ARG origin main
-            run $_git -C "$_kitty_grab" merge --ff-only origin/main
-          fi
-        fi
       '';
     };
   };
+
+  my.src-get.repos."loganlinn/kitty_grab" = {};
 }

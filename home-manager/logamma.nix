@@ -4,8 +4,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -118,5 +117,14 @@
       books = "$HOME/Library/CloudStorage/Dropbox/books";
     };
   };
+  my.src-get = {
+    enable = true;
+    repos = {
+      "loganlinn/agent-skills" = {};
+      "loganlinn/obsidian-vault" = {};
+      "loganlinn/trs" = {};
+    };
+  };
+
   xdg.enable = true;
 }

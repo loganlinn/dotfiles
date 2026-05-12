@@ -71,9 +71,5 @@ in {
         done
       '';
     };
-
-    my.shellInitExtra = ''
-      source "${config.my.flakeDirectory}/bin/src-get"
-    '';
   };
 }
