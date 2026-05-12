@@ -110,7 +110,6 @@ in
       "buildkite/buildkite/bk@3"
       "caddy"
       "cmake"
-      "codex"
       "curl"
       "ddcctl"
       "direnv"
@@ -166,6 +165,7 @@ in
     ];
     casks = [
       "1password-cli"
+      "codex"
       "discord"
       "ghostty"
       "hammerspoon"
