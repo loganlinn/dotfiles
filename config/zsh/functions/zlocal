@@ -1,7 +1,19 @@
 # -*- mode: sh -*- vim: ft=zsh
-# function edit-zshrc-local {
+# function zlocal {
 local a b f
 f=$HOME/.zshrc.local
+
+if [[ "$1" == "--push" ]]; then
+  if hash gh &>/dev/null; then
+    local gistid=90b892b5069e95c2f893fab46177334a
+    gh gist edit "$gistid" "$f"
+    echo "updated: https://gist.github.com/$gistid"
+  else
+    echo >&2 "gh not found"
+    return 1
+  fi
+  return 0
+fi
 
 echo "editing $f"
 a=$(<"$f")
