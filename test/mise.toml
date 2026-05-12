@@ -1,0 +1,5 @@
+[tools]
+bats = "latest"
+
+[tasks.test]
+run = "bats ./*.bats"

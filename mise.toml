@@ -5,9 +5,6 @@ _.file = [".mise/tasks/git/gpg/claude/config.env"]
 experimental = true
 jobs = 4
 
-[tools]
-bats = "latest"
-
 # ============================================================================
 # Composite Tasks
 # ============================================================================
@@ -25,9 +22,7 @@ depends = "*:check"
 depends = "*:fmt"
 
 [tasks.test]
-run = [
-  'bats ./test'
-]
+run = "mise --cd ./test run test"
 
 # ============================================================================
 # Mise Tasks
