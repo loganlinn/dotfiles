@@ -43,6 +43,7 @@
     checkov
     dive
     dry
+    emacs-lsp-booster
     flyctl
     go-task
     google-cloud-sdk
