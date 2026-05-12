@@ -7,11 +7,16 @@ set -e
 usage() {
     cat << EOF
 Usage: mvln [OPTIONS] <source> <destination>
+       mvln -r|--reverse [OPTIONS] <link>
 
 Moves <source> to <destination> and creates a symbolic link
 at the original <source> location pointing to <destination>
 
+With --reverse, replaces a symbolic link with its target file,
+moving the target back to the link's location.
+
 Options:
+  -r, --reverse   Reverse a symlink: replace <link> with its target
   -f, --force     Force overwrite if destination exists
   -n, --dry-run   Show what would be done without doing it
   -h, --help      Show this help message
@@ -20,6 +25,7 @@ Examples:
   mvln file.txt /archive/file.txt
   mvln -f old.dat /backup/old.dat
   mvln --dry-run ~/docs/large.pdf ~/archive/large.pdf
+  mvln -r ~/docs/large.pdf
 EOF
     exit "${1:-0}"
 }
@@ -27,12 +33,17 @@ EOF
 # Default options
 FORCE=false
 DRY_RUN=false
+REVERSE=false
 SOURCE=""
 DEST=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        -r|--reverse)
+            REVERSE=true
+            shift
+            ;;
         -f|--force)
             FORCE=true
             shift
@@ -45,8 +56,8 @@ while [[ $# -gt 0 ]]; do
             usage 0
             ;;
         -*)
-            echo "Error: Unknown option '$1'" >&2
-            echo "" >&2
+            echo >&2 "error: unknown option '$1'"
+            echo >&2 ""
             usage 1
             ;;
         *)
@@ -55,8 +66,8 @@ while [[ $# -gt 0 ]]; do
             elif [ -z "$DEST" ]; then
                 DEST="$1"
             else
-                echo "Error: Too many arguments" >&2
-                echo "" >&2
+                echo >&2 "error: too many arguments"
+                echo >&2 ""
                 usage 1
             fi
             shift
@@ -64,59 +75,101 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+### Reverse mode: replace symlink with its target
+if [ "$REVERSE" = true ]; then
+    if [ -z "$SOURCE" ]; then
+        echo >&2 "error: <link> argument is required"
+        echo >&2 ""
+        usage 1
+    fi
+    if [ -n "$DEST" ]; then
+        echo >&2 "error: --reverse takes exactly one argument"
+        echo >&2 ""
+        usage 1
+    fi
+
+    LINK="$SOURCE"
+
+    if [ ! -L "$LINK" ]; then
+        echo >&2 "error: '$LINK' is not a symbolic link"
+        exit 1
+    fi
+
+    TARGET=$(readlink "$LINK")
+    TARGET_ABS=$(readlink -f "$LINK")
+
+    if [ ! -e "$TARGET_ABS" ]; then
+        echo >&2 "error: '$LINK' is a broken symlink (target '$TARGET' does not exist)"
+        exit 1
+    fi
+
+    LINK_ABS=$(readlink -f "$(dirname "$LINK")")/$(basename "$LINK")
+
+    echo "link:   $LINK_ABS -> $TARGET"
+    echo "target: $TARGET_ABS"
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "[dry run] would remove symlink: $LINK_ABS"
+        echo "[dry run] would move: $TARGET_ABS -> $LINK_ABS"
+        echo "[dry run] would create symlink: $TARGET_ABS -> $LINK_ABS"
+    else
+        rm -v "$LINK_ABS"
+        mv -v "$TARGET_ABS" "$LINK_ABS"
+        ln -sv "$LINK_ABS" "$TARGET_ABS"
+    fi
+    exit 0
+fi
+
+### Forward mode: move file and leave symlink behind
+
 # Validate arguments
 if [ -z "$SOURCE" ] || [ -z "$DEST" ]; then
-    echo "Error: Both source and destination are required" >&2
-    echo "" >&2
+    echo >&2 "error: both source and destination are required"
+    echo >&2 ""
     usage 1
 fi
 
-# Check if source exists
 if [ ! -e "$SOURCE" ]; then
-    echo "Error: Source '$SOURCE' does not exist" >&2
+    echo >&2 "error: source '$SOURCE' does not exist"
     exit 1
 fi
 
-# Get absolute source path
 SOURCE_ABS=$(readlink -f "$SOURCE")
-
-# Get destination directory
 DEST_DIR=$(dirname "$DEST")
 
-# Check if destination exists
 if [ -e "$DEST" ] && [ "$FORCE" = false ]; then
-    echo "Error: Destination '$DEST' already exists (use -f to force)" >&2
+    echo >&2 "error: destination '$DEST' already exists (use -f to force)"
     exit 1
 fi
 
-# Create parent directory if it doesn't exist
 if [ ! -d "$DEST_DIR" ]; then
     if [ "$DRY_RUN" = true ]; then
-        echo "[DRY RUN] Would create directory: $DEST_DIR"
+        echo "[dry run] would create directory: $DEST_DIR"
     else
         mkdir -p "$DEST_DIR"
-        echo "Created directory: $DEST_DIR"
+        echo "created directory: $DEST_DIR"
     fi
 fi
 
-# NOW get the absolute destination path (after directory exists)
-DEST_ABS=$(cd "$DEST_DIR" && pwd)/$(basename "$DEST")
+DEST_ABS=$(readlink -f "$DEST_DIR")/$(basename "$DEST")
 
-# Perform the move and link
+if [ -L "$SOURCE" ] && [ "$(readlink -f "$SOURCE")" = "$DEST_ABS" ]; then
+    echo >&2 "error: '$SOURCE' is already a symlink to '$DEST'"
+    exit 1
+fi
+
 if [ "$DRY_RUN" = true ]; then
-    echo "[DRY RUN] Would move: $SOURCE_ABS -> $DEST_ABS"
-    echo "[DRY RUN] Would create symlink: $SOURCE_ABS -> $DEST_ABS"
+    echo "[dry run] would move: $SOURCE_ABS -> $DEST_ABS"
+    echo "[dry run] would create symlink: $SOURCE_ABS -> $DEST_ABS"
 else
-    # Move the file (with force if specified)
     if [ "$FORCE" = true ]; then
         mv -f "$SOURCE" "$DEST"
     else
         mv "$SOURCE" "$DEST"
     fi
 
-    # Create symbolic link at original location
     ln -s "$DEST_ABS" "$SOURCE_ABS"
 
-    echo "Moved: $SOURCE_ABS -> $DEST_ABS"
-    echo "Created symlink: $SOURCE_ABS -> $DEST_ABS"
+    echo "moved: $SOURCE_ABS -> $DEST_ABS"
+    echo "symlink: $SOURCE_ABS -> $DEST_ABS"
 fi
