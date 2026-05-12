@@ -2,4 +2,7 @@
 bats = "latest"
 
 [tasks.test]
-run = "bats ./*.bats"
+usage = '''
+arg "[files]" var=#true help="Test files to run (default: all .bats files)"
+'''
+run = 'bats ${usage_files:-./*.bats}'

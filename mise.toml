@@ -22,7 +22,10 @@ depends = "*:check"
 depends = "*:fmt"
 
 [tasks.test]
-run = "mise --cd ./test run test"
+run = "mise --cd ./test run test ${usage_files}"
+usage = '''
+arg "[files]" var=#true help="Test files to run (default: all .bats files)"
+'''
 
 # ============================================================================
 # Mise Tasks
