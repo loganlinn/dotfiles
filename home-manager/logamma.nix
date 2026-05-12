@@ -120,7 +120,7 @@
   my.src-get = {
     enable = true;
     repos = {
-      "loganlinn/agent-skills" = {};
+      "loganlinn/agent-plugins" = {};
       "loganlinn/obsidian-vault" = {};
       "loganlinn/trs" = {};
     };
