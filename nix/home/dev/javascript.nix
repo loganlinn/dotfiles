@@ -48,6 +48,12 @@ in
     ];
 
     programs.zsh = {
+      shellAliases = {
+        npx = "command npx --ignore-scripts=true";
+        yw = "yarn workspace";
+        yws = "yarn workspaces";
+        ystage = ''fd yarn.lock "$(git rev-parse --show-toplevel)" -X git add {}'';
+      };
       initContent = ''
         # initialize fnm (node.js version manager)
         eval "$(fnm env --shell zsh ${cli.toCommandLineShellGNU { } config.programs.fnm.settings})"
@@ -62,9 +68,6 @@ in
         mkdir -p "$XDG_CACHE_HOME/zsh/functions"
         fnm completions --shell=zsh >| "$XDG_CACHE_HOME/zsh/functions/_fnm" &|
       '';
-      shellAliases = {
-        npx = "command npx --ignore-scripts=true";
-      };
     };
 
     programs.bash.initExtra = ''

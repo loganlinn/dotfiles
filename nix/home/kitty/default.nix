@@ -116,6 +116,9 @@ in
       ];
 
     shellAliases = {
+      "k@" = "kitten @";
+      kf = "kitten choose-files";
+      kls = "kitten @ ls";
       rg = "rg --hyperlink-format=kitty";
     };
 

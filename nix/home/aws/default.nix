@@ -17,6 +17,10 @@
     moreutils # for vipe in aws-secretctl-edit
   ];
 
+  home.sessionVariables = {
+    DDB_LOCAL_TELEMETRY = "0";
+  };
+
   home.sessionPath = [
     "${config.my.flakeDirectory}/nix/home/aws/bin"
   ];

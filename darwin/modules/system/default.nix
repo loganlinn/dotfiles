@@ -137,6 +137,13 @@ with lib; {
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
+        # Clear hotkeys for input source switching that conflict with kitty_mod+space>...
+        #   60 = "Select the previous input source" (^Space)
+        #   61 = "Select next source in Input menu" (^⌥Space)
+        "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
+          "60" = { enabled = false; };
+          "61" = { enabled = false; };
+        };
         ".GlobalPreferences" = {
           # AppleSpacesSwitchOnActivate = true; # automatically switch to a new space when switching to the application
         };
@@ -207,9 +214,6 @@ with lib; {
         #   "com.google.Chrome"
         # ];
 
-        "pl.maketheweb.cleanshotx" = {
-          exportPath = config.my.userDirs.screenshots;
-        };
       };
     };
   };

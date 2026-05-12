@@ -70,6 +70,7 @@ let
 in
 {
   home.shellAliases = {
+    gh = "env -u GITHUB_TOKEN gh";
     gist = "gh gist";
     gistc = "gh gist create --web";
   };

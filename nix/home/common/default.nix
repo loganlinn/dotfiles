@@ -21,6 +21,7 @@
     ../secrets.nix
     ../security.nix
     ../shell
+    ../uv-tools.nix
     ../xdg.nix
     ./darwin.nix
     ./linux.nix
@@ -54,7 +55,6 @@
       inetutils
       just
       lsof
-      mise
       moreutils
       nix-output-monitor
       pik
@@ -78,6 +78,7 @@
   home.sessionVariables = config.my.environment.variables;
 
   home.sessionPath = [
+    "$HOME/.dotfiles/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.local/share/cargo/bin"
@@ -91,6 +92,10 @@
   programs.direnv.enable = true;
   programs.jq.enable = true;
   programs.eza.enable = !config.programs.lsd.enable;
+
+  my.uvTools = [
+    "vectimus"
+  ];
 
   xdg.enable = true;
 }

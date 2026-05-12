@@ -164,6 +164,17 @@ in
       bindkey '^X^G' git-widget
       bindkey '^Xg' git-widget
 
+      copy-commit-msg() {
+        local clip
+        if command -v pbcopy >/dev/null; then clip=pbcopy
+        elif command -v wl-copy >/dev/null; then clip=wl-copy
+        elif command -v xclip >/dev/null; then clip="xclip -selection clipboard"
+        else echo >&2 "no clipboard command found"; return 1
+        fi
+        git log -1 --pretty=%B | ''${=clip}
+        echo "Commit message copied to clipboard"
+      }
+
       gc() {
         emulate -L zsh
         local -a cmd=(git commit --verbose)

@@ -67,28 +67,12 @@ in
       br = "bun run";
       ch = "noglob clickhouse";
 
-      cl = "claude";
-      clc = "claude --continue";
-      clr = "claude --resume";
-      cla = "claude --allow-dangerously-skip-permissions";
-      clcd = "mkdir -p ~/.claude && cd ~/.claude";
-      clsettings = "editor ~/.claude/settings.json";
-      clres = "claude --resume";
-      yolo = "claude --dangerously-skip-permissions";
-      sonnet = "claude --model sonnet";
-      opus = "claude --model opus";
-      haiku = "claude --model haiku";
-      opusplan = "claude --model opusplan";
-
       gist = "gh gist";
       hg = "kitten hyperlinked-grep";
       k = "kubectl";
       kk = "kustomize";
       li = "linearis";
       lil = "linearis issues list";
-      m = "mise";
-      mr = "mise run";
-      mx = "mise exec";
       nix = "noglob nix";
       pbc = "pbcopy";
       pbp = "pbpaste";
@@ -174,6 +158,7 @@ in
       )
       (mkBefore ''
         unsetopt EXTENDED_GLOB      # Don't use extended globbing syntax.
+        setopt COMPLETEALIASES      # Complete aliased commands as if they were the original command.
         setopt IGNOREEOF            # Do not exit on end-of-file <C-d>
         setopt EQUALS               # Expansion of =command expands into full pathname of command
         setopt LONG_LIST_JOBS       # List jobs in the long format by default.
@@ -294,7 +279,13 @@ in
         #   rm -f $tmp1 $tmp2
         # }
 
-        ########################################################## 
+        ##########################################################
+
+        # Source ~/.zshrc.d/*.zsh in alphanumeric order (N = nullglob: no error if dir or files missing)
+        for _rc in ~/.zshrc.d/*.zsh(N); do source "$_rc"; done
+        unset _rc
+
+        ##########################################################
 
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '')

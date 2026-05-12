@@ -32,6 +32,7 @@ in
     ../modules/emacs-plus
     ../modules/hammerspoon
     ../modules/homebrew-autoupdate.nix
+    ../modules/cleanshot
     ../modules/kitty
     # ../modules/kanata
     # ../modules/opnix
@@ -43,6 +44,7 @@ in
 
   modules.kitty.enable = true;
 
+  programs.cleanshot.enable = true;
   programs.aerospace.enable = true;
   programs.aerospace.borders.enable = true;
   programs.emacs-plus.enable = true;
@@ -66,7 +68,6 @@ in
     "llama.cpp"
     "ollama"
     "sem-cli"
-    "terraform-ls"
   ];
   # services.kanata.enable = false;
   # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
@@ -84,7 +85,6 @@ in
       "bridgecrewio/tap"
       "buildkite/buildkite"
       "dagger/tap"
-      "hashicorp/tap"
       "jbangdev/tap"
       "keith/formulae"
       "localstack/tap"
@@ -120,7 +120,6 @@ in
       "gh"
       "gnu-getopt"
       "grafana"
-      "hashicorp/tap/terraform-ls"
       "hcledit"
       # "inframap"
       # "jq"

@@ -60,7 +60,7 @@ in
     ../nix/home/pretty.nix
     ../nix/home/rofi
     ../nix/home/television.nix
-    ../nix/home/terraform.nix
+    ../nix/home/terraform
     ../nix/home/tmux.nix
     # ../nix/home/qalculate
     ../nix/home/ssh.nix

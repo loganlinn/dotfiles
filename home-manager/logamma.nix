@@ -11,6 +11,8 @@
     self.homeModules.nix-colors
     # self.homeModules.opnix
     ../nix/home/aws
+    ../nix/home/claude
+    ../nix/home/mise
     ../nix/home/dev
     ../nix/home/dev/kubernetes.nix
     ../nix/home/dev/lua.nix
@@ -23,7 +25,7 @@
     ../nix/home/nixvim
     ../nix/home/pretty.nix
     ../nix/home/television.nix
-    ../nix/home/terraform.nix
+    ../nix/home/terraform
     ../nix/home/tmux.nix
     ../nix/home/wezterm
     ../nix/home/yazi
@@ -59,11 +61,16 @@
     typescript-language-server
   ];
 
+  home.sessionVariables = {
+    LD_ANALYTICS_OPT_OUT = "true";
+  };
+
   home.username = "logan";
   home.homeDirectory = "/Users/logan";
   home.stateVersion = "22.11";
 
   programs.age-op.enable = true;
+  programs.claude.enable = true;
   programs.atuin = {
     enable = true;
     daemon = {

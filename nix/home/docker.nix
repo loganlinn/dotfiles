@@ -4,6 +4,10 @@
   ...
 }:
 with lib; {
+  home.shellAliases = {
+    dk = "docker";
+  };
+
   home.packages = with pkgs; [
     oxker
     (writeShellScriptBin "docker-rm" ''

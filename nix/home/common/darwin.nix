@@ -6,6 +6,10 @@
 }:
 with lib; {
   config = mkIf pkgs.stdenv.isDarwin {
+    home.sessionPath = [
+      "/Applications/Obsidian.app/Contents/MacOS"
+    ];
+
     my.shellScripts = {
       fd-app = {
         runtimeInputs = [pkgs.fd];

@@ -38,7 +38,10 @@ in {
       l = "ls -lah";
       mkd = "mkdir -p";
       epoch = "date +%s";
+      pr = "gh pr view --web";
       rg-ip = ''rg '((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}' '';
+      tolower = "tr '[:upper:]' '[:lower:]'";
+      toupper = "tr '[:lower:]' '[:upper:]'";
       woman = "man";
       termkeys = "infocmp -L1";
       envz = "printenv | fzf ";

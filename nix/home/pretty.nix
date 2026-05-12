@@ -6,6 +6,7 @@
   imports = [
     ./readline.nix
     ./shell/starship.nix
+    ./zoxide
   ];
 
   programs.bat = {
@@ -17,13 +18,6 @@
   };
 
   programs.bottom.enable = true;
-
-  programs.zoxide = {
-    enable = true;
-    enableBashIntegration = true;
-    enableZshIntegration = true;
-    enableFishIntegration = true;
-  };
 
   home.packages = with pkgs; [
     bat-extras.prettybat
