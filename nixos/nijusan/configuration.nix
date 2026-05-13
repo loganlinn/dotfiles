@@ -9,6 +9,7 @@
     self.nixosModules.comfyui
     self.nixosModules.common
     self.nixosModules.docker
+    # self.nixosModules.llama-swap
     # self.nixosModules.hyprland
     self.nixosModules.networking
     self.nixosModules.nvidia
@@ -42,6 +43,14 @@
     '';
   };
   services.comfyui.enable = false;
+  # services.llama-swap = {
+  #   enable = true;
+  #   openFirewall = true;
+  #   settings = {
+  #     logLevel = "info";
+  #     models = { };
+  #   };
+  # };
   services.desktopManager.gnome.enable = true;
   services.displayManager.gdm.enable = true;
   services.open-webui.enable = false;
@@ -68,8 +77,50 @@
 
   # virtualisation.docker.enable = true;
   virtualisation.incus.enable = true;
+  # virtualisation.incus.preseed = {
+  #   networks = [
+  #     {
+  #       name = "incusbr0";
+  #       type = "bridge";
+  #       config = {
+  #         "ipv4.address" = "10.235.175.1/24";
+  #         "ipv4.nat" = "true";
+  #         "ipv6.address" = "fd42:bd4:e2f:2828::1/64";
+  #         "ipv6.nat" = "true";
+  #       };
+  #     }
+  #   ];
+  #   storage_pools = [
+  #     {
+  #       name = "default";
+  #       driver = "btrfs";
+  #       config = {
+  #         size = "19GiB";
+  #         source = "/var/lib/incus/disks/default.img";
+  #       };
+  #     }
+  #   ];
+  #   profiles = [
+  #     {
+  #       name = "default";
+  #       devices = {
+  #         eth0 = {
+  #           name = "eth0";
+  #           network = "incusbr0";
+  #           type = "nic";
+  #         };
+  #         root = {
+  #           path = "/";
+  #           pool = "default";
+  #           type = "disk";
+  #         };
+  #       };
+  #     }
+  #   ];
+  # };
   networking.nftables.enable = true;
   networking.firewall.trustedInterfaces = [ "incusbr0" ];
+  networking.firewall.allowedTCPPorts = [ 8443 ];
 
   nix.settings.trusted-users = [ "root" ]; # this is in addition to my.user.name (needed?)
 

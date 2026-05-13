@@ -15,6 +15,7 @@
     ./i3-auto-layout.nix
     ./jib.nix
     ./kubefwd
+    ./llama-swap.nix
     ./notify-send-py.nix
   ];
 

@@ -8,6 +8,7 @@
   docker = ./docker.nix;
   frigate = ./frigate.nix;
   gaming = ./gaming.nix;
+  llama-swap = ./llama-swap.nix;
   # hyprland = ./hyprland.nix;
   minecraft-server = ./minecraft-server.nix;
   monitor-brightness = ./monitor-brightness.nix;
