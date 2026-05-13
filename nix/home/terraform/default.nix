@@ -5,9 +5,6 @@
 }:
 {
   home.shellAliases = {
-    tfws = "terraform workspace select";
-    tfwl = "terraform workspace list";
-    "tfws?" = "terraform workspace show";
   };
 
   programs.zsh.initContent = lib.mkAfter ''
@@ -24,6 +21,24 @@
         jq --arg re "^''${regex}$" '
           [ .values.root_module | .. | objects | select(.address? and (.address | test($re))) ]
         '
+    }
+
+    terraformw() {
+      local ws="''${1:?usage: terraformw <workspace> [args...]}"
+      shift
+      local -a env=(TF_WORKSPACE="$ws")
+      if [[ -f "''${ws}.tfvars" ]]; then
+        local arg="-var-file=''${ws}.tfvars"
+        env+=(
+          TF_CLI_ARGS_plan="$arg"
+          TF_CLI_ARGS_apply="$arg"
+          TF_CLI_ARGS_console="$arg"
+          TF_CLI_ARGS_import="$arg"
+          TF_CLI_ARGS_refresh="$arg"
+          TF_CLI_ARGS_test="$arg"
+        )
+      fi
+      env "''${env[@]}" terraform "$@"
     }
   '';
 
