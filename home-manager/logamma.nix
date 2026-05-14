@@ -40,7 +40,6 @@
     (writeShellScriptBin "copilot-language-server" ''npx @github/copilot-language-server "$@"'')
     act
     actionlint
-    checkov
     dive
     dry
     emacs-lsp-booster

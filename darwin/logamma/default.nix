@@ -198,7 +198,8 @@ in
     settings = ''
       org.gnu.Emacs .json all
       org.gnu.Emacs .md   all
-      org.gnu.Emacs .nix  all
+      # .nix has no registered UTI on macOS; duti can't set handler for dynamic UTIs
+      # org.gnu.Emacs .nix  all
       org.gnu.Emacs .org  all
       org.gnu.Emacs .rst  all
       org.gnu.Emacs .toml all

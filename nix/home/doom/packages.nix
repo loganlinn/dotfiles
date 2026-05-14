@@ -24,7 +24,7 @@ pkgs: with pkgs; {
 
   ":checkers spell +hunspell" = [ hunspell ];
 
-  ":editor format" = [ nodePackages.prettier ];
+  ":editor format" = [ prettier ];
 
   ":emacs dired" = [
     fd
@@ -58,7 +58,7 @@ pkgs: with pkgs; {
 
   # ":lang java +lsp" = [ java-language-server ];
 
-  ":lang javascript" = [ nodePackages.prettier ];
+  ":lang javascript" = [ prettier ];
 
   ":lang latex" = [ texlive.combined.scheme-medium ];
 

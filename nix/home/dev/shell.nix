@@ -8,7 +8,7 @@
     shfmt
     shellcheck
     shellharden
-    nodePackages.bash-language-server
+    bash-language-server
 
     # gum
     # vhs
