@@ -26,19 +26,6 @@ with lib; {
         fi
       '';
 
-      defaultz = {
-        runtimeInputs = with pkgs; [
-          fzf
-          gnused
-        ];
-        text = ''
-          {
-            printf '-g\n'
-            defaults domains | sed -e 's/, */\n/g'
-          } |
-          fzf --header 'defaults domain' --preview='defaults read {}' --bind 'enter:become(defaults read {})' "$@"
-        '';
-      };
 
       # app-icon = {
       #   runtimeInputs = with pkgs; [

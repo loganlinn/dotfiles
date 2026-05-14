@@ -28,6 +28,8 @@ in
 
   # see: https://github.com/wfxr/forgit?tab=readme-ov-file#shell-aliases
   home.shellAliases = {
+    gau = "git add -u";
+    gap = "git add -p";
     gcm = ''git switch "$(git default-branch || echo main)"'';
     gco = "git checkout";
     gd = "git diff";
