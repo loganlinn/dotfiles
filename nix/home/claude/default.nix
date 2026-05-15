@@ -4,26 +4,26 @@
   lib,
   ...
 }:
-with lib; let
-  json = pkgs.formats.json {};
+with lib;
+let
+  json = pkgs.formats.json { };
   cfg = config.programs.claude;
-in {
-  imports = [./desktop.nix];
+in
+{
+  imports = [ ./desktop.nix ];
 
   options = {
     programs.claude = {
       enable = mkEnableOption "claude";
       code = {
-        enable =
-          mkEnableOption "Claude Code"
-          // {
-            default = true;
-          };
+        enable = mkEnableOption "Claude Code" // {
+          default = true;
+        };
       };
       developer = {
         settings = mkOption {
           type = types.attrsOf json.type;
-          default = {};
+          default = { };
         };
       };
     };
@@ -31,12 +31,17 @@ in {
 
   config = mkIf cfg.enable {
     home.packages = optional cfg.code.enable pkgs.claude-code;
-    home.file = optionalAttrs (cfg.developer.settings != {} && pkgs.stdenv.isDarwin) {
+    home.file = optionalAttrs (cfg.developer.settings != { } && pkgs.stdenv.isDarwin) {
       "Library/Application Support/Claude/developer_settings.json".source =
         json.generate "developer_settings.json" cfg.developer.settings;
     };
     home.sessionVariables = mkIf cfg.code.enable {
-      CLAUDE_CODE_NO_FLICKER = "1";
+      CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY = "1";
+      CLAUDE_CODE_ENABLE_AWAY_SUMMARY = "0";
+      CLAUDE_CODE_ENABLE_TASKS = "1";
+      CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+      # CLAUDE_CODE_SHELL_PREFIX = "";
+      # CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
     };
     home.shellAliases = mkIf cfg.code.enable {
       cl = "claude";
@@ -70,7 +75,13 @@ in {
           chdir=$git_toplevel
         fi
         local claude_cmd=$(command -v claude) || return 1
-        ${pkgs.coreutils-full}/bin/env --chdir="''${chdir}" --unset=ANTHROPIC_API_KEY -S "$claude_cmd" --append-system-prompt "$system_prompt" "$@"
+
+        ${pkgs.coreutils-full}/bin/env \
+          --chdir="''${chdir}" \
+          --unset=ANTHROPIC_API_KEY \
+          -S \
+          DISABLE_ERROR_REPORTING=1 \
+          "''${claude_cmd?}" --append-system-prompt "$system_prompt" "$@"
       }
     '';
   };
