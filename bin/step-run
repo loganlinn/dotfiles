@@ -7,24 +7,22 @@ usage() {
   echo >&2 "Use - to read script from stdin."
   echo >&2 ""
   echo >&2 "Controls:"
-  echo >&2 "  [enter]/s  step (execute command)"
-  echo >&2 "  r          run remaining without stopping"
-  echo >&2 "  r /pat/    run until a command matches pattern"
-  echo >&2 "  a          accept (queue command for batch execution)"
-  echo >&2 "  j [n=1]    jump over n commands (skip without executing)"
-  echo >&2 "  p [n=5]    print next n lines of script (-n for previous)"
-  echo >&2 "  b <line>   set breakpoint at line number"
-  echo >&2 "  b /pat/    set breakpoint on command pattern"
-  echo >&2 "  b -d <id>  delete breakpoint by index"
-  echo >&2 "  b          list breakpoints"
-  echo >&2 "  w <expr>   add watch expression"
-  echo >&2 "  w -d <id>  delete watch by index"
-  echo >&2 "  w          list watches"
-  echo >&2 "  d          show env diff since last command"
-  echo >&2 "  t [n=20]   trace next n commands without executing"
-  echo >&2 "  ! [expr]   eval an expression (opens \$EDITOR if expr omitted)"
-  echo >&2 "  q          quit"
-  echo >&2 "  ?          help"
+  echo >&2 "  (s)tep            execute command (flushes queue first)"
+  echo >&2 "  (a)ccept          queue command for batch execution"
+  echo >&2 "  (r)un [/pat/]     run remaining (or until pattern matches)"
+  echo >&2 "  (j)ump [n=1]     jump over n commands (skip without executing)"
+  echo >&2 "  (p)rint [n=5]    print next n lines of script (-n for previous)"
+  echo >&2 "  (b)reak [<line>|/pat/]  add breakpoint"
+  echo >&2 "    -l              list breakpoints"
+  echo >&2 "    -d <id>         delete breakpoint"
+  echo >&2 "  (w)atch <expr>   add watch expression"
+  echo >&2 "    -l              list watches"
+  echo >&2 "    -d <id>         delete watch"
+  echo >&2 "  (d)iff           show env diff since last command"
+  echo >&2 "  (t)race [n=20]   trace next n commands without executing"
+  echo >&2 "  ! [expr]         execute an expression (opens \$EDITOR if expr omitted)"
+  echo >&2 "  (q)uit"
+  echo >&2 "  (h)elp / ?"
   exit 1
 }
 
@@ -165,9 +163,11 @@ _step_run_trap() {
   _step_run_show_location "$src" "$line" "$cmd"
 
   while true; do
-    read -rp "step-run [s,a,r,j,p,b,w,d,t,!,q,?] > " choice </dev/tty
-    case "${choice:-s}" in
-    s)
+    read -rp "step-run [s,a,r,j,p,b,w,d,t,!,q,h] > " choice </dev/tty
+    local _cmd="${choice%% *}" _args="${choice#* }"
+    [[ "$_cmd" == "$_args" ]] && _args=""
+    case "$_cmd" in
+    "" | s | step)
       if (( ${#_step_run_queue[@]} )); then
         for _step_run_qcmd in "${_step_run_queue[@]}"; do
           eval "$_step_run_qcmd"
@@ -176,13 +176,18 @@ _step_run_trap() {
       fi
       return 0
       ;;
-    a)
+    a | accept)
       _step_run_queue+=("$cmd")
       printf >&2 "  \033[36mqueued\033[0m (%d)\n" "${#_step_run_queue[@]}"
       return 1
       ;;
-    r)
-      _step_run_active=0
+    r | run)
+      if [[ "$_args" == /* ]]; then
+        _step_run_run_pattern="${_args#/}"
+        _step_run_run_pattern="${_step_run_run_pattern%/}"
+      else
+        _step_run_active=0
+      fi
       if (( ${#_step_run_queue[@]} )); then
         for _step_run_qcmd in "${_step_run_queue[@]}"; do
           eval "$_step_run_qcmd"
@@ -191,29 +196,13 @@ _step_run_trap() {
       fi
       return 0
       ;;
-    r\ /*)
-      local pat="${choice#r /}"
-      pat="${pat%/}"
-      _step_run_run_pattern="$pat"
-      if (( ${#_step_run_queue[@]} )); then
-        for _step_run_qcmd in "${_step_run_queue[@]}"; do
-          eval "$_step_run_qcmd"
-        done
-        _step_run_queue=()
-      fi
-      return 0
-      ;;
-    j | j\ *)
-      local _jn="${choice#j}"
-      _jn="${_jn# }"
-      : "${_jn:=1}"
-      _step_run_jump=$((_jn - 1))
+    j | jump)
+      : "${_args:=1}"
+      _step_run_jump=$((_args - 1))
       return 1
       ;;
-    p | p\ * | p-*)
-      local _n="${choice#p}" _from _to
-      _n="${_n# }"
-      : "${_n:=5}"
+    p | print)
+      local _n="${_args:-5}" _from _to
       if (( _n > 0 )); then
         _from=$((line + 1))
         _to=$((line + _n))
@@ -231,70 +220,80 @@ _step_run_trap() {
         fi
       fi
       ;;
-    b)
-      if [[ ${#_step_run_bp_lines[@]} -eq 0 && ${#_step_run_bp_patterns[@]} -eq 0 ]]; then
-        echo >&2 "  (no breakpoints)"
-      else
-        local i
-        for i in "${!_step_run_bp_lines[@]}"; do
-          printf >&2 "  \033[31mline[%d]\033[0m %s\n" "$i" "${_step_run_bp_lines[$i]}"
-        done
-        for i in "${!_step_run_bp_patterns[@]}"; do
-          printf >&2 "  \033[31mpat[%d]\033[0m  /%s/\n" "$i" "${_step_run_bp_patterns[$i]}"
-        done
-      fi
+    b | break)
+      case "$_args" in
+      "")
+        echo >&2 "  usage: break [<line>|/pat/|-l|-d <id>]"
+        ;;
+      -l)
+        if [[ ${#_step_run_bp_lines[@]} -eq 0 && ${#_step_run_bp_patterns[@]} -eq 0 ]]; then
+          echo >&2 "  (no breakpoints)"
+        else
+          local i
+          for i in "${!_step_run_bp_lines[@]}"; do
+            printf >&2 "  \033[31mline[%d]\033[0m %s\n" "$i" "${_step_run_bp_lines[$i]}"
+          done
+          for i in "${!_step_run_bp_patterns[@]}"; do
+            printf >&2 "  \033[31mpat[%d]\033[0m  /%s/\n" "$i" "${_step_run_bp_patterns[$i]}"
+          done
+        fi
+        ;;
+      -d\ *)
+        local _arg="${_args#-d }"
+        if [[ -n "${_step_run_bp_lines[$_arg]+x}" ]]; then
+          unset '_step_run_bp_lines['"$_arg"']'
+          echo >&2 "  deleted line breakpoint $_arg"
+        elif [[ -n "${_step_run_bp_patterns[$_arg]+x}" ]]; then
+          unset '_step_run_bp_patterns['"$_arg"']'
+          echo >&2 "  deleted pattern breakpoint $_arg"
+        else
+          echo >&2 "  no breakpoint at index $_arg"
+        fi
+        ;;
+      /*)
+        local pat="${_args#/}"
+        pat="${pat%/}"
+        _step_run_bp_patterns+=("$pat")
+        echo >&2 "  breakpoint pat[$(( ${#_step_run_bp_patterns[@]} - 1 ))] = /$pat/"
+        ;;
+      *)
+        _step_run_bp_lines+=("$_args")
+        echo >&2 "  breakpoint line[$(( ${#_step_run_bp_lines[@]} - 1 ))] = $_args"
+        ;;
+      esac
       ;;
-    b\ -d\ *)
-      local _arg="${choice#b -d }"
-      # determine which array to delete from
-      if [[ -n "${_step_run_bp_lines[$_arg]+x}" ]]; then
-        unset '_step_run_bp_lines['"$_arg"']'
-        echo >&2 "  deleted line breakpoint $_arg"
-      elif [[ -n "${_step_run_bp_patterns[$_arg]+x}" ]]; then
-        unset '_step_run_bp_patterns['"$_arg"']'
-        echo >&2 "  deleted pattern breakpoint $_arg"
-      else
-        echo >&2 "  no breakpoint at index $_arg"
-      fi
+    w | watch)
+      case "$_args" in
+      "")
+        echo >&2 "  usage: watch <expr>|-l|-d <id>"
+        ;;
+      -l)
+        if [[ ${#_step_run_watches[@]} -eq 0 ]]; then
+          echo >&2 "  (no watches)"
+        else
+          local i val
+          for i in "${!_step_run_watches[@]}"; do
+            val="$(eval "${_step_run_watches[$i]}" 2>&1)" || true
+            printf >&2 "  \033[33mwatch[%d]\033[0m %s = %s\n" "$i" "${_step_run_watches[$i]}" "$val"
+          done
+        fi
+        ;;
+      -d\ *)
+        local _wi="${_args#-d }"
+        if [[ -n "${_step_run_watches[$_wi]+x}" ]]; then
+          unset '_step_run_watches['"$_wi"']'
+          echo >&2 "  deleted watch $_wi"
+        else
+          echo >&2 "  no watch at index $_wi"
+        fi
+        ;;
+      *)
+        _step_run_watches+=("$_args")
+        echo >&2 "  watch[$(( ${#_step_run_watches[@]} - 1 ))] = $_args"
+        ;;
+      esac
       ;;
-    b\ /*)
-      local pat="${choice#b /}"
-      pat="${pat%/}"
-      _step_run_bp_patterns+=("$pat")
-      echo >&2 "  breakpoint pat[$(( ${#_step_run_bp_patterns[@]} - 1 ))] = /$pat/"
-      ;;
-    b\ *)
-      local _bline="${choice#b }"
-      _step_run_bp_lines+=("$_bline")
-      echo >&2 "  breakpoint line[$(( ${#_step_run_bp_lines[@]} - 1 ))] = $_bline"
-      ;;
-    w)
-      if [[ ${#_step_run_watches[@]} -eq 0 ]]; then
-        echo >&2 "  (no watches)"
-      else
-        local i
-        for i in "${!_step_run_watches[@]}"; do
-          local val
-          val="$(eval "${_step_run_watches[$i]}" 2>&1)" || true
-          printf >&2 "  \033[33mwatch[%d]\033[0m %s = %s\n" "$i" "${_step_run_watches[$i]}" "$val"
-        done
-      fi
-      ;;
-    w\ -d\ *)
-      local _wi="${choice#w -d }"
-      if [[ -n "${_step_run_watches[$_wi]+x}" ]]; then
-        unset '_step_run_watches['"$_wi"']'
-        echo >&2 "  deleted watch $_wi"
-      else
-        echo >&2 "  no watch at index $_wi"
-      fi
-      ;;
-    w\ *)
-      local _wexpr="${choice#w }"
-      _step_run_watches+=("$_wexpr")
-      echo >&2 "  watch[$(( ${#_step_run_watches[@]} - 1 ))] = $_wexpr"
-      ;;
-    d)
+    d | diff)
       local _env_now
       _env_now="$(declare -p 2>/dev/null | grep -v '^declare -[^ ]* _step_run_')"
       if command -v diff &>/dev/null; then
@@ -303,13 +302,11 @@ _step_run_trap() {
         echo >&2 "$_env_now"
       fi
       ;;
-    t | t\ *)
-      local _tn="${choice#t}" _tline="$line" _tsrc="${BASH_SOURCE[1]}" _tcount
-      _tn="${_tn# }"
-      : "${_tn:=20}"
+    t | trace)
+      local _tn="${_args:-20}" _tsrc="${BASH_SOURCE[1]}" _tcount
       _tcount=$(wc -l <"$_tsrc")
-      local _tfrom=$((_tline + 1))
-      local _tto=$((_tline + _tn))
+      local _tfrom=$((line + 1))
+      local _tto=$((line + _tn))
       (( _tto > _tcount )) && _tto="$_tcount"
       if (( _tfrom <= _tto )); then
         echo >&2 "  trace: next $_tn lines (not executed):"
@@ -322,41 +319,38 @@ _step_run_trap() {
         echo >&2 "  (end of script)"
       fi
       ;;
-    !\ *)
-      eval "${choice#! }"
-      _step_run_show_watches
-      _step_run_show_location "$src" "$line" "$cmd"
-      ;;
     !)
-      _step_run_tmp="$(mktemp "${TMPDIR:-/tmp}/step-run-XXXXXX${_step_run_ext}")"
-      if "${EDITOR:-nano}" "$_step_run_tmp" </dev/tty >/dev/tty; then
-        eval "$(cat "$_step_run_tmp")"
+      if [[ -n "$_args" ]]; then
+        eval "$_args"
+      else
+        _step_run_tmp="$(mktemp "${TMPDIR:-/tmp}/step-run-XXXXXX${_step_run_ext}")"
+        if "${EDITOR:-nano}" "$_step_run_tmp" </dev/tty >/dev/tty; then
+          eval "$(cat "$_step_run_tmp")"
+        fi
+        rm -f "$_step_run_tmp"
       fi
-      rm -f "$_step_run_tmp"
       _step_run_show_watches
       _step_run_show_location "$src" "$line" "$cmd"
       ;;
-    q) exit 130 ;;
-    \?)
-      echo >&2 "  s, [enter]  execute this command (flushes queue first)"
-      echo >&2 "  a           accept (queue command for batch execution)"
-      echo >&2 "  r           run remaining without stopping"
-      echo >&2 "  r /pat/     run until command matches pattern"
-      echo >&2 "  j [n=1]     jump over n commands (skip without executing)"
-      echo >&2 "  p [n=5]     print next n lines (-n for previous)"
-      echo >&2 "  b <line>    set breakpoint at line number"
-      echo >&2 "  b /pat/     set breakpoint on command pattern"
-      echo >&2 "  b -d <id>   delete breakpoint by index"
-      echo >&2 "  b           list breakpoints"
-      echo >&2 "  w <expr>    add watch expression (eval'd each step)"
-      echo >&2 "  w -d <id>   delete watch by index"
-      echo >&2 "  w           list watches"
-      echo >&2 "  d           show env diff since last command"
-      echo >&2 "  t [n=20]    trace next n lines (preview, no execute)"
-      echo >&2 "  ! [expr]    eval an expression (opens \$EDITOR if expr omitted)"
-      echo >&2 "  q           quit"
+    q | quit) exit 130 ;;
+    h | help | \?)
+      echo >&2 "  (s)tep            execute command (flushes queue first)"
+      echo >&2 "  (a)ccept          queue command for batch execution"
+      echo >&2 "  (r)un [/pat/]     run remaining (or until pattern matches)"
+      echo >&2 "  (j)ump [n=1]     jump over n commands (skip without executing)"
+      echo >&2 "  (p)rint [n=5]    print next n lines (-n for previous)"
+      echo >&2 "  (b)reak [<line>|/pat/]  add breakpoint"
+      echo >&2 "    -l              list breakpoints"
+      echo >&2 "    -d <id>         delete breakpoint"
+      echo >&2 "  (w)atch <expr>   add watch expression (eval'd each step)"
+      echo >&2 "    -l              list watches"
+      echo >&2 "    -d <id>         delete watch"
+      echo >&2 "  (d)iff           show env diff since last command"
+      echo >&2 "  (t)race [n=20]   trace next n commands without executing"
+      echo >&2 "  ! [expr]         execute an expression (opens \$EDITOR if expr omitted)"
+      echo >&2 "  (q)uit"
       ;;
-    *) echo >&2 "  unknown option; press ? for help" ;;
+    *) echo >&2 "  unknown command; type h for help" ;;
     esac
   done
 }

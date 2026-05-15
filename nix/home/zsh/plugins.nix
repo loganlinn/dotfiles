@@ -1,4 +1,5 @@
-{config, ...}: {
+{ config, ... }:
+{
   programs.zsh = {
     sessionVariables = {
       ANTIDOTE_HOME = "${config.xdg.cacheHome}/antidote";
@@ -20,7 +21,6 @@
         # "zsh-users/zsh-history-substring-search"
         "marlonrichert/zsh-edit"
         # "marlonrichert/zcolors"
-
         # "getantidote/use-omz" # handle OMZ dependencies
         # "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
         # "ohmyzsh/ohmyzsh path:plugins/colored-man-pages"
@@ -28,8 +28,8 @@
         # "ohmyzsh/ohmyzsh path:plugins/copyfile"
         # "ohmyzsh/ohmyzsh path:plugins/copypath"
         # "ohmyzsh/ohmyzsh path:plugins/extract"
-
         # "olets/zsh-abbr kind:defer"
+        "romkatv/zsh-defer"
         # "belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup"
         # "belak/zsh-utils path:editor"
         # "belak/zsh-utils path:history"

@@ -4,7 +4,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -55,6 +56,7 @@
     kcat
     mcat
     mkcert
+    openssh
     self'.packages.chrome-cli
     self'.packages.everything-fzf
     typescript-language-server
@@ -120,9 +122,9 @@
   my.src-get = {
     enable = true;
     repos = {
-      "loganlinn/agent-plugins" = {};
-      "loganlinn/obsidian-vault" = {};
-      "loganlinn/trs" = {};
+      "loganlinn/agent-plugins" = { };
+      "loganlinn/obsidian-vault" = { };
+      "loganlinn/trs" = { };
     };
   };
 
