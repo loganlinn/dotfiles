@@ -34,7 +34,7 @@
       "charmbracelet/tap/freeze"
       "charmbracelet/tap/sequin"
       "cmake"
-      "colima"
+      "colima" # TODO: use https://github.com/nix-community/home-manager/blob/master/modules/services/colima.nix ?
       "curl"
       "ddcctl"
       "direnv"

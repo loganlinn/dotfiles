@@ -1,5 +1,6 @@
 [env]
-_.file = [".mise/tasks/git/gpg/claude/config.env"]
+_.path = ["{{config_root}}/bin"]
+# _.file = [".mise/tasks/git/gpg/claude/config.env"]
 
 [settings]
 experimental = true
@@ -73,20 +74,20 @@ run = "nix develop --command zsh ${usage_args[@]}"
 # ----------------------------------------------------------------------------
 
 [tasks."darwin:link"]
-depends = [
-  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "/etc/nix-darwin/flake.nix"] },
-  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"] },
+run = [
+  'sudo lns "{{config_root}}/flake.nix" "/etc/nix-darwin/flake.nix"',
+  'lns "{{config_root}}/flake.nix" "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"',
 ]
+quiet = true
 
 [tasks."darwin:bootstrap"]
-depends = [
-  "darwin:link",
-  "darwin:switch",
-]
+depends = ["darwin:link", "darwin:switch"]
 
 [tasks."darwin:switch"]
 run = '''
-time sudo -E mise darwin:rebuild --flake "${NIX_DARWIN_FLAKE:-{{config_root}}}" switch
+config="${NIX_DARWIN_CONFIG:-$(scutil --get LocalHostName 2>/dev/null || hostname -s)}"
+flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
+time sudo -E mise darwin:rebuild switch --flake "${flake}#${config}"
 '''
 
 [tasks."darwin:rebuild"]
@@ -115,15 +116,18 @@ done
 # ----------------------------------------------------------------------------
 
 [tasks."nixos:bootstrap"]
-depends = [
-  "nixos:link",
-  "nixos:switch",
-]
+depends = ["nixos:link", "nixos:switch"]
 
 [tasks."nixos:link"]
 depends = [
-  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "/etc/nixos/flake.nix"] },
-  { task = "_internal:link", args = ["{{config_root}}/flake.nix", "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"] },
+  { task = "_internal:link", args = [
+    "flake.nix",
+    "/etc/nixos/flake.nix",
+  ] },
+  { task = "_internal:link", args = [
+    "flake.nix",
+    "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix",
+  ] },
 ]
 
 [tasks."nixos:switch"]
@@ -156,7 +160,7 @@ if [ "$current_link" = "$target" ]; then
 else
   echo -e "\033[1m\033[32mcreate:\033[0m \033[36m$target\033[0m <-- \033[32m$link\033[0m"
   mkdir -p "$(dirname "$link")"
-  ln -s -i -T "$target" "$link"
+  ln -sfn "$target" "$link"
 fi
 '''
 
@@ -187,7 +191,12 @@ run = "echo \"Done. Run 'mise run git:gpg:claude:doctor' to verify.\""
 
 [tasks."git:gpg:claude:doctor"]
 description = "Check Claude GPG signing configuration"
-depends = ["git:gpg:claude:doctor:gpg", "git:gpg:claude:doctor:claude", "git:gpg:claude:doctor:github", "git:gpg:claude:doctor:git"]
+depends = [
+  "git:gpg:claude:doctor:gpg",
+  "git:gpg:claude:doctor:claude",
+  "git:gpg:claude:doctor:github",
+  "git:gpg:claude:doctor:git",
+]
 run = 'echo "All checks passed."'
 
 # ============================================================================

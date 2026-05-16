@@ -10,6 +10,7 @@
     self.homeModules.common
     self.homeModules.nix-colors
     # self.homeModules.opnix
+    ../nix/home/atuin.nix
     ../nix/home/aws
     ../nix/home/claude
     ../nix/home/mise
@@ -72,20 +73,7 @@
 
   programs.age-op.enable = true;
   programs.claude.enable = true;
-  programs.atuin = {
-    enable = true;
-    daemon = {
-      enable = true;
-    };
-    settings = {
-      # auto_sync = true;
-      # sync_address = "https://nijusan.royal-bee.ts.net/atuin";
-    };
-    flags = [
-      "--disable-up-arrow"
-    ];
-    enableZshIntegration = true;
-  };
+  programs.atuin.enable = true;
   programs.asciinema.enable = true;
   programs.fish.enable = false; # not used currently and slows builds down a bit.
   programs.ghostty.enable = true;

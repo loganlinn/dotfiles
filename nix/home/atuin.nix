@@ -4,6 +4,25 @@
   lib,
   ...
 }: {
+  programs.atuin = {
+    daemon.enable = lib.mkDefault config.programs.atuin.enable;
+    settings = {
+      auto_sync = lib.mkDefault false;
+      dialect = "us";
+      enter_accept = false;
+      inline_height = 25;
+      keys.prefix = "s";
+      prefers_reduced_motion = true;
+      style = "compact";
+      update_check = false;
+    };
+    flags = [
+      "--disable-up-arrow"
+    ];
+    enableZshIntegration = lib.mkDefault true;
+    enableBashIntegration = lib.mkDefault true;
+  };
+
   home.packages = [
     (pkgs.writeShellApplication {
       name = "atuin-restart";
@@ -32,23 +51,4 @@
     })
   ];
 
-  programs.atuin = {
-    daemon.enable = lib.mkDefault config.programs.atuin.enable;
-    settings = {
-      auto_sync = false;
-      dialect = "us";
-      enter_accept = false;
-      inline_height = 20;
-      invert = true;
-      keys.prefix = "s";
-      prefers_reduced_motion = true;
-      style = "compact";
-      update_check = false;
-    };
-    flags = [
-      "--disable-up-arrow"
-    ];
-    enableZshIntegration = true;
-    enableBashIntegration = true;
-  };
 }
