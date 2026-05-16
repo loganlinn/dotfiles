@@ -1,0 +1,361 @@
+#!/usr/bin/env -S uv run --script --quiet
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click", "cryptography"]
+# ///
+"""rayconfig — inspect and manipulate Raycast .rayconfig files."""
+
+from __future__ import annotations
+
+import gzip
+import hashlib
+import json
+import os
+import sys
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import click
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.padding import PKCS7
+
+
+# -- crypto helpers ----------------------------------------------------------
+# Raycast uses AES-256-CBC with EVP_BytesToKey-compatible key derivation:
+#   key = SHA256(password)
+#   iv  = SHA256(key + password)[:16]
+# Encrypted file = 16-byte header ‖ AES-256-CBC(gzip(json))
+
+HEADER_SIZE = 16
+AES_BLOCK = 128
+
+
+def _evp_bytes_to_key(password: str) -> tuple[bytes, bytes]:
+    """Derive AES-256 key + IV from password (matches openssl enc -aes-256-cbc -nosalt -k)."""
+    pw = password.encode("utf-8")
+    key = hashlib.sha256(pw).digest()
+    iv = hashlib.sha256(key + pw).digest()[:16]
+    return key, iv
+
+
+def _pad(data: bytes) -> bytes:
+    padder = PKCS7(AES_BLOCK).padder()
+    return padder.update(data) + padder.finalize()
+
+
+def _unpad(data: bytes) -> bytes:
+    unpadder = PKCS7(AES_BLOCK).unpadder()
+    return unpadder.update(data) + unpadder.finalize()
+
+
+def decrypt_rayconfig(data: bytes, password: str) -> bytes:
+    """Decrypt: skip 16-byte header, AES-256-CBC decrypt → gzip bytes."""
+    header = data[:HEADER_SIZE]
+    ciphertext = data[HEADER_SIZE:]
+    key, iv = _evp_bytes_to_key(password)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+    padded = decryptor.update(ciphertext) + decryptor.finalize()
+    return _unpad(padded)
+
+
+def encrypt_rayconfig(data: bytes, password: str, header: bytes | None = None) -> bytes:
+    """Encrypt gzip bytes → header ‖ AES-256-CBC ciphertext."""
+    if header is None:
+        header = os.urandom(HEADER_SIZE)
+    key, iv = _evp_bytes_to_key(password)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    encryptor = cipher.encryptor()
+    ct = encryptor.update(_pad(data)) + encryptor.finalize()
+    return header + ct
+
+
+# -- rayconfig I/O -----------------------------------------------------------
+
+def _is_gzip(data: bytes) -> bool:
+    return data[:2] == b"\x1f\x8b"
+
+
+def load_rayconfig(path: Path, password: str | None = None) -> dict[str, Any]:
+    """Read a .rayconfig file → dict. Handles gzip-only and encrypted variants."""
+    raw = path.read_bytes()
+    if _is_gzip(raw):
+        return json.loads(gzip.decompress(raw))
+    if password is None:
+        raise click.ClickException(
+            "File is encrypted. Provide --password (Raycast default is '12345678')."
+        )
+    decompressed = decrypt_rayconfig(raw, password)
+    if _is_gzip(decompressed):
+        return json.loads(gzip.decompress(decompressed))
+    return json.loads(decompressed)
+
+
+def dump_rayconfig(data: dict[str, Any], path: Path, password: str | None = None) -> None:
+    """Write dict → .rayconfig file (gzip, optionally encrypted)."""
+    gz = gzip.compress(json.dumps(data, separators=(",", ":")).encode())
+    if password:
+        path.write_bytes(encrypt_rayconfig(gz, password))
+    else:
+        path.write_bytes(gz)
+
+
+# -- quicklink helpers -------------------------------------------------------
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+
+def make_quicklink(
+    name: str,
+    link: str,
+    *,
+    icon: str | None = None,
+    icon_color: str | None = None,
+    application: str | None = None,
+    open_with: str | None = None,
+) -> dict[str, Any]:
+    """Build a single quicklink record."""
+    now = _now_iso()
+    ql: dict[str, Any] = {
+        "id": str(uuid.uuid4()).upper(),
+        "name": name,
+        "link": link,
+        "createdAt": now,
+        "updatedAt": now,
+    }
+    if icon:
+        ql["icon"] = icon
+    if icon_color:
+        ql["iconColor"] = icon_color
+    if application:
+        ql["application"] = application
+    if open_with:
+        ql["openWith"] = open_with
+    return ql
+
+
+def make_quicklinks_config(
+    quicklinks: list[dict[str, Any]],
+    *,
+    raycast_version: str = "1.104.0",
+) -> dict[str, Any]:
+    """Build a minimal rayconfig dict containing only quicklinks."""
+    return {
+        "raycast_version": raycast_version,
+        "builtin_package_quicklinks": {
+            "provider_schemaVersion": 1,
+            "quicklinks": quicklinks,
+        },
+    }
+
+
+# -- CLI ---------------------------------------------------------------------
+
+@click.group()
+def cli() -> None:
+    """Inspect and manipulate Raycast .rayconfig files."""
+
+
+@cli.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@click.option("-p", "--password", default=None, help="Decryption password (Raycast default: 12345678).")
+@click.option("--pretty/--compact", default=True, help="Pretty-print JSON.")
+def inspect(file: Path, password: str | None, pretty: bool) -> None:
+    """Decode and print a .rayconfig as JSON."""
+    data = load_rayconfig(file, password)
+    indent = 2 if pretty else None
+    click.echo(json.dumps(data, indent=indent, ensure_ascii=False))
+
+
+@cli.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@click.option("-p", "--password", default=None, help="Decryption password.")
+def ls(file: Path, password: str | None) -> None:
+    """List top-level keys and packages in a .rayconfig."""
+    data = load_rayconfig(file, password)
+    for key in sorted(data.keys()):
+        val = data[key]
+        if isinstance(val, dict):
+            sub_keys = [k for k in val if k != "provider_schemaVersion"]
+            suffix = f"  ({', '.join(sub_keys)})" if sub_keys else ""
+            click.echo(f"{key}{suffix}")
+        else:
+            click.echo(f"{key} = {json.dumps(val)[:80]}")
+
+
+@cli.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@click.option("-p", "--password", default=None, help="Decryption password.")
+@click.option("-k", "--key", "jq_key", default=None, help="Dot-path to extract (e.g. builtin_package_quicklinks.quicklinks).")
+@click.option("--pretty/--compact", default=True)
+def get(file: Path, password: str | None, jq_key: str | None, pretty: bool) -> None:
+    """Extract a value by dot-path from a .rayconfig."""
+    data = load_rayconfig(file, password)
+    if jq_key:
+        for part in jq_key.split("."):
+            if isinstance(data, dict):
+                data = data[part]
+            elif isinstance(data, list) and part.isdigit():
+                data = data[int(part)]
+            else:
+                raise click.ClickException(f"Cannot index into {type(data).__name__} with '{part}'")
+    indent = 2 if pretty else None
+    click.echo(json.dumps(data, indent=indent, ensure_ascii=False))
+
+
+@cli.command("quicklinks")
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@click.option("-p", "--password", default=None, help="Decryption password.")
+def list_quicklinks(file: Path, password: str | None) -> None:
+    """List quicklinks in a .rayconfig."""
+    data = load_rayconfig(file, password)
+    pkg = data.get("builtin_package_quicklinks", {})
+    qls = pkg.get("quicklinks", [])
+    if not qls:
+        click.echo("No quicklinks found.", err=True)
+        return
+    for ql in qls:
+        name = ql.get("name", "(unnamed)")
+        link = ql.get("link", "")
+        icon = ql.get("icon", "")
+        prefix = f"{icon} " if icon else ""
+        click.echo(f"{prefix}{name}\t{link}")
+
+
+@cli.command("create-quicklinks")
+@click.argument("output", type=click.Path(path_type=Path))
+@click.option("-p", "--password", default=None, help="Encrypt with password.")
+@click.option("--from-json", "json_file", type=click.Path(exists=True, path_type=Path), help="JSON file with quicklink definitions.")
+@click.option("--from-stdin", is_flag=True, help="Read quicklink JSON array from stdin.")
+@click.option("--version", "raycast_version", default="1.104.0", help="Raycast version to embed.")
+def create_quicklinks(
+    output: Path,
+    password: str | None,
+    json_file: Path | None,
+    from_stdin: bool,
+    raycast_version: str,
+) -> None:
+    """Create a .rayconfig containing quicklinks.
+
+    Input is a JSON array of objects with keys: name, link, and optionally
+    icon, iconColor, application, openWith.
+
+    Raycast quicklink placeholders:
+      {Query}     — prompted text input
+      {Clipboard} — current clipboard contents
+      {Selection} — current selected text
+
+    \b
+    Example input:
+      [
+        {"name": "Search Jira", "link": "https://jira.example.com/browse/{Query}"},
+        {"name": "Open PR", "link": "https://github.com/org/repo/pull/{Query}"}
+      ]
+    """
+    if json_file:
+        raw = json.loads(json_file.read_text())
+    elif from_stdin:
+        raw = json.loads(sys.stdin.read())
+    else:
+        raise click.ClickException("Provide --from-json FILE or --from-stdin.")
+
+    if not isinstance(raw, list):
+        raise click.ClickException("Expected a JSON array of quicklink objects.")
+
+    quicklinks = []
+    for item in raw:
+        if not isinstance(item, dict) or "name" not in item or "link" not in item:
+            raise click.ClickException(f"Each quicklink needs 'name' and 'link': {item}")
+        quicklinks.append(make_quicklink(
+            name=item["name"],
+            link=item["link"],
+            icon=item.get("icon"),
+            icon_color=item.get("iconColor"),
+            application=item.get("application"),
+            open_with=item.get("openWith"),
+        ))
+
+    config = make_quicklinks_config(quicklinks, raycast_version=raycast_version)
+    output = output.with_suffix(".rayconfig")
+    dump_rayconfig(config, output, password)
+    click.echo(f"Wrote {len(quicklinks)} quicklinks → {output}", err=True)
+
+
+@cli.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@click.option("-p", "--password", default=None, help="Decryption password for input.")
+@click.option("--set-password", default=None, help="Encrypt output with this password.")
+@click.option("--strip-password", is_flag=True, help="Remove encryption (output plain gzip).")
+@click.argument("output", type=click.Path(path_type=Path))
+def repack(file: Path, password: str | None, set_password: str | None, strip_password: bool, output: Path) -> None:
+    """Re-encrypt or decrypt a .rayconfig file.
+
+    Use --strip-password to produce an unencrypted file, or --set-password to
+    change/add encryption.
+    """
+    data = load_rayconfig(file, password)
+    out_password = None if strip_password else (set_password or password)
+    output = output.with_suffix(".rayconfig")
+    dump_rayconfig(data, output, out_password)
+    enc_status = "encrypted" if out_password else "unencrypted"
+    click.echo(f"Wrote {enc_status} → {output}", err=True)
+
+
+@cli.command()
+@click.argument("files", nargs=-1, type=click.Path(exists=True, path_type=Path))
+@click.option("-p", "--password", default=None, help="Decryption password for encrypted inputs.")
+@click.argument("output", type=click.Path(path_type=Path))
+@click.option("--set-password", default=None, help="Encrypt output.")
+def merge(files: tuple[Path, ...], password: str | None, output: Path, set_password: str | None) -> None:
+    """Merge multiple .rayconfig files into one.
+
+    Later files override earlier ones for conflicting keys.
+    """
+    if len(files) < 2:
+        raise click.ClickException("Need at least 2 input files.")
+    merged: dict[str, Any] = {}
+    for f in files:
+        data = load_rayconfig(Path(f), password)
+        for key, val in data.items():
+            if key in merged and isinstance(merged[key], dict) and isinstance(val, dict):
+                if "quicklinks" in merged[key] and "quicklinks" in val:
+                    merged[key]["quicklinks"] = merged[key]["quicklinks"] + val["quicklinks"]
+                elif "snippets" in merged[key] and "snippets" in val:
+                    merged[key]["snippets"] = merged[key]["snippets"] + val["snippets"]
+                else:
+                    merged[key].update(val)
+            else:
+                merged[key] = val
+    output = output.with_suffix(".rayconfig")
+    dump_rayconfig(merged, output, set_password)
+    click.echo(f"Merged {len(files)} files → {output}", err=True)
+
+
+@cli.command("gen-quicklink")
+@click.option("-n", "--name", required=True, help="Quicklink name.")
+@click.option("-l", "--link", required=True, help="URL (use {Query}, {Clipboard}, {Selection} for placeholders).")
+@click.option("--icon", default=None, help="Emoji or icon identifier.")
+@click.option("--icon-color", default=None, help="Color (e.g. 'raycast-red').")
+@click.option("--application", default=None, help="Application bundle name.")
+@click.option("--open-with", default=None, help="Open-with application.")
+def gen_quicklink(name: str, link: str, icon: str | None, icon_color: str | None, application: str | None, open_with: str | None) -> None:
+    """Generate a single quicklink JSON object to stdout."""
+    ql = make_quicklink(name, link, icon=icon, icon_color=icon_color, application=application, open_with=open_with)
+    click.echo(json.dumps(ql, indent=2))
+
+
+@cli.command("import")
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+def import_config(file: Path) -> None:
+    """Open a .rayconfig in Raycast via deeplink."""
+    import subprocess
+    abs_path = file.resolve()
+    subprocess.run(["open", str(abs_path)], check=True)
+    click.echo(f"Opening {abs_path} in Raycast...", err=True)
+
+
+if __name__ == "__main__":
+    cli()
