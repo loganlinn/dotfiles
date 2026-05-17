@@ -9,8 +9,8 @@
     settings = {
       auto_sync = lib.mkDefault false;
       dialect = "us";
-      enter_accept = false;
-      inline_height = 25;
+      enter_accept = lib.mkDefault false;
+      inline_height = lib.mkDefault 25;
       keys.prefix = "s";
       prefers_reduced_motion = true;
       style = "compact";
