@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly PROG="${0##*/}"
+
+die() {
+  echo >&2 "$PROG: $*"
+  exit 1
+}
+
+relpath() {
+  realpath --relative-to=. -- "$1" 2>/dev/null || echo "$1"
+}
+
+usage() {
+  cat <<-EOF
+	Usage: $PROG TARGET [LINK_NAME]
+
+	Create a symbolic link with interactive conflict resolution.
+	Defaults to verbose; skips silently if the identical symlink already exists.
+	EOF
+}
+
+_confirm() {
+  if command -v gum >/dev/null 2>&1; then
+    gum confirm "$1"
+  else
+    local reply
+    printf >&2 '%s [y/N]: ' "$1"
+    read -r reply
+    [[ "${reply,,}" =~ ^(y|yes)$ ]]
+  fi
+}
+
+_choose() {
+  local header="$1"
+  shift
+  if command -v gum >/dev/null 2>&1; then
+    gum choose --header "$header" "$@"
+  else
+    echo >&2 "$header"
+    select choice in "$@"; do
+      [[ -n "$choice" ]] && echo "$choice" && return 0
+    done
+  fi
+}
+
+case "${1:-}" in
+-h | --help)
+  usage
+  exit 0
+  ;;
+esac
+
+[[ $# -eq 0 ]] && {
+  usage
+  exit 1
+}
+[[ $# -gt 2 ]] && die "too many arguments"
+
+target="$1"
+link_name="${2:-${target##*/}}"
+
+# Ambiguity: LINK_NAME is an existing directory (not a symlink) → ln would silently place inside
+if [[ -d "$link_name" && ! -L "$link_name" ]]; then
+  proposed="${link_name%/}/${target##*/}"
+  if _confirm "directory: place symlink inside as '$(relpath "$proposed")'?"; then
+    link_name="$proposed"
+  else
+    die "aborted"
+  fi
+fi
+
+# Parent directory missing
+link_dir="${link_name%/*}"
+if [[ "$link_dir" != "$link_name" && ! -d "$link_dir" ]]; then
+  if _confirm "missing parent: create '$(relpath "$link_dir")'?"; then
+    mkdir -p -- "$link_dir"
+  else
+    die "aborted"
+  fi
+fi
+
+# Identical symlink already exists → skip
+if [[ -L "$link_name" && "$(readlink -- "$link_name")" == "$target" ]]; then
+  echo >&2 "already exists: $(relpath "$link_name") -> $(relpath "$target"), skipping"
+  exit 0
+fi
+
+# Existing path (wrong symlink target, file, or dir) → prompt
+if [[ -e "$link_name" || -L "$link_name" ]]; then
+  if [[ -L "$link_name" ]]; then
+    existing="symlink -> $(relpath "$(readlink -- "$link_name")")"
+  elif [[ -d "$link_name" ]]; then
+    existing="directory"
+  else
+    existing="file"
+  fi
+
+  action=$(_choose "already exists ($existing): $(relpath "$link_name")" replace backup ignore) || die "aborted"
+  case "$action" in
+  replace)
+    rm -rf -- "$link_name"
+    ;;
+  backup)
+    backup="${link_name}.bak"
+    i=1
+    while [[ -e "$backup" || -L "$backup" ]]; do
+      backup="${link_name}.bak${i}"
+      ((i++))
+    done
+    mv -v -- "$link_name" "$backup"
+    ;;
+  ignore)
+    echo >&2 "ignoring: $(relpath "$link_name")"
+    exit 0
+    ;;
+  esac
+fi
+
+ln -sv -- "$target" "$link_name"

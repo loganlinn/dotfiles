@@ -1,0 +1,161 @@
+#!/usr/bin/env -S mise x uv -- uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "mcp>=1.0",
+# ]
+# ///
+"""Export a DeepWiki for a GitHub repo into per-page Markdown files.
+
+Usage:
+    ./export.py [--source deepwiki|devin] [--api-token TOKEN] [-o DIR] <owner>/<repo>
+    mise x uv -- uv run --script export.py <owner>/<repo>
+
+Sources:
+    deepwiki  Public https://mcp.deepwiki.com/mcp (default; public repos only)
+    devin     Authenticated https://mcp.devin.ai/mcp (private repos; needs token)
+
+For --source devin, supply the token via --api-token or the DEVIN_API_TOKEN
+environment variable.
+
+Defaults output to ./<api-host>/<owner>/<repo>/.
+"""
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import urlparse
+
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
+
+ENDPOINTS = {
+    "deepwiki": "https://mcp.deepwiki.com/mcp",
+    "devin": "https://mcp.devin.ai/mcp",
+}
+
+
+async def fetch_wiki(repo: str, url: str, token: str | None) -> str:
+    headers = {"Authorization": f"Bearer {token}"} if token else None
+    async with streamablehttp_client(url, headers=headers) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(
+                "read_wiki_contents", {"repoName": repo}
+            )
+    text = "".join(
+        getattr(c, "text", "") for c in result.content if getattr(c, "type", "") == "text"
+    )
+    # DeepWiki wraps the markdown in {"result": "..."}
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+    if isinstance(parsed, dict) and "result" in parsed:
+        return parsed["result"]
+    return text
+
+
+def guess_repo() -> str | None:
+    """Infer owner/repo from the current directory's git remote."""
+    for remote in ("upstream", "origin"):
+        try:
+            url = subprocess.check_output(
+                ["git", "remote", "get-url", remote],
+                stderr=subprocess.DEVNULL,
+                text=True,
+            ).strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            continue
+        # SSH: git@github.com:owner/repo(.git)  HTTPS: https://github.com/owner/repo(.git)
+        m = re.search(r"[:/]([^:/]+)/([^/]+?)(?:\.git)?/?$", url)
+        if m:
+            return f"{m.group(1)}/{m.group(2)}"
+    return None
+
+
+def slugify(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
+
+def split_and_write(repo: str, content: str, dst: Path) -> int:
+    dst.mkdir(parents=True, exist_ok=True)
+    parts = re.split(r"(?m)^# Page: ", content)
+    pages: list[tuple[str, str]] = []
+    for p in parts:
+        if not p.strip():
+            continue
+        title, _, body = p.partition("\n")
+        pages.append((title.strip(), body))
+
+    if not pages:
+        raise SystemExit("no pages found in DeepWiki response")
+
+    index = [f"# {repo} DeepWiki", "", "## Pages", ""]
+    for i, (title, body) in enumerate(pages, 1):
+        fname = f"{i:02d}-{slugify(title)}.md"
+        (dst / fname).write_text(f"# {title}\n{body}")
+        index.append(f"- [{title}]({fname})")
+    (dst / "README.md").write_text("\n".join(index) + "\n")
+    return len(pages)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "repo",
+        nargs="?",
+        help="GitHub repo as owner/repo (default: inferred from git remote)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        help="Output directory (default: ./<api-host>/<owner>/<repo>)",
+    )
+    parser.add_argument(
+        "--source",
+        choices=sorted(ENDPOINTS),
+        default="deepwiki",
+        help="Which MCP server to query (default: deepwiki)",
+    )
+    parser.add_argument(
+        "--api-token",
+        help="API token for authenticated source. Falls back to DEVIN_API_TOKEN env var.",
+    )
+    args = parser.parse_args()
+
+    repo = args.repo or guess_repo()
+    if not repo:
+        parser.error("repo not given and could not be inferred from git remote")
+    if "/" not in repo:
+        parser.error("repo must be in owner/repo form")
+    if not args.repo:
+        print(f"Inferred repo: {repo}", file=sys.stderr)
+
+    token = args.api_token or os.environ.get("DEVIN_API_TOKEN")
+    if args.source == "devin" and not token:
+        parser.error(
+            "--source devin requires --api-token or DEVIN_API_TOKEN env var"
+        )
+    if args.source == "deepwiki":
+        token = None  # never send a token to the public endpoint
+
+    url = ENDPOINTS[args.source]
+    host = urlparse(url).hostname or args.source
+    out = args.output or Path(host) / repo
+
+    print(f"Fetching DeepWiki for {repo} from {args.source}...", file=sys.stderr)
+    content = asyncio.run(fetch_wiki(repo, url, token))
+    n = split_and_write(repo, content, out)
+    print(f"Wrote {n} pages to {out}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
