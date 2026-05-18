@@ -281,12 +281,6 @@ in
 
         ##########################################################
 
-        # Source ~/.zshrc.d/*.zsh in alphanumeric order (N = nullglob: no error if dir or files missing)
-        for _rc in ~/.zshrc.d/*.zsh(N); do source "$_rc"; done
-        unset _rc
-
-        ##########################################################
-
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
       '')
     ];

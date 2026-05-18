@@ -11,6 +11,7 @@
       dialect = "us";
       enter_accept = lib.mkDefault false;
       inline_height = lib.mkDefault 25;
+      invert = lib.mkDefault false;
       keys.prefix = "s";
       prefers_reduced_motion = true;
       style = "compact";

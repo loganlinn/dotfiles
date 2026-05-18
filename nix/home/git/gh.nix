@@ -160,12 +160,16 @@ in
 
         open-review-requested = "!gh-open-review-requested \"$@\"";
         land = "!gh-land \"$@\"";
+
+        userlist = ''!${config.xdg.configHome}/gh/userlists.sh "$@"'';
       };
     };
   };
 
   xdg.configFile = {
     "gh-dash/config.yml".source = ../../../config/gh-dash/config.yml;
+    "gh/userlists.sh".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/gh/userlists.sh";
   };
 
   xdg.desktopEntries.gh-dash = mkIf pkgs.stdenv.isLinux {
