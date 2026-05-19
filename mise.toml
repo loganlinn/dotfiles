@@ -36,6 +36,38 @@ arg "[files]" var=#true help="Test files to run (default: all .bats files)"
 run = "mise fmt --check"
 
 # ============================================================================
+# Shell Tasks
+# ============================================================================
+
+[tasks."shell:lint"]
+description = "Lint shell scripts with shellcheck"
+tools = { shellcheck = "latest" }
+run = '''
+set -euo pipefail
+
+# Discover shell scripts by shebang under script directories
+scripts=()
+while IFS= read -r -d '' f; do
+  read -r shebang <"$f" 2>/dev/null || continue
+  [[ $shebang =~ ^#!.*[[:space:]/](bash|sh|dash|ksh)([[:space:]]|$) ]] \
+    && scripts+=("$f")
+done < <(
+  find bin darwin/bin linux/bin mise-tasks .mise/tasks \
+    -type f \
+    ! -name '*.zwc' ! -name '*.pyc' \
+    ! -path '*/__pycache__/*' \
+    -print0 2>/dev/null
+)
+
+if [[ ${#scripts[@]} -eq 0 ]]; then
+  echo >&2 "No shell scripts found."
+  exit 0
+fi
+
+shellcheck "${scripts[@]}"
+'''
+
+# ============================================================================
 # Nix Tasks
 # ============================================================================
 

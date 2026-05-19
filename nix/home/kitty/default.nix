@@ -54,6 +54,7 @@ in {
         "cssh.py"
         "current-theme.conf"
         "diff.conf"
+        "file-menu.sh"
         "grab.conf"
         "kitty.common.conf"
         "kitty.linux.conf"

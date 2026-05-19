@@ -87,6 +87,7 @@ in
   system.duti = {
     enable = true;
     settings = ''
+      net.kovidgoyal.kitty .command all
       org.gnu.Emacs .json all
       org.gnu.Emacs .md   all
       # .nix has no registered UTI on macOS; duti can't set handler for dynamic UTIs

@@ -27,7 +27,15 @@
       local ws="''${1:?usage: terraformw <workspace> [args...]}"
       shift
       local -a env=(TF_WORKSPACE="$ws")
-      if [[ -f "''${ws}.tfvars" ]]; then
+      local chdir=""
+      local a
+      for a in "$@"; do
+        case "$a" in
+          -chdir=*) chdir="''${a#-chdir=}" ;;
+        esac
+      done
+      # -var-file is resolved relative to -chdir, so the check must follow suit
+      if [[ -f "''${chdir:+$chdir/}''${ws}.tfvars" ]]; then
         local arg="-var-file=''${ws}.tfvars"
         env+=(
           TF_CLI_ARGS_plan="$arg"
