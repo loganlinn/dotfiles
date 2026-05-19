@@ -137,12 +137,22 @@ with lib; {
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
-        # Clear hotkeys for input source switching that conflict with kitty_mod+space>...
-        #   60 = "Select the previous input source" (^Space)
-        #   61 = "Select next source in Input menu" (^⌥Space)
+        # AppleSymbolicHotKeys entries.
+        #   60  = "Select the previous input source" (^Space) — disabled, conflicts with kitty_mod+space
+        #   61  = "Select next source in Input menu" (^⌥Space) — disabled, conflicts with kitty_mod+space
+        #   163 = "Show Notification Center" — bind to ⌥N
+        # parameters = [ ASCII vKey modifierMask ]
+        # modifiers: shift=131072, control=262144, option=524288, command=1048576
         "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
           "60" = { enabled = false; };
           "61" = { enabled = false; };
+          "163" = {
+            enabled = 1;
+            value = {
+              parameters = [ 110 45 524288 ];
+              type = "standard";
+            };
+          };
         };
         ".GlobalPreferences" = {
           # AppleSpacesSwitchOnActivate = true; # automatically switch to a new space when switching to the application
