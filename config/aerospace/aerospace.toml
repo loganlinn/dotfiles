@@ -305,6 +305,11 @@ run = "move-node-to-workspace E"
 
 [[on-window-detected]]
 if.app-id = "us.zoom.xos"
+if.window-title-regex-substring = "Zoom Meeting|Zoom Workplace"
+run = ["layout tiling"]
+
+[[on-window-detected]]
+if.app-id = "us.zoom.xos"
 run = ["layout floating"]
 check-further-callbacks = true
 
@@ -352,6 +357,11 @@ run = "layout floating"
 [[on-window-detected]]
 if.app-id = "com.mitchellh.ghostty"
 run = "layout tiling"
+
+[[on-window-detected]]
+if.app-id = "com.tinyspeck.slackmacgap"
+if.window-title-regex-substring = "^Huddle:"
+run = ["layout tiling", "move-node-to-workspace 9"]
 
 [[on-window-detected]]
 if.app-id = "com.tinyspeck.slackmacgap"
