@@ -1,0 +1,11 @@
+# Resolve sourced files where reachable
+external-sources=true
+
+# SC1091: Not following: file source — intentional cross-script sourcing,
+# many sourced files live outside the repo (XDG dirs, $HOME, etc.)
+disable=SC1091
+
+# Optional checks
+enable=avoid-nullary-conditions
+enable=check-unassigned-uppercase
+enable=deprecate-which
