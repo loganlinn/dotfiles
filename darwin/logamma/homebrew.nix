@@ -91,7 +91,6 @@
     ];
     casks = [
       "1password-cli"
-      "codex"
       "discord"
       "ghostty"
       "hammerspoon"

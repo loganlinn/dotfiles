@@ -52,24 +52,23 @@ in
   programs.hammerspoon.enable = true;
   programs.sunbeam.enable = false;
   programs.xcode.enable = true;
-  services.brewAutoupdate.enable = true;
-  services.brewAutoupdate.only = [
-    "aerospace"
-    "borders"
-    "codex"
-    "crush"
-    "curl"
-    "gh"
-    "git"
-    "graphite"
-    "hammerspoon"
-    "karabiner-elements"
-    "kitty"
-    "kubernetes-cli"
-    "llama.cpp"
-    "ollama"
-    "sem-cli"
-  ];
+  services.brewAutoupdate.enable = false;
+  # services.brewAutoupdate.only = [
+  #   "aerospace"
+  #   "borders"
+  #   "crush"
+  #   "curl"
+  #   "gh"
+  #   "git"
+  #   "graphite"
+  #   "hammerspoon"
+  #   "karabiner-elements"
+  #   "kitty"
+  #   "kubernetes-cli"
+  #   "llama.cpp"
+  #   "ollama"
+  #   "sem-cli"
+  # ];
   # services.kanata.enable = false;
   # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
