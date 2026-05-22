@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# Copy a commit message to the clipboard (defaults to HEAD).
+
+ref=${1:-HEAD}
+msg=$(git log -1 --format=%B "$ref") || exit
+printf '%s' "$msg"
+printf '%s' "$msg" | pbcopy

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# terraformw - run terraform with a workspace-scoped environment.
+#
+# Compared to using terraform directly:
+# 
+# terraformw staging apply
+# > terraform workspace select staging
+# > terraform apply -var-file=staging.tfvars
+#
+# terraformw prod plan
+# > terraform workspace select prod
+# > terraform plan -var-file=prod.tfvars
+# 
+# terraformw dev import foo.bar "baz"
+# > terraform workspace select dev
+# > terraform import -var-file=dev.tfvars foo.bar "baz"
+
+set -euo pipefail
+[[ -z ${TRACE-} ]] || set -x
+
+readonly PROG=${0##*/}
+
+usage() {
+	cat <<EOF
+Usage: $PROG <workspace> [--] [terraform args...]
+       $PROG -h|--help
+
+Runs terraform with TF_WORKSPACE set to <workspace>.
+
+If <workspace>.tfvars exists in the current directory, injects
+-var-file=<workspace>.tfvars for Terraform commands that accept var files.
+
+
+EOF
+}
+
+die() {
+	echo >&2 "$PROG: $*"
+	exit 2
+}
+
+main() {
+	(($#)) || {
+		usage >&2
+		exit 2
+	}
+
+	case ${1-} in
+		-h | --help)
+			usage
+			exit 0
+			;;
+	esac
+
+	local workspace=$1
+	shift
+	[[ -n $workspace ]] || die "workspace is required"
+
+  # Arguments after -- always passed through to terraform.
+	if (($#)) && [[ ${1-} == -- ]]; then
+		shift
+	fi
+
+	local -a terraform_env=("TF_WORKSPACE=$workspace")
+
+	local var_file="${workspace}.tfvars"
+	if [[ -f $var_file ]]; then
+		local var_arg="-var-file=$var_file"
+		terraform_env+=(
+			"TF_CLI_ARGS_plan=$var_arg"
+			"TF_CLI_ARGS_apply=$var_arg"
+			"TF_CLI_ARGS_console=$var_arg"
+			"TF_CLI_ARGS_import=$var_arg"
+			"TF_CLI_ARGS_refresh=$var_arg"
+			"TF_CLI_ARGS_test=$var_arg"
+		)
+	fi
+
+	exec env "${terraform_env[@]}" terraform "$@"
+}
+
+main "$@"

@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# claude-cmd — launch claude with a session seeded by a shell command's output.
+#
+# Usage:
+#   claude-cmd [claude args...] [-p|--prompt TEXT] -- <shell command...>
+#   claude-cmd <shell command...>      # `--` optional when no claude args
+#
+# Examples:
+#   claude-cmd -- npm test
+#   claude-cmd -p "why is this failing?" -- cargo build
+#   claude-cmd --model opus -p "explain" -- git log -5
+
+set -euo pipefail
+
+readonly PROG="${0##*/}"
+
+die() {
+  echo >&2 "$PROG: $*"
+  exit 1
+}
+
+usage() {
+  sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+# --------------------------------------------------------------------------- #
+# Argument parsing
+# --------------------------------------------------------------------------- #
+
+prompt=""
+claude_args=()
+shell_cmd=()
+
+# Locate `--` separator, if any.
+sep_found=0
+for arg in "$@"; do
+  if [[ $arg == "--" ]]; then
+    sep_found=1
+    break
+  fi
+done
+
+if ((sep_found)); then
+  # Split into before/after the first `--`.
+  before=()
+  after=()
+  past=0
+  for arg in "$@"; do
+    if ((!past)) && [[ $arg == "--" ]]; then
+      past=1
+      continue
+    fi
+    if ((past)); then
+      after+=("$arg")
+    else
+      before+=("$arg")
+    fi
+  done
+
+  # Extract -p/--prompt from `before`; everything else passes through to claude.
+  i=0
+  while ((i < ${#before[@]})); do
+    arg="${before[i]}"
+    case "$arg" in
+    -p | --prompt)
+      ((i + 1 < ${#before[@]})) || die "$arg requires a value"
+      prompt="${before[i + 1]}"
+      i=$((i + 2))
+      ;;
+    --prompt=*)
+      prompt="${arg#--prompt=}"
+      i=$((i + 1))
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      claude_args+=("$arg")
+      i=$((i + 1))
+      ;;
+    esac
+  done
+
+  shell_cmd=("${after[@]}")
+else
+  # No `--`: every arg is the shell command (no claude args, no -p).
+  shell_cmd=("$@")
+fi
+
+((${#shell_cmd[@]} > 0)) || {
+  usage >&2
+  exit 2
+}
+
+# --------------------------------------------------------------------------- #
+# Execute shell command, capture combined stdout/stderr.
+# --------------------------------------------------------------------------- #
+
+exec "${shell_cmd[@]}" 2>&1 | claude "${prompt+"${prompt}\n"}\n\`${shell_cmd[*]}\`"

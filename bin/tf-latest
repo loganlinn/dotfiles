@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+#
+# tf-latest — print the latest version of a Terraform provider, module, or git source.
+#
+# Examples:
+#   tf-latest hashicorp/aws                        # provider
+#   tf-latest terraform-aws-modules/vpc/aws        # module (namespace/name/provider)
+#   tf-latest registry.terraform.io/hashicorp/aws  # provider with registry host
+#   tf-latest github.com/cloudposse/terraform-aws-vpc
+#   tf-latest git::https://github.com/foo/bar.git
+#   tf-latest git@github.com:foo/bar.git
+
+set -euo pipefail
+[[ -z ${TRACE-} ]] || set -x
+
+die() {
+	echo >&2 "tf-latest: $*"
+	exit 1
+}
+
+# Latest tag from a git remote URL, preferring semver-looking tags (with optional 'v' prefix).
+latest_git_tag() {
+	local url=$1
+	local tags
+	tags=$(git ls-remote --tags --refs "$url" 2>/dev/null) || die "failed to list tags for $url"
+	[[ -n $tags ]] || die "no tags at $url"
+
+	# Strip refs/tags/, filter to semver-ish (vX.Y[.Z][-pre][+meta]), sort, take last.
+	local latest
+	latest=$(
+		awk '{ sub(/^.*refs\/tags\//, "", $2); print $2 }' <<<"$tags" \
+			| grep -E '^v?[0-9]+\.[0-9]+(\.[0-9]+)?([-+].+)?$' \
+			| sort -V \
+			| tail -n1
+	) || true
+
+	[[ -n $latest ]] || die "no semver tags at $url"
+	echo "$latest"
+}
+
+# Latest version from the Terraform Registry HTTP API.
+latest_registry_version() {
+	local url=$1
+	local resp
+	resp=$(curl -fsSL "$url") || die "registry request failed: $url"
+
+	# Pull the top-level "version" field. The API returns the latest as `.version`.
+	local version
+	version=$(jq -er '.version' <<<"$resp") || die "no .version field in response from $url"
+	echo "$version"
+}
+
+is_git_ref() {
+	local ref=$1
+	[[ $ref == git::* ]] && return 0
+	[[ $ref == git@* ]] && return 0
+	[[ $ref == *.git ]] && return 0
+	[[ $ref == ssh://* ]] && return 0
+	[[ $ref == https://* ]] && return 0
+	[[ $ref == http://* ]] && return 0
+	# bare github/gitlab/bitbucket references like github.com/owner/repo
+	[[ $ref == github.com/* ]] && return 0
+	[[ $ref == gitlab.com/* ]] && return 0
+	[[ $ref == bitbucket.org/* ]] && return 0
+	return 1
+}
+
+normalize_git_url() {
+	local ref=$1
+	# Strip terraform's git:: prefix
+	ref=${ref#git::}
+	# Strip ?ref=… query string (terraform's ref pin)
+	ref=${ref%%\?*}
+	# Bare host/owner/repo → https URL
+	case $ref in
+		github.com/*|gitlab.com/*|bitbucket.org/*)
+			ref="https://$ref"
+			;;
+	esac
+	# Strip trailing /
+	ref=${ref%/}
+	echo "$ref"
+}
+
+resolve_registry_url() {
+	local ref=$1 host="registry.terraform.io"
+
+	# Strip explicit host if present.
+	case $ref in
+		registry.terraform.io/*|app.terraform.io/*|*.terraform.io/*)
+			host=${ref%%/*}
+			ref=${ref#*/}
+			;;
+	esac
+
+	# Count slashes to decide provider (1) vs module (2).
+	local slashes=${ref//[^\/]/}
+	case ${#slashes} in
+		1)
+			echo "https://${host}/v1/providers/${ref}"
+			;;
+		2)
+			echo "https://${host}/v1/modules/${ref}"
+			;;
+		*)
+			die "cannot interpret '$ref' as provider (ns/name) or module (ns/name/provider)"
+			;;
+	esac
+}
+
+main() {
+	local ref=${1-}
+	[[ -n $ref ]] || die "usage: tf-latest <ref>"
+
+	command -v jq >/dev/null || die "jq is required"
+	command -v curl >/dev/null || die "curl is required"
+
+	if is_git_ref "$ref"; then
+		latest_git_tag "$(normalize_git_url "$ref")"
+	else
+		latest_registry_version "$(resolve_registry_url "$ref")"
+	fi
+}
+
+main "$@"

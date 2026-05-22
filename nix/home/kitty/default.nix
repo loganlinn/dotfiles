@@ -49,6 +49,7 @@ in {
           }
       )
       [
+        "big_mode.py"
         "choose-files.conf"
         "claude-fork.py"
         "cssh.py"
