@@ -51,6 +51,7 @@ in {
       [
         "big_mode.py"
         "choose-files.conf"
+        "copy_cmd_with_output.py"
         "claude-fork.py"
         "cssh.py"
         "current-theme.conf"
