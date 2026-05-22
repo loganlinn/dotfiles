@@ -1,0 +1,294 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# aws-console — open or print AWS Console URLs
+# Mirrors AWS CLI service names as subcommands.
+#
+# Usage: aws-console <service> [<subcommand>] [--print|--url]
+#
+# Region is taken from AWS_DEFAULT_REGION or AWS_REGION (default: us-east-2).
+
+REGION="${AWS_DEFAULT_REGION:-${AWS_REGION:-us-east-2}}"
+BASE="https://${REGION}.console.aws.amazon.com"
+GLOBAL="https://us-east-1.console.aws.amazon.com" # IAM, Route53 are always global
+
+usage() {
+  echo >&2 "Usage: $(basename "$0") <service> [<subcommand>] [--print|--url]"
+  echo >&2 ""
+  echo >&2 "Open (or print) the AWS Console page for a service or sub-resource."
+  echo >&2 ""
+  echo >&2 "Services and subcommands:"
+  echo >&2 "  acm"
+  echo >&2 "  cloudwatch (cw)          dashboards, log-groups, log-insights, metrics, alarms"
+  echo >&2 "  controltower"
+  echo >&2 "  dynamodb (ddb)"
+  echo >&2 "  ec2                      instances, load-balancers, target-groups,"
+  echo >&2 "                           autoscaling-groups, key-pairs, eips, amis, launch-templates"
+  echo >&2 "  ecr"
+  echo >&2 "  ecs                      clusters, task-definitions"
+  echo >&2 "  eks"
+  echo >&2 "  elasticache              redis, subnet-groups, parameter-groups"
+  echo >&2 "  glue"
+  echo >&2 "  iam                      roles, policies, users, groups"
+  echo >&2 "  kafka (msk)              clusters, connectors, plugins"
+  echo >&2 "  kms"
+  echo >&2 "  rds                      databases, snapshots, parameter-groups"
+  echo >&2 "  route53 (dns)"
+  echo >&2 "  s3"
+  echo >&2 "  secretsmanager (sm)"
+  echo >&2 "  sns                      topics, subscriptions"
+  echo >&2 "  sqs"
+  echo >&2 "  ssm                      parameter-store"
+  echo >&2 "  sso                      permission-sets, organization"
+  echo >&2 "  vpc                      vpcs, subnets"
+  echo >&2 ""
+  echo >&2 "Options:"
+  echo >&2 "  --print, --url   Print the URL to stdout instead of opening it"
+  echo >&2 "  -h, --help       Show this help"
+  echo >&2 ""
+  echo >&2 "Environment:"
+  echo >&2 "  AWS_DEFAULT_REGION   Region to use (default: us-east-2)"
+  echo >&2 "  AWS_REGION           Fallback if AWS_DEFAULT_REGION is unset"
+  exit 1
+}
+
+open_url() {
+  local url="$1"
+  if command -v open &>/dev/null; then
+    open "$url"
+  elif command -v xdg-open &>/dev/null; then
+    xdg-open "$url"
+  else
+    echo >&2 "No browser opener found (tried: open, xdg-open). URL:"
+    echo "$url"
+  fi
+}
+
+bad_sub() { echo >&2 "Unknown subcommand: ${SERVICE} ${SUBCOMMAND}"; usage; }
+
+SERVICE=""
+SUBCOMMAND=""
+ACTION="open"
+
+for arg in "$@"; do
+  case "$arg" in
+  --print | --url) ACTION="print" ;;
+  -h | --help) usage ;;
+  -*)
+    echo >&2 "Unknown flag: $arg"
+    usage
+    ;;
+  *)
+    if [[ -z "$SERVICE" ]]; then
+      SERVICE="$arg"
+    elif [[ -z "$SUBCOMMAND" ]]; then
+      SUBCOMMAND="$arg"
+    else
+      echo >&2 "Unexpected argument: $arg"
+      usage
+    fi
+    ;;
+  esac
+done
+
+[[ -z "$SERVICE" ]] && usage
+
+case "$SERVICE" in
+acm)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/acm/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+cloudwatch | cw)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/cloudwatch/home?region=${REGION}" ;;
+  dashboards) URL="${BASE}/cloudwatch/home?region=${REGION}#dashboards/" ;;
+  log-groups) URL="${BASE}/cloudwatch/home?region=${REGION}#logsV2:log-groups" ;;
+  log-insights) URL="${BASE}/cloudwatch/home?region=${REGION}#logsV2:logs-insights" ;;
+  metrics) URL="${BASE}/cloudwatch/home?region=${REGION}#metricsV2" ;;
+  alarms) URL="${BASE}/cloudwatch/home?region=${REGION}#alarmsV2:" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+controltower)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/controltower/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+dynamodb | ddb)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/dynamodbv2/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+ec2)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/ec2/home?region=${REGION}" ;;
+  instances) URL="${BASE}/ec2/home?region=${REGION}#Instances:" ;;
+  load-balancers) URL="${BASE}/ec2/home?region=${REGION}#LoadBalancers:" ;;
+  target-groups) URL="${BASE}/ec2/home?region=${REGION}#TargetGroups:" ;;
+  autoscaling-groups) URL="${BASE}/ec2/home?region=${REGION}#AutoScalingGroups:" ;;
+  key-pairs) URL="${BASE}/ec2/home?region=${REGION}#KeyPairs:" ;;
+  eips) URL="${BASE}/ec2/home?region=${REGION}#Addresses:" ;;
+  amis) URL="${BASE}/ec2/home?region=${REGION}#Images:" ;;
+  launch-templates) URL="${BASE}/ec2/home?region=${REGION}#LaunchTemplates:" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+ecr)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/ecr/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+ecs)
+  case "${SUBCOMMAND:-}" in
+  "" | clusters) URL="${BASE}/ecs/v2/clusters?region=${REGION}" ;;
+  task-definitions) URL="${BASE}/ecs/v2/task-definitions?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+eks)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/eks/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+elasticache)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/elasticache/home?region=${REGION}" ;;
+  redis) URL="${BASE}/elasticache/home?region=${REGION}#/redis" ;;
+  subnet-groups) URL="${BASE}/elasticache/home?region=${REGION}#/subnet-groups" ;;
+  parameter-groups) URL="${BASE}/elasticache/home?region=${REGION}#/parameter-groups" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+glue)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/glue/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+iam)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${GLOBAL}/iam/home?region=${REGION}" ;;
+  roles) URL="${GLOBAL}/iam/home?region=${REGION}#/roles" ;;
+  policies) URL="${GLOBAL}/iam/home?region=${REGION}#/policies" ;;
+  users) URL="${GLOBAL}/iam/home?region=${REGION}#/users" ;;
+  groups) URL="${GLOBAL}/iam/home?region=${REGION}#/groups" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+kafka | msk)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/msk/home?region=${REGION}#/landing" ;;
+  clusters) URL="${BASE}/msk/home?region=${REGION}#clusters" ;;
+  connectors) URL="${BASE}/msk/home?region=${REGION}#connectors" ;;
+  plugins) URL="${BASE}/msk/home?region=${REGION}#customPlugins" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+kms)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/kms/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+rds)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/rds/home?region=${REGION}" ;;
+  databases) URL="${BASE}/rds/home?region=${REGION}#databases:" ;;
+  snapshots) URL="${BASE}/rds/home?region=${REGION}#snapshots:" ;;
+  parameter-groups) URL="${BASE}/rds/home?region=${REGION}#parameter-groups:" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+route53 | dns)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${GLOBAL}/route53/v2/hostedzones?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+s3)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/s3/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+secretsmanager | sm)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/secretsmanager/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+sns)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/sns/v3/home?region=${REGION}" ;;
+  topics) URL="${BASE}/sns/v3/home?region=${REGION}#/topics" ;;
+  subscriptions) URL="${BASE}/sns/v3/home?region=${REGION}#/subscriptions" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+sqs)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/sqs/v3/home?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+ssm)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/systems-manager/home?region=${REGION}" ;;
+  parameter-store) URL="${BASE}/systems-manager/parameters?region=${REGION}" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+sso)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/singlesignon/home?region=${REGION}" ;;
+  permission-sets) URL="${BASE}/singlesignon/home?region=${REGION}#/permissionSets" ;;
+  organization) URL="${BASE}/singlesignon/home?region=${REGION}#/instances" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+vpc)
+  case "${SUBCOMMAND:-}" in
+  "") URL="${BASE}/vpcconsole/home?region=${REGION}" ;;
+  vpcs) URL="${BASE}/vpcconsole/home?region=${REGION}#vpcs:" ;;
+  subnets) URL="${BASE}/vpcconsole/home?region=${REGION}#subnets:" ;;
+  *) bad_sub ;;
+  esac
+  ;;
+
+*)
+  echo >&2 "Unknown service: $SERVICE"
+  usage
+  ;;
+esac
+
+case "$ACTION" in
+print) echo "$URL" ;;
+open) open_url "$URL" ;;
+esac
