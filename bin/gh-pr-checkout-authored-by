@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: gh-pr-checkout-authored-by [options] [author]
+
+Select and checkout an open/draft PR by author (default: @me).
+
+Options:
+  -f, --force    Reset local branch to latest PR state
+      --detach   Checkout with detached HEAD
+  -h, --help     Show this help
+EOF
+}
+
+checkout_args=()
+author=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    -f|--force|--detach) checkout_args+=("$1"); shift ;;
+    -*) echo >&2 "unknown option: $1"; usage >&2; exit 1 ;;
+    *) author="$1"; shift ;;
+  esac
+done
+
+author="${author:-@me}"
+
+pr="$(gh pr list --author "$author" --state open \
+  --json number,title,headRefName,isDraft \
+  --template '{{range .}}{{.number}}{{"\t"}}{{if .isDraft}}[draft] {{end}}{{.title}} ({{.headRefName}}){{"\n"}}{{end}}' \
+  | fzf --select-1 --exit-0 --header "Open PRs by $author")" || exit 0
+
+gh pr checkout "${checkout_args[@]}" "$(cut -f1 <<<"$pr")"
