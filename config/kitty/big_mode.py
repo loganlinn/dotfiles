@@ -1,6 +1,6 @@
 from kittens.tui.handler import result_handler
 
-BIG_FONT_MULTIPLIER = 1.75
+BIG_FONT_MULTIPLIER = 1.67
 BIG_PADDING = 25.0
 PADDING_EDGES = ('padding-left', 'padding-top', 'padding-right', 'padding-bottom')
 
