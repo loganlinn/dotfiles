@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo >&2 "Usage: $(basename "$0") [--profile PROFILE] -- COMMAND [ARGS...]"
+  echo >&2 ""
+  echo >&2 "Exports AWS SSO session credentials as environment variables and runs COMMAND."
+  echo >&2 ""
+  echo >&2 "Options:"
+  echo >&2 "  --profile PROFILE   AWS profile name (default: \$AWS_PROFILE or 'default')"
+  echo >&2 "  --                  Separator between options and the command to run"
+  echo >&2 ""
+  echo >&2 "Examples:"
+  echo >&2 "  $(basename "$0") -- terraform plan"
+  echo >&2 "  $(basename "$0") --profile staging -- terraform plan"
+  exit 1
+}
+
+profile="${AWS_PROFILE:-default}"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --profile) profile="$2"; shift 2 ;;
+    --) shift; break ;;
+    -h|--help) usage ;;
+    *) break ;;
+  esac
+done
+
+[[ $# -eq 0 ]] && usage
+
+creds_json="$(aws configure export-credentials --profile "$profile" --format process 2>/dev/null)" || {
+  echo >&2 "SSO session expired or not started — logging in..."
+  aws sso login --profile "$profile"
+  creds_json="$(aws configure export-credentials --profile "$profile" --format process)"
+}
+
+export AWS_ACCESS_KEY_ID="$(jq -r '.AccessKeyId' <<<"$creds_json")"
+export AWS_SECRET_ACCESS_KEY="$(jq -r '.SecretAccessKey' <<<"$creds_json")"
+export AWS_SESSION_TOKEN="$(jq -r '.SessionToken' <<<"$creds_json")"
+unset AWS_PROFILE
+
+exec "$@"

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+require() {
+  for cmd in "$@"; do
+    command -v "$cmd" >/dev/null || {
+      echo >&2 "required: $cmd"
+      exit 1
+    }
+  done
+}
+
+require docker fzf
+
+selected=$(docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedSince}}\t{{.Size}}" | fzf \
+  --multi \
+  --header-lines=1 \
+  --prompt="docker rmi> " \
+  --reverse) || {
+  exit_code=$?
+  if [[ $exit_code -eq 130 ]]; then
+    exit 0
+  fi
+  exit "$exit_code"
+}
+
+if [[ -z "$selected" ]]; then
+  echo >&2 "No images selected."
+  exit 0
+fi
+
+mapfile -t image_ids < <(awk '{print $3}' <<<"$selected")
+
+echo "Removing ${#image_ids[@]} image(s)..."
+failed=0
+for id in "${image_ids[@]}"; do
+  docker rmi "$id" || {
+    echo >&2 "  skipped: $id"
+    failed=$((failed + 1))
+  }
+done
+
+if ((failed > 0)); then
+  echo >&2 "$failed image(s) could not be removed (in use by a container -- stop it first, or force with: docker rmi -f <id>)"
+  exit 1
+fi
