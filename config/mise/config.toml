@@ -1,0 +1,24 @@
+[settings]
+experimental = true
+
+[tools]
+aube = "latest"
+# fnox = "latest"
+babashka = { version = "latest", exe = "bb" }
+"github:joa23/linear-cli" = "latest"
+"github:yshavit/mdq" = "latest"
+hk = "latest"
+watchexec = "latest"
+
+# [tasks."s3:pull"]
+# usage = '''
+# arg "[options]" var=#true
+# arg "<s3_path>"
+# '''
+# run = ['''aws s3 sync s3://'{{ usage.s3_path }}' ~/s3/'{{ usage.s3_path }}'''']
+
+# [tasks."s3:pull:terraform"]
+# run = [
+#   '''aws s3 sync s3://gamma-terraform ~/s3/gamma-terraform''',
+#   '''fd .tfstate ~/s3/gamma-terraform -X chmod 600''',
+# ]
