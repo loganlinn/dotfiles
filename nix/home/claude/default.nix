@@ -66,22 +66,27 @@ in
       function claude() {
         local chdir=.
         local system_prompt=
+
         local git_toplevel=
         local git_prefix=
         if git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null); then
           git_prefix=$(git rev-parse --show-prefix 2>/dev/null)
-          system_prompt="''${system_prompt-}User initiated from <GIT_PREFIX>$git_prefix</GIT_PREFIX> of <GIT_TOPLEVEL>$git_toplevel</GIT_TOPLEVEL>.\n"
-          system_prompt="''${system_prompt-}Prioritize the file tree at <GIT_TOPLEVEL>/<GIT_PREFIX> when interpreting user prompts.\n"
+          system_prompt="User initiated from <GIT_PREFIX>$git_prefix</GIT_PREFIX> of <GIT_TOPLEVEL>$git_toplevel</GIT_TOPLEVEL>. Prioritize the file tree at <GIT_TOPLEVEL>/<GIT_PREFIX> when interpreting user prompts."
           chdir=$git_toplevel
         fi
-        local claude_cmd=$(command -v claude) || return 1
+
+        local -a claude_cmd=(
+          "''${commands[claude]:-claude}"
+          --allow-dangerously-skip-permissions
+          --append-system-prompt "$system_prompt"
+          "$@"
+        )
 
         ${pkgs.coreutils-full}/bin/env \
-          --chdir="''${chdir}" \
+          --chdir="$chdir" \
           --unset=ANTHROPIC_API_KEY \
-          -S \
-          DISABLE_ERROR_REPORTING=1 \
-          "''${claude_cmd?}" --append-system-prompt "$system_prompt" "$@"
+          -S DISABLE_ERROR_REPORTING=1 \
+          "''${claude_cmd[@]}"
       }
     '';
   };
