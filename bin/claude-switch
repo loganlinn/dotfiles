@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly PROG="${0##*/}"
+
+die() {
+  echo >&2 "$PROG: $*"
+  exit 1
+}
+
+require() {
+  for cmd in "$@"; do
+    command -v "$cmd" >/dev/null || die "required command not found: $cmd"
+  done
+}
+
+# kitty launches programs with a minimal PATH; restore nix profile dirs if present.
+# No-op on non-nix systems, so the script stays portable.
+for _d in "/etc/profiles/per-user/$USER/bin" "/run/current-system/sw/bin" "$HOME/.nix-profile/bin"; do
+  if [[ -d "$_d" && ":$PATH:" != *":$_d:"* ]]; then
+    PATH="$_d:$PATH"
+  fi
+done
+unset _d
+
+require claude jq gum kitty
+
+usage() {
+  cat <<-EOF
+		Usage: $PROG [options]
+
+		Switcher for Claude Code agent sessions. Lists live sessions from
+		'claude agents --json' and focuses the kitty window running the chosen
+		one, matched by the CLAUDE_SESSION_ID kitty user-var.
+
+		Options:
+		  (none)          Pick a session from a gum table, focus its kitty window
+		  -w, --waiting   Skip the menu; focus the longest-waiting session
+		  -h, --help      Show this help
+
+		Requires kitty remote control (allow_remote_control + listen_on) and the
+		SessionStart hook that stamps CLAUDE_SESSION_ID onto the kitty window.
+		Sessions running outside kitty are listed but cannot be focused.
+	EOF
+}
+
+# Interactive agents, ranked waiting -> busy -> idle, newest first within a rank.
+agents() {
+  claude agents --json | jq -c '
+		map(select(.kind == "interactive"))
+		| map(.rank = ({"waiting":0,"busy":1,"idle":2}[.status] // 3))
+		| sort_by(.rank, (- .startedAt))
+	'
+}
+
+# Focus the kitty window whose CLAUDE_SESSION_ID user-var equals $1.
+focus() {
+  local sid="$1"
+  kitty @ focus-window -m "var:CLAUDE_SESSION_ID=$sid" 2>/dev/null ||
+    die "no kitty window for session ${sid:0:8} (running outside kitty?)"
+}
+
+cmd_waiting() {
+  local sid
+  sid=$(claude agents --json | jq -r '
+		map(select(.kind == "interactive" and .status == "waiting"))
+		| sort_by(.startedAt) | .[0].sessionId // empty
+	') || die "failed to query 'claude agents --json'"
+  [[ -n "$sid" ]] || {
+    echo >&2 "$PROG: no waiting agents"
+    exit 0
+  }
+  focus "$sid"
+}
+
+cmd_switch() {
+  local sorted count
+  sorted=$(agents) || die "failed to query 'claude agents --json'"
+  count=$(jq length <<<"$sorted")
+  ((count > 0)) || {
+    echo >&2 "$PROG: no interactive claude agents"
+    exit 0
+  }
+
+  local rows
+  rows=$(jq -r --arg home "$HOME" '
+		def fmtage($secs):
+			($secs | floor) as $s
+			| if   $s >= 86400 then "\(($s/86400)|floor)d\((($s%86400)/3600)|floor)h"
+			  elif $s >= 3600  then "\(($s/3600)|floor)h\((($s%3600)/60)|floor)m"
+			  elif $s >= 60    then "\(($s/60)|floor)m"
+			  else "\($s)s" end;
+		(now) as $now
+		| to_entries[]
+		| (.key + 1) as $i
+		| .value as $a
+		| (if   $a.status == "waiting" then "⏳ wait"
+		   elif $a.status == "busy"    then "🔵 busy"
+		   elif $a.status == "idle"    then "⚪ idle"
+		   else "❔ \($a.status // "?")" end) as $st
+		| ($a.name // ($a.cwd | split("/") | last)) as $name
+		| ($a.cwd | if startswith($home) then "~" + .[($home | length):] else . end) as $dir
+		| [$i, $st, $name, $dir, fmtage($now - ($a.startedAt / 1000))] | @tsv
+	' <<<"$sorted")
+
+  local idx
+  idx=$(gum table \
+    -s $'\t' \
+    -c '#,STATUS,NAME,DIR,AGE' \
+    -w 4,9,24,46,7 \
+    -r 1 \
+    --height "$((count + 4 < 30 ? count + 4 : 30))" \
+    <<<"$rows") || exit 0
+  idx="${idx//[^0-9]/}"
+  [[ -n "$idx" ]] || exit 0
+
+  local sid
+  sid=$(jq -r --argjson i "$idx" '.[$i - 1].sessionId // empty' <<<"$sorted")
+  [[ -n "$sid" ]] || die "could not resolve session for row $idx"
+
+  focus "$sid"
+}
+
+case "${1:-}" in
+-w | --waiting | next-waiting) cmd_waiting ;;
+-h | --help | help) usage ;;
+"") cmd_switch ;;
+*) die "unknown option: $1 (try --help)" ;;
+esac
