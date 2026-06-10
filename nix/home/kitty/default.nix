@@ -67,6 +67,7 @@ in {
         "quick-access-terminal.conf"
         "sessions"
         "ssh.conf"
+        "stack_toggle.py"
         "tab_bar.py"
         "themes"
         "user-var-hints.py"

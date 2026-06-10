@@ -47,21 +47,11 @@ in
       cl = "claude";
       clc = "claude --continue";
       clr = "claude --resume";
-      cla = "claude --allow-dangerously-skip-permissions";
-      clcd = "mkdir -p ~/.claude && cd ~/.claude";
-      clsettings = "editor ~/.claude/settings.json";
-      clmcp = "editor ~/.claude/claude.json";
-      clmemory = "editor ~/.claude/CLAUDE.md";
-      clres = "claude --resume";
-      clplan = "claude --permission-mode plan";
       yolo = "claude --dangerously-skip-permissions";
       sonnet = "claude --model sonnet";
       opus = "claude --model opus";
       haiku = "claude --model haiku";
       fable = "claude --model fable";
-      opusplan = "claude --model opusplan";
-      cldots = ''cd "''${DOTFILES_DIR:-$HOME/.dotfiles}" && claude'';
-      claude-simple = "CLAUDE_CODE_SIMPLE=1 claude";
     };
     programs.zsh.initContent = mkIf cfg.code.enable ''
       function claude() {

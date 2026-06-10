@@ -2,7 +2,7 @@
   homebrew = {
     taps = [
       # "abhinav/tap"
-      "anthropics/tap"
+      # "anthropics/tap"
       "aws/tap"
       # "bridgecrewio/tap"
       "buildkite/buildkite"
@@ -24,7 +24,7 @@
         name = "postgresql@16";
         link = true;
       }
-      "anthropics/tap/ant"
+      # "anthropics/tap/ant"
       # "abhinav/tap/restack"
       "aspell"
       "docker-credential-helper-ecr"
