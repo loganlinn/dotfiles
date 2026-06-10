@@ -58,6 +58,7 @@ in
       sonnet = "claude --model sonnet";
       opus = "claude --model opus";
       haiku = "claude --model haiku";
+      fable = "claude --model fable";
       opusplan = "claude --model opusplan";
       cldots = ''cd "''${DOTFILES_DIR:-$HOME/.dotfiles}" && claude'';
       claude-simple = "CLAUDE_CODE_SIMPLE=1 claude";
