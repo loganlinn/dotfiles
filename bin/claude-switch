@@ -14,15 +14,6 @@ require() {
   done
 }
 
-# kitty launches programs with a minimal PATH; restore nix profile dirs if present.
-# No-op on non-nix systems, so the script stays portable.
-for _d in "/etc/profiles/per-user/$USER/bin" "/run/current-system/sw/bin" "$HOME/.nix-profile/bin"; do
-  if [[ -d "$_d" && ":$PATH:" != *":$_d:"* ]]; then
-    PATH="$_d:$PATH"
-  fi
-done
-unset _d
-
 require claude jq gum kitty
 
 usage() {

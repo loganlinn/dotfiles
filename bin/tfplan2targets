@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+#
+# tfplan2targets — list addresses of resources with planned changes from a
+# Terraform plan, one per line. Pipe into fzf/gum to pick `-target=...` args.
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: tfplan2targets [options] [path]
+
+List addresses of managed resources with planned changes (skips no-ops and
+data sources) from a Terraform plan in JSON form, one per line — ready to pipe
+into fzf/gum to build `terraform apply -target=...` flags.
+
+Input is `terraform show -json` output, read from stdin or, when [path] is
+given, produced by running `terraform show -json <path>` for you.
+
+Arguments:
+  path          Saved plan file (the `-out=...` from `terraform plan`).
+
+Options:
+  -h, --help    Show this help and exit.
+
+Examples:
+  terraform plan -out=tfplan
+  tfplan2targets tfplan | fzf --multi
+  terraform show -json tfplan | tfplan2targets
+EOF
+}
+
+# jq filter: managed resources whose planned change is not a pure no-op.
+readonly FILTER='.resource_changes[]
+  | select(.mode == "managed" and .change.actions != ["no-op"])
+  | .address'
+
+main() {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    -h | --help)
+      usage
+      return 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo >&2 "tfplan2targets: unknown option: $1"
+      echo >&2 "Try 'tfplan2targets --help' for usage."
+      return 2
+      ;;
+    *)
+      break
+      ;;
+    esac
+    shift
+  done
+
+  if [[ $# -gt 1 ]]; then
+    echo >&2 "tfplan2targets: too many arguments (expected at most one path)"
+    return 2
+  fi
+
+  # With a path, replace stdin with the plan's JSON; otherwise read stdin.
+  if [[ $# -eq 1 ]]; then
+    local plan=$1
+    if [[ ! -r $plan ]]; then
+      echo >&2 "tfplan2targets: cannot read plan file: $plan"
+      return 1
+    fi
+    if ! command -v terraform >/dev/null 2>&1; then
+      echo >&2 "tfplan2targets: terraform not found on PATH"
+      return 127
+    fi
+    local tmp
+    tmp=$(mktemp)
+    trap 'rm -f "$tmp"' EXIT
+    terraform show -json "$plan" >"$tmp"
+    exec <"$tmp"
+  elif [[ -t 0 ]]; then
+    echo >&2 "tfplan2targets: no path given and stdin is a terminal"
+    echo >&2 "Try 'tfplan2targets --help' for usage."
+    return 2
+  fi
+
+  jq -r "$FILTER"
+}
+
+main "$@"
