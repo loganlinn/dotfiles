@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# claude-shell — seed an interactive Claude session with a shell command's output.
+#
+# A portmanteau of your $SHELL and `claude`.
+# Everything before `--` is handed to the shell verbatim (so `-c`, `-l`, `-i`, etc. all work);
+# its combined output is captured and used to seed an interactive Claude session — as if you'd typed
+# `! <command>` inside Claude.
+# Everything after `--` goes to claude: options first, then a trailing prompt.
+#
+# Because the command runs through your shell, pipes and logic operators
+# (| && || ; etc.) work exactly as written — that's the whole point.
+#
+# Usage:
+#   claude-shell [shell-arg...] [-- [claude-option...] [prompt]]
+#
+# Examples:
+#   claude-shell -c 'echo "Hello, World" | grep "^h"' -- "why does this not match?"
+#   claude-shell -c 'cargo build'
+#   claude-shell -lc env                       # login shell, inspect environment
+#   claude-shell -c 'git log -5' -- --model opus "summarize these commits"
+#
+# Env:
+#   CLAUDE_SHELL_DRYRUN=1   print the claude argv that would run, then exit.
+
+set -euo pipefail
+
+readonly PROG="${0##*/}"
+readonly SHELL_BIN="${SHELL:-/bin/sh}"
+
+die() {
+  echo >&2 "$PROG: $*"
+  exit 1
+}
+
+usage() {
+  sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+# --------------------------------------------------------------------------- #
+# Argument parsing
+# --------------------------------------------------------------------------- #
+
+if (($# == 0)); then
+  usage >&2
+  # NB: a bare `claude-shell` will eventually drop into a script(1)-recorded
+  # interactive shell and hand the playback to claude. Not yet implemented.
+  die "no shell command given"
+fi
+
+case "$1" in
+-h | --help)
+  usage
+  exit 0
+  ;;
+esac
+
+# Split args at the first `--`: shell side (before) vs claude side (after).
+shell_args=()
+claude_args=()
+sep=0
+for arg in "$@"; do
+  if ((!sep)) && [[ $arg == "--" ]]; then
+    sep=1
+    continue
+  fi
+  if ((sep)); then
+    claude_args+=("$arg")
+  else
+    shell_args+=("$arg")
+  fi
+done
+
+((${#shell_args[@]} > 0)) || die "no shell command before \`--\`"
+
+# --------------------------------------------------------------------------- #
+# Run the shell, capture combined stdout/stderr + exit status.
+# --------------------------------------------------------------------------- #
+
+status=0
+output="$("$SHELL_BIN" "${shell_args[@]}" 2>&1)" || status=$?
+
+# --------------------------------------------------------------------------- #
+# Build the seed: command + output, framed like Claude's `!` bash mode.
+# --------------------------------------------------------------------------- #
+
+cmd_display="${SHELL_BIN##*/} ${shell_args[*]}"
+
+if [[ -z $output ]]; then
+  body="(no output)"
+else
+  body="$output"
+fi
+
+seed="Ran \`$cmd_display\`:
+
+$body"
+
+if ((status != 0)); then
+  seed+="
+
+[exit code: $status]"
+fi
+
+# --------------------------------------------------------------------------- #
+# Split claude side into options (leading) + prompt (trailing positional).
+# A trailing token starting with `-` is treated as a flag, not a prompt.
+# --------------------------------------------------------------------------- #
+
+claude_opts=()
+user_prompt=""
+if ((${#claude_args[@]} > 0)); then
+  last="${claude_args[${#claude_args[@]} - 1]}"
+  if [[ $last == -* ]]; then
+    claude_opts=("${claude_args[@]}")
+  else
+    user_prompt="$last"
+    claude_opts=("${claude_args[@]:0:${#claude_args[@]}-1}")
+  fi
+fi
+
+prompt="$seed"
+if [[ -n $user_prompt ]]; then
+  prompt="$seed
+
+$user_prompt"
+fi
+
+# --------------------------------------------------------------------------- #
+# Launch claude, seeded with the prompt (interactive by default).
+# --------------------------------------------------------------------------- #
+
+cmd=(claude)
+if ((${#claude_opts[@]} > 0)); then
+  cmd+=("${claude_opts[@]}")
+fi
+cmd+=("$prompt")
+
+if [[ -n ${CLAUDE_SHELL_DRYRUN:-} ]]; then
+  printf '%s\n' "${cmd[@]}"
+  exit 0
+fi
+
+exec "${cmd[@]}"
