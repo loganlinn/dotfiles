@@ -47,7 +47,7 @@
       "gnu-getopt"
       # "grafana"
       # "hcledit"
-      "incus"
+      # "incus"
       # "inframap"
       # "jq"
       # "just"
