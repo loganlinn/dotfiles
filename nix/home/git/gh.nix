@@ -108,6 +108,8 @@ in
         octocat = "api /octocat";
         license = ''!gh api --paginate --jq 'if type == "object" then .body else .[].name end' licenses/"''${1-}"'';
 
+        coa = "!gh-pr-checkout-authored-by \"$@\"";
+
         my-org = ''
           !gh api graphql -F owner='{owner}' -F name='{repo}' -f query='
             query($name: String!, $owner: String!) {
@@ -137,13 +139,24 @@ in
             | ($teams | sort) + ($users | sort_by(ascii_downcase))
             | .[]'
         '';
-
         my-team = "!gh my-org | sed '/${config.my.github.username}/d'";
-        my-prs = "pr list --author ${config.my.github.username}";
-        coa = "!gh-pr-checkout-authored-by \"$@\"";
-        my-runs = "run list --user ${config.my.github.username}";
+        my-prs = "pr list --author @me";
+        my-runs = ''!gh run list --user "$(gh api user --jq .login)"''; # does not support @me
+        my-user = "api user";
 
-        reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
+        prs = "pr list";
+        prs-todo = "pr list --search 'user-review-requested:@me -reviewed-by:@me'";
+        prs-involved = "pr list --search involves:@me";
+        prs-mine = "pr list --author @me --state all";
+        prs-draft = "pr list --author @me --draft";
+        prs-returned = "pr list --author @me --search review:changes_requested";
+        prs-approved = "pr list --author @me --search 'review:approved -is:draft'";
+        prs-mergeable = "pr list --author @me --search 'review:approved -is:draft'";
+        prs-merged = "pr list --author @me --status closed --search is:merged";
+        prs-unmerged = "pr list --author @me --search is:unmerged";
+        prs-reviewed-by-me = "pr list --search 'reviewed-by:@me'";
+        pr-reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
+
         edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
 
         aliases = "alias list";
