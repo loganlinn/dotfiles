@@ -3,7 +3,7 @@
     taps = [
       # "abhinav/tap"
       # "anthropics/tap"
-      "aws/tap"
+      # "aws/tap"
       # "bridgecrewio/tap"
       "buildkite/buildkite"
       "charmbracelet/tap"
@@ -28,7 +28,7 @@
       # "abhinav/tap/restack"
       "aspell"
       "docker-credential-helper-ecr"
-      "aws/tap/eksctl"
+      # "aws/tap/eksctl"
       # "bridgecrewio/tap/yor"
       "buildkite/buildkite/bk@3"
       "caddy"
