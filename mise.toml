@@ -86,6 +86,16 @@ run = '''
 nix flake update --commit-lock-file "$@"
 '''
 
+[tasks."nix:update:core"]
+depends = [
+  { task = "nix:update", args = [
+    "nixpkgs",
+    "home-manager",
+    "nix-darwin",
+    "nixos-hardware",
+  ] },
+]
+
 [tasks."nix:repl"]
 alias = "repl"
 description = "Start flake repl"

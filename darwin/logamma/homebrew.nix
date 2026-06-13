@@ -1,24 +1,30 @@
-{
+{lib, ...}: {
   homebrew = {
-    taps = [
-      # "abhinav/tap"
-      # "anthropics/tap"
-      # "aws/tap"
-      # "bridgecrewio/tap"
-      "buildkite/buildkite"
-      "charmbracelet/tap"
-      # "dagger/tap"
-      # "keith/formulae"
-      "localstack/tap"
-      # "minamijoyo/hcledit"
-      # "minamijoyo/tfmigrate"
-      "minamijoyo/tfschema"
-      # "minamijoyo/tfupdate"
-      "pulumi/tap"
-      "tsonglew/dutis"
-      "withgraphite/tap"
-      # "wedow/tools"
-    ];
+    taps =
+      lib.map
+      (tap: {
+        name = tap;
+        trusted = true;
+        force_auto_update = true;
+      }) [
+        # "abhinav/tap"
+        # "anthropics/tap"
+        # "aws/tap"
+        # "bridgecrewio/tap"
+        "buildkite/buildkite"
+        "charmbracelet/tap"
+        # "dagger/tap"
+        # "keith/formulae"
+        "localstack/tap"
+        # "minamijoyo/hcledit"
+        # "minamijoyo/tfmigrate"
+        "minamijoyo/tfschema"
+        # "minamijoyo/tfupdate"
+        "pulumi/tap"
+        "tsonglew/dutis"
+        "withgraphite/tap"
+        # "wedow/tools"
+      ];
     brews = [
       {
         name = "postgresql@16";

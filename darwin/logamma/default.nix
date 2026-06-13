@@ -88,7 +88,7 @@ in
   ids.gids.nixbld = 30000;
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
   environment.etc."nix/nix.custom.conf".text = settingsToConf config.my.nix.settings;
-  system.stateVersion = 5;
+  system.stateVersion = 7;
   system.duti = {
     enable = true;
     settings = ''
