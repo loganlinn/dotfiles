@@ -47,7 +47,14 @@ in
 
   programs.cleanshot.enable = true;
   programs.aerospace.enable = true;
-  programs.aerospace.borders.enable = true;
+  services.jankyborders = {
+    enable = true;
+    active_color = "0xffbd93f9";
+    inactive_color = "0xff414550";
+    width = 6.0;
+    hidpi = true; # module renders as `hidpi=on`
+    style = "round";
+  };
   programs.emacs-plus.enable = true;
   programs.hammerspoon.enable = true;
   programs.sunbeam.enable = false;
@@ -55,7 +62,6 @@ in
   services.brewAutoupdate.enable = false;
   # services.brewAutoupdate.only = [
   #   "aerospace"
-  #   "borders"
   #   "crush"
   #   "curl"
   #   "gh"

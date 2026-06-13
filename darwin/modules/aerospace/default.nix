@@ -11,9 +11,6 @@ in
 {
   options.programs.aerospace = {
     enable = mkEnableOption "aerospace window manager";
-    borders = {
-      enable = mkEnableOption "JankyBorders";
-    };
     configFile = mkOption {
       type = types.nullOr types.path;
       default = "${config.my.flakeDirectory}/config/aerospace/aerospace.toml";
@@ -29,10 +26,19 @@ in
         };
       };
 
+    # AeroSpace via Homebrew cask, NOT pkgs.aerospace / services.aerospace. Deliberate:
+    #   - Stable /Applications/AeroSpace.app path preserves macOS Accessibility (TCC) grants +
+    #     SMAppService login-item across upgrades. nix-store bundle path churns per version bump
+    #     -> forces re-granting Accessibility + re-registering start-at-login.
+    #   - brew upgrade decoupled from flake.lock / nixpkgs-maintainer-PR lag (AeroSpace is beta,
+    #     frequent releases). Both sources ship the same prebuilt release zip; only delivery differs.
+    #   - services.aerospace asserts start-at-login=false + runs AeroSpace from its own launchd
+    #     agent. We instead leave startup to AeroSpace.app itself (SMAppService login item, toggled
+    #     by start-at-login in config/aerospace/aerospace.toml) — a different model.
+    # The cask sets up NO launchd agent / login item itself; it only installs the .app + CLI.
     homebrew = {
-      taps = [ "nikitabobko/tap" ] ++ optional cfg.borders.enable "FelixKratz/formulae";
+      taps = [ "nikitabobko/tap" ];
       casks = [ "nikitabobko/tap/aerospace" ];
-      brews = optional cfg.borders.enable "FelixKratz/formulae/borders";
     };
 
     environment.systemPath = [

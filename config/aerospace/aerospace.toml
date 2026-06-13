@@ -14,7 +14,7 @@ automatically-unhide-macos-hidden-apps = false
 
 after-startup-command = [
   # '''exec-and-forget hs -A -c 'hs.alert.show("✅ Aerospace")'''',
-  'exec-and-forget borders active_color=0xffbd93f9 inactive_color=0xff414550 width=6.0 hidpi=on style=round',
+  # borders managed by nix-darwin services.jankyborders launchd agent (was: exec-and-forget borders ...)
 ]
 
 on-focused-monitor-changed = [
