@@ -6,8 +6,7 @@
   ...
 }:
 with builtins;
-with lib;
-let
+with lib; let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -15,8 +14,7 @@ let
     #---------------------------------------------------------
     ${readFile file}
   '';
-in
-{
+in {
   imports = [
     ./options.nix
     ./plugins.nix
@@ -32,7 +30,7 @@ in
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = { };
+    localVariables = {};
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -144,7 +142,9 @@ in
       stty -ixon
     '';
     initContent = mkMerge [
-      (mkOrder 500 # pre-compinit
+      (
+        mkOrder 500 # pre-compinit
+        
         ''
           typeset -U fpath # Ensure fpath does not contain duplicates.
           fpath+=(
@@ -219,7 +219,8 @@ in
 
         ##########################################################
 
-        ${lib.optionalString
+        ${
+          lib.optionalString
           (
             config.programs.television.enable
             && config.programs.television.enableZshIntegration

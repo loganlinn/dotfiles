@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   palette = config.colorScheme.palette;
 in {
   programs.wofi = {

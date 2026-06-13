@@ -3,8 +3,7 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.cleanshot;
   user = config.my.user.name;
 
@@ -62,19 +61,18 @@ let
 
   shortcuts = {
     # Capture
-    LAVAtakeFullscreen = mkShortcutJSON [ cmdKey shiftKey ] key."3";
-    LAVAtakeArea = mkShortcutJSON [ cmdKey shiftKey ] key."4";
-    LAVAtakeAllInOne = mkShortcutJSON [ cmdKey shiftKey ] key."5";
-    LAVAtakeAreaCopy = mkShortcutJSON [ cmdKey shiftKey controlKey ] key."4";
-    LAVAtakeOCR = mkShortcutJSON [ cmdKey shiftKey ] key."6";
+    LAVAtakeFullscreen = mkShortcutJSON [cmdKey shiftKey] key."3";
+    LAVAtakeArea = mkShortcutJSON [cmdKey shiftKey] key."4";
+    LAVAtakeAllInOne = mkShortcutJSON [cmdKey shiftKey] key."5";
+    LAVAtakeAreaCopy = mkShortcutJSON [cmdKey shiftKey controlKey] key."4";
+    LAVAtakeOCR = mkShortcutJSON [cmdKey shiftKey] key."6";
     # Recording sub-mode keys (active within All-in-One overlay)
-    LAVAselectWindowVideo = mkShortcutJSON [ ] key."Space";
-    LAVAstartVideoRecording = mkShortcutJSON [ ] key."Return";
-    LAVAstartStopScrollingCapture = mkShortcutJSON [ ] key."Return";
-    LAVAstartGIFRecording = mkShortcutJSON [ optionKey ] key."Return";
+    LAVAselectWindowVideo = mkShortcutJSON [] key."Space";
+    LAVAstartVideoRecording = mkShortcutJSON [] key."Return";
+    LAVAstartStopScrollingCapture = mkShortcutJSON [] key."Return";
+    LAVAstartGIFRecording = mkShortcutJSON [optionKey] key."Return";
   };
-in
-{
+in {
   options.programs.cleanshot = {
     enable = mkEnableOption "CleanShot X screenshot tool";
   };
@@ -100,9 +98,9 @@ in
         popupAskForDestinationWhenSaving = false;
         deletePopupAfterDragging = true;
         # After capture actions: [0=show popup, 1=copy to clipboard]
-        afterScreenshotActions = [ 0 1 ];
+        afterScreenshotActions = [0 1];
         # After video actions: [0=show popup, 5=?]
-        afterVideoActions = [ 0 5 ];
+        afterVideoActions = [0 5];
         # Recording
         rememberRecordingArea = true;
         showCountdown = true;

@@ -4,9 +4,9 @@
   lib,
   pkgs,
   ...
-}:
-let
-  inherit (lib)
+}: let
+  inherit
+    (lib)
     mkIf
     mkEnableOption
     mkDefault
@@ -20,13 +20,12 @@ let
   # Create a new pkgs instance with our overlay
   pkgsWithOverlay = import pkgs.path {
     inherit (pkgs) system;
-    overlays = [ inputs.opnix.overlays.default ];
+    overlays = [inputs.opnix.overlays.default];
   };
 
   userName = "_opnix";
   groupName = "_opnix";
-in
-{
+in {
   options.services.onepassword-secrets = {
     enable = mkEnableOption "1Password secrets integration";
 
@@ -63,7 +62,7 @@ in
     # New option for users that should have access to the token
     users = mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ ];
+      default = [];
       description = "Users that should have access to the 1Password token through group membership";
       example = [
         "alice"
@@ -87,11 +86,11 @@ in
         description = "opnix service user group";
         members = cfg.users;
       };
-      knownUsers = [ userName ];
-      knownGroups = [ groupName ];
+      knownUsers = [userName];
+      knownGroups = [groupName];
     };
 
-    environment.systemPackages = [ cfg.package ];
+    environment.systemPackages = [cfg.package];
 
     launchd.daemons.onepassword-secrets-refresh = {
       serviceConfig = {

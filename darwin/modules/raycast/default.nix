@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.modules.raycast;
-in
-{
+in {
   options.modules.raycast = with lib.types; {
     enable = lib.mkEnableOption "raycast";
     # scriptCommands = lib.mkOption {
@@ -22,8 +20,7 @@ in
         pkgs,
         lib,
         ...
-      }:
-      {
+      }: {
         xdg.configFile = {
           # TODO cfg.scriptCommands
         };

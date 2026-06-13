@@ -2,11 +2,9 @@
   config,
   lib,
   ...
-}:
-{
+}: {
   home-manager.sharedModules = lib.singleton (
-    { pkgs, ... }:
-    let
+    {pkgs, ...}: let
       cfg = config.my.bash-my-aws;
       bash-my-aws-shell-init = ''
         bash-my-aws() {
@@ -16,8 +14,7 @@
           echo "Loaded bash-my-aws"
         }
       '';
-    in
-    {
+    in {
       options = {
         bash-my-aws = {
           enable = lib.mkEnableOption "bash-my-aws";

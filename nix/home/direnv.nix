@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   programs.zsh.initContent = lib.mkIf config.programs.direnv.enable ''
     function direnv-export() {
       local format=''${1:-json}

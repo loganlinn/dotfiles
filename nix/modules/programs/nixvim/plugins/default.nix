@@ -3,11 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   imports = [
     # ./notify.nix # replaced with snacks.nix
     # ./nvim-tree.nix # have never gotten this to play nice with auto-session
@@ -62,36 +60,35 @@ in
       web-devicons.enable = true;
       wezterm.enable = true;
     };
-    extraPlugins =
-      let
-        inherit (pkgs) fetchFromGitHub;
-        inherit (pkgs.vimUtils) buildVimPlugin;
-      in
+    extraPlugins = let
+      inherit (pkgs) fetchFromGitHub;
+      inherit (pkgs.vimUtils) buildVimPlugin;
+    in
       with pkgs.vimPlugins;
-      [
-        fennel-vim
-        nfnl
-        vim-abolish # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
-        vim-caddyfile
-        vim-just
-        vim-lion # alignment operators
-        vim-rsi # readline style insertion
-        zoxide-vim
-        (buildVimPlugin {
-          name = "terraform-nvim";
-          src = fetchFromGitHub {
-            owner = "mvaldes14";
-            repo = "terraform.nvim";
-            rev = "0e690df48ac55e6b2794f2aa26fd080d21629216";
-            hash = "sha256-O6jhKVuUfzmgK3J4vQ62sytAHus2FvCUAh8bNbkgeKQ=";
-          };
-          dependencies = [
-            config.programs.nixvim.plugins.telescope.package
-            nui-nvim
-            plenary-nvim
-          ];
-        })
-      ]
-      ++ (lib.optional (config.programs.aider.enable or false) { plugin = aider-nvim; });
+        [
+          fennel-vim
+          nfnl
+          vim-abolish # i.e. :%Subvert/facilit{y,ies}/building{,s}/g
+          vim-caddyfile
+          vim-just
+          vim-lion # alignment operators
+          vim-rsi # readline style insertion
+          zoxide-vim
+          (buildVimPlugin {
+            name = "terraform-nvim";
+            src = fetchFromGitHub {
+              owner = "mvaldes14";
+              repo = "terraform.nvim";
+              rev = "0e690df48ac55e6b2794f2aa26fd080d21629216";
+              hash = "sha256-O6jhKVuUfzmgK3J4vQ62sytAHus2FvCUAh8bNbkgeKQ=";
+            };
+            dependencies = [
+              config.programs.nixvim.plugins.telescope.package
+              nui-nvim
+              plenary-nvim
+            ];
+          })
+        ]
+        ++ (lib.optional (config.programs.aider.enable or false) {plugin = aider-nvim;});
   };
 }

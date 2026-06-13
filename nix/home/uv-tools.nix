@@ -3,12 +3,10 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.my.uvTools;
   uv = "${config.programs.uv.package}/bin/uv";
-in
-{
+in {
   options.my.uvTools = lib.mkOption {
     type = lib.types.listOf lib.types.str;
     default = [];
@@ -18,7 +16,7 @@ in
   config = lib.mkIf (cfg != []) {
     programs.uv.enable = true;
 
-    home.activation.uvTools = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    home.activation.uvTools = lib.hm.dag.entryAfter ["writeBoundary"] ''
       for pkg in ${lib.concatStringsSep " " cfg}; do
         if ! ${uv} tool list 2>/dev/null | grep -q "^$pkg "; then
           run ${uv} tool install "$pkg"

@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   wayland.windowManager.hyprland.settings = {
     input = {
       kb_layout = lib.mkDefault "us";

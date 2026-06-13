@@ -4,8 +4,7 @@
   lib,
   ...
 }:
-with lib;
-{
+with lib; {
   options = {
     programs.podman-desktop.enable = mkEnableOption "podman-desktop";
   };

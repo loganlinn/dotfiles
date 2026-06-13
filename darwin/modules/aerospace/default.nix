@@ -4,11 +4,9 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.aerospace;
-in
-{
+in {
   options.programs.aerospace = {
     enable = mkEnableOption "aerospace window manager";
     configFile = mkOption {
@@ -18,13 +16,11 @@ in
   };
 
   config = mkIf cfg.enable {
-    home-manager.users.${config.my.user.name} =
-      { config, ... }:
-      {
-        xdg.configFile = optionalAttrs (cfg.configFile != null) {
-          "aerospace/aerospace.toml".source = config.lib.file.mkOutOfStoreSymlink cfg.configFile;
-        };
+    home-manager.users.${config.my.user.name} = {config, ...}: {
+      xdg.configFile = optionalAttrs (cfg.configFile != null) {
+        "aerospace/aerospace.toml".source = config.lib.file.mkOutOfStoreSymlink cfg.configFile;
       };
+    };
 
     # AeroSpace via Homebrew cask, NOT pkgs.aerospace / services.aerospace. Deliberate:
     #   - Stable /Applications/AeroSpace.app path preserves macOS Accessibility (TCC) grants +
@@ -37,8 +33,8 @@ in
     #     by start-at-login in config/aerospace/aerospace.toml) — a different model.
     # The cask sets up NO launchd agent / login item itself; it only installs the .app + CLI.
     homebrew = {
-      taps = [ "nikitabobko/tap" ];
-      casks = [ "nikitabobko/tap/aerospace" ];
+      taps = ["nikitabobko/tap"];
+      casks = ["nikitabobko/tap/aerospace"];
     };
 
     environment.systemPath = [

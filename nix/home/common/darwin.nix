@@ -26,7 +26,6 @@ with lib; {
         fi
       '';
 
-
       # app-icon = {
       #   runtimeInputs = with pkgs; [
       #     gawk

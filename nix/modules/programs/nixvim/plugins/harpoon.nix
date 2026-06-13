@@ -3,11 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   programs.nixvim = {
     plugins = {
       harpoon = {

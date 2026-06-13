@@ -5,8 +5,7 @@
   lib,
   nix-colors,
   ...
-}:
-{
+}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -100,8 +99,8 @@
   xdg.enable = true;
   xdg.mimeApps.enable = true;
   xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-  xdg.portal.config.common.default = [ "*" ];
+  xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
+  xdg.portal.config.common.default = ["*"];
 
   home.packages = with pkgs; [
     wslu
@@ -124,7 +123,9 @@
 
   nix.enable = true;
   nix.package = pkgs.nixVersions.latest;
-  nix.settings = config.my.nix.settings // {
-    trusted-users = ["root" config.home.username];
-  };
+  nix.settings =
+    config.my.nix.settings
+    // {
+      trusted-users = ["root" config.home.username];
+    };
 }

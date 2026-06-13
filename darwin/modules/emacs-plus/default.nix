@@ -5,12 +5,10 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.emacs-plus;
   caskType = with types; either str (attrsOf anything); # options.homebrew.casks.type.nestedTypes.elemType;
-in
-{
+in {
   options = {
     programs.emacs-plus = {
       enable = mkEnableOption "emacs-plus";
@@ -30,7 +28,7 @@ in
 
   config = mkIf cfg.enable {
     homebrew.enable = true;
-    homebrew.casks = [ cfg.cask ];
+    homebrew.casks = [cfg.cask];
     homebrew.brews = [
       "gcc"
       "coreutils"

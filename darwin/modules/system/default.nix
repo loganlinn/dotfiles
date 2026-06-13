@@ -148,12 +148,12 @@ with lib; {
         # parameters = [ ASCII vKey modifierMask ]
         # modifiers: shift=131072, control=262144, option=524288, command=1048576
         "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
-          "60" = { enabled = false; };
-          "61" = { enabled = false; };
+          "60" = {enabled = false;};
+          "61" = {enabled = false;};
           "163" = {
             enabled = 1;
             value = {
-              parameters = [ 110 45 524288 ];
+              parameters = [110 45 524288];
               type = "standard";
             };
           };
@@ -227,7 +227,6 @@ with lib; {
         # "com.apple.universalaccess"."com.apple.custommenu.apps" = [
         #   "com.google.Chrome"
         # ];
-
       };
     };
   };

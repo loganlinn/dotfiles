@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   screenshotsDir = config.my.userDirs.screenshots;
-in
-{
+in {
   wayland.windowManager.hyprland.settings = {
     bind = [
       # App launchers

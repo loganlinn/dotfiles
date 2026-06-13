@@ -1,5 +1,4 @@
-{ config, ... }:
-{
+{config, ...}: {
   programs.zsh = {
     sessionVariables = {
       ANTIDOTE_HOME = "${config.xdg.cacheHome}/antidote";

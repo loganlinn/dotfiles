@@ -5,9 +5,11 @@
   ...
 }:
 with lib;
-with lib.my;
-let
-  openCmd = if pkgs.stdenv.isDarwin then "open" else "xdg-open";
+with lib.my; let
+  openCmd =
+    if pkgs.stdenv.isDarwin
+    then "open"
+    else "xdg-open";
 
   prFzfOpts = {
     multi = true;
@@ -21,10 +23,9 @@ let
     preview-window = "down,85%";
   };
 
-  gh-open-review-requested =
-    let
-      searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
-    in
+  gh-open-review-requested = let
+    searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
+  in
     pkgs.writeShellScriptBin "gh-open-review-requested" ''
       gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
         query ReviewsRequested($searchQuery: String!) {
@@ -40,7 +41,7 @@ let
         }
       ' |
       ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-      ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU { } prFzfOpts} |
+      ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU {} prFzfOpts} |
       tee /dev/stderr |
       xargs ${openCmd}
     '';
@@ -63,12 +64,11 @@ let
 
     gh api graphql -F limit=10 -f query="$graphql_query" |
     ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-    ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU { } prFzfOpts} |
+    ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU {} prFzfOpts} |
     tee /dev/stderr |
     xargs ${openCmd};
   '';
-in
-{
+in {
   home.shellAliases = {
     gh = "env -u GITHUB_TOKEN gh";
     gist = "gh gist";
@@ -92,8 +92,10 @@ in
         prc = ''
           !gh pr view --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,closingIssuesReferences,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url
                   --jq "''${1:-.url}" | ${pkgs.moreutils}/bin/pee ${
-                    if pkgs.stdenv.isDarwin then "pbcopy" else "${pkgs.xclip}/bin/xclip -sel clip"
-                  }'';
+            if pkgs.stdenv.isDarwin
+            then "pbcopy"
+            else "${pkgs.xclip}/bin/xclip -sel clip"
+          }'';
         pr-copy = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
         needs-testing = ''!gh pr list --search "is:merged label:needs-testing ''${1-'author:@me'}"'';
 
@@ -208,7 +210,7 @@ in
   };
 
   xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
-    config.floating.criteria = [ { class = "gh-dash"; } ];
+    config.floating.criteria = [{class = "gh-dash";}];
   };
 
   home.packages = [

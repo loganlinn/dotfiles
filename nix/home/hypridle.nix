@@ -2,8 +2,7 @@
   lib,
   inputs',
   ...
-}:
-{
+}: {
   services.hypridle = {
     enable = lib.mkDefault true;
     package = inputs'.hypridle.packages.hypridle;

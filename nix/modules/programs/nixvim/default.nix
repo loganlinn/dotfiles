@@ -3,11 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   imports = [
     ./colorschemes.nix
     ./plugins
@@ -18,6 +16,10 @@ in
   config = {
     programs.nixvim = {
       vimAlias = true;
+
+      # nixvim (main) + nixpkgs (nixos-unstable) both track unstable; the release-label
+      # drift at May/Nov boundaries is a false positive, not a real version mismatch.
+      version.enableNixpkgsReleaseCheck = false;
 
       luaLoader = {
         enable = true;
@@ -58,7 +60,7 @@ in
         laststatus = 3; # When to use a status line for the last window
         fileencoding = "utf-8"; # File-content encoding for the current buffer
         termguicolors = true; # Enables 24-bit RGB color in the |TUI|
-        spelllang = lib.mkDefault [ "en_us" ]; # Spell check languages
+        spelllang = lib.mkDefault ["en_us"]; # Spell check languages
         spell = false; # Highlight spelling mistakes (local to window)
         wrap = false; # Prevent text from wrapping
 

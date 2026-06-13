@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   home-manager.sharedModules = lib.singleton (
-    { pkgs, ... }:
-    {
+    {pkgs, ...}: {
       home.shellAliases = {
         pbj = "pbpipe jq";
         pbedit = "pbpipe vipe";

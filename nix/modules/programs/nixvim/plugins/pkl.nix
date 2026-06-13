@@ -3,11 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   inherit (config.lib.nixvim.lua) toLuaObject;
-in
-{
+in {
   programs.nixvim = {
     plugins.treesitter = {
       enable = true;

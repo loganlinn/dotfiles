@@ -3,12 +3,11 @@
   lib,
   pkgs,
   ...
-}:
-
-let
+}: let
   cfg = config.programs.raycast;
 
-  inherit (lib)
+  inherit
+    (lib)
     concatMapStringsSep
     concatStringsSep
     escapeShellArg
@@ -74,8 +73,7 @@ let
   };
 
   scriptCommandSubmodule = types.submodule (
-    { name, ... }:
-    {
+    {name, ...}: {
       options = {
         enable = mkOption {
           type = types.bool;
@@ -190,7 +188,7 @@ let
 
         arguments = mkOption {
           type = types.listOf argumentSubmodule;
-          default = [ ];
+          default = [];
           description = ''
             Up to 3 arguments prompted for in the Raycast search bar.
             Referenced in the script as `$1`, `$2`, `$3`.
@@ -199,7 +197,7 @@ let
 
         runtimeInputs = mkOption {
           type = types.listOf types.package;
-          default = [ ];
+          default = [];
           description = ''
             Packages whose `bin` directories are prepended to `PATH`
             inside the generated script. Useful when the script depends
@@ -218,19 +216,17 @@ let
 
   enabledCommands = filterAttrs (_: sc: sc.enable) cfg.scriptCommands;
 
-  renderArgumentJSON =
-    arg:
-    let
-      attrs =
-        {
-          inherit (arg) type placeholder;
-        }
-        // optionalAttrs arg.optional { optional = true; }
-        // optionalAttrs arg.percentEncoded { percentEncoded = true; }
-        // optionalAttrs (arg.data != null) {
-          data = map (d: { inherit (d) title value; }) arg.data;
-        };
-    in
+  renderArgumentJSON = arg: let
+    attrs =
+      {
+        inherit (arg) type placeholder;
+      }
+      // optionalAttrs arg.optional {optional = true;}
+      // optionalAttrs arg.percentEncoded {percentEncoded = true;}
+      // optionalAttrs (arg.data != null) {
+        data = map (d: {inherit (d) title value;}) arg.data;
+      };
+  in
     builtins.toJSON attrs;
 
   metadataLine = key: value: "# @raycast.${key} ${value}";
@@ -241,8 +237,7 @@ let
     (metadataLine "mode" sc.mode)
   ];
 
-  optionalMetadata =
-    sc:
+  optionalMetadata = sc:
     optional (sc.packageName != null) (metadataLine "packageName" sc.packageName)
     ++ optional (sc.icon != null) (metadataLine "icon" sc.icon)
     ++ optional (sc.iconDark != null) (metadataLine "iconDark" sc.iconDark)
@@ -253,56 +248,47 @@ let
     ++ optional (sc.refreshTime != null) (metadataLine "refreshTime" sc.refreshTime)
     ++ imap1 (i: a: metadataLine "argument${toString i}" (renderArgumentJSON a)) sc.arguments;
 
-  documentationMetadata =
-    sc:
+  documentationMetadata = sc:
     optional (sc.author != null) (metadataLine "author" sc.author)
     ++ optional (sc.authorURL != null) (metadataLine "authorURL" sc.authorURL)
     ++ optional (sc.description != null) (metadataLine "description" sc.description);
 
-  renderSection =
-    header: lines:
-    if lines == [ ] then "" else "# ${header}:\n${concatStringsSep "\n" lines}\n";
+  renderSection = header: lines:
+    if lines == []
+    then ""
+    else "# ${header}:\n${concatStringsSep "\n" lines}\n";
 
-  renderPathPrefix =
-    sc:
-    if sc.runtimeInputs == [ ] then
-      ""
-    else
-      let
-        bins = concatMapStringsSep ":" (p: "${p}/bin") sc.runtimeInputs;
-      in
-      "export PATH=${escapeShellArg bins}\${PATH:+:}\${PATH:-}\n\n";
+  renderPathPrefix = sc:
+    if sc.runtimeInputs == []
+    then ""
+    else let
+      bins = concatMapStringsSep ":" (p: "${p}/bin") sc.runtimeInputs;
+    in "export PATH=${escapeShellArg bins}\${PATH:+:}\${PATH:-}\n\n";
 
-  renderScriptCommand =
-    sc:
-    let
-      required = renderSection "Required parameters" (requiredMetadata sc);
-      optionalMd = renderSection "Optional parameters" (optionalMetadata sc);
-      docMd = renderSection "Documentation" (documentationMetadata sc);
-      sections = lib.filter (s: s != "") [
-        required
-        optionalMd
-        docMd
-      ];
-    in
-    ''
-      #!${sc.interpreter}
+  renderScriptCommand = sc: let
+    required = renderSection "Required parameters" (requiredMetadata sc);
+    optionalMd = renderSection "Optional parameters" (optionalMetadata sc);
+    docMd = renderSection "Documentation" (documentationMetadata sc);
+    sections = lib.filter (s: s != "") [
+      required
+      optionalMd
+      docMd
+    ];
+  in ''
+    #!${sc.interpreter}
 
-      ${concatStringsSep "\n" sections}
-      ${renderPathPrefix sc}${sc.script}
-    '';
+    ${concatStringsSep "\n" sections}
+    ${renderPathPrefix sc}${sc.script}
+  '';
 
   relScriptDir = removePrefix "${config.home.homeDirectory}/" cfg.scriptCommandDirectory;
 
-  mkFileEntry =
-    sc:
+  mkFileEntry = sc:
     nameValuePair "${relScriptDir}/${sc.fileName}.${sc.extension}" {
       text = renderScriptCommand sc;
       executable = true;
     };
-
-in
-{
+in {
   options.programs.raycast = {
     enable = mkEnableOption "Raycast script command integration";
 
@@ -320,7 +306,7 @@ in
 
     scriptCommands = mkOption {
       type = types.attrsOf scriptCommandSubmodule;
-      default = { };
+      default = {};
       description = "Raycast script commands generated by home-manager.";
     };
   };

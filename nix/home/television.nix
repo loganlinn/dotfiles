@@ -4,11 +4,9 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
-in
-{
+in {
   xdg.configFile."television/cable".source =
     mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/television/cable";
 

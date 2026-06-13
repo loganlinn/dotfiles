@@ -2,8 +2,7 @@
   inputs,
   modulesPath,
   ...
-}:
-{
+}: {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     inputs.nixos-hardware.outputs.nixosModules.common-cpu-intel
@@ -22,9 +21,9 @@
     "sd_mod"
   ];
 
-  boot.initrd.kernelModules = [ "i915" ];
+  boot.initrd.kernelModules = ["i915"];
 
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = ["kvm-intel"];
 
   fileSystems = {
     "/" = {
@@ -49,7 +48,7 @@
     };
   };
 
-  swapDevices = [ ];
+  swapDevices = [];
 
   nixpkgs.hostPlatform = "x86_64-linux";
 }

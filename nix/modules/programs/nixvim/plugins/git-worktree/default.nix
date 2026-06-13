@@ -3,18 +3,16 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
   worktreeEnabled = builtins.elem pkgs.vimPlugins.git-worktree-nvim cfg.extraPlugins;
   worktreeTelescopeEnabled = worktreeEnabled && cfg.plugins.telescope.enable;
-in
-{
+in {
   programs.nixvim = {
     # logs to a git-worktree-nvim.log file that resides in Neovim's cache path. (:echo stdpath("cache") to find where that is for you.)
     globals.git_worktree_log_level = "debug";
 
-    extraPlugins = [ pkgs.vimPlugins.git-worktree-nvim ];
+    extraPlugins = [pkgs.vimPlugins.git-worktree-nvim];
 
     extraConfigLua = ''
       -- local git_worktree = require("git-worktree")
@@ -68,7 +66,7 @@ in
       #   # ];
       # };
 
-      telescope.enabledExtensions = lib.optionals worktreeTelescopeEnabled [ "git_worktree" ];
+      telescope.enabledExtensions = lib.optionals worktreeTelescopeEnabled ["git_worktree"];
 
       which-key.settings.spec = lib.optionals worktreeTelescopeEnabled [
         {

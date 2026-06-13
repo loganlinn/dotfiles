@@ -3,11 +3,9 @@
   config,
   lib,
   ...
-}:
-let
+}: let
   inherit (config.lib.file) mkOutOfStoreSymlink;
-in
-{
+in {
   imports = [
     inputs.nixvim.homeModules.nixvim
     ../../modules/programs/nixvim

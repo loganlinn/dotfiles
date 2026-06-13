@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   hardware.nvidia = {
     open = lib.mkDefault true;
     powerManagement.enable = lib.mkDefault true;

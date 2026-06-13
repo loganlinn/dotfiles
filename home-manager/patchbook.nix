@@ -1,7 +1,4 @@
-{
-  self,
-  ...
-}: {
+{self, ...}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors

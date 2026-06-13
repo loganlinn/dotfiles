@@ -5,20 +5,17 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   privateConfigFile = "${config.xdg.configHome}/git/config.local";
   allowedSignersFile = "${pkgs.writeText "allowed_signers" ''
     ${config.my.email} ${config.my.pubkeys.ssh.ed25519}
   ''}";
   gpg-ssh-program = (
-    if pkgs.stdenv.isDarwin then
-      "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
-    else
-      "op-ssh-sign"
+    if pkgs.stdenv.isDarwin
+    then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+    else "op-ssh-sign"
   );
-in
-{
+in {
   imports = [
     ../shell
     ./gh.nix
@@ -77,18 +74,16 @@ in
       ".vectimus/receipts"
       "___*"
     ];
-    includes =
-      let
-        delta-themes = pkgs.fetchurl {
-          url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
-          sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
-        };
-      in
-      [
-        { path = ./include/gitalias.txt; }
-        { path = delta-themes; }
-        { path = privateConfigFile; }
-      ];
+    includes = let
+      delta-themes = pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/dandavison/delta/ed09269ebace8aad765c57a2821502ebb8c11f11/themes.gitconfig";
+        sha256 = "sha256-kPGzO4bzUXUAeG82UjRk621uL1faNOZfN4wNTc1oeN4=";
+      };
+    in [
+      {path = ./include/gitalias.txt;}
+      {path = delta-themes;}
+      {path = privateConfigFile;}
+    ];
     signing.key = mkDefault null; # let GnuPG decide
     settings = {
       advice.detachedHead = false;

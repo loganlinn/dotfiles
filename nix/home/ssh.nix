@@ -3,14 +3,12 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   inherit (pkgs.stdenv) isDarwin;
-in
-{
+in {
   programs.ssh = {
     enableDefaultConfig = false;
-    includes = [ "${config.home.homeDirectory}/.ssh/config.local" ];
+    includes = ["${config.home.homeDirectory}/.ssh/config.local"];
     matchBlocks = {
       "*" = {
         hashKnownHosts = true;
@@ -41,15 +39,17 @@ in
         };
       };
     };
-    extraConfig = ''
-      ConnectionAttempts 3
-      ConnectTimeout 10
-      TCPKeepAlive yes
-      VisualHostKey yes
-      IdentityAgent ~/.1password/agent.sock
-    '' + lib.optionalString isDarwin ''
-      GSSAPIAuthentication no
-    '';
+    extraConfig =
+      ''
+        ConnectionAttempts 3
+        ConnectTimeout 10
+        TCPKeepAlive yes
+        VisualHostKey yes
+        IdentityAgent ~/.1password/agent.sock
+      ''
+      + lib.optionalString isDarwin ''
+        GSSAPIAuthentication no
+      '';
   };
   home.packages = with pkgs; [
     (writeShellScriptBin "ssh-i" ''exec ssh -o IdentitiesOnly=yes -i "$@"'')

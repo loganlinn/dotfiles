@@ -2,8 +2,7 @@
   config,
   lib,
   ...
-}:
-{
+}: {
   services.open-webui = {
     port = 3000;
     openFirewall = false;

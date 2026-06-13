@@ -4,11 +4,9 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.git.git-spice;
-in
-{
+in {
   options.programs.git.git-spice = {
     enable = mkEnableOption "git-spice";
     package = mkOption {
@@ -18,7 +16,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home.packages = [cfg.package];
     programs.git = {
       settings = {
         spice.branchPrompt.sort = "comitteddate";

@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   palette = config.colorScheme.palette;
-in
-{
+in {
   programs.waybar = {
     enable = lib.mkDefault true;
     systemd.enable = lib.mkDefault false; # started by Hyprland exec-once
@@ -20,8 +18,8 @@ in
         height = 26;
         reload_style_on_change = true;
 
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "clock" ];
+        modules-left = ["hyprland/workspaces"];
+        modules-center = ["clock"];
         modules-right = [
           "tray"
           "bluetooth"
@@ -49,11 +47,11 @@ in
             active = "\uf444"; # 󱓻
           };
           persistent-workspaces = {
-            "1" = [ ];
-            "2" = [ ];
-            "3" = [ ];
-            "4" = [ ];
-            "5" = [ ];
+            "1" = [];
+            "2" = [];
+            "3" = [];
+            "4" = [];
+            "5" = [];
           };
         };
 
@@ -74,7 +72,7 @@ in
         };
 
         network = {
-          format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
+          format-icons = ["󰤯" "󰤟" "󰤢" "󰤥" "󰤨"];
           format = "{icon}";
           format-wifi = "{icon}";
           format-ethernet = "󰀂";
@@ -110,8 +108,8 @@ in
           format-plugged = "";
           format-full = "󰂅";
           format-icons = {
-            charging = [ "󰢜" "󰂆" "󰂇" "󰂈" "󰢝" "󰂉" "󰢞" "󰂊" "󰂋" "󰂅" ];
-            default = [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
+            charging = ["󰢜" "󰂆" "󰂇" "󰂈" "󰢝" "󰂉" "󰢞" "󰂊" "󰂋" "󰂅"];
+            default = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"];
           };
           tooltip-format-discharging = "{power:>1.0f}W\u2193 {capacity}%";
           tooltip-format-charging = "{power:>1.0f}W\u2191 {capacity}%";

@@ -2,17 +2,15 @@
   config,
   lib,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   programs.nixvim = {
     plugins = {
       trouble = {
         enable = true;
 
-        lazyLoad.settings.cmd = [ "Trouble" ];
+        lazyLoad.settings.cmd = ["Trouble"];
 
         settings = {
           auto_close = true;

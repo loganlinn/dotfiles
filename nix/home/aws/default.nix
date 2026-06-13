@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   home.packages = with pkgs; [
     aws-sso-cli # https://github.com/synfinatic/aws-sso-cli
     awscli2

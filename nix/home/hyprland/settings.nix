@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   palette = config.colorScheme.palette;
-in
-{
+in {
   wayland.windowManager.hyprland.settings = {
     "$mod" = "SUPER";
     "$terminal" = lib.mkDefault "ghostty";

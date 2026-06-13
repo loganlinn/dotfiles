@@ -1,8 +1,4 @@
-{
-  lib,
-  ...
-}:
-{
+{lib, ...}: {
   programs.zoxide = {
     enable = lib.mkDefault true;
     enableBashIntegration = true;

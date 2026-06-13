@@ -4,20 +4,18 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.my.zsh;
-in
-{
+in {
   options.my.zsh = {
     bindkeys = mkOption {
       description = "in-string -> out-string";
       type = types.attrsOf types.str;
-      default = { };
+      default = {};
     };
     functions = mkOption {
       type = with types; attrsOf str;
-      default = { };
+      default = {};
     };
   };
 
@@ -32,18 +30,19 @@ in
       '';
     };
 
-    xdg.dataFile = mapAttrs' (
-      name: text:
-      (nameValuePair "zsh/functions/${name}" {
-        executable = false;
-        text = ''
-          # function ${name} {
-          emulate -L zsh
-          ${text}
-          # }
-          # vim: ft=zsh
-        '';
-      })
-    ) cfg.functions;
+    xdg.dataFile =
+      mapAttrs' (
+        name: text: (nameValuePair "zsh/functions/${name}" {
+          executable = false;
+          text = ''
+            # function ${name} {
+            emulate -L zsh
+            ${text}
+            # }
+            # vim: ft=zsh
+          '';
+        })
+      )
+      cfg.functions;
   };
 }

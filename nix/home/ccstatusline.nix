@@ -3,11 +3,9 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
-in
-{
+in {
   xdg.configFile."ccstatusline/settings.json".source =
     mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/ccstatusline/settings.json";
 }

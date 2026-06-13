@@ -2,8 +2,7 @@
   lib,
   inputs',
   ...
-}:
-{
+}: {
   services.hyprpaper = {
     enable = lib.mkDefault true;
     package = inputs'.hyprpaper.packages.hyprpaper;

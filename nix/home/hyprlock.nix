@@ -3,11 +3,9 @@
   lib,
   inputs',
   ...
-}:
-let
+}: let
   palette = config.colorScheme.palette;
-in
-{
+in {
   programs.hyprlock = {
     enable = lib.mkDefault true;
     package = inputs'.hyprlock.packages.hyprlock;

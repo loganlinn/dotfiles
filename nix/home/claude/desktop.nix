@@ -4,17 +4,15 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.programs.claude.desktop;
-  json = pkgs.formats.json { };
-  mkOpt = type: default: mkOption { inherit type default; };
-in
-{
+  json = pkgs.formats.json {};
+  mkOpt = type: default: mkOption {inherit type default;};
+in {
   options = {
     programs.claude.desktop = {
       enable = mkEnableOption "Claude Desktop";
-      settings = mkOpt json.type { };
+      settings = mkOpt json.type {};
     };
   };
 
@@ -26,7 +24,7 @@ in
       }
     ];
 
-    home.file = optionalAttrs (cfg.settings != { }) {
+    home.file = optionalAttrs (cfg.settings != {}) {
       "Library/Application Support/Claude/claude_desktop_config.json".source =
         json.generate "claude_desktop_config.json" cfg.settings;
     };

@@ -4,8 +4,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -110,9 +109,9 @@
   my.src-get = {
     enable = true;
     repos = {
-      "loganlinn/agent-plugins" = { };
-      "loganlinn/obsidian-vault" = { };
-      "loganlinn/trs" = { };
+      "loganlinn/agent-plugins" = {};
+      "loganlinn/obsidian-vault" = {};
+      "loganlinn/trs" = {};
     };
   };
 

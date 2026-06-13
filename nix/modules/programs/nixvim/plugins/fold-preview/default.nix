@@ -2,8 +2,7 @@
   pkgs,
   lib,
   ...
-}:
-{
+}: {
   programs.nixvim = {
     extraPlugins = [
       pkgs.vimPlugins.fold-preview-nvim

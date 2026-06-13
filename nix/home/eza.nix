@@ -3,9 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   programs.eza = {
     enableBashIntegration = true;
     enableZshIntegration = true;

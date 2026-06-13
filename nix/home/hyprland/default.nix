@@ -5,17 +5,14 @@
   inputs',
   osConfig ? {},
   ...
-}:
-let
+}: let
   cfg = config.wayland.windowManager.hyprland;
 
-  hasNvidia =
-    let
-      drivers = osConfig.services.xserver.videoDrivers or [];
-    in
+  hasNvidia = let
+    drivers = osConfig.services.xserver.videoDrivers or [];
+  in
     builtins.elem "nvidia" drivers;
-in
-{
+in {
   imports = [
     ./settings.nix
     ./bindings.nix

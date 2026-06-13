@@ -2,8 +2,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   # programs.firefox.extensions = with pkgs.nur.repos.rycee.firefox-addons; [
   #   ublock-origin
   #   vim-vixen
@@ -114,7 +113,7 @@
               }
             ];
             icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-            definedAliases = [ "@pkgs" ];
+            definedAliases = ["@pkgs"];
           };
           "NixOS Wiki" = {
             urls = [
@@ -124,7 +123,7 @@
             ];
             iconUpdateURL = "https://wiki.nixos.org/favicon.png";
             updateInterval = 24 * 60 * 60 * 1000; # every day
-            definedAliases = [ "@nix" ];
+            definedAliases = ["@nix"];
           };
           "Bing".metaData.hidden = true;
           "Google".metaData.alias = "@g"; # builtin engines only support specifying one additional alias
@@ -150,14 +149,14 @@
         ];
 
         icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-        definedAliases = [ "@np" ];
+        definedAliases = ["@np"];
       };
 
       "NixOS Wiki" = {
-        urls = [ { template = "https://wiki.nixos.org/index.php?search={searchTerms}"; } ];
+        urls = [{template = "https://wiki.nixos.org/index.php?search={searchTerms}";}];
         iconUpdateURL = "https://wiki.nixos.org/favicon.png";
         updateInterval = 24 * 60 * 60 * 1000; # every day
-        definedAliases = [ "@nw" ];
+        definedAliases = ["@nw"];
       };
     };
   };

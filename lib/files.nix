@@ -44,7 +44,7 @@ with lib; rec {
     # Only include the following path matches.
     #
     # Allows all files by default.
-    include ? [(_:_:_: true)],
+    include ? [(_: _: _: true)],
     # Ignore the following matches
     exclude ? [],
   }:

@@ -4,16 +4,14 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   cfg = config.services.kanata;
-in
-{
+in {
   options.services.kanata = {
     enable = mkEnableOption "kanata";
     configFiles = mkOption {
       type = with types; (listOf (coercedTo path toString str));
-      default = [ ];
+      default = [];
     };
     port = mkOption {
       type = types.nullOr types.port;
@@ -27,7 +25,7 @@ in
 
   config = mkIf cfg.enable {
     homebrew.brews = [
-      { name = "kanata"; }
+      {name = "kanata";}
     ];
 
     # https://www.reddit.com/r/ErgoMechKeyboards/comments/1fojvif/comment/mg54mz1/
@@ -45,18 +43,19 @@ in
             <array>
                 <string>${config.homebrew.prefix}/bin/kanata</string>
                 ${concatLines (
-                  map f ''
-                    <string>--cfg</string>
-                    <string>${f}</string>
-                  '' cfg.configFiles
-                )}
+          map f ''
+            <string>--cfg</string>
+            <string>${f}</string>
+          ''
+          cfg.configFiles
+        )}
                 ${optionalString cfg.port ''
-                  <string>--port</string>
-                  <string>${toString cfg.port}</string>
-                ''}
+          <string>--port</string>
+          <string>${toString cfg.port}</string>
+        ''}
                 ${optionalString cfg.debug ''
-                  <string>--debug</string>
-                ''}
+          <string>--debug</string>
+        ''}
             </array>
 
             <key>RunAtLoad</key>

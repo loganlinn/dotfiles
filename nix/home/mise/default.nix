@@ -2,11 +2,9 @@
   config,
   lib,
   ...
-}:
-let
+}: let
   cfg = config.programs.mise;
-in
-{
+in {
   programs.mise = {
     enable = lib.mkDefault true;
     enableZshIntegration = true;

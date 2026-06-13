@@ -3,13 +3,11 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   programs.nixvim = {
-    extraPlugins = lib.mkIf cfg.plugins.lz-n.enable [ pkgs.vimPlugins.lzn-auto-require ];
+    extraPlugins = lib.mkIf cfg.plugins.lz-n.enable [pkgs.vimPlugins.lzn-auto-require];
 
     extraConfigLuaPost = lib.mkIf cfg.plugins.lz-n.enable (
       lib.mkOrder 5000 ''

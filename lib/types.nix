@@ -67,7 +67,9 @@ with lib; {
                   full = 4;
                   ultimate = 5;
                 }
-                .${v}
+                .${
+                  v
+                }
               else v;
             description = ''
               The amount of trust you have in the key ownership and the care the

@@ -4,8 +4,7 @@
   pkgs,
   ...
 }:
-with lib;
-{
+with lib; {
   options = {
   };
 
@@ -16,12 +15,10 @@ with lib;
       ];
     };
 
-    home-manager.users.${config.my.user.name} =
-      { config, ... }:
-      {
-        xdg.configFile."sketchybar/sketchybarrc".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/sketchybar/sketchybarrc";
-      };
+    home-manager.users.${config.my.user.name} = {config, ...}: {
+      xdg.configFile."sketchybar/sketchybarrc".source =
+        config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/sketchybar/sketchybarrc";
+    };
 
     fonts.packages = with pkgs; [
       hack-font

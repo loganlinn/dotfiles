@@ -20,7 +20,7 @@ rustPlatform.buildRustPackage {
     description = "Automatic, optimal tiling for i3wm";
     homepage = "https://github.com/chmln/i3-auto-layout";
     license = licenses.mit;
-    maintainers = with maintainers; [ mephistophiles ];
+    maintainers = with maintainers; [mephistophiles];
     platforms = platforms.linux;
     mainProgram = "i3-auto-layout";
   };

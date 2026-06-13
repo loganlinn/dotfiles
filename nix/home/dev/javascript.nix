@@ -4,30 +4,26 @@
   pkgs,
   ...
 }:
-with lib;
-let
-  npmrcFormat =
-    let
-      ini = pkgs.formats.iniWithGlobalSection { };
-    in
-    {
-      type = (ini.type.getSubOptions [ ]).globalSection.type;
-      generate = name: value: ini.generate name { globalSection = value; };
-    };
-in
-{
+with lib; let
+  npmrcFormat = let
+    ini = pkgs.formats.iniWithGlobalSection {};
+  in {
+    type = (ini.type.getSubOptions []).globalSection.type;
+    generate = name: value: ini.generate name {globalSection = value;};
+  };
+in {
   options = {
     my.npm = {
       settings = mkOption {
         # use same type constraints as global section of INI format,
         type = npmrcFormat.type;
-        default = { };
+        default = {};
       };
     };
 
     programs.fnm = {
       # enable = mkEnableOption "fnm (node.js version manager)";
-      package = mkPackageOption pkgs "fnm" { };
+      package = mkPackageOption pkgs "fnm" {};
       settings = mkOption {
         type = types.attrs;
         default = {
@@ -56,7 +52,7 @@ in
       };
       initContent = ''
         # initialize fnm (node.js version manager)
-        eval "$(fnm env --shell zsh ${cli.toCommandLineShellGNU { } config.programs.fnm.settings})"
+        eval "$(fnm env --shell zsh ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})"
 
         # If the completion file doesn't exist yet, we need to autoload it and
         # bind it to `fnm`. Otherwise, compinit will have already done that.
@@ -72,7 +68,7 @@ in
 
     programs.bash.initExtra = ''
       # initialize fnm (node.js version manager)
-      eval "$(fnm env --shell bash ${cli.toCommandLineShellGNU { } config.programs.fnm.settings})"
+      eval "$(fnm env --shell bash ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})"
     '';
 
     my.npm.settings = {

@@ -4,24 +4,24 @@
   lib,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
 
   cfg = config.my.java;
-in
-{
+in {
   options.my.java = {
-    enable = mkEnableOption "java" // {
-      default = true;
-    };
+    enable =
+      mkEnableOption "java"
+      // {
+        default = true;
+      };
 
-    package = mkPackageOption pkgs "jdk" { };
+    package = mkPackageOption pkgs "jdk" {};
 
     toolchains = mkOption {
       description = "Additional JDK/JREs to be registered as toolchains.";
       type = types.listOf types.package;
-      default = [ ];
+      default = [];
 
       example = literalExpression ''
         [
@@ -37,8 +37,7 @@ in
         See: https://docs.oracle.com/javase/8/docs/platform/jvmti/jvmti.html#tooloptions
       '';
 
-      default =
-        with cfg;
+      default = with cfg;
         (optional enableCommercialFeatures "-XX:+UnlockCommercialFeatures")
         ++ (optional enableFlightRecorder "-XX:+FlightRecorder")
         ++ (optional (illegalAccess != null) "--illegal-access=${illegalAccess}")
@@ -48,7 +47,7 @@ in
 
     graalvm = {
       enable = mkEnableOption "graalvm";
-      package = mkPackageOption pkgs "graalvm-ce" { };
+      package = mkPackageOption pkgs "graalvm-ce" {};
     };
 
     illegalAccess = mkOption {
@@ -68,7 +67,7 @@ in
       description = ''
         https://docs.oracle.com/en/java/javase/17/migrate/migrating-jdk-8-later-jdk-releases.html#GUID-2F61F3A9-0979-46A4-8B49-325BA0EE8B66
       '';
-      default = [ ];
+      default = [];
     };
 
     opens = mkOption {
@@ -76,7 +75,7 @@ in
       description = ''
         https://docs.oracle.com/en/java/javase/17/migrate/migrating-jdk-8-later-jdk-releases.html#GUID-2F61F3A9-0979-46A4-8B49-325BA0EE8B66
       '';
-      default = [ ];
+      default = [];
     };
 
     enableCommercialFeatures = mkOption {
@@ -107,7 +106,7 @@ in
     programs.java.package = cfg.package;
 
     # this works, but is there a better way? (makeWrapper?)
-    home.sessionVariables = optionalAttrs (cfg.toolOptions != [ ]) {
+    home.sessionVariables = optionalAttrs (cfg.toolOptions != []) {
       JAVA_TOOL_OPTIONS = escapeShellArgs cfg.toolOptions;
     };
 
@@ -119,10 +118,11 @@ in
           java = jdk;
           javaToolchains = remove (p: p.meta.name == jdk.meta.name) cfg.toolchains;
         };
-        clojure = pkgs.clojure.override { inherit jdk; };
+        clojure = pkgs.clojure.override {inherit jdk;};
         clojure-lsp = pkgs.clojure-lsp;
-        leiningen = pkgs.leiningen.override { inherit jdk; };
-        inherit (pkgs)
+        leiningen = pkgs.leiningen.override {inherit jdk;};
+        inherit
+          (pkgs)
           babashka
           bbin
           clj-kondo
@@ -162,15 +162,15 @@ in
       }))
       (
         xs:
-        xs
-        ++ [
-          {
-            name = "jvms/default";
-            value = {
-              source = cfg.package;
-            };
-          }
-        ]
+          xs
+          ++ [
+            {
+              name = "jvms/default";
+              value = {
+                source = cfg.package;
+              };
+            }
+          ]
       )
       listToAttrs
     ];

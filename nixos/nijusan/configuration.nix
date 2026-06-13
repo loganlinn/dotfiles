@@ -2,8 +2,7 @@
   self,
   pkgs,
   ...
-}:
-{
+}: {
   imports = [
     self.nixosModules._1password
     self.nixosModules.comfyui
@@ -119,12 +118,12 @@
   #   ];
   # };
   networking.nftables.enable = true;
-  networking.firewall.trustedInterfaces = [ "incusbr0" ];
-  networking.firewall.allowedTCPPorts = [ 8443 ];
+  networking.firewall.trustedInterfaces = ["incusbr0"];
+  networking.firewall.allowedTCPPorts = [8443];
 
-  nix.settings.trusted-users = [ "root" ]; # this is in addition to my.user.name (needed?)
+  nix.settings.trusted-users = ["root"]; # this is in addition to my.user.name (needed?)
 
-  users.users.logan.extraGroups = [ "incus-admin" ];
+  users.users.logan.extraGroups = ["incus-admin"];
 
   environment.systemPackages = with pkgs; [
     pciutils

@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   boot.loader = {
     timeout = 3;
     efi.canTouchEfiVariables = true;
@@ -26,7 +25,7 @@
     # ];
   };
 
-  boot.supportedFilesystems = [ "ntfs" ];
+  boot.supportedFilesystems = ["ntfs"];
   boot.kernelPackages = pkgs.linuxPackages;
   boot.kernelParams = [
     "i915.enable_psr=1"
@@ -38,7 +37,7 @@
     "mem_sleep_default=deep"
     "pcie_aspm=off"
   ];
-  boot.blacklistedKernelModules = [ "spd5118" ]; # DDR5 SPD hub temp sensor; fails on resume (ENXIO)
+  boot.blacklistedKernelModules = ["spd5118"]; # DDR5 SPD hub temp sensor; fails on resume (ENXIO)
   boot.kernelModules = [
     "kvm-intel"
     "v4l2loopback"

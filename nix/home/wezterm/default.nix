@@ -6,8 +6,7 @@
   pkgs,
   ...
 }:
-with lib;
-let
+with lib; let
   inherit (config.lib.file) mkOutOfStoreSymlink;
   fennel = pkgs.lua54Packages.fennel;
   fennel-lua = ''
@@ -28,9 +27,8 @@ let
     rev = "173f45756d99426d89990388e5d8c8e38b9695b9";
     hash = "sha256-FojMuBbyw/XyQIMF8PeQFF3GbO55Nz3/05yXGYdz4dY=";
   };
-in
-{
-  imports = [ ../shell ];
+in {
+  imports = [../shell];
 
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {
@@ -52,7 +50,7 @@ in
     home.shellAliases.set-user-var = ''printf "\033]1337;SetUserVar=%s=%s\007"'';
 
     my.shellScripts.wezterm-pane-info = {
-      runtimeInputs = [ pkgs.jq ];
+      runtimeInputs = [pkgs.jq];
       text = ''
         pane_id=''${1:-''${WEZTERM_PANE}}
         wezterm cli list --format=json | jq --argjson pane_id "''${pane_id?}" '.[] | select(.pane_id == $pane_id)'

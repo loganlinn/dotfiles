@@ -3,8 +3,7 @@
   lib,
   ...
 }:
-with lib;
-{
+with lib; {
   services.printing = {
     enable = mkDefault true;
     startWhenNeeded = mkDefault true;
@@ -14,7 +13,7 @@ with lib;
     # Share printers over the local network
     browsing = mkDefault true;
     listenAddresses = mkDefault ["*:631"];
-    allowFrom = mkDefault [ "all" ];
+    allowFrom = mkDefault ["all"];
     defaultShared = mkDefault true;
 
     drivers = with pkgs; [
@@ -35,5 +34,5 @@ with lib;
     openFirewall = mkDefault true;
   };
 
-  networking.firewall.allowedTCPPorts = [ 631 ]; # IPP
+  networking.firewall.allowedTCPPorts = [631]; # IPP
 }

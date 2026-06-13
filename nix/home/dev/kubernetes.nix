@@ -3,11 +3,9 @@
   lib,
   pkgs,
   ...
-}:
-let
-  yaml = pkgs.formats.yaml { };
-in
-{
+}: let
+  yaml = pkgs.formats.yaml {};
+in {
   home.shellAliases = {
     k = "kubectl";
     kctx = "kubectx";
@@ -152,7 +150,7 @@ in
           background = false;
           confirm = true;
           description = "Add debug container";
-          scopes = [ "containers" ];
+          scopes = ["containers"];
           shortCut = "Shift-D";
         };
 
@@ -173,7 +171,7 @@ in
             "$GROUPS"
             "$NAME"
           ];
-          scopes = [ "all" ]; # TODO revisit
+          scopes = ["all"]; # TODO revisit
         };
 
         images = {
@@ -191,16 +189,16 @@ in
             "--unique"
             "$FILTER"
           ];
-          scopes = [ "all" ]; # TODO revisit
+          scopes = ["all"]; # TODO revisit
         };
 
         dive = {
-          args = [ "$COL-IMAGE" ];
+          args = ["$COL-IMAGE"];
           background = false;
           command = "dive";
           confirm = false;
           description = "Dive image";
-          scopes = [ "containers" ];
+          scopes = ["containers"];
           shortCut = "Shift+X";
         };
 
@@ -243,7 +241,7 @@ in
           background = false;
           confirm = false;
           description = "Get Events";
-          scopes = [ "all" ];
+          scopes = ["all"];
           shortCut = "Shift-E";
         };
       };

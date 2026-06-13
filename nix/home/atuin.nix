@@ -3,8 +3,7 @@
   pkgs,
   lib,
   ...
-}:
-{
+}: {
   programs.atuin = {
     settings = {
       auto_sync = lib.mkDefault false;
@@ -27,7 +26,7 @@
   home.packages = [
     (pkgs.writeShellApplication {
       name = "atuin-restart";
-      runtimeInputs = with pkgs; [ coreutils ] ++ lib.optional stdenv.isLinux systemd;
+      runtimeInputs = with pkgs; [coreutils] ++ lib.optional stdenv.isLinux systemd;
       text = ''
         socket_path="''${XDG_DATA_HOME:-$HOME/.local/share}/atuin/daemon.sock"
         pid_file="''${XDG_DATA_HOME:-$HOME/.local/share}/atuin/atuin-daemon.pid"

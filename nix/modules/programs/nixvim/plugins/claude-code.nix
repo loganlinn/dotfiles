@@ -4,11 +4,9 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.programs.nixvim;
-in
-{
+in {
   programs.nixvim = {
     nixpkgs.config.allowUnfree = true;
     dependencies = {

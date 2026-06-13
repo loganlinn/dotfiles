@@ -4,28 +4,23 @@
   pkgs,
   lib,
   ...
-}:
-let
+}: let
   # Determinate Nix owns /etc/nix/nix.conf and includes nix.custom.conf
-  settingsToConf =
-    attrs:
+  settingsToConf = attrs:
     lib.concatStringsSep "\n" (
       lib.mapAttrsToList (
-        k: v:
-        let
+        k: v: let
           val =
-            if lib.isList v then
-              lib.concatStringsSep " " (map toString v)
-            else if lib.isBool v then
-              lib.boolToString v
-            else
-              toString v;
-        in
-        "${k} = ${val}"
-      ) attrs
+            if lib.isList v
+            then lib.concatStringsSep " " (map toString v)
+            else if lib.isBool v
+            then lib.boolToString v
+            else toString v;
+        in "${k} = ${val}"
+      )
+      attrs
     );
-in
-{
+in {
   imports = [
     self.darwinModules.common
     ../modules/aerospace

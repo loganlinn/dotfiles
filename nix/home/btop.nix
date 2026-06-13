@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-{
+}: {
   programs.btop = {
     settings = {
       color_theme = "onedark";
