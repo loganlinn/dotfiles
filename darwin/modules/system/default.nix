@@ -113,6 +113,10 @@ with lib; {
         _FXShowPosixPathInTitle = true; # show full path in finder title
       };
 
+      hitoolbox = {
+        AppleFnUsageType = "Do Nothing";
+      };
+
       loginwindow = {
         DisableConsoleAccess = false; # typing “>console” for a username at the login window.
         GuestEnabled = false;
