@@ -72,7 +72,7 @@ shellcheck "${scripts[@]}"
 # ============================================================================
 
 [tasks."nix:fmt"]
-run = "nix fmt ."
+run = "alejandra ."
 
 [tasks."nix:clean"]
 run = "fd -u -F result"

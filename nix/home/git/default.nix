@@ -102,6 +102,7 @@ in {
       alias.touch = ''!git commit --amend --date="$(date -r)"'';
       alias.undo = "reset --soft HEAD~1";
       alias.wt = "worktree";
+      blame.ignoreRevsFile = ".git-blame-ignore-revs"; # matches settings used by github
       branch.autoSetupRebase = "always";
       branch.sort = "-committerdate";
       checkout.defaultRemote = "origin";
