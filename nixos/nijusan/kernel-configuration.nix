@@ -46,11 +46,11 @@
     # config.boot.kernelPackages.exfat-nofuse
   ];
   boot.extraModprobeConfig = ''
-    options snd_hda_intel power_save=1
+    options snd_had_intel power_save=1
   '';
 
   powerManagement = {
-    enable = true;
+    enable = false;
     cpuFreqGovernor = "powersave";
     powertop.enable = false; # aggressively autosuspends usb devices. no config available. disable rather than hacking around.
   };
