@@ -1,19 +1,22 @@
 {
   self,
+  inputs,
   pkgs,
   ...
 }: {
   imports = [
+    # inputs.agenix.nixosModules.age
+    inputs.hermes-agent.nixosModules.default
     self.nixosModules._1password
-    self.nixosModules.comfyui
+    # self.nixosModules.comfyui
     self.nixosModules.common
     self.nixosModules.docker
-    self.nixosModules.llama-swap
+    # self.nixosModules.llama-swap
     # self.nixosModules.hyprland
     self.nixosModules.networking
     self.nixosModules.nvidia
-    self.nixosModules.ollama
-    self.nixosModules.open-webui
+    # self.nixosModules.ollama
+    # self.nixosModules.open-webui
     self.nixosModules.pipewire
     self.nixosModules.printing
     self.nixosModules.tailscale
@@ -25,23 +28,23 @@
 
   networking.hostName = "nijusan";
 
-  services.atuin.enable = false;
-  services.atuin.host = "127.0.0.1";
-  services.atuin.openFirewall = false;
-  services.atuin.maxHistoryLength = 8192 * 4;
+  # services.atuin.enable = false;
+  # services.atuin.host = "127.0.0.1";
+  # services.atuin.openFirewall = false;
+  # services.atuin.maxHistoryLength = 8192 * 4;
 
-  services.caddy.enable = true;
-  services.caddy.virtualHosts."nijusan.royal-bee.ts.net" = {
-    extraConfig = ''
-      handle_path /atuin/* {
-        reverse_proxy localhost:8888
-      }
-      tls {
-        get_certificate tailscale
-      }
-    '';
-  };
-  services.comfyui.enable = false;
+  # services.caddy.enable = true;
+  # services.caddy.virtualHosts."nijusan.royal-bee.ts.net" = {
+  #   extraConfig = ''
+  #     handle_path /atuin/* {
+  #       reverse_proxy localhost:8888
+  #     }
+  #     tls {
+  #       get_certificate tailscale
+  #     }
+  #   '';
+  # };
+  # services.comfyui.enable = false;
   # services.llama-swap = {
   #   enable = true;
   #   openFirewall = true;
@@ -52,7 +55,7 @@
   # };
   services.desktopManager.gnome.enable = true;
   services.displayManager.gdm.enable = true;
-  services.open-webui.enable = false;
+  # services.open-webui.enable = false;
   services.power-profiles-daemon.enable = true;
   services.printing.enable = true;
   services.tailscale.enable = true;
