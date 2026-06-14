@@ -241,10 +241,6 @@ in {
       (mkAfter ''
         ##########################################################
 
-        [ "$TERM" = "xterm-kitty" ] && alias ssh="command kitty +kitten ssh"
-
-        ##########################################################
-
         # function zshrc_audit_local() {
         #   emulate -L zsh
         #   setopt typeset_silent
