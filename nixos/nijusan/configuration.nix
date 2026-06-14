@@ -8,7 +8,7 @@
     self.nixosModules.comfyui
     self.nixosModules.common
     self.nixosModules.docker
-    # self.nixosModules.llama-swap
+    self.nixosModules.llama-swap
     # self.nixosModules.hyprland
     self.nixosModules.networking
     self.nixosModules.nvidia
