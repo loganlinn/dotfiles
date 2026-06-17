@@ -10,6 +10,8 @@ current-theme.conf so the tab returns to the active session theme.
 
 import os
 
+from kittens.tui.handler import result_handler
+
 _CONFIG = os.path.expanduser("~/.dotfiles/config/kitty")
 STACK_THEME = os.path.join(_CONFIG, "themes/Catppuccin-Macchiato.conf")
 DEFAULT_THEME = os.path.join(_CONFIG, "current-theme.conf")
@@ -19,6 +21,7 @@ def main(args: list[str]) -> str:
     pass
 
 
+@result_handler(no_ui=True)
 def handle_result(
     args: list[str], answer: str, target_window_id: int, boss
 ) -> None:

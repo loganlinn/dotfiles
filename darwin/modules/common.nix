@@ -25,6 +25,8 @@ in {
       }
     ];
 
+    users.knownUsers = [ my.user.name ];
+
     users.users.${my.user.name} = {
       inherit
         (my.user)
@@ -36,9 +38,7 @@ in {
       packages =
         my.user.packages
         ++ [
-          (pkgs.writeShellScriptBin "editor" ''
-            exec ''${EDITOR:-vi} "$@"
-          '')
+          (pkgs.writeShellScriptBin "editor" ''exec ''${EDITOR:-${pkgs.nano}/bin/nano} "$@"'')
         ];
     };
 
