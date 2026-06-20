@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # @raycast.schemaVersion 1
 # @raycast.title src-get
 # @raycast.mode silent
 # @raycast.icon 🧑‍💻
-# @raycast.argument1 { "type": "text", "placeholder": "rep (optional)", "optional": true }
+# @raycast.argument1 { "type": "text", "placeholder": "repo", "optional": false }
 
 # Documentation:
 # @raycast.author loganlinn
@@ -11,26 +11,8 @@
 
 set -e
 
-export PATH="$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:$PATH"
+source "$HOME/.dotfiles/bin/src-get"
 
-#shellcheck disable=SC1090
-source-if-exists() {
-  local arg
-  for arg; do
-    if [[ -f "$arg" ]]; then
-      source "$arg"
-    fi
-  done
-}
+src-get "$1"
 
-source-if-exists \
-  "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" \
-  "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
-
-if [[ -z "$repo" ]]; then
-  repo=$(pbpaste)
-fi
-
-NL=$'\n'
-
-wezterm cli send-text --pane-id "$(wezterm cli spawn)" --no-paste "$(printf 'src-get %q' "$repo")$NL"
+pwd | pbcopy

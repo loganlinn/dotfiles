@@ -19,9 +19,9 @@ FG = int("f8f8f2", 16)
 CURRENT = int("44475a", 16)
 COMMENT = int("6272a4", 16)
 PURPLE = int("bd93f9", 16)
+YELLOW = int("f1fa8c", 16)
 DARK = int("21222c", 16)
 INACTIVE_TAB_BG = int("2a2a37", 16)
-DATE_FG = int("ffffff", 16)
 
 NF_PL_LEFT_HARD_DIVIDER = "\ue0b0"
 NF_PL_LEFT_SOFT_DIVIDER = "\ue0b1"
@@ -110,6 +110,11 @@ class DrawTabContext:
         self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
         return len(cell) + 1
 
+    def _get_instance_group(self) -> str:
+        boss = get_boss()
+        group = getattr(getattr(boss, "args", None), "instance_group", "") or "default"
+        return "" if group == "default" else group
+
     def _tab_title(self) -> tuple[str, str]:
         """Return (prefix, name) for the tab title. prefix includes trailing /."""
         boss = get_boss()
@@ -131,15 +136,37 @@ class DrawTabContext:
         if not self.is_last:
             return self.screen.cursor.x
 
+        date = datetime.datetime.now().strftime("%a %b %-d %H:%M")
+        instance_group = self._get_instance_group()
         cells = [
             (
-                as_rgb(DATE_FG),
+                as_rgb(CURRENT),
                 as_rgb(BG),
-                datetime.datetime.now().strftime(
-                    NF_PL_RIGHT_SOFT_DIVIDER + " %a %b %-d %H:%M "
-                ),
+                NF_PL_RIGHT_HARD_DIVIDER,
             ),
         ]
+        if instance_group:
+            cells.extend(
+                [
+                    (
+                        as_rgb(YELLOW),
+                        as_rgb(CURRENT),
+                        f" {instance_group} ",
+                    ),
+                    (
+                        as_rgb(FG),
+                        as_rgb(CURRENT),
+                        NF_PL_RIGHT_SOFT_DIVIDER,
+                    ),
+                ]
+            )
+        cells.append(
+            (
+                as_rgb(FG),
+                as_rgb(CURRENT),
+                f" {date} ",
+            )
+        )
 
         right_status_length = 0
         for _, _, cell in cells:
