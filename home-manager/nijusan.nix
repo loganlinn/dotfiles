@@ -6,9 +6,11 @@
   lib,
   nix-colors,
   ...
-}: let
-  inherit (nix-colors.lib.contrib {inherit pkgs;}) nixWallpaperFromScheme;
-in {
+}:
+let
+  inherit (nix-colors.lib.contrib { inherit pkgs; }) nixWallpaperFromScheme;
+in
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -111,7 +113,7 @@ in {
   #   alternate = "${config.programs.librewolf.package}/bin/librewolf --private-window";
   # };
 
-  programs.atuin.enable = false;
+  programs.atuin.enable = true;
   programs.kitty.enable = true;
   programs.emacs.enable = true;
   programs.emacs.package = pkgs.emacs-git;
@@ -180,7 +182,7 @@ in {
   # home-manager/options.json, and may be used for navigating definitions, auto-completing, and other miscellaneous tasks.
   # manual.json.enable = true;
 
-  home.packages = with pkgs; [];
+  home.packages = with pkgs; [ ];
   home.username = "logan";
   home.homeDirectory = "/home/logan";
   home.stateVersion = "26.05";
