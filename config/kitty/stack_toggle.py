@@ -12,9 +12,9 @@ import os
 
 from kittens.tui.handler import result_handler
 
-_CONFIG = os.path.expanduser("~/.dotfiles/config/kitty")
-STACK_THEME = os.path.join(_CONFIG, "themes/Catppuccin-Macchiato.conf")
-DEFAULT_THEME = os.path.join(_CONFIG, "current-theme.conf")
+CONFIG_DIRECTORY = os.getenv("KITTY_CONFIG_DIRECTORY") or os.path.expanduser("~/.dotfiles/config/kitty")
+STACK_THEME = os.path.join(CONFIG_DIRECTORY, "themes/Catppuccin-Macchiato.conf")
+DEFAULT_THEME = os.path.join(CONFIG_DIRECTORY, "current-theme.conf")
 
 
 def main(args: list[str]) -> str:

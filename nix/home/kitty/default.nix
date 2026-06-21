@@ -116,8 +116,11 @@ in {
         (optional pkgs.stdenv.isLinux (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"''))
       ];
 
+    sessionVariables = {
+      KITTY_CACHE_DIRECTORY = "${config.xdg.cacheHome}/kitty"; # ie don't use ~/Library/Caches on darwin
+    };
+
     shellAliases = {
-      "k@" = "kitten @";
       kf = "kitten choose-files";
       kls = "kitten @ ls";
       rg = "rg --hyperlink-format=kitty";

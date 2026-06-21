@@ -1,0 +1,11 @@
+os_window_name firewalla
+
+cd ~
+
+new_tab firewalla
+launch kitten ssh fire.walla
+
+new_tab local
+launch
+
+focus_tab 0

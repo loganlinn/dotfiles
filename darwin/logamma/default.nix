@@ -38,6 +38,8 @@ in {
     ./homebrew.nix
   ];
 
+  my.user.uid = 502;
+
   modules.kitty.enable = true;
 
   programs.cleanshot.enable = true;

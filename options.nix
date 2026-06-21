@@ -32,6 +32,7 @@ in {
     # https://github.com/nix-darwin/nix-darwin/blob/73d5958/modules/users/user.nix
     user = {
       name = mkOpt str "logan";
+      uid = mkOpt (nullOr int) null;
       description = mkOpt str "Logan Linn";
       home = mkOpt str (
         if isDarwin

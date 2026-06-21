@@ -25,22 +25,26 @@ in {
       }
     ];
 
-    users.knownUsers = [ my.user.name ];
+    users.knownUsers = optional (my.user.uid != null) my.user.name;
 
-    users.users.${my.user.name} = {
-      inherit
-        (my.user)
-        description
-        shell
-        home
-        openssh
-        ;
-      packages =
-        my.user.packages
-        ++ [
-          (pkgs.writeShellScriptBin "editor" ''exec ''${EDITOR:-${pkgs.nano}/bin/nano} "$@"'')
-        ];
-    };
+    users.users.${my.user.name} =
+      {
+        inherit
+          (my.user)
+          description
+          shell
+          home
+          openssh
+          ;
+        packages =
+          my.user.packages
+          ++ [
+            (pkgs.writeShellScriptBin "editor" ''exec ''${EDITOR:-${pkgs.nano}/bin/nano} "$@"'')
+          ];
+      }
+      // optionalAttrs (my.user.uid != null) {
+        inherit (my.user) uid;
+      };
 
     homebrew.enable = mkDefault true;
 
