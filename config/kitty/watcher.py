@@ -15,11 +15,13 @@ from __future__ import annotations
 import colorsys
 import hashlib
 import json
+import logging
 import os
 from contextlib import suppress
 from dataclasses import dataclass
+from logging.handlers import RotatingFileHandler
 from tempfile import NamedTemporaryFile
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from kitty.boss import Boss
@@ -49,10 +51,14 @@ ROOT_MARKERS = (
 
 STATE_VERSION = 1
 STATE_FILE = "project-color-watcher.json"
+LOG_FILE = "project-color-watcher.log"
+LOG_MAX_BYTES = 512 * 1024
+LOG_BACKUP_COUNT = 3
 MIN_HUE_DISTANCE = 0.055
 GOLDEN_RATIO_CONJUGATE = 0.6180339887498949
 
 _state: dict[str, Any] | None = None
+_logger: logging.Logger | None = None
 _last_active_border_root: str | None | object = object()
 _last_tab_root: dict[int, str | None] = {}
 
@@ -81,10 +87,117 @@ class ProjectColors:
     inactive_fg: Rgb
 
 
-def _state_path() -> str:
+def _cache_path(filename: str) -> str:
     from kitty.constants import cache_dir
 
-    return os.path.join(cache_dir(), STATE_FILE)
+    return os.path.join(cache_dir(), filename)
+
+
+def _state_path() -> str:
+    return _cache_path(STATE_FILE)
+
+
+def _log_path() -> str:
+    return _cache_path(LOG_FILE)
+
+
+def _safe_path(path_func: Callable[[], str]) -> str:
+    with suppress(Exception):
+        return path_func()
+    return "?"
+
+
+def _get_logger() -> logging.Logger:
+    global _logger
+    if _logger is not None:
+        return _logger
+
+    logger = logging.getLogger("project_color_watcher")
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
+    if not logger.handlers:
+        path = _log_path()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        handler = RotatingFileHandler(
+            path,
+            maxBytes=LOG_MAX_BYTES,
+            backupCount=LOG_BACKUP_COUNT,
+            encoding="utf-8",
+        )
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+        logger.addHandler(handler)
+    _logger = logger
+    return logger
+
+
+def _log(level: int, message: str, *args: Any) -> None:
+    with suppress(Exception):
+        _get_logger().log(level, message, *args)
+
+
+def _log_exception(message: str, *args: Any) -> None:
+    with suppress(Exception):
+        _get_logger().exception(message, *args)
+
+
+def _safe_repr(value: Any, limit: int = 180) -> str:
+    with suppress(Exception):
+        ans = repr(value)
+        if len(ans) > limit:
+            return ans[: limit - 3] + "..."
+        return ans
+    return "<unrepresentable>"
+
+
+def _data_summary(data: dict[str, Any]) -> str:
+    if not data:
+        return "{}"
+    return "{" + ", ".join(f"{key}={_safe_repr(data[key])}" for key in sorted(data, key=str)) + "}"
+
+
+def _window_id(window: "Window") -> str:
+    with suppress(Exception):
+        return str(window.id)
+    return "?"
+
+
+def _tab_id(window: "Window") -> str:
+    tab = _active_tab_for(window)
+    if tab is not None:
+        with suppress(Exception):
+            return str(tab.id)
+    return "?"
+
+
+def _log_event(event: str, window: "Window", data: dict[str, Any]) -> None:
+    _log(
+        logging.DEBUG,
+        "%s window=%s tab=%s data=%s",
+        event,
+        _window_id(window),
+        _tab_id(window),
+        _data_summary(data),
+    )
+
+
+def _run_window_callback(
+    event: str,
+    window: "Window",
+    data: dict[str, Any],
+    callback: Callable[[], None],
+) -> None:
+    _log_event(event, window, data)
+    try:
+        callback()
+    except Exception:
+        _log_exception(
+            "%s failed window=%s tab=%s data=%s",
+            event,
+            _window_id(window),
+            _tab_id(window),
+            _data_summary(data),
+        )
+        raise
 
 
 def _load_state() -> dict[str, Any]:
@@ -92,11 +205,18 @@ def _load_state() -> dict[str, Any]:
     if _state is not None:
         return _state
     ans: dict[str, Any] = {"version": STATE_VERSION, "projects": {}}
-    with suppress(Exception):
-        with open(_state_path(), encoding="utf-8") as f:
+    path = "?"
+    try:
+        path = _state_path()
+        with open(path, encoding="utf-8") as f:
             raw = json.load(f)
         if isinstance(raw, dict) and isinstance(raw.get("projects"), dict):
             ans["projects"] = raw["projects"]
+            _log(logging.DEBUG, "loaded state path=%s projects=%d", path, len(ans["projects"]))
+    except FileNotFoundError:
+        _log(logging.DEBUG, "state missing path=%s", path)
+    except Exception:
+        _log_exception("failed to load state path=%s", path)
     _state = ans
     return ans
 
@@ -104,12 +224,17 @@ def _load_state() -> dict[str, Any]:
 def _save_state() -> None:
     state = _load_state()
     path = _state_path()
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with NamedTemporaryFile("w", encoding="utf-8", dir=os.path.dirname(path), delete=False) as f:
-        tmp = f.name
-        json.dump(state, f, indent=2, sort_keys=True)
-        f.write("\n")
-    os.replace(tmp, path)
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with NamedTemporaryFile("w", encoding="utf-8", dir=os.path.dirname(path), delete=False) as f:
+            tmp = f.name
+            json.dump(state, f, indent=2, sort_keys=True)
+            f.write("\n")
+        os.replace(tmp, path)
+        _log(logging.DEBUG, "saved state path=%s projects=%d", path, len(state["projects"]))
+    except Exception:
+        _log_exception("failed to save state path=%s", path)
+        raise
 
 
 def _hash_hue(text: str) -> float:
@@ -141,6 +266,7 @@ def _project_hue(root: str) -> float:
         hue = (hue + GOLDEN_RATIO_CONJUGATE) % 1.0
     projects[root] = {"hue": hue, "name": os.path.basename(root) or root}
     _save_state()
+    _log(logging.INFO, "assigned project hue root=%r hue=%.6f", root, hue)
     return hue
 
 
@@ -261,8 +387,13 @@ def _startup_active_border_color(boss: "Boss") -> str:
 
 
 def _call_remote_control(boss: "Boss", window: "Window", args: tuple[str, ...]) -> None:
-    with suppress(Exception):
-        boss.call_remote_control(window, ("!" + args[0],) + args[1:])
+    command = ("!" + args[0],) + args[1:]
+    try:
+        boss.call_remote_control(window, command)
+        _log(logging.DEBUG, "remote-control ok window=%s args=%s", _window_id(window), _safe_repr(command, 360))
+    except Exception:
+        # Preserve the old best-effort behavior, but make failures visible.
+        _log_exception("remote-control failed window=%s args=%s", _window_id(window), _safe_repr(command, 360))
 
 
 def _apply_window_border(boss: "Boss", window: "Window", root: str | None) -> None:
@@ -271,6 +402,7 @@ def _apply_window_border(boss: "Boss", window: "Window", root: str | None) -> No
         return
     _last_active_border_root = root
     color = _colors_for_root(root).border.sharp if root else _startup_active_border_color(boss)
+    _log(logging.INFO, "apply active border window=%s root=%r color=%s", _window_id(window), root, color)
     _call_remote_control(
         boss,
         window,
@@ -283,6 +415,7 @@ def _apply_tab_colors(boss: "Boss", window: "Window", root: str | None) -> None:
     if tab is None or _last_tab_root.get(tab.id) == root:
         return
     _last_tab_root[tab.id] = root
+    tab_id = getattr(tab, "id", "?")
     if root:
         colors = _colors_for_root(root)
         args = (
@@ -293,6 +426,15 @@ def _apply_tab_colors(boss: "Boss", window: "Window", root: str | None) -> None:
             f"inactive_bg={colors.inactive_bg.sharp}",
             f"inactive_fg={colors.inactive_fg.sharp}",
         )
+        _log(
+            logging.INFO,
+            "apply tab colors tab=%s window=%s root=%r active_bg=%s inactive_bg=%s",
+            tab_id,
+            _window_id(window),
+            root,
+            colors.active_bg.sharp,
+            colors.inactive_bg.sharp,
+        )
     else:
         args = (
             "set-tab-color",
@@ -302,6 +444,7 @@ def _apply_tab_colors(boss: "Boss", window: "Window", root: str | None) -> None:
             "inactive_bg=NONE",
             "inactive_fg=NONE",
         )
+        _log(logging.INFO, "reset tab colors tab=%s window=%s", tab_id, _window_id(window))
     _call_remote_control(boss, window, args)
 
 
@@ -333,49 +476,83 @@ def _is_active_window(boss: "Boss", window: "Window") -> bool:
 
 
 def on_load(boss: "Boss", data: dict[str, Any]) -> None:
-    _load_state()
-    for window in boss.all_windows:
-        _apply_window(boss, window, apply_border=False)
-    _apply_active_border(boss)
+    try:
+        windows = tuple(boss.all_windows)
+        _log(
+            logging.INFO,
+            "on_load log=%s state=%s windows=%d",
+            _safe_path(_log_path),
+            _safe_path(_state_path),
+            len(windows),
+        )
+        _load_state()
+        for window in windows:
+            _apply_window(boss, window, apply_border=False)
+        _apply_active_border(boss)
+    except Exception:
+        _log_exception("on_load failed")
+        raise
 
 
 def on_resize(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    _apply_window(boss, window)
+    _run_window_callback("on_resize", window, data, lambda: _apply_window(boss, window))
 
 
 def on_focus_change(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    if data.get("focused"):
-        _apply_window(boss, window)
+    _run_window_callback(
+        "on_focus_change",
+        window,
+        data,
+        lambda: _apply_window(boss, window) if data.get("focused") else None,
+    )
 
 
 def on_title_change(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    _apply_window(boss, window)
+    _run_window_callback("on_title_change", window, data, lambda: _apply_window(boss, window))
 
 
 def on_cmd_startstop(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    if not data.get("is_start"):
-        _apply_window(boss, window)
+    _run_window_callback(
+        "on_cmd_startstop",
+        window,
+        data,
+        lambda: _apply_window(boss, window) if not data.get("is_start") else None,
+    )
 
 
 def on_set_user_var(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    _apply_window(boss, window)
+    _run_window_callback("on_set_user_var", window, data, lambda: _apply_window(boss, window))
 
 
 def on_color_scheme_preference_change(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    global _last_active_border_root
-    _last_active_border_root = object()
-    _last_tab_root.clear()
-    _apply_window(boss, window)
+    def callback() -> None:
+        global _last_active_border_root
+        _last_active_border_root = object()
+        _last_tab_root.clear()
+        _apply_window(boss, window)
+
+    _run_window_callback("on_color_scheme_preference_change", window, data, callback)
 
 
 def on_tab_bar_dirty(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    tab_manager = data.get("tab_manager")
-    if tab_manager is not None:
-        _apply_tab_manager(boss, tab_manager)
-    _apply_active_border(boss)
+    def callback() -> None:
+        tab_manager = data.get("tab_manager")
+        if tab_manager is not None:
+            _apply_tab_manager(boss, tab_manager)
+        _apply_active_border(boss)
+
+    _run_window_callback("on_tab_bar_dirty", window, data, callback)
 
 
 def on_close(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
-    tab = _active_tab_for(window)
-    if tab is not None:
-        _last_tab_root.pop(tab.id, None)
+    def callback() -> None:
+        tab = _active_tab_for(window)
+        if tab is not None:
+            _log(logging.INFO, "clear tab cache tab=%s window=%s", getattr(tab, "id", "?"), _window_id(window))
+            _last_tab_root.pop(tab.id, None)
+
+    _run_window_callback("on_close", window, data, callback)
+
+
+def on_quit(boss: "Boss", window: "Window", data: dict[str, Any]) -> None:
+    _log_event("on_quit", window, data)
