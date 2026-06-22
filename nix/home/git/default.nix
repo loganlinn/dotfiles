@@ -15,6 +15,168 @@ with lib; let
     then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
     else "op-ssh-sign"
   );
+  gitTopLevelFunctions = ''
+    _git_top_level_usage() {
+      local usage_name=$1 target_name=$2
+
+      printf '%s\n' \
+        "Usage:" \
+        "  $usage_name [--cd PATH] [-x|--exec COMMAND [ARG ...] [; ...]]" \
+        "" \
+        "Target:" \
+        "  $target_name top-level git worktree" \
+        "" \
+        "Options:" \
+        "  --cd PATH       Use PATH relative to the target top-level. Default: ." \
+        "  -x, --exec CMD  Run CMD from the target directory. Default: pwd" \
+        "  -h, --help      Show this help." \
+        "" \
+        "Notes:" \
+        "  After -x/--exec, all following positional arguments belong to CMD." \
+        "  Use ';' to end a command and continue parsing options or another -x." \
+        "" \
+        "Examples:" \
+        "  $usage_name" \
+        "  $usage_name --cd src -x git status --short" \
+        "  $usage_name -x pwd ';' --cd \"\$(git rev-parse --show-prefix)\" -x git status --short"
+    }
+
+    _git_top_level_root_worktree() {
+      local line
+
+      while IFS= read -r line; do
+        case "$line" in
+          worktree\ *)
+            printf '%s\n' "''${line#worktree }"
+            return 0
+            ;;
+        esac
+      done < <(git worktree list --porcelain)
+
+      return 1
+    }
+
+    _git_top_level_run() {
+      if [[ -n ''${ZSH_VERSION-} ]]; then
+        emulate -L zsh
+      fi
+
+      local kind=$1 usage_name=$2 target_name=$3
+      shift 3
+
+      local cd_path=. top target arg exit_status
+      local sentinel=$'\037'
+      local -a exec_args=()
+
+      while (( $# )); do
+        case "$1" in
+          -h|--help)
+            _git_top_level_usage "$usage_name" "$target_name"
+            return 0
+            ;;
+          --cd)
+            shift
+            if (( ! $# )); then
+              printf '%s\n' "$usage_name: --cd requires a path" >&2
+              return 2
+            fi
+            cd_path=$1
+            shift
+            ;;
+          --cd=*)
+            cd_path=''${1#--cd=}
+            shift
+            ;;
+          -x|--exec)
+            shift
+            local added=0
+
+            while (( $# )); do
+              if [[ $1 == ';' ]]; then
+                if (( ! added )); then
+                  printf '%s\n' "$usage_name: -x requires a command" >&2
+                  return 2
+                fi
+                exec_args+=("$sentinel")
+                shift
+                break
+              fi
+
+              exec_args+=("$1")
+              added=1
+              shift
+            done
+
+            if (( ! added )); then
+              printf '%s\n' "$usage_name: -x requires a command" >&2
+              return 2
+            fi
+            ;;
+          *)
+            printf '%s\n' "$usage_name: unexpected argument: $1" >&2
+            printf '%s\n' "$usage_name: use -x/--exec before command arguments" >&2
+            return 2
+            ;;
+        esac
+      done
+
+      if [[ $cd_path == /* ]]; then
+        printf '%s\n' "$usage_name: --cd expects a relative path: $cd_path" >&2
+        return 2
+      fi
+
+      case "$kind" in
+        current)
+          top=$(git rev-parse --show-toplevel) || return $?
+          ;;
+        root)
+          top=$(_git_top_level_root_worktree) || return $?
+          ;;
+        *)
+          printf '%s\n' "$usage_name: invalid target kind: $kind" >&2
+          return 2
+          ;;
+      esac
+
+      target=$top
+      if [[ -n $cd_path && $cd_path != "." ]]; then
+        target="$top/$cd_path"
+      fi
+
+      cd -- "$target" || return $?
+
+      if (( ''${#exec_args[@]} == 0 )); then
+        exec_args=(pwd)
+      fi
+
+      local -a cmd=()
+      for arg in "''${exec_args[@]}"; do
+        if [[ $arg == "$sentinel" ]]; then
+          if (( ''${#cmd[@]} )); then
+            "''${cmd[@]}"
+            exit_status=$?
+            (( exit_status == 0 )) || return $exit_status
+            cmd=()
+          fi
+          continue
+        fi
+
+        cmd+=("$arg")
+      done
+
+      if (( ''${#cmd[@]} )); then
+        "''${cmd[@]}"
+      fi
+    }
+
+    gtl() {
+      _git_top_level_run current gtl current "$@"
+    }
+
+    grt() {
+      _git_top_level_run root grt root "$@"
+    }
+  '';
 in {
   imports = [
     ../shell
@@ -38,13 +200,13 @@ in {
     glr = "git pull --rebase";
     glrp = "git pull --rebase && git push";
     gp = "git push";
-    grt = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)" && pwd'';
     grtp = ''cd -- "$(git worktree list --porcelain | grep -m1 "^worktree " | cut -d" " -f2- || echo .)/$(git rev-parse --show-prefix)" && pwd'';
-    gtl = ''cd -- "$(git rev-parse --show-toplevel)" && pwd'';
     gw = "git show";
     gpwd = "git rev-parse --show-prefix";
     gpwdc = "git rev-parse --show-prefix | ${config.my.flakeDirectory}/bin/cb";
   };
+
+  programs.bash.initExtra = gitTopLevelFunctions;
 
   programs.delta = {
     enable = true;
@@ -159,6 +321,8 @@ in {
 
   programs.zsh = {
     initContent = ''
+      ${gitTopLevelFunctions}
+
       zle -N git-widget
       zle -N git-open-widget
       bindkey '^X^G' git-widget
