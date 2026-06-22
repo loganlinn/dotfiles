@@ -9,6 +9,18 @@ with lib;
 with lib.my; let
   cfg = config.programs.kitty;
   json = pkgs.formats.json {};
+  kittyThemes = pkgs.fetchFromGitHub {
+    owner = "kovidgoyal";
+    repo = "kitty-themes";
+    rev = "6f27c71721e4eb6702630f6e57fe16baacd76aa0";
+    hash = "sha256-IDXRlup2naBmCSlPYdjrgL/m4FAhkf4IEAiLsMUdepQ=";
+  };
+  kittyThemeFiles = [
+    "Catppuccin-Macchiato.conf"
+    "gruvbox-dark-soft.conf"
+    "gruvbox-light-soft.conf"
+    "tokyo_night_day.conf"
+  ];
 in {
   programs = mkIf cfg.enable {
     kitty = {
@@ -69,9 +81,19 @@ in {
         "ssh.conf"
         "stack_toggle.py"
         "tab_bar.py"
-        "themes"
         "user-var-hints.py"
+        "watcher.py"
       ]
+    ))
+    // (listToAttrs (
+      map
+      (
+        name:
+          nameValuePair "kitty/themes/${name}" {
+            source = "${kittyThemes}/themes/${name}";
+          }
+      )
+      kittyThemeFiles
     ))
     // {
       "kitty/dracula".source = pkgs.fetchFromGitHub {
