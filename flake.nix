@@ -9,12 +9,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
-    # claude-desktop.inputs.flake-utils.follows = "flake-utils";
-    # claude-desktop.inputs.nixpkgs.follows = "nixpkgs";
-    # claude-desktop.url = "github:k3d3/claude-desktop-linux-flake";
     comfyui-nix.url = "github:utensils/comfyui-nix";
-    agenix.url = "github:ryantm/agenix";
-    agenix.inputs.nixpkgs.follows = "nixpkgs";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     emacs-lsp-booster.url = "github:slotThe/emacs-lsp-booster-flake";
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
@@ -27,10 +22,10 @@
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
     opnix.inputs.nixpkgs.follows = "nixpkgs";
     opnix.url = "github:brizzbuzz/opnix";
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     supermaven-nvim.flake = false;
     supermaven-nvim.url = "github:supermaven-inc/supermaven-nvim";
-    # wezterm.inputs.nixpkgs.follows = "nixpkgs";
-    # wezterm.url = "github:wez/wezterm?dir=nix&rev=4accc376f3411f2cbf4f92ca46f79f7bc47688a1";
 
     hyprland.url = "github:hyprwm/Hyprland";
     hyprland-contrib.url = "github:hyprwm/contrib";
@@ -102,7 +97,6 @@
         overlayAttrs = {
           inherit (inputs'.home-manager.packages) home-manager;
           inherit (inputs'.emacs.packages) emacs-unstable;
-          inherit (inputs'.agenix.packages) agenix;
           fzf-git-sh = pkgs.fzf-git-sh.overrideAttrs (prev: {
             version = inputs.fzf-git-sh.shortRev;
             src = inputs.fzf-git-sh;
@@ -125,7 +119,6 @@
           nativeBuildInputs = [
             pkgs.bashInteractive
             config.formatter
-            inputs'.agenix.packages.agenix
             inputs'.home-manager.packages.home-manager
             inputs'.opnix.packages.default
             pkgs.age

@@ -11,7 +11,6 @@ with lib; {
   imports = [
     ./hardware-configuration.nix
     ../../nix/modules/programs/nixvim
-    inputs.agenix.nixosModules.age
     inputs.nixos-hardware.outputs.nixosModules.framework-12th-gen-intel
     inputs.nixvim.nixosModules.nixvim
     self.nixosModules._1password

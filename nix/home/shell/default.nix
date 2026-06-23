@@ -46,7 +46,7 @@ in {
       termkeys = "infocmp -L1";
       envz = "printenv | fzf ";
       fd = "fd --hyperlink";
-      rm = "command rm -i";
+      rm = "rm -I"; # -I: prompt once for recursive/>3 files. No `command` prefix: it breaks `sudo rm` (sudo alias has trailing space → expands rm → `sudo command …`).
     };
 
     programs.bash.initExtra = cfg.shellInitExtra;

@@ -22,18 +22,16 @@ in {
       inherit
         (my.user)
         description
-        shell
         openssh
         packages
         ;
 
+      shell = my.user.shell;
       home = mkDefault "/home/${my.user.name}";
       isNormalUser = true;
       createHome = mkDefault true;
       extraGroups =
-        [
-          "wheel"
-        ]
+        ["wheel"]
         ++ optional graphicsEnabled "video"
         ++ optional audioEnabled "audio"
         ++ optional config.networking.networkmanager.enable "networkmanager"

@@ -59,4 +59,7 @@ mise.local.toml
 __pycache__/
 config/kitty/kitty.local.conf
 .vectimus/receipts/
-
+**/.claude/plans
+**/.claude/handoffs
+**/.agents/plans
+**/.agents/handoffs

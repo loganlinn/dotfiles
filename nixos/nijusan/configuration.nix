@@ -1,14 +1,12 @@
 {
   self,
-  inputs',
   inputs,
   pkgs,
   ...
 }:
 {
   imports = [
-    # inputs.agenix.nixosModules.age
-    inputs.hermes-agent.nixosModules.default
+    inputs.sops-nix.nixosModules.sops
     self.nixosModules._1password
     # self.nixosModules.comfyui
     self.nixosModules.common
@@ -25,10 +23,17 @@
     self.nixosModules.xserver
     ./cachix.nix
     ./hardware-configuration.nix
+    ./hermes-agent.nix
     ./kernel-configuration.nix
   ];
 
   networking.hostName = "nijusan";
+
+  sops = {
+    defaultSopsFile = ./secrets/secrets.yaml;
+    defaultSopsKey = "";
+    age.keyFile = "/home/logan/.config/sops/age/keys.txt";
+  };
 
   services.caddy = {
     enable = true;
@@ -36,75 +41,17 @@
     openFirewall = true;
     resume = true;
     enableReload = true;
-    environmentFile = "/run/secrets/caddy.env";
     globalConfig = ''
-      {
-        admin :2019 {
-          origins http://localhost:2019
-          enforce_origin
-        }
-        grace_period 10s
+      admin {
+        origins http://localhost:2019
+        enforce_origin
       }
+      grace_period 10s
     '';
-    virtualHosts."dashboard.hermes.nijusan.internal" = {
-      serverAliases = [
-        "dashboard.hermes.nijusan.local"
-        "dashboard.hermes.local"
-        "dashboard.hermes.internal"
-      ];
-      extraConfig = ''
-        # .internal is not a public TLD, so ACME can't issue a cert.
-        # Use Caddy's local CA to serve HTTPS with a self-signed cert.
-        tls internal
-        handle {
-          reverse_proxy 127.0.0.1:9119
-        }
-      '';
-    };
   };
 
-  services.hermes-agent = {
-    package = inputs'.hermes-agent.packages.full;
-    enable = true;
-    configFile = "/home/logan/.hermes/config.yaml";
-    addToSystemPackages = true;
-    restart = "always";
-    restartSec = 5;
-  };
-  # Hermes dashboard — bound to localhost, exposed via Caddy (HTTPS) above.
-  # Runs as the interactive user so it shares the ~/.hermes profile rather
-  # than the dedicated `hermes` system user from services.hermes-agent.
-  systemd.services.hermes-dashboard = {
-    description = "Hermes Agent web dashboard";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      User = "logan";
-      Group = "users";
-      WorkingDirectory = "/home/logan";
-      # --skip-build serves the prebuilt web_dist (no npm/node needed here).
-      ExecStart = "/home/logan/.local/bin/hermes dashboard --no-open --skip-build --host 127.0.0.1 --port 9119";
-      Restart = "on-failure";
-      RestartSec = 5;
-      Environment = [
-        "HOME=/home/logan"
-        "PATH=/home/logan/.local/bin:/etc/profiles/per-user/logan/bin:/run/current-system/sw/bin"
-      ];
-    };
-  };
-  # services.comfyui.enable = false;
-  # services.llama-swap = {
-  #   enable = true;
-  #   openFirewall = true;
-  #   settings = {
-  #     logLevel = "info";
-  #     models = { };
-  #   };
-  # };
   services.desktopManager.gnome.enable = true;
   services.displayManager.gdm.enable = true;
-  # services.open-webui.enable = false;
   services.power-profiles-daemon.enable = true;
   services.printing.enable = true;
   services.tailscale.enable = true;
@@ -180,9 +127,12 @@
 
   nix.settings.trusted-users = [ "root" ]; # this is in addition to my.user.name (needed?)
 
-  users.users.logan.extraGroups = [ "incus-admin" ];
+  users.users.logan.extraGroups = [
+    "incus-admin"
+  ];
 
   environment.systemPackages = with pkgs; [
+    bubblewrap # codex standalone install
     pciutils
   ];
 
