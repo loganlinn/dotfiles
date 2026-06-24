@@ -63,3 +63,7 @@ config/kitty/kitty.local.conf
 **/.claude/handoffs
 **/.agents/plans
 **/.agents/handoffs
+config/kitty/themes/Catppuccin-Macchiato.conf
+config/kitty/themes/gruvbox-dark-soft.conf
+config/kitty/themes/gruvbox-light-soft.conf
+config/kitty/themes/tokyo_night_day.conf
