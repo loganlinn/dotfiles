@@ -38,17 +38,7 @@ in {
 
     rofi.terminal = mkDefault (getExe cfg.package);
 
-    zsh.initContent = ''
-      kitty-user-vars() {
-        (($#)) || set -- --self
-        kitty @ ls "$@" | jq '.[].tabs[].windows[0].user_vars'
-      }
-
-      kitty-window-id() {
-        (($#)) || set -- --self
-        kitty @ ls "$@" | jq '.[].tabs[].windows[].id'
-      }
-    '';
+    zsh.initContent = builtins.readFile ./kitty.zshrc;
   };
 
   xdg.configFile = mkIf cfg.enable (
