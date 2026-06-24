@@ -68,6 +68,7 @@
 
       systems = [
         "x86_64-linux"
+        "aarch64-linux"
         "aarch64-darwin"
       ];
 
@@ -132,35 +133,50 @@
       flake = let
         inherit (self.lib) mkNixosSystem mkHomeConfiguration mkDarwinSystem;
       in {
-        nixosConfigurations.framework = mkNixosSystem {
-          system = "x86_64-linux";
-          modules = [./nixos/framework/configuration.nix];
-        };
-        nixosConfigurations.nijusan = mkNixosSystem {
-          system = "x86_64-linux";
-          modules = [./nixos/nijusan/configuration.nix];
-        };
-        darwinConfigurations.patchbook = mkDarwinSystem {
-          system = "aarch64-darwin";
-          modules = [./darwin/patchbook.nix];
-        };
-        darwinConfigurations.logamma = mkDarwinSystem {
-          system = "aarch64-darwin";
-          modules = [./darwin/logamma];
-        };
-        homeConfigurations."logan@framework" = mkHomeConfiguration {
-          system = "x86_64-linux";
-          modules = [./home-manager/framework.nix];
+        nixosConfigurations = {
+          framework = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [./nixos/framework/configuration.nix];
+          };
+          nijusan = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [./nixos/nijusan/configuration.nix];
+          };
+
+          logamma = mkNixosSystem {
+            system = "aarch64-linux";
+            modules = [];
+          };
+          orbstack = mkNixosSystem {
+            system = "aarch64-linux";
+            modules = [./nixos/orbstack/configuration.nix];
+          };
         };
 
-        homeConfigurations."logan@nijusan" = mkHomeConfiguration {
-          system = "x86_64-linux";
-          modules = [./home-manager/nijusan.nix];
+        darwinConfigurations = {
+          patchbook = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [./darwin/patchbook.nix];
+          };
+          logamma = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [./darwin/logamma];
+          };
         };
 
-        homeConfigurations."logan@wijusan" = mkHomeConfiguration {
-          system = "x86_64-linux";
-          modules = [./home-manager/wijusan.nix];
+        homeConfigurations = {
+          "logan@framework" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [./home-manager/framework.nix];
+          };
+          "logan@nijusan" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [./home-manager/nijusan.nix];
+          };
+          "logan@wijusan" = mkHomeConfiguration {
+            system = "x86_64-linux";
+            modules = [./home-manager/wijusan.nix];
+          };
         };
       };
 

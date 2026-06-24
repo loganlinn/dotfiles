@@ -4,6 +4,7 @@
 
 import datetime
 import os
+from contextlib import suppress
 
 from kitty.boss import get_boss
 from kitty.fast_data_types import Screen, get_options, add_timer
@@ -20,6 +21,8 @@ CURRENT = int("44475a", 16)
 COMMENT = int("6272a4", 16)
 PURPLE = int("bd93f9", 16)
 YELLOW = int("f1fa8c", 16)
+ORANGE = int("ffb86c", 16)
+RED = int("ff5555", 16)
 DARK = int("21222c", 16)
 INACTIVE_TAB_BG = int("2a2a37", 16)
 
@@ -31,6 +34,113 @@ NF_PL_RIGHT_SOFT_DIVIDER = "\ue0b3"
 # Name of the special keyboard mode for sequential keybinding.
 # See: https://github.com/kovidgoyal/kitty/blob/81c3fa71a02e28758b7edb53b40a662e53f6defa/kitty/keys.py#L221
 KEYBOARD_MODE_SEQUENCE = "__sequence__"
+TAB_FLAG_STACK_ATTR = "_logan_tab_flag_stack"
+TAB_FLAG_RED_AGE = 5
+
+
+def _tab_flag_stack(boss=None) -> list[int]:
+    boss = boss or get_boss()
+    if boss is None:
+        return []
+    stack = getattr(boss, TAB_FLAG_STACK_ATTR, None)
+    if not isinstance(stack, list):
+        stack = []
+        setattr(boss, TAB_FLAG_STACK_ATTR, stack)
+    return stack
+
+
+def _known_tab_ids(boss) -> set[int]:
+    with suppress(Exception):
+        return {tab.id for tab in boss.all_tabs}
+    return set()
+
+
+def _pruned_tab_flag_stack(boss=None) -> list[int]:
+    boss = boss or get_boss()
+    stack = _tab_flag_stack(boss)
+    if boss is None:
+        return stack
+    known = _known_tab_ids(boss)
+    if known:
+        stack[:] = [tab_id for tab_id in stack if tab_id in known]
+    return stack
+
+
+def _mix_color(left: int, right: int, ratio: float) -> int:
+    ratio = max(0.0, min(1.0, ratio))
+    inv = 1.0 - ratio
+    lr, lg, lb = (left >> 16) & 0xff, (left >> 8) & 0xff, left & 0xff
+    rr, rg, rb = (right >> 16) & 0xff, (right >> 8) & 0xff, right & 0xff
+    return (
+        (round(lr * inv + rr * ratio) << 16)
+        | (round(lg * inv + rg * ratio) << 8)
+        | round(lb * inv + rb * ratio)
+    )
+
+
+def _tab_flag_color(tab_id: int) -> int | None:
+    stack = _pruned_tab_flag_stack()
+    with suppress(ValueError):
+        age = stack.index(tab_id)
+        ratio = min(age, TAB_FLAG_RED_AGE) / TAB_FLAG_RED_AGE
+        if ratio <= 0.5:
+            return _mix_color(YELLOW, ORANGE, ratio * 2)
+        return _mix_color(ORANGE, RED, (ratio - 0.5) * 2)
+    return None
+
+
+def _mark_all_tab_bars_dirty(boss=None) -> None:
+    boss = boss or get_boss()
+    if boss is None:
+        return
+    with suppress(Exception):
+        for tm in boss.all_tab_managers:
+            tm.mark_tab_bar_dirty()
+
+
+def _goto_tab_id(boss, tab_id: int) -> None:
+    with suppress(Exception):
+        for tab in boss.all_tabs:
+            if tab.id == tab_id:
+                boss.set_active_tab(tab)
+                return
+
+
+def _step_tab_flags(boss, action: str, stack: list[int]) -> None:
+    if not stack:
+        return
+
+    tab = getattr(boss, "active_tab", None)
+    current_id = getattr(tab, "id", None)
+    if current_id in stack:
+        index = stack.index(current_id)
+        delta = 1 if action == "backward" else -1
+        target_id = stack[(index + delta) % len(stack)]
+    else:
+        target_id = stack[0] if action == "backward" else stack[-1]
+    _goto_tab_id(boss, target_id)
+
+
+def update_tab_flags(boss, action: str) -> None:
+    stack = _pruned_tab_flag_stack(boss)
+    if action == "clear":
+        stack.clear()
+        _mark_all_tab_bars_dirty(boss)
+        return
+    if action in {"backward", "forward"}:
+        _step_tab_flags(boss, action, stack)
+        return
+
+    tab = getattr(boss, "active_tab", None)
+    if tab is None:
+        return
+    if action == "toggle" and tab.id in stack:
+        stack.remove(tab.id)
+    else:
+        with suppress(ValueError):
+            stack.remove(tab.id)
+        stack.insert(0, tab.id)
+    _mark_all_tab_bars_dirty(boss)
 
 
 def _redraw_tab_bar(_):
@@ -206,16 +316,21 @@ class DrawTabContext:
 
         prefix, name = self._tab_title()
         idx = f" {self.tab_index} "
+        flag_bg = _tab_flag_color(self.tab.tab_id)
+        if flag_bg is not None:
+            prefix = " " + prefix
+        prev_is_active = self.extra_data.prev_tab is not None and self.extra_data.prev_tab.is_active
 
         if self.tab.is_active:
             self.screen.cursor.fg = as_rgb(INACTIVE_TAB_BG)
-            self.screen.cursor.bg = as_rgb(PURPLE)
+            self.screen.cursor.bg = as_rgb(flag_bg or PURPLE)
             self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
-            self.screen.cursor.bg = as_rgb(PURPLE)
+            self.screen.cursor.bg = as_rgb(flag_bg or PURPLE)
             self.screen.cursor.fg = as_rgb(DARK)
             self.screen.cursor.bold = True
             self.screen.draw(idx)
             self.screen.cursor.bold = False
+            self.screen.cursor.bg = as_rgb(PURPLE)
             self.screen.cursor.fg = as_rgb(int("3a3450", 16))
             self.screen.draw(prefix)
             self.screen.cursor.fg = as_rgb(DARK)
@@ -227,12 +342,19 @@ class DrawTabContext:
             self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
             end = self.screen.cursor.x
         else:
-            self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
-            if not self.prev_tab_was_active:
+            number_bg = flag_bg or INACTIVE_TAB_BG
+            self.screen.cursor.bg = as_rgb(number_bg)
+            if flag_bg is not None:
+                self.screen.cursor.fg = as_rgb(INACTIVE_TAB_BG)
+                self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
+            elif not prev_is_active:
                 self.screen.cursor.fg = as_rgb(CURRENT)
                 self.screen.draw(NF_PL_LEFT_SOFT_DIVIDER)
-            self.screen.cursor.fg = as_rgb(FG)
+            self.screen.cursor.fg = as_rgb(DARK if flag_bg is not None else FG)
+            self.screen.cursor.bold = flag_bg is not None
             self.screen.draw(idx)
+            self.screen.cursor.bold = False
+            self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
             self.screen.cursor.fg = as_rgb(int("b0b4c8", 16))
             self.screen.draw(prefix)
             self.screen.cursor.fg = as_rgb(int("c0c4d8", 16))

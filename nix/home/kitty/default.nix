@@ -63,6 +63,7 @@ in {
       [
         "big_mode.py"
         "choose-files.conf"
+        "color_selector.py"
         "copy_cmd_with_output.py"
         "claude-fork.py"
         "cssh.py"
@@ -81,6 +82,7 @@ in {
         "ssh.conf"
         "stack_toggle.py"
         "tab_bar.py"
+        "tab_flags.py"
         "user-var-hints.py"
         "watcher.py"
       ]

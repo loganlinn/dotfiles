@@ -35,7 +35,7 @@
         # "belak/zsh-utils path:prompt"
         # "belak/zsh-utils path:utility"
         # "zsh-users/zsh-completions kind:fpath path:src"
-        "zsh-users/zaw"
+        # "zsh-users/zaw"
       ];
     };
 

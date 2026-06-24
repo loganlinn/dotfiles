@@ -19,8 +19,12 @@
     flags = [
       "--disable-up-arrow"
     ];
-    enableZshIntegration = lib.mkDefault true;
+    enableZshIntegration = false; # caused 'atuin: command not found'i. workaround by using zsh plugin. :shrug:
     enableBashIntegration = lib.mkDefault true;
+  };
+
+  programs.zsh = {
+    antidote.plugins = ["atuinsh/atuin"];
   };
 
   home.packages = [

@@ -9,7 +9,7 @@ in {
   programs.ssh = {
     enableDefaultConfig = false;
     includes = ["${config.home.homeDirectory}/.ssh/config.local"];
-    matchBlocks = {
+    settings = {
       "*" = {
         hashKnownHosts = true;
         forwardAgent = true;

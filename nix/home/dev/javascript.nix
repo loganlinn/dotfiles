@@ -52,23 +52,20 @@ in {
       };
       initContent = ''
         # initialize fnm (node.js version manager)
-        eval "$(fnm env --shell zsh ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})"
-
-        # If the completion file doesn't exist yet, we need to autoload it and
-        # bind it to `fnm`. Otherwise, compinit will have already done that.
-        if ! [[ -f $${XDG_CACHE_HOME:=$HOME/.cache}/zsh/functions/_fnm ]]; then
-          typeset -g -A _comps
-          autoload -Uz _fnm
-          _comps[fnm]=_fnm
-        fi
+        eval "$(${lib.getExe pkgs.fnm} env --shell zsh ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})" \
+          && if ! [[ -f $${XDG_CACHE_HOME:=$HOME/.cache}/zsh/functions/_fnm ]]; then
+            typeset -g -A _comps
+            autoload -Uz _fnm
+            _comps[fnm]=_fnm
+          fi | true
         mkdir -p "$XDG_CACHE_HOME/zsh/functions"
-        fnm completions --shell=zsh >| "$XDG_CACHE_HOME/zsh/functions/_fnm" &|
+        ${lib.getExe pkgs.fnm} completions --shell=zsh >| "$XDG_CACHE_HOME/zsh/functions/_fnm" &|
       '';
     };
 
     programs.bash.initExtra = ''
       # initialize fnm (node.js version manager)
-      eval "$(fnm env --shell bash ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})"
+      eval "$(${lib.getExe pkgs.fnm} env --shell bash ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})"
     '';
 
     my.npm.settings = {
