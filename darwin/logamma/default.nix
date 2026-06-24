@@ -75,28 +75,6 @@ in {
   # services.kanata.enable = false;
   # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
-  # Idempotent; hourly catches sleep, missed midnight, and transient failures.
-  launchd.user.agents.update-today-link.serviceConfig = {
-    ProgramArguments = [
-      "${pkgs.bash}/bin/bash"
-      "${config.my.flakeDirectory}/bin/update-today-link"
-    ];
-    RunAtLoad = true;
-    StartCalendarInterval = [
-      {
-        Hour = 0;
-        Minute = 0;
-      }
-    ];
-    StartInterval = 3600;
-    EnvironmentVariables = {
-      HOME = config.my.user.home;
-      TODAY_LINK = "${config.my.user.home}/TODAY.md";
-      XDG_NOTES_DIR = toString config.my.userDirs.notes;
-    };
-    StandardOutPath = "${config.my.user.home}/Library/Logs/update-today-link.log";
-    StandardErrorPath = "${config.my.user.home}/Library/Logs/update-today-link.err.log";
-  };
   # services.onepassword-secrets = {
   #   enable = true;
   #   users = [ "logan" ];
