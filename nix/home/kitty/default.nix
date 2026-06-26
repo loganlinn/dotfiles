@@ -61,6 +61,8 @@ in {
         "diff.conf"
         "file-menu.sh"
         "grab.conf"
+        "nerdfont_glyphnames.json"
+        "nerdfont_selector.py"
         "kitty.common.conf"
         "kitty.linux.conf"
         "kitty.macos.conf"

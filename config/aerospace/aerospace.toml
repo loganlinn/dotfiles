@@ -4,7 +4,7 @@ enable-normalization-flatten-containers = false
 
 enable-normalization-opposite-orientation-for-nested-containers = false
 
-accordion-padding = 25
+accordion-padding = 40
 
 default-root-container-layout = "accordion"
 
@@ -58,44 +58,44 @@ PATH = """"\
   /sbin\
   """
 
-[gaps.inner]
-horizontal = [
-  { monitor."built-in" = 0 },
-  { monitor."DELL U2723QE" = 0 },
-  { monitor."built-in" = 0 },
-  5,
-]
-vertical = [
-  { monitor."Built-in Retina Display" = 0 },
-  { monitor."DELL U2723QE" = 0 },
-  5,
-]
-
-[gaps.outer]
-top = [
-  { monitor."LG SDQHD" = 10 },
-  { monitor."DELL U2723QE" = 0 },
-  { monitor."built-in" = 0 },
-  2,
-]
-right = [
-  { monitor."LG SDQHD" = 10 },
-  { monitor."DELL U2723QE" = 0 },
-  { monitor."built-in" = 0 },
-  2,
-]
-bottom = [
-  { monitor."LG SDQHD" = 10 },
-  { monitor."DELL U2723QE" = 0 },
-  { monitor."built-in" = 0 },
-  2,
-]
-left = [
-  { monitor."LG SDQHD" = 10 },
-  { monitor."DELL U2723QE" = 0 },
-  { monitor."built-in" = 0 },
-  2,
-]
+# [gaps.inner]
+# horizontal = [
+#   { monitor."built-in" = 0 },
+#   { monitor."DELL U2723QE" = 0 },
+#   { monitor."built-in" = 0 },
+#   5,
+# ]
+# vertical = [
+#   { monitor."Built-in Retina Display" = 0 },
+#   { monitor."DELL U2723QE" = 0 },
+#   5,
+# ]
+#
+# [gaps.outer]
+# top = [
+#   { monitor."LG SDQHD" = 10 },
+#   { monitor."DELL U2723QE" = 0 },
+#   { monitor."built-in" = 0 },
+#   2,
+# ]
+# right = [
+#   { monitor."LG SDQHD" = 10 },
+#   { monitor."DELL U2723QE" = 0 },
+#   { monitor."built-in" = 0 },
+#   2,
+# ]
+# bottom = [
+#   { monitor."LG SDQHD" = 10 },
+#   { monitor."DELL U2723QE" = 0 },
+#   { monitor."built-in" = 0 },
+#   2,
+# ]
+# left = [
+#   { monitor."LG SDQHD" = 10 },
+#   { monitor."DELL U2723QE" = 0 },
+#   { monitor."built-in" = 0 },
+#   2,
+# ]
 
 [key-mapping]
 preset = "qwerty"
