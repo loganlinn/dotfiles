@@ -20,7 +20,7 @@
     };
   };
 
-  services.caddy = {
+  services.caddy = lib.mkIf config.services.hermes-agent.enable {
     virtualHosts."dashboard.hermes.nijusan.internal" = {
       serverAliases = [
         "dashboard.hermes.nijusan.local"
@@ -39,7 +39,7 @@
   };
 
   services.hermes-agent = {
-    enable = true;
+    enable = false;
     addToSystemPackages = true;
     environmentFiles = [config.sops.secrets.hermesEnvironmentFile.path];
     environment = {
