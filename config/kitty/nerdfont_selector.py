@@ -915,28 +915,27 @@ class NerdFontSelector(Handler):
         prefix = f"{marker} "
         detail_rows = (item.css_class, item.code, item.label)
         glyph_width = self.glyph_width()
+        detail_indent = len(prefix) + glyph_width + 3
         if self.layout.cell_height == 1 or self.opts.glyph_scale == 1:
             text = f"{prefix}{item.glyph} {item.css_class}"
             return fit(text, self.layout.cell_width), self.layout.cell_width
         if line_number == 0:
-            available = max(0, self.layout.cell_width - len(prefix) - glyph_width - 1)
-            detail = fit(item.family, available) if available else ""
-            gap = " " if detail else ""
-            visible = len(prefix) + glyph_width + len(gap) + len(detail)
-            return prefix + self.render_glyph(item) + gap + detail, min(visible, self.layout.cell_width)
+            visible = len(prefix) + glyph_width
+            return prefix + self.render_glyph(item), min(visible, self.layout.cell_width)
 
         if line_number < self.opts.glyph_scale:
             detail_idx = line_number - 1
             detail = detail_rows[detail_idx] if detail_idx < len(detail_rows) else ""
-            available = max(0, self.layout.cell_width - len(prefix) - glyph_width - 1)
+            available = max(0, self.layout.cell_width - detail_indent)
             detail = fit(detail, available) if available else ""
-            gap = " " if detail else ""
-            visible = len(prefix) + glyph_width + len(gap) + len(detail)
-            return " " * len(prefix) + cursor_forward(glyph_width) + gap + detail, min(visible, self.layout.cell_width)
+            visible = detail_indent + len(detail)
+            return " " * len(prefix) + cursor_forward(glyph_width) + " " * 3 + detail, min(visible, self.layout.cell_width)
 
         detail_idx = line_number - 1
         detail = detail_rows[detail_idx] if detail_idx < len(detail_rows) else ""
-        text = f"  {detail}" if detail else ""
+        available = max(0, self.layout.cell_width - detail_indent)
+        detail = fit(detail, available) if available else ""
+        text = " " * detail_indent + detail if detail else ""
         return fit(text, self.layout.cell_width), self.layout.cell_width
 
     def draw_grid(self, items: list[IconItem], width: int) -> list[str]:
@@ -984,7 +983,7 @@ class NerdFontSelector(Handler):
         values = format_values(item)
         return [
             "-" * width,
-            fit(f"{item.glyph}  {item.css_class}  {values['unicode']}  {item.family}", width),
+            fit(f"{item.glyph}  {item.css_class}  {values['unicode']}", width),
             fit(f"name={item.name}  key={item.key}  codepoint={item.code}", width),
             fit(f"html={values['html']}  python={values['python']}", width),
             fit(f"current value={display_value(values[normalize_format(self.opts.format)])}", width),
