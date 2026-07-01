@@ -162,6 +162,10 @@
             system = "aarch64-darwin";
             modules = [./darwin/logamma];
           };
+          logmini = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [./darwin/logmini];
+          };
         };
 
         homeConfigurations = {
