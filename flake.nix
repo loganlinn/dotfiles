@@ -17,6 +17,8 @@
     flake-root.url = "github:srid/flake-root";
     globset.url = "github:pdtpartners/globset";
     hermes-agent.url = "github:NousResearch/hermes-agent";
+    microvm.url = "github:microvm-nix/microvm.nix";
+    microvm.inputs.nixpkgs.follows = "nixpkgs";
     nix-colors.url = "github:misterio77/nix-colors";
     nixvim.url = "github:nix-community/nixvim";
     nixvim.inputs.nixpkgs.follows = "nixpkgs";
@@ -137,6 +139,10 @@
           framework = mkNixosSystem {
             system = "x86_64-linux";
             modules = [./nixos/framework/configuration.nix];
+          };
+          microvm = mkNixosSystem {
+            system = "x86_64-linux";
+            modules = [./nixos/microvm/configuration.nix];
           };
           nijusan = mkNixosSystem {
             system = "x86_64-linux";
