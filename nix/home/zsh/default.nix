@@ -113,6 +113,7 @@ in {
         prefs = "$HOME/Library/Preferences";
         chrome = "$HOME/Library/Application Support/Google/Chrome";
         ff = "$HOME/Library/Application Support/Firefox";
+        icloud = "$HOME/Library/Mobile Documents/com~apple~CloudDocs";
       })
     ];
     envExtra = ''
