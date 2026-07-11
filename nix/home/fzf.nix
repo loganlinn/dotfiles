@@ -52,22 +52,28 @@ in {
       )
     );
 
-    fileWidgetOptions = [
+    fileWidget.options = [
       walker-skip-option
       "--preview='${pkgs.bat}/bin/bat --color=always --style=numbers {}'"
     ];
 
-    changeDirWidgetOptions = [
+    changeDirWidget.options = [
       walker-skip-option
       "--preview='${pkgs.eza}/bin/eza --color=always --tree --level=3 --classify=never --width=$FZF_PREVIEW_COLUMNS {}'"
     ];
 
-    historyWidgetOptions = [
-      "--sort"
-      "--exact"
-      "--preview='echo -n {2..} | ${pkgs.bat}/bin/bat --color=always --plain --language=bash'"
-      "--preview-window up:3"
-      "--bind='ctrl-y:execute-silent(echo -n {2..} | ${termcopy})+abort'"
-    ];
+    historyWidget = {
+      # Yield Ctrl-R to Atuin in bash when Atuin's bash integration is active;
+      # fzf keeps Ctrl-R when Atuin is disabled. (In zsh, Atuin is loaded via the
+      # antidote `atuinsh/atuin` plugin, which binds Ctrl-R itself.)
+      bash.command = lib.mkIf (config.programs.atuin.enable && config.programs.atuin.enableBashIntegration) "";
+      options = [
+        "--sort"
+        "--exact"
+        "--preview='echo -n {2..} | ${pkgs.bat}/bin/bat --color=always --plain --language=bash'"
+        "--preview-window up:3"
+        "--bind='ctrl-y:execute-silent(echo -n {2..} | ${termcopy})+abort'"
+      ];
+    };
   };
 }
