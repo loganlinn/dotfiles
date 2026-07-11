@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+[[ -z ${TRACE-} ]] || set -x
+
+readonly PROG=${0##*/}
+tmpdir=
+edit_file=
+keep=0
+
+usage() {
+	cat <<EOF
+Usage: $PROG s3://bucket/key
+       $PROG -h|--help
+
+Edit an S3 object locally, then save it back only if the remote object has not
+changed since it was downloaded.
+
+Editing happens in a temporary file. If the save is rejected -- e.g. the object
+changed while you were editing -- that file is kept (never lost) and its path is
+printed along with a command to diff your edits against the current remote.
+
+Editor:    S3_EDITOR, then EDITOR, then vi.
+Diff tool: S3_DIFF (default: git difftool --no-index, else diff -u).
+EOF
+}
+
+die() {
+	echo >&2 "$PROG: $*"
+	exit 2
+}
+
+cleanup() {
+	((keep)) && return 0
+	[[ -z ${tmpdir:-} ]] || rm -rf "$tmpdir"
+}
+
+# Editing happens in a temp file the EXIT trap would normally delete. If we are
+# interrupted (SIGHUP on terminal/SSH close, SIGTERM on kill/logout, SIGINT),
+# keep that file so in-progress edits survive, and say where it is.
+on_interrupt() {
+	if [[ -n ${edit_file:-} && -f ${edit_file:-} ]]; then
+		keep=1
+		echo >&2 ""
+		echo >&2 "$PROG: interrupted; your edited copy was kept at:"
+		echo >&2 "  $edit_file"
+	fi
+	exit 130
+}
+
+run_editor() {
+	local editor=${S3_EDITOR:-${EDITOR:-vi}}
+	local -a editor_argv=()
+
+	read -r -a editor_argv <<<"$editor"
+	((${#editor_argv[@]})) || die "editor command is empty"
+
+	"${editor_argv[@]}" "$1"
+}
+
+parse_s3_uri() {
+	local uri=$1
+
+	[[ $uri == s3://* ]] || die "URI must start with s3://"
+
+	local path=${uri#s3://}
+	bucket=${path%%/*}
+	key=${path#*/}
+
+	[[ -n $bucket && $bucket != "$path" ]] || die "URI must include bucket and key"
+	[[ -n $key ]] || die "URI must include an object key"
+}
+
+diff_cmd() {
+	if [[ -n ${S3_DIFF:-} ]]; then
+		echo "$S3_DIFF"
+	elif command -v git >/dev/null 2>&1; then
+		echo "git difftool --no-index"
+	else
+		echo "diff -u"
+	fi
+}
+
+# Report a rejected save without losing the edit. Keeps the edited file, fetches
+# the current remote alongside it, and prints a diff command to view the conflict.
+report_conflict() {
+	local uri=$1 bucket=$2 key=$3 edit_file=$4 dir=$5
+	local current="$dir/remote"
+	local difftool fetched=0
+
+	difftool=$(diff_cmd)
+
+	if aws s3api get-object --bucket "$bucket" --key "$key" "$current" \
+		>/dev/null 2>"$dir/fetch.err"; then
+		fetched=1
+	fi
+
+	echo >&2 "$PROG: not saved: $uri changed while you were editing"
+	echo >&2 "$PROG: your edited copy was kept at:"
+	echo >&2 "  $edit_file"
+
+	# %q-quote paths so the printed command is safe to copy-paste even when the
+	# key basename contains spaces or shell metacharacters ($, backtick, quotes).
+	local q_uri q_current q_edit
+	printf -v q_uri '%q' "$uri"
+	printf -v q_current '%q' "$current"
+	printf -v q_edit '%q' "$edit_file"
+
+	if ((fetched)); then
+		echo >&2 "$PROG: current remote saved at:"
+		echo >&2 "  $current"
+		echo >&2 "$PROG: view the conflict (current remote vs. your edit):"
+		echo >&2 "  $difftool $q_current $q_edit"
+	else
+		echo >&2 "$PROG: view the conflict (fetches current remote):"
+		echo >&2 "  aws s3 cp $q_uri $q_current && $difftool $q_current $q_edit"
+	fi
+}
+
+main() {
+	(($#)) || {
+		usage >&2
+		exit 2
+	}
+
+	case ${1-} in
+		-h | --help)
+			usage
+			exit 0
+			;;
+	esac
+
+	(($# == 1)) || die "expected exactly one S3 URI"
+	command -v aws >/dev/null || die "aws not found in PATH"
+
+	local uri=$1
+	local bucket=
+	local key=
+	parse_s3_uri "$uri"
+
+	tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/s3-edit.XXXXXX")
+
+	local original="$tmpdir/original"
+	local name=${key##*/}
+	# Edit file in its own subdir so the key basename can never collide with the
+	# internal files (original, remote, *.err) kept alongside it for conflicts.
+	local edit_dir="$tmpdir/edit"
+	mkdir -p "$edit_dir"
+	edit_file="$edit_dir/${name:-object}"
+	local err="$tmpdir/aws.err"
+	local etag=
+	local exists=0
+
+	if etag=$(aws s3api get-object \
+		--bucket "$bucket" \
+		--key "$key" \
+		"$original" \
+		--query ETag \
+		--output text 2>"$err"); then
+		exists=1
+		cp "$original" "$edit_file"
+	elif grep -q '(NoSuchKey)' "$err"; then
+		: >"$original"
+		cp "$original" "$edit_file"
+	else
+		cat "$err" >&2
+		exit 1
+	fi
+
+	run_editor "$edit_file"
+
+	if cmp -s "$original" "$edit_file"; then
+		echo "$PROG: unchanged: $uri"
+		return
+	fi
+
+	local -a put_args=(
+		s3api put-object
+		--bucket "$bucket"
+		--key "$key"
+		--body "$edit_file"
+	)
+
+	if ((exists)); then
+		put_args+=(--if-match "$etag")
+	else
+		put_args+=(--if-none-match '*')
+	fi
+
+	if aws "${put_args[@]}" >/dev/null 2>"$err"; then
+		echo "$PROG: saved: $uri"
+		return
+	fi
+
+	# Save failed: preserve the edited file so the work is not lost.
+	keep=1
+
+	if grep -Eqi 'PreconditionFailed|pre-conditions you specified did not hold' "$err"; then
+		report_conflict "$uri" "$bucket" "$key" "$edit_file" "$tmpdir"
+		exit 1
+	fi
+
+	cat "$err" >&2
+	echo >&2 "$PROG: not saved; your edited copy was kept at:"
+	echo >&2 "  $edit_file"
+	exit 1
+}
+
+trap cleanup EXIT
+trap on_interrupt INT TERM HUP
+main "$@"
