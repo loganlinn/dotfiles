@@ -24,7 +24,6 @@ in {
       lib,
       ...
     }: let
-      inherit (config.lib.file) mkOutOfStoreSymlink;
       fetchSpoon = {
         name,
         rev,
