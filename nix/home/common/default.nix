@@ -80,7 +80,6 @@
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.local/share/cargo/bin"
-    "$HOME/.cache/.bun/bin"
     "$HOME/go/bin"
     "${config.my.flakeDirectory}/bin"
   ];

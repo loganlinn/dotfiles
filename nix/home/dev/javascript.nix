@@ -12,61 +12,34 @@ with lib; let
     generate = name: value: ini.generate name {globalSection = value;};
   };
 in {
+  imports = [
+    ../bun
+    ../fnm
+    ../yarn
+  ];
+
   options = {
     my.npm = {
       settings = mkOption {
-        # use same type constraints as global section of INI format,
         type = npmrcFormat.type;
         default = {};
-      };
-    };
-
-    programs.fnm = {
-      # enable = mkEnableOption "fnm (node.js version manager)";
-      package = mkPackageOption pkgs "fnm" {};
-      settings = mkOption {
-        type = types.attrs;
-        default = {
-          use-on-cd = false;
-          version-file-strategy = "recursive";
-          corepack-enabled = true;
-        };
       };
     };
   };
 
   config = {
-    home.packages = with pkgs; [
-      # nodejs
-      config.programs.fnm.package
-      bun
-      deno
-    ];
+    programs.bun.enable = true;
 
     programs.zsh = {
       shellAliases = {
         npx = "command npx --ignore-scripts=true";
+        ystage = ''${pkgs.fd}/bin/fd yarn.lock "$(git rev-parse --show-toplevel)" -X git add {}'';
         yw = "yarn workspace";
-        yws = "yarn workspaces";
-        ystage = ''fd yarn.lock "$(git rev-parse --show-toplevel)" -X git add {}'';
+        ywf = "yarn workspaces focus";
+        ywl = "yarn workspaces list";
+        yws = "yarn workspaces foreach";
       };
-      initContent = ''
-        # initialize fnm (node.js version manager)
-        eval "$(${lib.getExe pkgs.fnm} env --shell zsh ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})" \
-          && if ! [[ -f $${XDG_CACHE_HOME:=$HOME/.cache}/zsh/functions/_fnm ]]; then
-            typeset -g -A _comps
-            autoload -Uz _fnm
-            _comps[fnm]=_fnm
-          fi | true
-        mkdir -p "$XDG_CACHE_HOME/zsh/functions"
-        ${lib.getExe pkgs.fnm} completions --shell=zsh >| "$XDG_CACHE_HOME/zsh/functions/_fnm" &|
-      '';
     };
-
-    programs.bash.initExtra = ''
-      # initialize fnm (node.js version manager)
-      eval "$(${lib.getExe pkgs.fnm} env --shell bash ${cli.toCommandLineShellGNU {} config.programs.fnm.settings})"
-    '';
 
     my.npm.settings = {
       fund = false;
@@ -79,13 +52,7 @@ in {
     };
 
     home.sessionVariables = {
-      # XDG, please
       NPM_CONFIG_USERCONFIG = config.my.npm.settings.userconfig;
-      # Privacy, please
-      GRAPHITE_DISABLE_TELEMETRY = "1";
-      APOLLO_TELEMETRY_DISABLED = "1";
-      NEXT_TELEMETRY_DISABLED = "1";
-      GATSBY_TELEMETRY_DISABLED = "1";
     };
 
     home.sessionPath = [

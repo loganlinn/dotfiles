@@ -153,12 +153,16 @@ in {
       };
       environment.variables =
         {
+          APOLLO_TELEMETRY_DISABLED = "1";
           DISABLE_TELEMETRY = "1";
           DOCKER_SCAN_SUGGEST = "false";
           DOTFILES_DIR = cfg.flakeDirectory;
           DOTNET_CLI_TELEMETRY_OPTOUT = "true";
           DO_NOT_TRACK = "1";
           FLAKE_CHECKER_NO_TELEMETRY = "true";
+          GATSBY_TELEMETRY_DISABLED = "1";
+          GRAPHITE_DISABLE_TELEMETRY = "1";
+          NEXT_TELEMETRY_DISABLED = "1";
           NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
           TELEMETRY_DISABLED = "1";
         }
