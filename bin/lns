@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+#
+# lns — create a symbolic link with interactive conflict resolution.
+#
+# A friendlier `ln -s`: verbose by default, skips silently when the identical
+# symlink already exists, and prompts (via gum when available, else a plain
+# read/select fallback) to resolve ambiguities — placing the link inside an
+# existing directory, creating a missing parent, or replacing/backing up/
+# ignoring an existing path.
+#
+# Usage: lns TARGET [LINK_NAME]
+#
+# Note: requires bash 4+ (uses `${reply,,}`) and GNU coreutils behaviour for
+# `realpath --relative-to`; both are satisfied by the nix-managed toolchain.
 set -euo pipefail
 
 readonly PROG="${0##*/}"

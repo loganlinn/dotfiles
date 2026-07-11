@@ -1,0 +1,27 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Tasks for maintaining this directory's vendored mise assets.
+# Run from anywhere under nix/home/mise, e.g.:
+#   mise run regen-bootstrap
+#   mise run regen-bootstrap --version 2026.7.5
+
+[tasks.regen-bootstrap]
+description = "Regenerate bootstrap.sh (consumed by default.nix as programs.mise.package)"
+usage = '''
+flag "--version <version>" help="mise version to pin (default: latest jdx/mise release)"
+'''
+run = '''
+version="${usage_version:-}"
+if [[ -z "$version" ]]; then
+  echo >&2 "Fetching latest jdx/mise version..."
+  version="$(curl -fsSL https://api.github.com/repos/jdx/mise/releases/latest | jq -r .tag_name)"
+fi
+
+# `mise generate bootstrap` prepends the `v` to build the install-script URL,
+# while the release tag carries it (e.g. v2026.7.5), so strip it here.
+version="${version#v}"
+
+set -x
+mise generate bootstrap --version "$version" --write "{{config_root}}/bootstrap.sh"
+'''
+quiet = true

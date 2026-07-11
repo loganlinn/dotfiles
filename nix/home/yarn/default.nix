@@ -2,8 +2,9 @@
   programs.yarn = {
     enable = true;
     settings = {
-      # Privacy: disable telemetry (only setting that transmits externally)
+      # Privacy: disable telemetry (only setting that transmits externally) + daily tip banner
       enableTelemetry = false;
+      enableTips = false;
 
       # Supply chain: don't install versions published in the last 3 days
       npmMinimalAgeGate = "3d";

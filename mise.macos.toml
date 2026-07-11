@@ -1,0 +1,40 @@
+[shell_alias]
+switch = "mise darwin:switch"
+
+[tasks.link]
+run = [
+  'sudo lns "{{config_root}}/flake.nix" "/etc/nix-darwin/flake.nix"',
+  'lns "{{config_root}}/flake.nix" "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"',
+]
+quiet = true
+
+[tasks.switch]
+alias = "S"
+raw_args = true
+quiet = true
+run = '''
+flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
+set -x
+sudo -H command nix run nix-darwin -- switch --flake "${flake}" "$@"
+'''
+
+[tasks."darwin:rebuild"]
+raw = true
+run = '''
+nix run --inputs-from {{config_root}} nix-darwin --
+'''
+
+[tasks."darwin:nix-daemon:restart"]
+description = "Restart nix daemon (supports both Determinate and NixOS daemons)"
+quiet = true
+run = '''
+svcs=$(sudo launchctl list | grep -o 'systems\.determinate\.nix-daemon\|org\.nixos\.nix-daemon')
+if [[ -z "$svcs" ]]; then
+  echo >&2 "No nix daemon service found"
+  exit 1
+fi
+for svc in $svcs; do
+  echo -e "\033[1;32m[restart]\033[0m $svc"
+  sudo launchctl kickstart -k "system/$svc"
+done
+'''
