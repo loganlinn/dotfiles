@@ -60,6 +60,7 @@ in {
         "current-theme.conf"
         "diff.conf"
         "file-menu.sh"
+        "focus-drill.py"
         "grab.conf"
         "nerdfont_glyphnames.json"
         "nerdfont_selector.py"
