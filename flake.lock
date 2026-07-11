@@ -1046,16 +1046,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1781389775,
-        "narHash": "sha256-oC1vX2hWK77rCB9WfO5SbX39Qr6RAqdm1xD7NmyiBVY=",
-        "owner": "loganlinn",
+        "lastModified": 1783395956,
+        "narHash": "sha256-AAbexQvDoK+6GFJdhY6kqjA+6ECKRkidgWxkn4gMwAA=",
+        "owner": "nix-darwin",
         "repo": "nix-darwin",
-        "rev": "8a416ea73151e1df472011bc85d5cbf6edee0fdb",
+        "rev": "d5bd9cd77aea4c0a8f49e7fd85545671a208ed15",
         "type": "github"
       },
       "original": {
-        "owner": "loganlinn",
-        "ref": "homebrew-trust",
+        "owner": "nix-darwin",
+        "ref": "master",
         "repo": "nix-darwin",
         "type": "github"
       }
