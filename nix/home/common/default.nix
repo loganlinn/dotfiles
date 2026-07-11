@@ -66,7 +66,8 @@
       stow
       tre-command
       tree
-      trurl
+      # trurl # disabled: 0.16.1 test suite expects lowercase percent-encoding
+      # but newer libcurl emits uppercase hex (RFC 3986), so bundled tests fail
       unzip
       wget
       xh
