@@ -77,13 +77,12 @@
   home.sessionVariables = config.my.environment.variables;
 
   home.sessionPath = [
-    "$HOME/.dotfiles/bin"
-    "$HOME/.local/bin"
     "$HOME/.local/bin"
     "$HOME/.cargo/bin"
     "$HOME/.local/share/cargo/bin"
     "$HOME/.cache/.bun/bin"
     "$HOME/go/bin"
+    "${config.my.flakeDirectory}/bin"
   ];
 
   programs.home-manager.enable = true;
