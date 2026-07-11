@@ -52,9 +52,6 @@ in {
       show-aliases = "print -rl -- $aliases | nl -ba | less";
       show-source = "zsh -o SOURCE_TRACE -l -c true";
 
-      path_prepend = "[[ -d $1 ]] && path=($1 \${path:#$1})";
-      path_append = "[[ -d $1 ]] && path=(\${path:#$1} $1)";
-
       showkey = "bindkey -L | ${pkgs.bat}/bin/bat";
       sudo = "sudo ";
       "?" = "whence -fs";
@@ -85,6 +82,33 @@ in {
       "-?" = "--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain";
       # "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
     };
+    siteFunctions =
+      {
+        # was: broken shellAliases (aliases can't take positional args)
+        path_prepend = ''
+          emulate -L zsh
+          [[ -d $1 ]] && path=($1 ''${path:#$1})
+        '';
+        path_append = ''
+          emulate -L zsh
+          [[ -d $1 ]] && path=(''${path:#$1} $1)
+        '';
+
+        "+nixpkgs" = ''
+          emulate -L zsh
+          command nix shell "''${@/#/nixpkgs#}"
+        '';
+        "@nixpkgs" = ''
+          emulate -L zsh
+          command nix run "nixpkgs#''${1?}" "''${@:2}"
+        '';
+      }
+      // lib.optionalAttrs config.programs.bat.enable {
+        help = ''
+          emulate -L zsh
+          "$@" --help 2>&1 | bat --plain --language=help
+        '';
+      };
     dirHashes = mergeAttrsList [
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
       (filterAttrs (_: value: value != null) config.my.userDirs)
@@ -198,26 +222,6 @@ in {
       ))
       (mkAfter (includeFile ./sudo-prompt.zsh))
       (mkAfter ''
-        ##########################################################
-
-        function +nixpkgs () {
-          emulate -L zsh
-          command nix shell "''${@/#/nixpkgs#}"
-        }
-
-        function @nixpkgs () {
-          emulate -L zsh
-          command nix run "nixpkgs#''${1?}" "''${@:2}"
-        }
-
-        ${lib.optionalString config.programs.bat.enable ''
-          ##########################################################
-          function help  {
-            emulate -L zsh
-            "$@" --help 2>&1 | bat --plain --language=help
-          }
-        ''}
-
         ##########################################################
 
         ${
