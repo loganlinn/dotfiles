@@ -1,6 +1,5 @@
 {
   bat,
-  callPackage,
   fetchFromGitHub,
   fzf,
   jq,
@@ -31,10 +30,11 @@ stdenv.mkDerivation rec {
       jq
       ripgrep
       ruby
-    ]
-    ++ lib.optionals stdenv.isDarwin [
-      (callPackage ../chrome-cli {})
     ];
+    # chrome-cli disabled on Darwin: Xcode build fails to link under newer clang/cctools toolchain (ld exit 133)
+    # ++ lib.optionals stdenv.isDarwin [
+    #   (callPackage ../chrome-cli {})
+    # ];
 
   nativeBuildInputs = [makeWrapper];
 
