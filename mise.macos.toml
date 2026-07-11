@@ -1,5 +1,5 @@
 [shell_alias]
-switch = "mise darwin:switch"
+switch = "mise switch"
 
 [tasks.link]
 run = [
