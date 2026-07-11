@@ -1,19 +1,25 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: {
+{lib, ...}: let
+  inherit (lib) concatStrings;
+in {
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
     enableBashIntegration = false;
     enableFishIntegration = true;
     settings = {
-      format = lib.concatStrings [
+      profiles = {
+        claude-code = concatStrings [
+          "$claude_model"
+          "$claude_context"
+          "$claude_cost"
+          "$git_branch"
+          "$aws"
+        ];
+      };
+      format = concatStrings [
         "$username"
         "$hostname"
-        "$localip"
+        # "$localip"
         "$shlvl"
         # "$singularity"
         # "$kubernetes"
@@ -27,23 +33,23 @@
         # "$hg_branch"
         "$docker_context"
         "$package"
-        # "$bun"
-        "$c"
-        "$cmake"
+        "$bun"
+        # "$c"
+        # "$cmake"
         # "$cobol"
         # "$daml"
         # "$dart"
-        "$deno"
-        "$dotnet"
-        "$elixir"
-        "$elm"
-        "$erlang"
+        # "$deno"
+        # "$dotnet"
+        # "$elixir"
+        # "$elm"
+        # "$erlang"
         "$golang"
-        "$haskell"
+        # "$haskell"
         # "$haxe"
-        # "$helm"
+        "$helm"
         "$java"
-        "$julia"
+        # "$julia"
         # "$kotlin"
         "$lua"
         # "$nim"
@@ -60,25 +66,25 @@
         # "$red"
         # "$ruby"
         "$rust"
-        "$scala"
-        "$swift"
+        # "$scala"
+        # "$swift"
         "$terraform"
-        "$vlang"
+        # "$vlang"
         # "$vagrant"
-        "$zig"
+        # "$zig"
         # "$buf"
-        "$guix_shell"
+        # "$guix_shell"
         "$nix_shell"
-        "$conda"
-        "$meson"
-        "$spack"
+        # "$conda"
+        # "$meson"
+        # "$spack"
         # "$memory_usage"
         "$aws"
         # "$gcloud"
-        "$openstack"
-        "$azure"
+        # "$openstack"
+        # "$azure"
         "$env_var"
-        "$crystal"
+        # "$crystal"
         "$custom"
         "$sudo"
         "$cmd_duration"
@@ -97,6 +103,49 @@
       git_commit = {
         disabled = false;
         only_detached = false;
+      };
+      claude_model = {
+        format = "[$symbol$model]($style) ";
+        symbol = "🤖 ";
+        style = "bold blue";
+        model_aliases = {
+        };
+        disabled = false;
+      };
+      claude_context = {
+        format = "[$gauge $percentage]($style) ";
+        symbol = "";
+        gauge_width = 10;
+        # gauge_full_symbol = "█";
+        # gauge_partial_symbol = "▒";
+        # gauge_empty_symbol = "░";
+        gauge_full_symbol = "▰";
+        gauge_partial_symbol = "";
+        gauge_empty_symbol = "▱";
+        display = [
+          {
+            threshold = 0;
+            hidden = true;
+          }
+          {
+            threshold = 30;
+            style = "bold green";
+          }
+          {
+            threshold = 60;
+            style = "bold yellow";
+          }
+          {
+            threshold = 80;
+            style = "bold red";
+          }
+        ];
+        disabled = false;
+      };
+      claude_cost = {
+        format = "[$symbol$cost]($style) ";
+        symbol = "💸";
+        disabled = false;
       };
     };
   };
