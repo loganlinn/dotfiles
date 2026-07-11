@@ -33,7 +33,15 @@ in {
     #     by start-at-login in config/aerospace/aerospace.toml) — a different model.
     # The cask sets up NO launchd agent / login item itself; it only installs the .app + CLI.
     homebrew = {
-      taps = ["nikitabobko/tap"];
+      # trusted = true so activation runs `brew trust --tap` before `brew bundle`
+      # (nix-darwin's homebrew.taps.*.trusted defaults to false, and recent
+      # Homebrew refuses casks from untrusted non-official taps).
+      taps = [
+        {
+          name = "nikitabobko/tap";
+          trusted = true;
+        }
+      ];
       casks = ["nikitabobko/tap/aerospace"];
     };
 

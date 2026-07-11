@@ -5,6 +5,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    # TODO: remove fork once https://github.com/nix-darwin/nix-darwin/pull/1789 is merged
     # nix-darwin.url = "github:loganlinn/nix-darwin/homebrew-trust";
     # nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:nixos/nixos-hardware";

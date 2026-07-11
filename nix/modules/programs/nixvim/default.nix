@@ -17,6 +17,13 @@ in {
     programs.nixvim = {
       vimAlias = true;
 
+      # Disabled: nixvim's option-docs man-page build runs pandoc with a Lua
+      # filter, but the current nixpkgs `pandoc` is compiled without Lua support
+      # ("This version of pandoc has been compiled without Lua support"). Upstream
+      # nixpkgs/nixvim incompatibility; man pages aren't needed (options are
+      # browsable at https://nix-community.github.io/nixvim/). Re-enable once fixed.
+      enableMan = false;
+
       # nixvim (main) + nixpkgs (nixos-unstable) both track unstable; the release-label
       # drift at May/Nov boundaries is a false positive, not a real version mismatch.
       version.enableNixpkgsReleaseCheck = false;

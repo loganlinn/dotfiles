@@ -28,6 +28,17 @@ in {
 
   config = mkIf cfg.enable {
     homebrew.enable = true;
+    # Declare the tap with trusted = true so nix-darwin activation runs
+    # `brew trust --tap` on it before `brew bundle`. Recent Homebrew enables
+    # HOMEBREW_REQUIRE_TAP_TRUST, which refuses casks from untrusted non-official
+    # taps; nix-darwin's homebrew.taps.*.trusted defaults to false, so the bare
+    # string form (or relying on auto-tap from the cask name) leaves it untrusted.
+    homebrew.taps = [
+      {
+        name = "d12frosted/emacs-plus";
+        trusted = true;
+      }
+    ];
     homebrew.casks = [cfg.cask];
     homebrew.brews = [
       "gcc"
