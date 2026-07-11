@@ -120,55 +120,13 @@ run = "nix develop --command zsh ${usage_args[@]}"
 depends = ["nixos:link", "nixos:switch"]
 
 [tasks."nixos:link"]
-depends = [
-  { task = "_internal:link", args = [
-    "flake.nix",
-    "/etc/nixos/flake.nix",
-  ] },
-  { task = "_internal:link", args = [
-    "flake.nix",
-    "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix",
-  ] },
-]
+run = '''
+lns -f {{config_root}}/flake.nix /etc/nixos/flake.nix
+lns -f {{config_root}}/flake.nix "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager/flake.nix"
+'''
 
 [tasks."nixos:switch"]
 run = 'sudo -E nixos-rebuild switch --flake {{config_root}}'
-
-# ============================================================================
-# Internal/Private Tasks
-# ============================================================================
-
-[tasks."_internal:link"]
-description = "Create a symlink (internal helper)"
-hide = true
-usage = '''
-arg "<path>" help="Path to link target (relative to config root)"
-arg "<link>" help="Link destination path"
-'''
-run = '''
-target="{{config_root}}/${usage_path?}"
-link="${usage_link?}"
-
-# Expand environment variables in link path
-link=$(eval echo "$link")
-
-# Resolve absolute paths
-target=$(readlink -f "$target" 2>/dev/null || realpath "$target" 2>/dev/null || echo "$target")
-current_link=$(readlink -f "$link" 2>/dev/null || echo "")
-
-if [ "$current_link" = "$target" ]; then
-  echo -e "\033[1m\033[34mexists:\033[0m \033[36m$target\033[0m <-- \033[34m$link\033[0m"
-else
-  echo -e "\033[1m\033[32mcreate:\033[0m \033[36m$target\033[0m <-- \033[32m$link\033[0m"
-  mkdir -p "$(dirname "$link")"
-  ln -sfn "$target" "$link"
-fi
-'''
-
-[tasks."_internal:link-global-justfile"]
-description = "Link justfile globally"
-hide = true
-run = "mise run _internal:link justfile ${XDG_CONFIG_HOME:-$HOME/.config}/just/justfile"
 
 # ============================================================================
 # Git Tasks (dotfiles context)

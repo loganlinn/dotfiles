@@ -27,10 +27,14 @@ relpath() {
 
 usage() {
   cat <<-EOF
-	Usage: $PROG TARGET [LINK_NAME]
+	Usage: $PROG [-f|--force] TARGET [LINK_NAME]
 
 	Create a symbolic link with interactive conflict resolution.
 	Defaults to verbose; skips silently if the identical symlink already exists.
+
+	Options:
+	  -f, --force  Non-interactive: create missing parents and replace any
+	               existing path without prompting (still skips identical links).
 	EOF
 }
 
@@ -58,12 +62,29 @@ _choose() {
   fi
 }
 
-case "${1:-}" in
--h | --help)
-  usage
-  exit 0
-  ;;
-esac
+force=
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  -f | --force)
+    force=1
+    shift
+    ;;
+  --)
+    shift
+    break
+    ;;
+  -*)
+    die "unknown option: $1"
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
 
 [[ $# -eq 0 ]] && {
   usage
@@ -74,8 +95,9 @@ esac
 target="$1"
 link_name="${2:-${target##*/}}"
 
-# Ambiguity: LINK_NAME is an existing directory (not a symlink) → ln would silently place inside
-if [[ -d "$link_name" && ! -L "$link_name" ]]; then
+# Ambiguity: LINK_NAME is an existing directory (not a symlink) → ln would silently place inside.
+# In force mode, treat LINK_NAME as the link itself (handled by the replace step below).
+if [[ -z "$force" && -d "$link_name" && ! -L "$link_name" ]]; then
   proposed="${link_name%/}/${target##*/}"
   if _confirm "directory: place symlink inside as '$(relpath "$proposed")'?"; then
     link_name="$proposed"
@@ -87,7 +109,9 @@ fi
 # Parent directory missing
 link_dir="${link_name%/*}"
 if [[ "$link_dir" != "$link_name" && ! -d "$link_dir" ]]; then
-  if _confirm "missing parent: create '$(relpath "$link_dir")'?"; then
+  if [[ -n "$force" ]]; then
+    mkdir -p -- "$link_dir"
+  elif _confirm "missing parent: create '$(relpath "$link_dir")'?"; then
     mkdir -p -- "$link_dir"
   else
     die "aborted"
@@ -100,17 +124,21 @@ if [[ -L "$link_name" && "$(readlink -- "$link_name")" == "$target" ]]; then
   exit 0
 fi
 
-# Existing path (wrong symlink target, file, or dir) → prompt
+# Existing path (wrong symlink target, file, or dir) → prompt, or replace outright under --force
 if [[ -e "$link_name" || -L "$link_name" ]]; then
-  if [[ -L "$link_name" ]]; then
-    existing="symlink -> $(relpath "$(readlink -- "$link_name")")"
-  elif [[ -d "$link_name" ]]; then
-    existing="directory"
+  if [[ -n "$force" ]]; then
+    action=replace
   else
-    existing="file"
-  fi
+    if [[ -L "$link_name" ]]; then
+      existing="symlink -> $(relpath "$(readlink -- "$link_name")")"
+    elif [[ -d "$link_name" ]]; then
+      existing="directory"
+    else
+      existing="file"
+    fi
 
-  action=$(_choose "already exists ($existing): $(relpath "$link_name")" replace backup ignore) || die "aborted"
+    action=$(_choose "already exists ($existing): $(relpath "$link_name")" replace backup ignore) || die "aborted"
+  fi
   case "$action" in
   replace)
     rm -rf -- "$link_name"

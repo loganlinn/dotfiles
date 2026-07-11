@@ -9,7 +9,6 @@ run = [
 quiet = true
 
 [tasks.switch]
-alias = "S"
 raw_args = true
 quiet = true
 run = '''
@@ -24,7 +23,7 @@ run = '''
 nix run --inputs-from {{config_root}} nix-darwin --
 '''
 
-[tasks."darwin:nix-daemon:restart"]
+[tasks."nix:restart"]
 description = "Restart nix daemon (supports both Determinate and NixOS daemons)"
 quiet = true
 run = '''
