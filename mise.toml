@@ -127,9 +127,9 @@ depends = ["darwin:link", "darwin:switch"]
 
 [tasks."darwin:switch"]
 run = '''
-config="${NIX_DARWIN_CONFIG:-$(scutil --get LocalHostName 2>/dev/null || hostname -s)}"
 flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
-time sudo -E mise darwin:rebuild switch --flake "${flake}#${config}"
+config="${NIX_DARWIN_CONFIG:-$(scutil --get LocalHostName 2>/dev/null || hostname -s)}"
+sudo -H command nix run nix-darwin -- switch --flake "${flake}#${config}"
 '''
 
 [tasks."darwin:rebuild"]
