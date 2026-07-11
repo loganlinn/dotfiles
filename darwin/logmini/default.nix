@@ -29,7 +29,7 @@ in
   imports = [
     self.darwinModules.common
     ../modules/kitty
-    # ../modules/aerospace
+    ../modules/aerospace
     ../modules/emacs-plus
     # ../modules/hammerspoon
     # ../modules/homebrew-autoupdate.nix
@@ -48,7 +48,7 @@ in
   modules.kitty.enable = true;
 
   # programs.cleanshot.enable = true;
-  # programs.aerospace.enable = true;
+  programs.aerospace.enable = true;
   # services.jankyborders = {
   #   enable = true;
   #   active_color = "0xffbd93f9";
