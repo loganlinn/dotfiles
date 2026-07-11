@@ -1,0 +1,418 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# dependencies = []
+# ///
+"""Merge, query, and edit INI files from the command line.
+
+Commands:
+    merge      Combine INI sources into one INI (later sources win).
+    property   Operate on a property; -s/--section scopes it (default: global).
+    section    Operate on whole sections.
+
+Model: section = directory, property (key = value) = file, global scope = root.
+Key case is preserved and values pass through verbatim (no %-interpolation).
+Comments are not preserved -- this is stdlib configparser behavior.
+
+Conventions:
+    SOURCE     Path to an INI file, or "-" for stdin. Always the first argument.
+    TARGET     Path to write to, or "-" for stdout (default). Use -w SOURCE to
+               edit a file in place.
+    Reads      (property|section ls/get/show) print to stdout.
+    Transforms (merge, property set/rm/cp/mv, section rm/cp/mv) emit a full INI.
+
+Usage:
+    ini-tool.py merge        [-w TARGET] [SOURCE ...]
+
+    ini-tool.py property ls  [-s SECTION] SOURCE
+    ini-tool.py property get [-s SECTION] SOURCE PROPERTY
+    ini-tool.py property set [-s SECTION] [-w TARGET] SOURCE PROPERTY VALUE
+    ini-tool.py property rm  [-s SECTION] [-w TARGET] SOURCE PROPERTY
+    ini-tool.py property cp  [-s SRC_SEC] [-t DST_SEC] [-w TARGET] SOURCE SRC_PROP [DST_PROP]
+    ini-tool.py property mv  [-s SRC_SEC] [-t DST_SEC] [-w TARGET] SOURCE SRC_PROP [DST_PROP]
+
+    ini-tool.py section ls   SOURCE
+    ini-tool.py section show SOURCE SECTION
+    ini-tool.py section rm   [-w TARGET] SOURCE SECTION
+    ini-tool.py section cp   [-w TARGET] SOURCE SRC_SEC DST_SEC
+    ini-tool.py section mv   [-w TARGET] SOURCE SRC_SEC DST_SEC
+
+Aliases: `prop` -> `property`, `sect` -> `section`. For property cp/mv, -t/--to-section
+defaults to -s and the destination section is auto-created; copying a property whose
+name resolves to a section places it inside (file -> dir). Section cp/mv refuse to
+overwrite an existing section (sections cannot nest).
+"""
+
+from __future__ import annotations
+
+import argparse
+import configparser
+import sys
+from collections.abc import Iterable
+from pathlib import Path
+
+# Sentinel section that holds section-less (top-level) properties so configparser
+# can parse and address them. It is never serialized with a header.
+GLOBAL_SECTION = "\0global\0"
+
+_stdin_cache: str | None = None
+
+
+class CaseSensitiveConfigParser(configparser.ConfigParser):
+    """ConfigParser that preserves key case (default lowercases keys)."""
+
+    def optionxform(self, optionstr: str) -> str:
+        return optionstr
+
+
+def die(msg: str) -> None:
+    print(msg, file=sys.stderr)
+    sys.exit(1)
+
+
+def build_parser() -> configparser.ConfigParser:
+    """ConfigParser tuned for faithful round-tripping rather than interpretation."""
+    return CaseSensitiveConfigParser(allow_no_value=True, interpolation=None)
+
+
+def get_stdin() -> str:
+    global _stdin_cache
+    if _stdin_cache is None:
+        _stdin_cache = sys.stdin.read()
+    assert _stdin_cache is not None
+    return _stdin_cache
+
+
+def read_text(source: str) -> str:
+    """Return the contents of a source ("-" reads stdin, once and cached)."""
+    if source == "-":
+        return get_stdin()
+    path = Path(source)
+    if not path.is_file():
+        die(f"No such file: {source}")
+    return path.read_text(encoding="utf-8")
+
+
+def read_into(cp: configparser.ConfigParser, source: str) -> None:
+    """Read one source into cp, exposing section-less keys under GLOBAL_SECTION."""
+    text = read_text(source)
+    try:
+        cp.read_string(f"[{GLOBAL_SECTION}]\n{text}", source=source)
+    except configparser.Error as e:
+        die(f"Parse error in {source}: {e}")
+
+
+def load(source: str) -> configparser.ConfigParser:
+    cp = build_parser()
+    read_into(cp, source)
+    return cp
+
+
+def format_items(items: Iterable[tuple[str, str | None]]) -> str:
+    """Render (key, value) pairs as INI lines; None value -> bare key."""
+    out = []
+    for key, value in items:
+        out.append(key if value is None else f"{key} = {value}")
+    return "".join(f"{line}\n" for line in out)
+
+
+def format_section(cp: configparser.ConfigParser, section: str) -> str:
+    return f"[{section}]\n" + format_items(cp.items(section))
+
+
+def dump(cp: configparser.ConfigParser) -> str:
+    """Serialize cp, emitting global (section-less) properties headerless on top."""
+    blocks = []
+    if cp.has_section(GLOBAL_SECTION):
+        body = format_items(cp.items(GLOBAL_SECTION))
+        if body:
+            blocks.append(body)
+    for section in cp.sections():
+        if section == GLOBAL_SECTION:
+            continue
+        blocks.append(format_section(cp, section))
+    return "\n".join(blocks)
+
+
+def write_output(text: str, target: str) -> None:
+    if target == "-":
+        sys.stdout.write(text)
+    else:
+        Path(target).write_text(text, encoding="utf-8")
+
+
+def emit_value(value: str | None) -> None:
+    print(value if value is not None else "")
+
+
+def scope(section: str | None) -> str:
+    """Resolve a -s/--section value to a parser section (None -> global sentinel)."""
+    return GLOBAL_SECTION if section is None else section
+
+
+def require_section(cp: configparser.ConfigParser, section: str | None) -> str:
+    """Resolve scope and error if a named section is missing (global always exists)."""
+    sec = scope(section)
+    if section is not None and not cp.has_section(sec):
+        die(f"No such section: [{sec}]")
+    return sec
+
+
+def require_property(cp: configparser.ConfigParser, sec: str, prop: str, named: bool) -> None:
+    if not cp.has_option(sec, prop):
+        die(f"No such property: {prop}" + (f" in [{sec}]" if named else ""))
+
+
+# -- merge ---------------------------------------------------------------------
+
+
+def cmd_merge(args: argparse.Namespace) -> None:
+    cp = build_parser()
+    for src in args.sources or ["-"]:
+        read_into(cp, src)
+    write_output(dump(cp), args.write)
+
+
+# -- property ------------------------------------------------------------------
+
+
+def cmd_property_ls(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    sec = require_section(cp, args.section)
+    for name in cp.options(sec):
+        print(name)
+
+
+def cmd_property_get(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    sec = require_section(cp, args.section)
+    require_property(cp, sec, args.property, args.section is not None)
+    emit_value(cp.get(sec, args.property))
+
+
+def cmd_property_set(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    sec = scope(args.section)
+    if not cp.has_section(sec):
+        cp.add_section(sec)  # auto-create
+    cp.set(sec, args.property, args.value)
+    write_output(dump(cp), args.write)
+
+
+def cmd_property_rm(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    sec = require_section(cp, args.section)
+    require_property(cp, sec, args.property, args.section is not None)
+    cp.remove_option(sec, args.property)
+    write_output(dump(cp), args.write)
+
+
+def _resolve_property_move(args: argparse.Namespace):
+    cp = load(args.source)
+    src_sec = require_section(cp, args.section)
+    require_property(cp, src_sec, args.src_prop, args.section is not None)
+    value = cp.get(src_sec, args.src_prop)
+
+    # -t/--to-section defaults to -s; destination section is auto-created.
+    to = args.to_section if args.to_section is not None else args.section
+    dst_sec = scope(to)
+    if not cp.has_section(dst_sec):
+        cp.add_section(dst_sec)
+    dst_prop = args.dst_prop if args.dst_prop is not None else args.src_prop
+    return cp, src_sec, args.src_prop, dst_sec, dst_prop, value
+
+
+def cmd_property_cp(args: argparse.Namespace) -> None:
+    cp, _, _, dst_sec, dst_prop, value = _resolve_property_move(args)
+    cp.set(dst_sec, dst_prop, value)  # overwrite on collision (file clobber)
+    write_output(dump(cp), args.write)
+
+
+def cmd_property_mv(args: argparse.Namespace) -> None:
+    cp, src_sec, src_prop, dst_sec, dst_prop, value = _resolve_property_move(args)
+    cp.set(dst_sec, dst_prop, value)
+    # Guard: a move onto itself must not delete the property it just wrote.
+    if not (src_sec == dst_sec and src_prop == dst_prop):
+        cp.remove_option(src_sec, src_prop)
+    write_output(dump(cp), args.write)
+
+
+# -- section -------------------------------------------------------------------
+
+
+def require_real_section(cp: configparser.ConfigParser, section: str) -> None:
+    if section == GLOBAL_SECTION or not cp.has_section(section):
+        die(f"No such section: [{section}]")
+
+
+def cmd_section_ls(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    for section in cp.sections():
+        if section != GLOBAL_SECTION:
+            print(section)
+
+
+def cmd_section_show(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    require_real_section(cp, args.section)
+    sys.stdout.write(format_section(cp, args.section))
+
+
+def cmd_section_rm(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    require_real_section(cp, args.section)
+    cp.remove_section(args.section)
+    write_output(dump(cp), args.write)
+
+
+def _copy_section(cp: configparser.ConfigParser, src: str, dst: str) -> None:
+    require_real_section(cp, src)
+    if cp.has_section(dst):  # sections cannot nest; refuse to clobber
+        die(f"Section already exists: [{dst}] (refusing to overwrite)")
+    cp.add_section(dst)
+    for key, value in cp.items(src):
+        cp.set(dst, key, value)
+
+
+def cmd_section_cp(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    _copy_section(cp, args.src_section, args.dst_section)
+    write_output(dump(cp), args.write)
+
+
+def cmd_section_mv(args: argparse.Namespace) -> None:
+    cp = load(args.source)
+    _copy_section(cp, args.src_section, args.dst_section)
+    cp.remove_section(args.src_section)
+    write_output(dump(cp), args.write)
+
+
+# -- CLI -----------------------------------------------------------------------
+
+
+def add_source(p: argparse.ArgumentParser) -> None:
+    p.add_argument("source", metavar="SOURCE", help='INI source, or "-" for stdin')
+
+
+def add_write(p: argparse.ArgumentParser) -> None:
+    p.add_argument(
+        "-w",
+        "--write",
+        metavar="TARGET",
+        default="-",
+        help='output path, or "-" for stdout (default); use -w SOURCE for in-place',
+    )
+
+
+def add_section_scope(p: argparse.ArgumentParser) -> None:
+    p.add_argument(
+        "-s",
+        "--section",
+        metavar="SECTION",
+        default=None,
+        help="section scope (default: global, section-less)",
+    )
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(
+        prog="ini-tool.py", description="Merge, query, and edit INI files."
+    )
+    top = ap.add_subparsers(dest="command", required=True)
+
+    m = top.add_parser("merge", help="combine sources; later sources override earlier")
+    add_write(m)
+    m.add_argument(
+        "sources",
+        nargs="*",
+        metavar="SOURCE",
+        help='sources to merge, or "-" for stdin (default when none given)',
+    )
+    m.set_defaults(func=cmd_merge)
+
+    prop = top.add_parser(
+        "property", aliases=["prop"], help="operate on a property (-s scopes it)"
+    )
+    psub = prop.add_subparsers(dest="subcommand", required=True)
+
+    p_ls = psub.add_parser("ls", help="list property names")
+    add_section_scope(p_ls)
+    add_source(p_ls)
+    p_ls.set_defaults(func=cmd_property_ls)
+
+    p_get = psub.add_parser("get", help="print a property value")
+    add_section_scope(p_get)
+    add_source(p_get)
+    p_get.add_argument("property", metavar="PROPERTY")
+    p_get.set_defaults(func=cmd_property_get)
+
+    p_set = psub.add_parser("set", help="set/add a property")
+    add_section_scope(p_set)
+    add_write(p_set)
+    add_source(p_set)
+    p_set.add_argument("property", metavar="PROPERTY")
+    p_set.add_argument("value", metavar="VALUE")
+    p_set.set_defaults(func=cmd_property_set)
+
+    p_rm = psub.add_parser("rm", help="remove a property")
+    add_section_scope(p_rm)
+    add_write(p_rm)
+    add_source(p_rm)
+    p_rm.add_argument("property", metavar="PROPERTY")
+    p_rm.set_defaults(func=cmd_property_rm)
+
+    for verb, fn, desc in (
+        ("cp", cmd_property_cp, "copy a property"),
+        ("mv", cmd_property_mv, "move/rename a property"),
+    ):
+        pp = psub.add_parser(verb, help=desc)
+        add_section_scope(pp)
+        pp.add_argument(
+            "-t",
+            "--to-section",
+            metavar="SECTION",
+            default=None,
+            help="destination section (default: same as -s); auto-created",
+        )
+        add_write(pp)
+        add_source(pp)
+        pp.add_argument("src_prop", metavar="SRC_PROP")
+        pp.add_argument("dst_prop", nargs="?", metavar="DST_PROP", default=None)
+        pp.set_defaults(func=fn)
+
+    sect = top.add_parser(
+        "section", aliases=["sect"], help="operate on whole sections"
+    )
+    ssub = sect.add_subparsers(dest="subcommand", required=True)
+
+    s_ls = ssub.add_parser("ls", help="list section names")
+    add_source(s_ls)
+    s_ls.set_defaults(func=cmd_section_ls)
+
+    s_show = ssub.add_parser("show", help="print a section as INI")
+    add_source(s_show)
+    s_show.add_argument("section", metavar="SECTION")
+    s_show.set_defaults(func=cmd_section_show)
+
+    s_rm = ssub.add_parser("rm", help="remove a section")
+    add_write(s_rm)
+    add_source(s_rm)
+    s_rm.add_argument("section", metavar="SECTION")
+    s_rm.set_defaults(func=cmd_section_rm)
+
+    for verb, fn, desc in (
+        ("cp", cmd_section_cp, "copy a section"),
+        ("mv", cmd_section_mv, "move/rename a section"),
+    ):
+        sp = ssub.add_parser(verb, help=desc)
+        add_write(sp)
+        add_source(sp)
+        sp.add_argument("src_section", metavar="SRC_SEC")
+        sp.add_argument("dst_section", metavar="DST_SEC")
+        sp.set_defaults(func=fn)
+
+    args = ap.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
