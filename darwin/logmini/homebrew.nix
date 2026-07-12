@@ -9,45 +9,29 @@
           force_auto_update = true;
         })
         [
-          # "anthropics/tap"
-          # "aws/tap"
-          # "charmbracelet/tap"
-          # "tsonglew/dutis"
+          "charmbracelet/tap"
           "withgraphite/tap"
         ];
     brews = [
-      # "anthropics/tap/ant"
-      # "caddy"
-      # "charmbracelet/tap/freeze"
-      # "charmbracelet/tap/sequin"
+      "charmbracelet/tap/freeze"
+      "charmbracelet/tap/sequin"
       "curl"
       "direnv"
-      # "duti"
       "gh"
       "gnu-getopt"
-      # "grafana"
       "kubernetes-cli"
       "libvterm"
-      # "llama.cpp"
-      # "luarocks"
-      # "mas"
       "mkcert"
       "nss"
-      # "ollama"
       "tailscale"
-      # "tsonglew/dutis/dutis"
       "withgraphite/tap/graphite"
     ];
     casks = [
       "1password-cli@beta"
-      # "discord"
-      # "jordanbaird-ice"
+      "discord"
       "orbstack"
-      # "pearcleaner"
-      # "sf-symbols"
+      "sf-symbols"
       "vlc"
-      # "inkscape"
-      # "obs"
       # "karabiner-elements"
     ];
   };
