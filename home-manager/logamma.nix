@@ -45,14 +45,12 @@
     dry
     emacs-lsp-booster
     flyctl
-    go-task
     google-cloud-sdk
-    hl-log-viewer
     ipcalc
     jc
-    jjui
+    # jjui
     jnv
-    jujutsu
+    # jujutsu
     kcat
     mcat
     mkcert
@@ -61,10 +59,6 @@
     self'.packages.everything-fzf
     typescript-language-server
   ];
-
-  home.sessionVariables = {
-    LD_ANALYTICS_OPT_OUT = "true";
-  };
 
   home.username = "logan";
   home.homeDirectory = "/Users/logan";
@@ -76,6 +70,7 @@
   programs.asciinema.enable = true;
   programs.fish.enable = false; # not used currently and slows builds down a bit.
   programs.ghostty.enable = true;
+  programs.mise.enable = true;
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
@@ -106,14 +101,5 @@
       books = "$HOME/Library/CloudStorage/Dropbox/books";
     };
   };
-  my.src-get = {
-    enable = true;
-    repos = {
-      "loganlinn/agent-plugins" = {};
-      "loganlinn/obsidian-vault" = {};
-      "loganlinn/trs" = {};
-    };
-  };
-
   xdg.enable = true;
 }

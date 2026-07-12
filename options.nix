@@ -162,6 +162,7 @@ in {
           FLAKE_CHECKER_NO_TELEMETRY = "true";
           GATSBY_TELEMETRY_DISABLED = "1";
           GRAPHITE_DISABLE_TELEMETRY = "1";
+          LD_ANALYTICS_OPT_OUT = "true";
           NEXT_TELEMETRY_DISABLED = "1";
           NIX_INSTALLER_DIAGNOSTIC_ENDPOINT = "";
           TELEMETRY_DISABLED = "1";
