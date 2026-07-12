@@ -98,6 +98,8 @@ with pkgs; {
     wordnet
   ];
 
+  ":tools lsp" = [emacs-lsp-booster];
+
   ":tools make" = [gnumake];
 
   ":tools pass" = [

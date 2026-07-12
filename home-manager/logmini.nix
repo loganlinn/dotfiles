@@ -4,8 +4,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -35,7 +34,6 @@
   programs.man.generateCaches = false;
 
   home.packages = with pkgs; [
-    emacs-lsp-booster
     ipcalc
     jc
     jnv
@@ -69,8 +67,8 @@
   programs.zsh = {
     enable = true;
     dotDir = config.home.homeDirectory;
-    shellAliases = { };
-    dirHashes = { };
+    shellAliases = {};
+    dirHashes = {};
   };
   xdg.enable = true;
 }

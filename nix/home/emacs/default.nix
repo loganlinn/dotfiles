@@ -38,7 +38,6 @@ with lib; {
 
     home.packages = with pkgs; [
       (writeShellScriptBin "magit" (readFile ../../../bin/magit))
-      emacs-lsp-booster
     ];
 
     programs.zsh.initContent = ''

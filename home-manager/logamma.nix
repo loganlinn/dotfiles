@@ -4,8 +4,7 @@
   config,
   pkgs,
   ...
-}:
-{
+}: {
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -42,14 +41,11 @@
     actionlint
     dive
     dry
-    emacs-lsp-booster
     flyctl
     google-cloud-sdk
     ipcalc
     jc
-    # jjui
     jnv
-    # jujutsu
     kcat
     mcat
     mkcert

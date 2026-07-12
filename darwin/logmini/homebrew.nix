@@ -1,17 +1,17 @@
-{ lib, ... }: {
+{lib, ...}: {
   homebrew = {
     enable = true;
     taps =
       lib.map
-        (tap: {
-          name = tap;
-          trusted = true;
-          force_auto_update = true;
-        })
-        [
-          "charmbracelet/tap"
-          "withgraphite/tap"
-        ];
+      (tap: {
+        name = tap;
+        trusted = true;
+        force_auto_update = true;
+      })
+      [
+        "charmbracelet/tap"
+        "withgraphite/tap"
+      ];
     brews = [
       "charmbracelet/tap/freeze"
       "charmbracelet/tap/sequin"
@@ -20,7 +20,6 @@
       "gh"
       "gnu-getopt"
       "kubernetes-cli"
-      "libvterm"
       "mkcert"
       "nss"
       "tailscale"

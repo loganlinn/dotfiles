@@ -41,11 +41,17 @@ in {
     ];
     homebrew.casks = [cfg.cask];
     homebrew.brews = [
+      # native compilation (emacs-plus --with-native-comp)
       "gcc"
+      "libgccjit"
+      # core utilities doom shells out to
       "coreutils"
-      "cmake" # :term vterm
-      "libtool" # :term vtern
-      "pngpaste" # :lang org
+      # :term vterm (compiles the vterm module against system libvterm)
+      "cmake"
+      "libtool"
+      "libvterm"
+      # :lang org
+      "pngpaste"
     ];
     environment.systemPackages = with pkgs; [
       fd
