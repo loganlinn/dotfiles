@@ -103,13 +103,6 @@
             version = inputs.fzf-git-sh.shortRev;
             src = inputs.fzf-git-sh;
           });
-          less = pkgs.less.overrideAttrs (_: {
-            version = "692";
-            src = pkgs.fetchurl {
-              url = "https://www.greenwoodsoftware.com/less/less-692.tar.gz";
-              hash = "sha256-YTAPYDeY7PHXeGVweJ8P8/WhrPB1pvufdWg30WbjfRQ=";
-            };
-          });
           # notify-rust (-> mac-notification-sys) crashes ld when linking on darwin with
           # nixpkgs' cctools, so starship never builds/caches here. Upstream makes notify
           # optional for exactly this reason (see starship's Cargo.toml), so drop it and
