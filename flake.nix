@@ -110,6 +110,20 @@
               hash = "sha256-YTAPYDeY7PHXeGVweJ8P8/WhrPB1pvufdWg30WbjfRQ=";
             };
           });
+          # notify-rust (-> mac-notification-sys) crashes ld when linking on darwin with
+          # nixpkgs' cctools, so starship never builds/caches here. Upstream makes notify
+          # optional for exactly this reason (see starship's Cargo.toml), so drop it and
+          # keep the battery feature. No effect on Linux, which links notify-rust fine.
+          # TODO: remove once nixpkgs' starship disables notify on darwin, or the cctools ld
+          # crash is fixed. Check by building `.#darwinConfigurations.<host>.pkgs.starship`
+          # with this override removed.
+          starship = pkgs.starship.overrideAttrs (_:
+            lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+              cargoBuildNoDefaultFeatures = true;
+              cargoBuildFeatures = ["battery"];
+              cargoCheckNoDefaultFeatures = true;
+              cargoCheckFeatures = ["battery"];
+            });
         };
 
         formatter = pkgs.alejandra;
