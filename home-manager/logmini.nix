@@ -74,12 +74,8 @@
   programs.zsh = {
     enable = true;
     dotDir = config.home.homeDirectory;
-    shellAliases = {
-      ecr-login = "aws ecr get-login-password --region us-east-2 | pee 'docker login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com' 'finch login --username AWS --password-stdin 591791561455.dkr.ecr.us-east-2.amazonaws.com'";
-      ddb-local = "env -u AWS_ENDPOINT_DYNAMODB_URL aws dynamodb --endpoint-url http://localhost:8000";
-    };
-    dirHashes = {
-    };
+    shellAliases = { };
+    dirHashes = { };
   };
   xdg.enable = true;
 }
