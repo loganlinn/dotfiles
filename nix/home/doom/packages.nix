@@ -61,7 +61,7 @@ with pkgs; {
 
   ":lang javascript" = [prettier];
 
-  ":lang latex" = [texlive.combined.scheme-medium];
+  ":lang latex" = [texliveMedium];
 
   ":lang markdown" = [python3Packages.grip];
 
