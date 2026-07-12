@@ -4,7 +4,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
@@ -56,7 +57,7 @@
   programs.atuin.enable = true;
   programs.asciinema.enable = true;
   programs.fish.enable = false; # not used currently and slows builds down a bit.
-  programs.ghostty.enable = true;
+  # programs.ghostty.enable = true;
   programs.mise.enable = true;
   programs.nixvim = {
     enable = true;
