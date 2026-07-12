@@ -52,7 +52,6 @@ in
   programs.aerospace.enable = true;
   programs.emacs-plus.enable = true;
   programs.hammerspoon.enable = true;
-  programs.sunbeam.enable = false;
   programs.xcode.enable = true;
 
   services.brewAutoupdate.enable = false;
