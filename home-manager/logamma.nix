@@ -4,11 +4,11 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
-    # self.homeModules.opnix
     ../nix/home/atuin.nix
     ../nix/home/aws
     ../nix/home/claude
@@ -28,7 +28,6 @@
     ../nix/home/terraform
     ../nix/home/tmux.nix
     ../nix/home/wezterm
-    ../nix/home/yazi
     ../nix/home/yt-dlp.nix
   ];
 

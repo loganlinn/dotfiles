@@ -4,23 +4,28 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   # Determinate Nix owns /etc/nix/nix.conf and includes nix.custom.conf
-  settingsToConf = attrs:
+  settingsToConf =
+    attrs:
     lib.concatStringsSep "\n" (
       lib.mapAttrsToList (
-        k: v: let
+        k: v:
+        let
           val =
-            if lib.isList v
-            then lib.concatStringsSep " " (map toString v)
-            else if lib.isBool v
-            then lib.boolToString v
-            else toString v;
-        in "${k} = ${val}"
-      )
-      attrs
+            if lib.isList v then
+              lib.concatStringsSep " " (map toString v)
+            else if lib.isBool v then
+              lib.boolToString v
+            else
+              toString v;
+        in
+        "${k} = ${val}"
+      ) attrs
     );
-in {
+in
+{
   imports = [
     self.darwinModules.common
     ../modules/aerospace
@@ -29,21 +34,28 @@ in {
     ../modules/homebrew-autoupdate.nix
     ../modules/cleanshot
     ../modules/kitty
-    # ../modules/kanata
-    # ../modules/opnix
-    # ../modules/podman.nix
     ../modules/sketchybar.nix
-    ../modules/sunbeam
     ../modules/xcode.nix
     ./homebrew.nix
   ];
 
+  environment.etc."nix/nix.custom.conf".text = settingsToConf config.my.nix.settings;
+
+  networking.localHostName = "logamma";
+
+  ids.gids.nixbld = 30000;
   my.user.uid = 502;
 
   modules.kitty.enable = true;
 
   programs.cleanshot.enable = true;
   programs.aerospace.enable = true;
+  programs.emacs-plus.enable = true;
+  programs.hammerspoon.enable = true;
+  programs.sunbeam.enable = false;
+  programs.xcode.enable = true;
+
+  services.brewAutoupdate.enable = false;
   services.jankyborders = {
     enable = true;
     active_color = "0xffbd93f9";
@@ -52,40 +64,12 @@ in {
     hidpi = true; # module renders as `hidpi=on`
     style = "round";
   };
-  programs.emacs-plus.enable = true;
-  programs.hammerspoon.enable = true;
-  programs.sunbeam.enable = false;
-  programs.xcode.enable = true;
-  services.brewAutoupdate.enable = false;
-  # services.brewAutoupdate.only = [
-  #   "aerospace"
-  #   "crush"
-  #   "curl"
-  #   "gh"
-  #   "git"
-  #   "graphite"
-  #   "hammerspoon"
-  #   "karabiner-elements"
-  #   "kitty"
-  #   "kubernetes-cli"
-  #   "llama.cpp"
-  #   "ollama"
-  #   "sem-cli"
-  # ];
-  # services.kanata.enable = false;
-  # services.kanata.configFiles = [ ../../config/kanata/apple-macbook-16inch.kbd ];
   services.sketchybar.enable = false;
-  # services.onepassword-secrets = {
-  #   enable = true;
-  #   users = [ "logan" ];
-  #   # configFile = ./secrets.json;
-  #   configFile = "${config.my.flakeDirectory}/darwin/logamma/secrets.json";
-  # };
-  networking.localHostName = "logamma";
-  ids.gids.nixbld = 30000;
+
+  home-manager.users.${config.my.user.name} = import ../../home-manager/logamma.nix;
+
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
-  environment.etc."nix/nix.custom.conf".text = settingsToConf config.my.nix.settings;
-  system.stateVersion = 7;
+
   system.duti = {
     enable = true;
     settings = ''
@@ -104,6 +88,5 @@ in {
       org.videolan.vlc .mp4 all
     '';
   };
-
-  home-manager.users.${config.my.user.name} = import ../../home-manager/logamma.nix;
+  system.stateVersion = 7;
 }

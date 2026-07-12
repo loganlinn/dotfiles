@@ -48,6 +48,11 @@ in {
 
     homebrew.enable = mkDefault true;
 
+    # Disable manual/options-doc generation. Building the darwin manual emits an
+    # `options.json` derivation that references the flake source path without
+    # proper string context, producing a noisy eval warning.
+    documentation.enable = mkDefault false;
+
     fonts.packages = my.fonts.packages;
 
     environment.variables = my.environment.variables;

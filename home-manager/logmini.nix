@@ -9,7 +9,6 @@
   imports = [
     self.homeModules.common
     self.homeModules.nix-colors
-    # self.homeModules.opnix
     ../nix/home/atuin.nix
     # ../nix/home/aws
     ../nix/home/claude
@@ -18,19 +17,17 @@
     # ../nix/home/dev/kubernetes.nix
     # ../nix/home/dev/lua.nix
     ../nix/home/dev/javascript.nix
-    # ../nix/home/docker.nix
-    # ../nix/home/doom
+    ../nix/home/docker.nix
+    ../nix/home/doom
     # ../nix/home/ghostty.nix
     ../nix/home/just
     # ../nix/home/neovide.nix
     ../nix/home/nixvim
     ../nix/home/pretty.nix
-    # ../nix/home/television.nix
     # ../nix/home/terraform
     ../nix/home/tmux.nix
     # ../nix/home/wezterm
-    ../nix/home/yazi
-    # ../nix/home/yt-dlp.nix
+    ../nix/home/yt-dlp.nix
   ];
 
   # mandb takes too long build every generation switch...
@@ -56,8 +53,6 @@
   programs.claude.enable = true;
   programs.atuin.enable = true;
   programs.asciinema.enable = true;
-  programs.fish.enable = false; # not used currently and slows builds down a bit.
-  # programs.ghostty.enable = true;
   programs.mise.enable = true;
   programs.nixvim = {
     enable = true;

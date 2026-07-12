@@ -86,6 +86,10 @@
   ];
 
   programs.home-manager.enable = true;
+  # Home Manager's manpage build emits an `options.json` derivation that
+  # references the nixpkgs source path without proper string context, producing
+  # a noisy eval warning. We don't use `home-manager help`, so drop it.
+  manual.manpages.enable = false;
   programs.man.enable = true;
   programs.fd.enable = true;
   programs.btop.enable = true;
