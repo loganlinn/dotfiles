@@ -97,7 +97,7 @@
       "withgraphite/tap/graphite"
     ];
     casks = [
-      "1password-cli"
+      "1password-cli@beta"
       "discord"
       "ghostty"
       "hammerspoon"
