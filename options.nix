@@ -246,15 +246,18 @@ in {
       nix.settings = rec {
         warn-dirty = mkDefault false;
         show-trace = mkDefault true;
+        connect-timeout = mkDefault 5; # fail fast to the next substituter instead of hanging on the OS TCP timeout
+        fallback = mkDefault true; # build from source if an advertised substitute fails to download
         trusted-users = [cfg.user.name];
+        # cache.nixos.org and its key are built-in defaults, so they are omitted here.
         extra-substituters = [
-          "https://cache.nixos.org"
+          "https://loganlinn.cachix.org"
           "https://nix-community.cachix.org"
           "https://wezterm.cachix.org"
         ];
         extra-trusted-substituters = extra-substituters;
         extra-trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+          "loganlinn.cachix.org-1:CsnLzdY/Z5Btks1lb9wpySLJ60+H9kwFVbcQeb2Pjf8="
           "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
           "wezterm.cachix.org-1:kAbhjYUC9qvblTE+s7S+kl5XM1zVa4skO+E/1IDWdH0="
         ];

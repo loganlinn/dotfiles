@@ -14,7 +14,7 @@ quiet = true
 run = '''
 flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
 set -x
-sudo -H command nix run nix-darwin -- switch --flake "${flake}" "$@"
+{{config_root}}/bin/cachix-run sudo -H command nix run nix-darwin -- switch --flake "${flake}" "$@"
 '''
 
 [tasks."darwin:rebuild"]

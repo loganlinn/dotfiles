@@ -6,6 +6,7 @@
 }: {
   home.packages = with pkgs; [
     alejandra
+    cachix # push/pull binary caches; used by bin/cachix-run
     deadnix
     comma
     fh

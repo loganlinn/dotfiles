@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Wrap a build/switch command with `cachix watch-exec` so newly-built store paths are pushed
+# to the binary cache. Because it watches the global nix store, it also captures paths built
+# by the root nix-daemon during a sudo'd switch.
+#
+# Usage: cachix-run <command> [args...]
+#   cachix-run sudo -H nix run nix-darwin -- switch --flake .
+#   cachix-run sudo -E nixos-rebuild switch --flake .
+#   cachix-run home-manager switch -b backup
+#
+# Token resolution (write token, only needed to push): $CACHIX_AUTH_TOKEN, else 1Password.
+# With no token or no cachix on PATH, it runs the command unchanged (pulling still works via
+# the substituter configured in nix.conf).
+#
+# Env:
+#   CACHIX_CACHE         cache name (default: loganlinn)
+#   CACHIX_TOKEN_OP_REF  1Password secret reference for the write token
+#   CACHIX_AUTH_TOKEN    use this token directly, skipping 1Password
+#
+# Portability: `op` (1Password CLI) and `cachix` are cross-platform, but `op read` needs an
+# authenticated 1Password session (desktop integration on macOS). When either is missing it
+# degrades to a plain exec, so it is safe to use on any host.
+set -euo pipefail
+
+cache="${CACHIX_CACHE:-loganlinn}"
+token_ref="${CACHIX_TOKEN_OP_REF:-op://Private/Cachix Personal Auth Token/credential}"
+
+if [[ $# -eq 0 ]]; then
+  echo "usage: cachix-run <command> [args...]" >&2
+  exit 2
+fi
+
+if [[ -z "${CACHIX_AUTH_TOKEN:-}" ]] && command -v op >/dev/null 2>&1; then
+  CACHIX_AUTH_TOKEN="$(op read "$token_ref" 2>/dev/null || true)"
+fi
+
+if [[ -n "${CACHIX_AUTH_TOKEN:-}" ]] && command -v cachix >/dev/null 2>&1; then
+  export CACHIX_AUTH_TOKEN
+  exec cachix watch-exec "$cache" -- "$@"
+fi
+
+# No token / no cachix: run unchanged (pull-only).
+exec "$@"

@@ -126,7 +126,7 @@ lns -f {{config_root}}/flake.nix "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager
 '''
 
 [tasks."nixos:switch"]
-run = 'sudo -E nixos-rebuild switch --flake {{config_root}}'
+run = '{{config_root}}/bin/cachix-run sudo -E nixos-rebuild switch --flake {{config_root}}'
 
 # ============================================================================
 # Git Tasks (dotfiles context)
