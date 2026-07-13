@@ -9,6 +9,11 @@ src-home() {
   printf '%s' "${SRC_HOME:=$HOME/src}"
 }
 
+# Path to the src-get history file. Override with SRC_GET_HISTORY_FILE.
+src-history-file() {
+  printf '%s' "${SRC_GET_HISTORY_FILE:-${XDG_STATE_HOME:-$HOME/.local/state}/src-get/history}"
+}
+
 # Normalizes argument into git valid repository (URL)
 src-repo() {
   while (($#)); do
@@ -95,48 +100,108 @@ src-dir() {
 #        src-get <owner>/<repo>
 #
 src-get() {
-  local debug_flag=${DEBUG+true}
+  local debug=${SRC_GET_DEBUG:+true}
+  local history_disabled=${SRC_GET_NO_HISTORY:+true}
+  local interactive=true
+  [[ -t 1 ]] || interactive=false
+  local print_path=true
+  [[ $interactive == true ]] && print_path=false
+  local do_cd=true
+  local set_window_title=
   local depth=
-  case $1 in
-  --depth)
-    depth=${2?'Missing operand'}
-    shift 2
-    ;;
-  --shallow)
-    depth=1
-    shift
-    ;;
-  --no-shallow)
-    depth=
-    shift
-    ;;
-  -h | --help | help)
-    echo "Usage: src-get [options] <repository>"
-    echo "       src-get [options] <owner>/<repo>"
-    echo ""
-    echo "Options:"
-    echo "  --depth <depth>"
-    echo "      Create a shallow clone with a history truncated to the specified number of commits."
-    echo "  --[no-]shallow"
-    echo "      Create a shallow clone with a history truncated to single commit."
-    return 0
-    ;;
-  --debug)
-    debug_flag=$1
-    shift
-    ;;
-  --)
-    shift
-    ;;
-  -*)
-    echo "src-get: unknown '$1' option" >&2
-    echo "Try 'src-get --help' for more information." >&2
-    return 1
-    ;;
-  esac
+  while (($#)); do
+    case $1 in
+    --depth)
+      depth=${2?'Missing operand'}
+      shift 2
+      ;;
+    --shallow)
+      depth=1
+      shift
+      ;;
+    --no-shallow)
+      depth=
+      shift
+      ;;
+    -h | --help | help)
+      echo "Usage: src-get [options] <repository>"
+      echo "       src-get [options] <owner>/<repo>"
+      echo ""
+      echo "Options:"
+      echo "  --depth <depth>"
+      echo "      Create a shallow clone with a history truncated to the specified number of commits."
+      echo "  --[no-]shallow"
+      echo "      Create a shallow clone with a history truncated to single commit."
+      echo "  --[no-]path"
+      echo "      Print the path to the git repository. Defaults to true when stdout is not a"
+      echo "      terminal (e.g. \$(src-get ...)), false otherwise."
+      echo "  --[no-]cd"
+      echo "      pushd into the git repository. Defaults to true."
+      echo "  --[no-]set-window-title"
+      echo "      Set the terminal window title to the repository directory, relative to"
+      echo "      \$(src-home). Defaults to true for interactive invocations (stdout is a"
+      echo "      terminal), false otherwise. Using --set-window-title on a non-interactive"
+      echo "      invocation is an error."
+      echo "  --debug"
+      echo "      Enable debug logging. Can also be set via SRC_GET_DEBUG=1."
+      echo ""
+      echo "Environment:"
+      echo "  SRC_GET_HISTORY_FILE"
+      echo "      Path to the history log file. Defaults to \$(src-history-file)."
+      echo "  SRC_GET_NO_HISTORY"
+      echo "      If set, disables recording to the history log file."
+      return 0
+      ;;
+    --debug)
+      debug=true
+      shift
+      ;;
+    --path)
+      print_path=true
+      shift
+      ;;
+    --no-path)
+      print_path=false
+      shift
+      ;;
+    --cd)
+      do_cd=true
+      shift
+      ;;
+    --no-cd)
+      do_cd=false
+      shift
+      ;;
+    --set-window-title)
+      set_window_title=true
+      shift
+      ;;
+    --no-set-window-title)
+      set_window_title=false
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "src-get: unknown '$1' option" >&2
+      echo "Try 'src-get --help' for more information." >&2
+      return 1
+      ;;
+    *)
+      break
+      ;;
+    esac
+  done
 
-  if [[ -n $debug_flag ]]; then
-    set -x
+  if [[ $interactive == true ]]; then
+    set_window_title=${set_window_title:-true}
+  elif [[ $set_window_title == true ]]; then
+    echo >&2 "src-get: --set-window-title requires an interactive invocation"
+    return 1
+  else
+    set_window_title=false
   fi
 
   if [[ -z $1 ]]; then
@@ -153,20 +218,78 @@ src-get() {
       if [[ ! -d $dir ]]; then
         local git_clone_cmd=("${SRC_GIT:-git}" clone ${depth:+--depth=$depth} --progress -- "$repo" "$dir")
         if command "${git_clone_cmd[@]}"; then
-          echo >&2 "src-get: ✅ ${git_clone_cmd[*]}"
+          [[ -n $debug ]] && echo >&2 "src-get: ${git_clone_cmd[*]}"
         else
           return $?
         fi
       fi
 
-      cd -- "$dir"
-      echo >&2 "src-get: ✅ cd -- '$dir'"
+      if [[ $do_cd == true ]]; then
+        pushd -- "$dir" >/dev/null
+        [[ -n $debug ]] && echo >&2 "src-get: pushd -- '$dir'"
+      fi
 
       if zoxide add "$dir" >/dev/null 2>&1; then
-        echo >&2 "src-get: ✅ zoxide add '$dir'"
+        [[ -n $debug ]] && echo >&2 "src-get: zoxide add '$dir'"
       fi
+
+      if [[ -z $history_disabled ]]; then
+        local history_file history_dir
+        history_file=$(src-history-file)
+        history_dir=$(dirname -- "$history_file")
+        if mkdir -p -- "$history_dir" 2>/dev/null; then
+          local rev
+          rev=$(git -C "$dir" rev-parse HEAD 2>/dev/null) || rev=-
+          if printf '%s\t%s\t%s\n' "$(date +%s)" "${dir#"$HOME"/}" "$rev" >>"$history_file" 2>/dev/null; then
+            [[ -n $debug ]] && echo >&2 "src-get: recorded history entry to '$history_file'"
+          else
+            echo >&2 "src-get: warning: unable to write to history file '$history_file'"
+          fi
+        else
+          echo >&2 "src-get: warning: unable to create history directory '$history_dir'"
+        fi
+      fi
+
+      [[ $print_path == true ]] && printf '%s\n' "$dir"
     done
   done
+
+  if [[ $set_window_title == true ]]; then
+    local title=${PWD#"$(src-home)"/}
+    printf '\033]2;%s\007' "$title"
+    [[ -n $debug ]] && echo >&2 "src-get: set window title to '$title'"
+  fi
+}
+
+#
+# Usage: src-history [n]
+#
+# Prints the src-get history, similar to the shell 'history' builtin.
+src-history() {
+  case $1 in
+  -h | --help)
+    echo "usage: src-history [n]"
+    echo ""
+    echo "Print the src-get history (epoch, repo dir relative to \$HOME, rev),"
+    echo "numbered like the shell 'history' builtin. With n, show only the last"
+    echo "n entries."
+    echo ""
+    echo "History is recorded to \$(src-history-file); see SRC_GET_HISTORY_FILE"
+    echo "and SRC_GET_NO_HISTORY in 'src-get --help'."
+    return 0
+    ;;
+  esac
+
+  local history_file
+  history_file=$(src-history-file)
+
+  [[ -r $history_file ]] || return 0
+
+  local total
+  total=$(wc -l <"$history_file")
+  local n=${1:-$total}
+
+  awk -v total="$total" -v n="$n" 'NR > total - n { printf "%5d  %s\n", NR, $0 }' "$history_file"
 }
 
 src-for-each-exec() {
