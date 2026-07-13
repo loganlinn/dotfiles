@@ -72,6 +72,7 @@ in {
         "paste-actions.py"
         "quick-access-terminal.conf"
         "sessions"
+        "snap_splits.py"
         "ssh.conf"
         "stack_toggle.py"
         "tab_bar.py"
