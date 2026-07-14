@@ -137,7 +137,10 @@ in {
         prefs = "$HOME/Library/Preferences";
         chrome = "$HOME/Library/Application Support/Google/Chrome";
         ff = "$HOME/Library/Application Support/Firefox";
+        mobile = "$HOME/Library/Mobile Documents";
         icloud = "$HOME/Library/Mobile Documents/com~apple~CloudDocs";
+        dropbox = "$HOME/Library/CloudStorage/Dropbox";
+        obsidian = "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents";
       })
     ];
     envExtra = ''

@@ -18,17 +18,44 @@ As a keybinding in kitty.conf::
 
     map kitty_mod+y>t kitten snap_splits.py tall
     map kitty_mod+y>g kitten snap_splits.py grid
+    map kitty_mod+y>n kitten snap_splits.py --next
+    map kitty_mod+y>p kitten snap_splits.py --prev
+    map kitty_mod+y>c kitten snap_splits.py --next vertical tall fat
 
-From a shell prompt inside kitty (needs remote control; supports --match
-to target another window's tab)::
+From a shell prompt inside kitty (needs remote control)::
 
     kitten @ kitten snap_splits.py tall
 
 The target accepts the same forms as ``goto_layout``: a layout name with
-optional options, e.g. ``tall:bias=70;full_size=2``. Without explicit
-options the definition from ``enabled_layouts`` is used, so the result is
-exactly what switching to that layout directly would show (including any
-manual resizes that layout remembers for this tab).
+optional ``;``-separated options, e.g. ``tall:bias=50;full_size=1;mirrored=false``.
+Without explicit options the definition from ``enabled_layouts`` is used, so
+the result is exactly what switching to that layout directly would show
+(including any manual resizes that layout remembers for this tab).
+
+``--next``/``--prev`` (mutually exclusive) cycle through a list of targets,
+wrapping around. The list is the first of:
+
+1. targets given on the command line (``--next vertical tall fat``)
+2. ``$KITTY_SNAP_SPLITS_KITTEN_ENABLED_LAYOUTS``, comma-separated with
+   optional opts (``tall:bias=60,grid,fat``) — read from kitty's own
+   environment, falling back to kitty.conf's ``env`` directive (the kitty
+   process does not see ``env`` directives itself, so the fallback makes
+   ``env KITTY_SNAP_SPLITS_KITTEN_ENABLED_LAYOUTS=...`` in kitty.conf work
+   even when kitty is launched from the desktop)
+3. the tab's ``enabled_layouts`` setting minus the non-snappable layouts
+   (splits, stack), when explicitly configured (i.e. not the ``*`` default)
+4. tall, fat, grid, horizontal, vertical
+
+Cycle entries may carry opts (``tall:bias=70``); splits and stack are not
+allowed in a cycle since neither is a shape to snap to. The last snapped
+target is remembered per tab (on the tab's WindowList, which tracks the tab
+regardless of which window is focused and survives the tab being moved to
+another OS window); in a tab that has not snapped yet, the cycle starts
+from the current layout.
+
+``-m``/``--match`` selects windows the same way kitty remote control
+commands do (``id:3``, ``title:foo``, ``recent:1``, ...); the snap applies
+to each matched window's tab. Without it, the invoking window's tab is used.
 
 How it works
 ------------
@@ -44,12 +71,16 @@ tab is relaid out. Nothing renders in between, so only the final
 arrangement is ever shown.
 """
 
+import os
 import sys
 from typing import TYPE_CHECKING, Union
 
 from kittens.tui.handler import result_handler
+from kitty.fast_data_types import get_options
 from kitty.layout.base import lgd
+from kitty.layout.interface import all_layouts
 from kitty.layout.splits import Pair, Splits
+from kitty.options.utils import DELETE_ENV_VAR
 
 if TYPE_CHECKING:
     from kitty.boss import Boss
@@ -57,24 +88,45 @@ if TYPE_CHECKING:
     from kitty.types import WindowGeometry
 
 TARGETS = ("tall", "fat", "grid", "horizontal", "vertical", "splits")
+NON_SNAP = ("splits", "stack")  # not shapes: freeze marker / overlapping windows
+CYCLE = tuple(t for t in TARGETS if t not in NON_SNAP)
+ENV_VAR = "KITTY_SNAP_SPLITS_KITTEN_ENABLED_LAYOUTS"
 TOL = 1  # px slack when testing that a cut line does not slice any window
 
 Rect = tuple[int, int, int, int]  # left, top, right, bottom
 Item = tuple[int, Rect]  # window group id, slot rect
 
 USAGE = f"""\
-Usage: kitten snap_splits.py <target>[:opts]
+Usage: kitten snap_splits.py [-m EXPR] <target>[:opts]
+       kitten snap_splits.py [-m EXPR] --next|--prev [<target>[:opts] ...]
 
 Snap the splits layout into the shape of another layout.
 
 target is one of: {', '.join(TARGETS)}, with optional layout opts,
-e.g. tall, grid, tall:bias=70;full_size=2, fat:mirrored=yes.
+e.g. tall, grid, tall:bias=50;full_size=1;mirrored=false, fat:mirrored=yes.
 'splits' freezes the current window arrangement into the splits layout.
 (stack overlaps windows and cannot be expressed as splits)
 
-This kitten changes the active tab's layout, so it must run inside kitty:
-    map kitty_mod+y>t kitten snap_splits.py tall    # keybinding in kitty.conf
-    kitten @ kitten snap_splits.py tall             # shell, needs remote control\
+--next / --prev (mutually exclusive) cycle, wrapping around, through the
+first of:
+  1. targets given on the command line
+  2. ${ENV_VAR} (comma-separated,
+     from kitty's environment or kitty.conf's env directive)
+  3. the tab's enabled_layouts setting minus {'/'.join(NON_SNAP)}, when
+     explicitly configured
+  4. {', '.join(CYCLE)}
+{'/'.join(NON_SNAP)} cannot be part of a cycle. The last snapped target is
+remembered per tab; when nothing has been snapped yet, the cycle starts
+from the tab's current layout.
+
+-m / --match EXPR selects windows as in kitty remote control commands
+(id:3, title:foo, recent:1, ...); the snap applies to each matched
+window's tab. Default: the tab the kitten was invoked from.
+
+This kitten changes tab layouts, so it must run inside kitty:
+    map kitty_mod+y>t kitten snap_splits.py tall     # keybinding in kitty.conf
+    map kitty_mod+y>n kitten snap_splits.py --next tall grid fat
+    kitten @ kitten snap_splits.py --next            # shell, needs remote control\
 """
 
 
@@ -163,6 +215,66 @@ def build_tree(items: list[Item], box: Rect, bw: int) -> Union[Pair, int]:
     return pair
 
 
+def cycle_target(tab: "Tab", forwards: bool, targets: list[str]) -> str:
+    """Next/previous snap target from targets, positioned by the last spec
+    snapped in this tab (exact match, then by base layout name), falling
+    back to the tab's current layout, then to the ends of the list."""
+    def index_of(spec: str | None) -> "int | None":
+        if not spec:
+            return None
+        if spec in targets:
+            return targets.index(spec)
+        base = spec.partition(":")[0]
+        for i, t in enumerate(targets):
+            if t.partition(":")[0] == base:
+                return i
+        return None
+
+    idx = index_of(getattr(tab.windows, "_snap_splits_last", None))
+    if idx is None:
+        idx = index_of(tab.current_layout.name)
+    if idx is None:
+        return targets[0] if forwards else targets[-1]
+    return targets[(idx + (1 if forwards else -1)) % len(targets)]
+
+
+def env_cycle() -> "list[str] | None":
+    """Cycle list from $KITTY_SNAP_SPLITS_KITTEN_ENABLED_LAYOUTS, or None if
+    unset/empty. kitty.conf's ``env`` directive only seeds child-process
+    environments, so it is consulted as a fallback to make it usable here."""
+    raw = os.environ.get(ENV_VAR)
+    if not raw:
+        raw = get_options().env.get(ENV_VAR)
+        if raw == DELETE_ENV_VAR:  # a bare `env VAR` directive means unset, not a value
+            raw = None
+    if raw is None:
+        return None
+    return [t.strip().lower() for t in raw.split(",") if t.strip()] or None
+
+
+def default_cycle(tab: "Tab") -> list[str]:
+    """Cycle list from the tab's enabled_layouts minus non-snappable
+    layouts — unless enabled_layouts is the expanded ``*`` default, which
+    is indistinguishable from unset and falls back to the built-in order."""
+    enabled = list(tab.enabled_layouts)
+    if enabled != sorted(all_layouts):
+        filtered = [t for t in enabled if t.partition(":")[0] not in NON_SNAP]
+        if filtered:
+            return filtered
+    return list(CYCLE)
+
+
+def validate_cycle(cycle: list[str], source: str) -> "str | None":
+    """Error message for the first invalid cycle entry, or None."""
+    for t in cycle:
+        base = t.partition(":")[0]
+        if base in NON_SNAP:
+            return f"{base!r} cannot be part of a cycle{source}"
+        if base not in TARGETS:
+            return f"invalid cycle target{source}: {t!r}"
+    return None
+
+
 def resolve_layout_spec(tab: "Tab", spec: str) -> str:
     """Match spec against enabled_layouts the way goto_layout does, falling
     back to the spec itself so explicit options always win."""
@@ -195,18 +307,9 @@ def recover_tree(groups: tuple) -> Union[Pair, int]:
     return build_tree(items, box, bw)
 
 
-@result_handler(no_ui=True)
-def handle_result(args: list[str], answer: str, target_window_id: int, boss: "Boss") -> None:
-    w = boss.window_id_map.get(target_window_id)
-    tab = (w.tabref() if w is not None else None) or boss.active_tab
-    if tab is None:
-        return
-    spec = (args[1] if len(args) > 1 else "").lower()
+def snap(tab: "Tab", spec: str) -> "str | None":
+    """Snap one tab to spec; returns an error message, or None on success."""
     base = spec.partition(":")[0]
-    if base not in TARGETS:
-        boss.show_error("snap_splits", USAGE)
-        return
-
     splits_name = resolve_layout_spec(tab, "splits")
     if splits_name not in tab.enabled_layouts:
         tab.enabled_layouts.append(splits_name)  # this tab only, until config reload
@@ -235,8 +338,7 @@ def handle_result(args: list[str], answer: str, target_window_id: int, boss: "Bo
             root = recover_tree(groups)
         except ValueError as e:
             tab.relayout()  # restore geometry mutated by target.do_layout
-            boss.show_error("snap_splits", str(e))
-            return
+            return str(e)
 
     if root is not None:
         splits = tab.current_layout
@@ -244,3 +346,100 @@ def handle_result(args: list[str], answer: str, target_window_id: int, boss: "Bo
         splits.pairs_root = root
         splits._maximized_biases = {}  # saved biases refer to the old tree
     tab.relayout()
+    if base != "splits":
+        # Cycle state for --next/--prev. Stored on the WindowList rather than
+        # the Tab: take_over_from transfers it, so state survives the tab
+        # being detached/moved to another OS window.
+        setattr(tab.windows, "_snap_splits_last", spec)
+    return None
+
+
+@result_handler(no_ui=True)
+def handle_result(args: list[str], answer: str, target_window_id: int, boss: "Boss") -> None:
+    w = boss.window_id_map.get(target_window_id)
+
+    def usage_error(msg: str = "") -> None:
+        boss.show_error("snap_splits", (msg + "\n\n" if msg else "") + USAGE)
+
+    match_expr: "str | None" = None
+    flags: list[str] = []
+    targets: list[str] = []
+    argv = args[1:]
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        low = a.lower()
+        if low in ("-m", "--match") or low.startswith(("-m=", "--match=")):
+            if "=" in a:
+                expr = a.split("=", 1)[1]
+            else:
+                i += 1
+                if i == len(argv):
+                    usage_error(f"{a} requires a window match expression")
+                    return
+                expr = argv[i]
+            if not expr:
+                usage_error(f"{a.split('=', 1)[0]} requires a window match expression")
+                return
+            if match_expr is not None:
+                usage_error("only one --match expression is allowed")
+                return
+            match_expr = expr
+        elif low in ("--next", "--prev"):
+            flags.append(low)
+        else:
+            targets.append(low)
+        i += 1
+
+    if len(flags) > 1:
+        usage_error("--next and --prev are mutually exclusive")
+        return
+    cycle: "list[str] | None" = None  # None with flags → per-tab default_cycle
+    direct_spec = ""
+    if flags:
+        if targets:
+            cycle, source = targets, ""
+        else:
+            cycle, source = env_cycle(), f" (from ${ENV_VAR})"
+        if cycle is not None:
+            cycle = list(dict.fromkeys(cycle))  # dups would trap cycling at the first occurrence
+            err = validate_cycle(cycle, source)
+            if err:
+                usage_error(err)
+                return
+    elif len(targets) == 1:
+        direct_spec = targets[0]
+        if direct_spec.partition(":")[0] not in TARGETS:
+            usage_error(f"invalid target: {direct_spec!r}")
+            return
+    else:
+        usage_error("" if not targets else "multiple targets need --next or --prev")
+        return
+
+    if match_expr is not None:
+        try:
+            matched = list(boss.match_windows(match_expr, w))
+        except Exception as e:
+            boss.show_error("snap_splits", f"bad --match expression {match_expr!r}: {e}")
+            return
+        tabs = [t for t in dict.fromkeys(x.tabref() for x in matched) if t is not None]
+        if not tabs:
+            boss.show_error("snap_splits", f"no windows matched {match_expr!r}")
+            return
+    else:
+        tab = (w.tabref() if w is not None else None) or boss.active_tab
+        if tab is None:
+            return
+        tabs = [tab]
+
+    errors = []
+    for tab in tabs:
+        if flags:
+            spec = cycle_target(tab, flags[0] == "--next", cycle if cycle is not None else default_cycle(tab))
+        else:
+            spec = direct_spec
+        err = snap(tab, spec)
+        if err is not None:
+            errors.append(err if len(tabs) == 1 else f"tab {tab.effective_title or tab.id}: {err}")
+    if errors:
+        boss.show_error("snap_splits", "\n".join(errors))
