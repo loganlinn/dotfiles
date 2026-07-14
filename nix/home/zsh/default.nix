@@ -14,6 +14,12 @@ with lib; let
     #---------------------------------------------------------
     ${readFile file}
   '';
+  atuinOwnsZshHistory =
+    config.programs.atuin.enable
+    && (
+      config.programs.atuin.enableZshIntegration
+      || any (hasPrefix "atuinsh/atuin") config.programs.zsh.antidote.plugins
+    );
 in {
   imports = [
     ./options.nix
@@ -228,22 +234,31 @@ in {
         ##########################################################
 
         ${
-          lib.optionalString
-          (
-            config.programs.television.enable
-            && config.programs.television.enableZshIntegration
-            && config.programs.fzf.enableZshIntegration
-            && !(config.programs.atuin.enable && config.programs.atuin.enableZshIntegration)
-          )
-          ''
+          if atuinOwnsZshHistory
+          then ''
             ##########################################################
 
-            # Prefer fzf's history search over television's
-            bindkey -M emacs '^R' fzf-history-widget
-            bindkey -M vicmd '^R' fzf-history-widget
-            bindkey -M viins '^R' fzf-history-widget
+            # Restore Atuin's Ctrl-R bindings after fzf and television
+            bindkey -M emacs '^R' atuin-search
+            bindkey -M viins '^R' atuin-search-viins
 
           ''
+          else
+            lib.optionalString
+            (
+              config.programs.television.enable
+              && config.programs.television.enableZshIntegration
+              && config.programs.fzf.enableZshIntegration
+            )
+            ''
+              ##########################################################
+
+              # Prefer fzf's history search over television's
+              bindkey -M emacs '^R' fzf-history-widget
+              bindkey -M vicmd '^R' fzf-history-widget
+              bindkey -M viins '^R' fzf-history-widget
+
+            ''
         }
       '')
       (mkAfter ''

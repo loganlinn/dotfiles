@@ -5,6 +5,12 @@
   lib,
   ...
 }: let
+  atuinOwnsZshHistory =
+    config.programs.atuin.enable
+    && (
+      config.programs.atuin.enableZshIntegration
+      || builtins.any (lib.hasPrefix "atuinsh/atuin") config.programs.zsh.antidote.plugins
+    );
   walker-skip-dirs = [
     ".cache"
     ".direnv"
@@ -67,6 +73,7 @@ in {
       # fzf keeps Ctrl-R when Atuin is disabled. (In zsh, Atuin is loaded via the
       # antidote `atuinsh/atuin` plugin, which binds Ctrl-R itself.)
       bash.command = lib.mkIf (config.programs.atuin.enable && config.programs.atuin.enableBashIntegration) "";
+      zsh.command = lib.mkIf atuinOwnsZshHistory "";
       options = [
         "--sort"
         "--exact"
