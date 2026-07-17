@@ -1,6 +1,8 @@
-{lib, ...}: let
+{ lib, ... }:
+let
   inherit (lib) concatStrings;
-in {
+in
+{
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
@@ -24,16 +26,17 @@ in {
         # "$singularity"
         # "$kubernetes"
         "$directory"
+        "$aws"
         # "$vcsh"
         "$git_branch"
         "$git_commit"
         "$git_state"
-        "$git_metrics" # note: disabled by default
-        "$git_status"
+        # "$git_metrics" # note: disabled by default
+        # "$git_status"
         # "$hg_branch"
-        "$docker_context"
-        "$package"
-        "$bun"
+        # "$docker_context"
+        # "$package"
+        # "$bun"
         # "$c"
         # "$cmake"
         # "$cobol"
@@ -44,31 +47,31 @@ in {
         # "$elixir"
         # "$elm"
         # "$erlang"
-        "$golang"
+        # "$golang"
         # "$haskell"
         # "$haxe"
-        "$helm"
-        "$java"
+        # "$helm"
+        # "$java"
         # "$julia"
         # "$kotlin"
-        "$lua"
+        # "$lua"
         # "$nim"
-        "$nodejs"
+        # "$nodejs"
         # "$ocaml"
         # "$opa"
         # "$perl"
         # "$php"
         # "$pulumi"
         # "$purescript"
-        "$python"
+        # "$python"
         # "$raku"
         # "$rlang"
         # "$red"
         # "$ruby"
-        "$rust"
+        # "$rust"
         # "$scala"
         # "$swift"
-        "$terraform"
+        # "$terraform"
         # "$vlang"
         # "$vagrant"
         # "$zig"
@@ -79,11 +82,9 @@ in {
         # "$meson"
         # "$spack"
         # "$memory_usage"
-        "$aws"
         # "$gcloud"
         # "$openstack"
         # "$azure"
-        "$env_var"
         # "$crystal"
         "$custom"
         "$sudo"
@@ -97,12 +98,19 @@ in {
         "$status"
         "$container"
         "$os"
+        # "$env_var"
         "$shell"
         "$character"
       ];
+      aws = {
+        format = "[$symbol$profile]($style) ";
+        symbol = "  ";
+      };
       git_commit = {
+        format = "[\($hash$tag\)]($style) ";
         disabled = false;
         only_detached = false;
+        tag_disabled = false;
       };
       claude_model = {
         format = "[$symbol$model]($style) ";

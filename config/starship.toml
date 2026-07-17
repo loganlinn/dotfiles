@@ -1,7 +1,7 @@
 ###############################################################################
 # starship.toml - shell prompt configuration
 #
-# For reference: starship print-config
+# For reference: starship print-configstarsh
 #      See also: https://starship.rs/config
 ###############################################################################
 
@@ -13,9 +13,7 @@ $git_branch\
 $git_commit\
 $git_state\
 $git_status\
-$package\
 $nix_shell\
-$python\
 $kubernetes\
 $cmd_duration\
 $line_break\
@@ -23,12 +21,13 @@ $jobs\
 $battery\
 $shlvl\
 $shell\
+$env_var\
 $character"""
 
 [character]
 success_symbol = "[❯](bold green)"
-error_symbol   = "[❯](bold red)"
-vicmd_symbol   = "[❮](bold yellow)"
+error_symbol = "[❯](bold red)"
+vicmd_symbol = "[❮](bold yellow)"
 
 [git_branch]
 format = "[$branch]($style) "
@@ -49,11 +48,7 @@ style = "yellow"
 [python]
 pyenv_version_name = false
 pyenv_prefix = 'pyenv '
-python_binary = [
-    'python',
-    'python3',
-    'python2',
-]
+python_binary = ['python', 'python3', 'python2']
 format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 version_format = 'v${major}.${minor}'
 style = 'yellow bold'
@@ -61,13 +56,13 @@ symbol = '🐍 '
 disabled = false
 detect_extensions = ['py']
 detect_files = [
-    'requirements.txt',
-    '.python-version',
-    'pyproject.toml',
-    'Pipfile',
-    'tox.ini',
-    'setup.py',
-    '__init__.py',
+  'requirements.txt',
+  '.python-version',
+  'pyproject.toml',
+  'Pipfile',
+  'tox.ini',
+  'setup.py',
+  '__init__.py',
 ]
 detect_folders = []
 

@@ -1,0 +1,22 @@
+# vim: ft=zsh
+emulate -L zsh
+
+local selected
+selected=$(
+  aws configure list-profiles |
+  gum filter \
+    --selected="${AWS_PROFILE:-}" \
+    --fuzzy \
+    --fuzzy-sort \
+    --reverse \
+    --height=16 \
+    --select-if-one \
+    --strict
+) || return $?
+
+AWS_PROFILE="$selected"
+if (($#)); then
+  (export AWS_PROFILE; "$@")
+else
+  export AWS_PROFILE
+fi
