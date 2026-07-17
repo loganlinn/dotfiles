@@ -23,71 +23,15 @@ in
         "$hostname"
         # "$localip"
         "$shlvl"
+        "$nix_shell"
         # "$singularity"
-        # "$kubernetes"
         "$directory"
-        "$aws"
-        # "$vcsh"
         "$git_branch"
         "$git_commit"
         "$git_state"
-        # "$git_metrics" # note: disabled by default
         # "$git_status"
-        # "$hg_branch"
-        # "$docker_context"
-        # "$package"
-        # "$bun"
-        # "$c"
-        # "$cmake"
-        # "$cobol"
-        # "$daml"
-        # "$dart"
-        # "$deno"
-        # "$dotnet"
-        # "$elixir"
-        # "$elm"
-        # "$erlang"
-        # "$golang"
-        # "$haskell"
-        # "$haxe"
-        # "$helm"
-        # "$java"
-        # "$julia"
-        # "$kotlin"
-        # "$lua"
-        # "$nim"
-        # "$nodejs"
-        # "$ocaml"
-        # "$opa"
-        # "$perl"
-        # "$php"
-        # "$pulumi"
-        # "$purescript"
-        # "$python"
-        # "$raku"
-        # "$rlang"
-        # "$red"
-        # "$ruby"
-        # "$rust"
-        # "$scala"
-        # "$swift"
-        # "$terraform"
-        # "$vlang"
-        # "$vagrant"
-        # "$zig"
-        # "$buf"
-        # "$guix_shell"
-        "$nix_shell"
-        # "$conda"
-        # "$meson"
-        # "$spack"
-        # "$memory_usage"
-        # "$gcloud"
-        # "$openstack"
-        # "$azure"
-        # "$crystal"
-        "$custom"
-        "$sudo"
+        "$aws"
+        "$kubernetes"
         "$cmd_duration"
         "$line_break"
         ########################################################################
@@ -106,11 +50,17 @@ in
         format = "[$symbol$profile]($style) ";
         symbol = "  ";
       };
+      git_branch = {
+        format = "[$symbol$branch(:$remote_branch)]($style) ";
+      };
       git_commit = {
         format = "[\($hash$tag\)]($style) ";
         disabled = false;
         only_detached = false;
         tag_disabled = false;
+      };
+      kubernetes = {
+        format = "[$symbol$context(:$namespace)]($style) ";
       };
       claude_model = {
         format = "[$symbol$model]($style) ";

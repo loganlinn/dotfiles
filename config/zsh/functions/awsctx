@@ -1,0 +1,25 @@
+# vim: ft=zsh
+emulate -L zsh
+
+hash aws || return 1
+hash gum || return 1
+
+local profiles=$(aws configure list-profiles)
+local value=${1:-${TF_WORKSPACE:-${GUM_FILTER_VALUE:-}}}
+local selected=$(
+  <<<"$profiles" gum filter \
+    --value="$value" \
+    --selected="${AWS_PROFILE:-}" \
+    --limit=1 \
+    --select-if-one \
+    --fuzzy \
+    --fuzzy-sort \
+    --height=16 \
+    --strict
+)
+
+if (($#)); then
+  env AWS_PROFILE=$elected "$@"
+else
+  print -rl -- "$selected"
+fi

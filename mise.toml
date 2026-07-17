@@ -14,27 +14,23 @@ _.path = ["{{config_root}}/bin"]
 [tasks.clean]
 depends = "*:clean"
 
+[tasks.fmt]
+depends = "*:fmt"
+run = "mise fmt"
+
 [tasks.lint]
 depends = "*:lint"
+run = "mise fmt --check"
 
 [tasks.check]
 depends = "*:check"
-
-[tasks.fmt]
-depends = "*:fmt"
+run = "mise check"
 
 [tasks.test]
-run = "mise --cd ./test run test ${usage_files}"
 usage = '''
 arg "[files]" var=#true help="Test files to run (default: all .bats files)"
 '''
-
-# ============================================================================
-# Mise Tasks
-# ============================================================================
-
-[tasks."mise:lint"]
-run = "mise fmt --check"
+run = "mise --cd ./test run test ${usage_files}"
 
 # ============================================================================
 # Shell Tasks

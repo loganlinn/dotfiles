@@ -37,3 +37,23 @@ for svc in $svcs; do
   sudo launchctl kickstart -k "system/$svc"
 done
 '''
+
+[tasks."kitty-nightly:install"]
+raw_args = true
+run = '''
+curl -L https://sw.kovidgoyal.net/kitty/installer.sh |
+    sh /dev/stdin \
+      installer=nightly \
+      dest="$HOME/Applications/kitty-nightly" \
+      launch=n \
+      "$@"
+'''
+
+[tasks."kitty-nightly:run"]
+alias = 'kitty-nightly'
+raw_args = true
+run = '''
+env -u KITTY_DEVELOP_FROM -u KITTY_INSTALLATION_DIR \
+    "$HOME/Applications/kitty-nightly/kitty.app/Contents/MacOS/kitty" \
+    "$@"
+'''
