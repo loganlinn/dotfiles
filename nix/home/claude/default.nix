@@ -4,26 +4,26 @@
   lib,
   ...
 }:
-with lib; let
-  json = pkgs.formats.json {};
+with lib;
+let
+  json = pkgs.formats.json { };
   cfg = config.programs.claude;
-in {
-  imports = [./desktop.nix];
+in
+{
+  imports = [ ./desktop.nix ];
 
   options = {
     programs.claude = {
       enable = mkEnableOption "claude";
       code = {
-        enable =
-          mkEnableOption "Claude Code"
-          // {
-            default = true;
-          };
+        enable = mkEnableOption "Claude Code" // {
+          default = true;
+        };
       };
       developer = {
         settings = mkOption {
           type = types.attrsOf json.type;
-          default = {};
+          default = { };
         };
       };
     };
@@ -31,7 +31,7 @@ in {
 
   config = mkIf cfg.enable {
     home.packages = optional cfg.code.enable pkgs.claude-code;
-    home.file = optionalAttrs (cfg.developer.settings != {} && pkgs.stdenv.isDarwin) {
+    home.file = optionalAttrs (cfg.developer.settings != { } && pkgs.stdenv.isDarwin) {
       "Library/Application Support/Claude/developer_settings.json".source =
         json.generate "developer_settings.json" cfg.developer.settings;
     };
@@ -44,9 +44,9 @@ in {
       # CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1";
     };
     home.shellAliases = mkIf cfg.code.enable {
-      cl = "claude";
-      clc = "claude --continue";
-      clr = "claude --resume";
+      cl = "claudew";
+      clc = "claudew --continue";
+      clr = "claudew --resume";
       yolo = "claude --dangerously-skip-permissions";
       sonnet = "claude --model sonnet";
       opus = "claude --model opus";
@@ -54,7 +54,7 @@ in {
       fable = "claude --model fable";
     };
     programs.zsh.initContent = mkIf cfg.code.enable ''
-      function claude() {
+      function claudew() {
         local chdir=.
         local system_prompt=
 

@@ -78,6 +78,34 @@ setup() {
   [ "$a" = "$b" ]
 }
 
+@test "src-get changes zsh to an existing repo" {
+  export SRC_HOME="$BATS_TEST_TMPDIR/src"
+  local repo_dir="$SRC_HOME/github.com/owner/repo"
+  git init -q "$repo_dir"
+
+  run zsh -c '
+    source "$1"
+    export SRC_HOME=$2
+    export SRC_GET_NO_HISTORY=1
+    src-get --no-path owner/repo
+    print -r -- "$PWD"
+  ' _ "$DIR/../bin/src-get" "$SRC_HOME"
+
+  assert_success
+  assert_output "$repo_dir"
+}
+
+@test "src-get rejects multiple repos" {
+  export SRC_HOME="$BATS_TEST_TMPDIR/src"
+  export SRC_GET_NO_HISTORY=1
+  mkdir -p "$SRC_HOME/github.com/owner/one" "$SRC_HOME/github.com/owner/two"
+
+  run src-get --no-path owner/one owner/two
+
+  assert_failure
+  assert_output "src-get: expected one repository, got 2"
+}
+
 @test "src-dir supports github webapp url" {
   SRC_HOME=/tmp run src-dir 'https://github.com/owner/repo'
   assert_output "/tmp/github.com/owner/repo"

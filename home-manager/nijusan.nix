@@ -33,7 +33,6 @@ in
     ../nix/home/doom
     # ../nix/home/eww
     ../nix/home/ghostty.nix
-    # ../nix/home/git/graphite.nix
     ../nix/home/home-manager.nix
 
     # -- Hyprland Wave 1: Core WM (keybindings, layout, input, animations)

@@ -50,7 +50,7 @@ src-repo() {
     (
       set -eo pipefail
       gh repo list "$@" |
-        fzf -m --layout=reverse --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all |
+        fzf --layout=reverse |
         cut -f1 |
         sed -e 's|^|https://github.com/|' -e 's|$|.git|'
     )
@@ -204,55 +204,59 @@ src-get() {
     set_window_title=false
   fi
 
-  if [[ -z $1 ]]; then
+  if (($# == 0)); then
     echo "src-get: missing operand" >&2
     echo "Try 'src-get --help' for more information." >&2
     return 1
   fi
 
-  for arg; do
-    for repo in $(src-repo "$arg"); do
-      local dir
-      dir=$(src-dir "$repo")
+  if (($# > 1)); then
+    echo "src-get: expected one repository, got $#" >&2
+    return 1
+  fi
 
-      if [[ ! -d $dir ]]; then
-        local git_clone_cmd=("${SRC_GIT:-git}" clone ${depth:+--depth=$depth} --progress -- "$repo" "$dir")
-        if command "${git_clone_cmd[@]}"; then
-          [[ -n $debug ]] && echo >&2 "src-get: ${git_clone_cmd[*]}"
-        else
-          return $?
-        fi
+  local repo
+  repo=$(src-repo "$1") || return
+
+  local dir
+  dir=$(src-dir "$repo")
+
+  if [[ ! -d $dir ]]; then
+    local git_clone_cmd=("${SRC_GIT:-git}" clone ${depth:+--depth=$depth} --progress -- "$repo" "$dir")
+    if command "${git_clone_cmd[@]}"; then
+      [[ -n $debug ]] && echo >&2 "src-get: ${git_clone_cmd[*]}"
+    else
+      return $?
+    fi
+  fi
+
+  if [[ $do_cd == true ]]; then
+    pushd -- "$dir" >/dev/null
+    [[ -n $debug ]] && echo >&2 "src-get: pushd -- '$dir'"
+  fi
+
+  if zoxide add "$dir" >/dev/null 2>&1; then
+    [[ -n $debug ]] && echo >&2 "src-get: zoxide add '$dir'"
+  fi
+
+  if [[ -z $history_disabled ]]; then
+    local history_file history_dir
+    history_file=$(src-history-file)
+    history_dir=$(dirname -- "$history_file")
+    if mkdir -p -- "$history_dir" 2>/dev/null; then
+      local rev
+      rev=$(git -C "$dir" rev-parse HEAD 2>/dev/null) || rev=-
+      if printf '%s\t%s\t%s\n' "$(date +%s)" "${dir#"$HOME"/}" "$rev" >>"$history_file" 2>/dev/null; then
+        [[ -n $debug ]] && echo >&2 "src-get: recorded history entry to '$history_file'"
+      else
+        echo >&2 "src-get: warning: unable to write to history file '$history_file'"
       fi
+    else
+      echo >&2 "src-get: warning: unable to create history directory '$history_dir'"
+    fi
+  fi
 
-      if [[ $do_cd == true ]]; then
-        pushd -- "$dir" >/dev/null
-        [[ -n $debug ]] && echo >&2 "src-get: pushd -- '$dir'"
-      fi
-
-      if zoxide add "$dir" >/dev/null 2>&1; then
-        [[ -n $debug ]] && echo >&2 "src-get: zoxide add '$dir'"
-      fi
-
-      if [[ -z $history_disabled ]]; then
-        local history_file history_dir
-        history_file=$(src-history-file)
-        history_dir=$(dirname -- "$history_file")
-        if mkdir -p -- "$history_dir" 2>/dev/null; then
-          local rev
-          rev=$(git -C "$dir" rev-parse HEAD 2>/dev/null) || rev=-
-          if printf '%s\t%s\t%s\n' "$(date +%s)" "${dir#"$HOME"/}" "$rev" >>"$history_file" 2>/dev/null; then
-            [[ -n $debug ]] && echo >&2 "src-get: recorded history entry to '$history_file'"
-          else
-            echo >&2 "src-get: warning: unable to write to history file '$history_file'"
-          fi
-        else
-          echo >&2 "src-get: warning: unable to create history directory '$history_dir'"
-        fi
-      fi
-
-      [[ $print_path == true ]] && printf '%s\n' "$dir"
-    done
-  done
+  [[ $print_path == true ]] && printf '%s\n' "$dir"
 
   if [[ $set_window_title == true ]]; then
     local title=${PWD#"$(src-home)"/}
