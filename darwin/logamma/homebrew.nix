@@ -1,30 +1,31 @@
-{lib, ...}: {
+{ lib, ... }: {
   homebrew = {
     taps =
       lib.map
-      (tap: {
-        name = tap;
-        trusted = true;
-        force_auto_update = true;
-      }) [
-        # "abhinav/tap"
-        # "anthropics/tap"
-        # "aws/tap"
-        # "bridgecrewio/tap"
-        "buildkite/buildkite"
-        "charmbracelet/tap"
-        # "dagger/tap"
-        # "keith/formulae"
-        "localstack/tap"
-        # "minamijoyo/hcledit"
-        # "minamijoyo/tfmigrate"
-        "minamijoyo/tfschema"
-        # "minamijoyo/tfupdate"
-        "pulumi/tap"
-        "tsonglew/dutis"
-        "withgraphite/tap"
-        # "wedow/tools"
-      ];
+        (tap: {
+          name = tap;
+          trusted = true;
+          force_auto_update = true;
+        })
+        [
+          # "abhinav/tap"
+          # "anthropics/tap"
+          # "aws/tap"
+          # "bridgecrewio/tap"
+          "buildkite/buildkite"
+          "charmbracelet/tap"
+          # "dagger/tap"
+          # "keith/formulae"
+          "localstack/tap"
+          # "minamijoyo/hcledit"
+          # "minamijoyo/tfmigrate"
+          "minamijoyo/tfschema"
+          # "minamijoyo/tfupdate"
+          "pulumi/tap"
+          "tsonglew/dutis"
+          "withgraphite/tap"
+          # "wedow/tools"
+        ];
     brews = [
       {
         name = "postgresql@16";
@@ -46,6 +47,7 @@
       "gnu-getopt"
       # "grafana"
       # "hcledit"
+      "hex-inc/hex-cli/hex"
       # "incus"
       # "inframap"
       "kubernetes-cli"

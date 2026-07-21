@@ -12,14 +12,20 @@ with lib.my; let
   kittyThemes = pkgs.fetchFromGitHub {
     owner = "kovidgoyal";
     repo = "kitty-themes";
-    rev = "6f27c71721e4eb6702630f6e57fe16baacd76aa0";
-    hash = "sha256-IDXRlup2naBmCSlPYdjrgL/m4FAhkf4IEAiLsMUdepQ=";
+    rev = "e144651f75891cf4795ef1e7c24bb3e27c47aa06";
+    hash = "sha256-cl79/m3tGZzGXBuwcIIBxsewrcgaFK0R0VRlRiiw5yk=";
   };
   kittyThemeFiles = [
     "Catppuccin-Macchiato.conf"
     "gruvbox-dark-soft.conf"
     "gruvbox-light-soft.conf"
     "tokyo_night_day.conf"
+    "DarkOneNuanced.conf"
+    "Doom_Vibrant.conf"
+    "Dracula.conf"
+    "kanagawabones.conf"
+    "Nord.conf"
+    "yorumi-shade.conf"
   ];
 in {
   programs = mkIf cfg.enable {
@@ -44,53 +50,53 @@ in {
   xdg.configFile = mkIf cfg.enable (
     (listToAttrs (
       map
-      (
-        name:
+        (
+          name:
           nameValuePair "kitty/${name}" {
             source = config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/kitty/${name}";
           }
-      )
-      [
-        "big_mode.py"
-        "choose-files.conf"
-        "claude-fork.py"
-        "color_selector.py"
-        "copy_cmd_with_output.py"
-        "cssh.py"
-        "current-theme.conf"
-        "diff.conf"
-        "file-menu.sh"
-        "focus-drill.py"
-        "grab.conf"
-        "kitty.common.conf"
-        "kitty.linux.conf"
-        "kitty.macos.conf"
-        "launch-actions.conf"
-        "nerdfont_glyphnames.json"
-        "nerdfont_selector.py"
-        "open-actions.conf"
-        "paste-actions.py"
-        "quick-access-terminal.conf"
-        "reopen_closed_tab.py"
-        "sessions"
-        "snap_splits.py"
-        "ssh.conf"
-        "stack_toggle.py"
-        "tab_bar.py"
-        "tab_flags.py"
-        "user-var-hints.py"
-        "watcher.py"
-      ]
+        )
+        [
+          "big_mode.py"
+          "choose-files.conf"
+          "claude-fork.py"
+          "color_selector.py"
+          "copy_cmd_with_output.py"
+          "cssh.py"
+          "current-theme.conf"
+          "diff.conf"
+          "file-menu.sh"
+          "focus-drill.py"
+          "grab.conf"
+          "kitty.common.conf"
+          "kitty.linux.conf"
+          "kitty.macos.conf"
+          "launch-actions.conf"
+          "nerdfont_glyphnames.json"
+          "nerdfont_selector.py"
+          "open-actions.conf"
+          "paste-actions.py"
+          "quick-access-terminal.conf"
+          "reopen_closed_tab.py"
+          "sessions"
+          "snap_splits.py"
+          "ssh.conf"
+          "stack_toggle.py"
+          "tab_bar.py"
+          "tab_flags.py"
+          "user-var-hints.py"
+          "watcher.py"
+        ]
     ))
     // (listToAttrs (
       map
-      (
-        name:
+        (
+          name:
           nameValuePair "kitty/themes/${name}" {
             source = "${kittyThemes}/themes/${name}";
           }
-      )
-      kittyThemeFiles
+        )
+        kittyThemeFiles
     ))
     // {
       "kitty/dracula".source = pkgs.fetchFromGitHub {
@@ -126,14 +132,14 @@ in {
 
   home = mkIf cfg.enable {
     packages = with pkgs;
-      concatLists [
-        [
-          (writeShellScriptBin "kdiff" ''kitten diff "$@"'')
-          (writeShellScriptBin "kssh" ''kitten ssh "$@"'')
-          (writeShellScriptBin "icat" ''kitten icat "$@"'')
-        ]
-        (optional pkgs.stdenv.isLinux (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"''))
-      ];
+    concatLists [
+      [
+        (writeShellScriptBin "kdiff" ''kitten diff "$@"'')
+        (writeShellScriptBin "kssh" ''kitten ssh "$@"'')
+        (writeShellScriptBin "icat" ''kitten icat "$@"'')
+      ]
+      (optional pkgs.stdenv.isLinux (writeShellScriptBin "x-terminal-emulator" ''exec kitty "$@"''))
+    ];
 
     sessionVariables = {
       KITTY_CACHE_DIRECTORY = "${config.xdg.cacheHome}/kitty"; # ie don't use ~/Library/Caches on darwin

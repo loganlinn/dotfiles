@@ -219,6 +219,18 @@ in {
         }
         zle -N copy-buffer-to-clipboard
         bindkey '^X^Y' copy-buffer-to-clipboard
+
+        # IGNOREEOF (above) blocks the default <C-d>-on-empty-line exit; explicitly
+        # rebind it so <C-d> still exits on an empty buffer, deletes a char otherwise.
+        exit-if-empty() {
+          if [[ -z $BUFFER ]]; then
+            exit
+          else
+            zle delete-char-or-list
+          fi
+        }
+        zle -N exit-if-empty
+        bindkey '^D' exit-if-empty
       '')
       (mkAfter (
         lib.optionalString config.programs.wezterm.enable ''
