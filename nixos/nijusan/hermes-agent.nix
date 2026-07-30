@@ -53,7 +53,7 @@
       };
       # model = {
       #   provider = "anthropic";
-      #   default = "anthropic/claude-opus-4-8";
+      #   default = "anthropic/claude-opus-5";
       # };
       toolsets = ["all"];
       terminal = {

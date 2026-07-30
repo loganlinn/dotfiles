@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Read CI failure evidence on stdin, emit a compact diagnosis on stdout.
+# Read-only: it explains, it does not edit. Pipe the result to a fixer agent.
+# Usage: gh-fails | ci-explain [--model <m>]
+set -euo pipefail
+
+model="${CI_EXPLAIN_MODEL:-sonnet}"
+[[ "${1:-}" == "--model" ]] && {
+	model="$2"
+	shift 2
+}
+
+read -r -d '' prompt <<'EOF' || true
+Triage the CI failures below. They come from one pull request.
+
+Group checks that share a single root cause — report the cause once, list the
+checks it explains. For each cause output exactly:
+
+### <cause, in a few words> (checks: a, b, c)
+- **Root cause:** one or two sentences, quoting the decisive log line verbatim.
+- **Where:** repo-relative paths, or "unknown".
+- **Fix:** the concrete edit or command, specific enough to apply without
+  re-reading the log.
+- **Confidence:** high | medium | low. If low, name the extra evidence needed.
+- **Evidence:** the job link, so a downstream agent can re-read the raw log.
+
+Rules:
+- Read the repo to confirm paths and current file contents. Do not edit anything.
+- A block marked STALE ran on an older commit. Check whether it still
+  reproduces before you propose a fix, and say what you found.
+- An infra flake (runner OOM, network timeout, registry 5xx) is a valid
+  conclusion. Say so instead of inventing a code fix.
+- No preamble, no summary at the end.
+EOF
+
+exec claude -p "$prompt" \
+	--model "$model" \
+	--disallowed-tools Edit Write NotebookEdit

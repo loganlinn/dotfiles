@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+# Apply a `gh pr edit` field change to every PR in the current Graphite stack.
+set -euo pipefail
+
+require() { hash "$1" &>/dev/null || {
+  echo >&2 "Required: $1"
+  exit 1
+}; }
+require gh
+require gt
+require git
+
+die() {
+  echo >&2 "gh-pr-edit-stack: $*"
+  exit 1
+}
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: gh-pr-edit-stack [options] <field-flag> [value...]
+
+Applies a `gh pr edit` field change to every open PR in the current Graphite
+stack (ancestors and descendants of HEAD, trunk excluded).
+
+Field flags:
+  --add-reviewer|--remove-reviewer LOGIN...
+  --add-assignee|--remove-assignee LOGIN...
+  --add-label|--remove-label NAME...
+  --add-project|--remove-project TITLE...
+  --milestone NAME              (set; accepts exactly one value)
+  --remove-milestone            (takes no value)
+
+Options:
+  -n, --dry-run   Print the commands that would run, then exit
+  -y, --yes       Skip the confirmation prompt
+  -R, --repo REPO Repository (owner/repo), default: current repo
+  -h, --help      Show this help
+
+Examples:
+  gh-pr-edit-stack --add-reviewer alice bob
+  gh-pr-edit-stack --add-label needs-testing
+  gh-pr-edit-stack -n --remove-milestone
+EOF
+}
+
+dry_run=0
+assume_yes=0
+repo_flag=()
+rest=()
+end_of_opts=0
+
+# Options are recognized anywhere, not just before the field flag: `gh` appends
+# "$@" to its aliases, so `gh stack-add-reviewer -n alice` reaches us as
+# `--add-reviewer -n alice`. Use `--` to pass a value that looks like an option.
+while [[ $# -gt 0 ]]; do
+  if ((end_of_opts)); then
+    rest+=("$1")
+    shift
+    continue
+  fi
+  case $1 in
+  -n | --dry-run) dry_run=1 ;;
+  -y | --yes) assume_yes=1 ;;
+  -R | --repo)
+    [[ $# -ge 2 ]] || die "$1 requires a value"
+    repo_flag=(--repo "$2")
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  --) end_of_opts=1 ;;
+  *) rest+=("$1") ;;
+  esac
+  shift
+done
+
+((${#rest[@]} > 0)) || {
+  usage
+  exit 1
+}
+
+action=${rest[0]}
+values=("${rest[@]:1}")
+
+edit_args=()
+case $action in
+--remove-milestone)
+  ((${#values[@]} == 0)) || die "$action takes no values"
+  edit_args=("$action")
+  ;;
+--milestone)
+  ((${#values[@]} == 1)) || die "$action requires exactly one value"
+  edit_args=("$action" "${values[0]}")
+  ;;
+--add-reviewer | --remove-reviewer | \
+  --add-assignee | --remove-assignee | \
+  --add-label | --remove-label | \
+  --add-project | --remove-project)
+  ((${#values[@]} > 0)) || die "$action requires at least one value"
+  for value in "${values[@]}"; do
+    edit_args+=("$action" "$value")
+  done
+  ;;
+*) die "unsupported field flag: $action (see --help)" ;;
+esac
+
+git rev-parse --git-dir >/dev/null 2>&1 || die "not a git repository"
+
+# `gt` silently runs `gt init` on first use, so confirm the repo is already
+# tracked rather than provoking that side effect from a read-only command.
+[[ -f "$(git rev-parse --git-common-dir)/.graphite_repo_config" ]] ||
+  die "Graphite is not initialized in this repository (run: gt init)"
+
+current=$(git branch --show-current)
+[[ -n $current ]] || die "HEAD is detached; check out a branch in the stack"
+
+trunk=$(gt trunk --no-interactive)
+[[ $current != "$trunk" ]] ||
+  die "on trunk ($trunk); every branch is 'in the stack' here. Check out a stack branch first."
+
+# `gt log short --stack` lists the whole stack, including branches that a
+# `gt top`/`gt down` walk would skip when the stack forks. Each line is
+# box-drawing glyphs followed by the branch name, then optional annotations
+# such as "(needs restack)".
+mapfile -t branches < <(
+  gt log short --stack --no-interactive |
+    sed $'s/\033\\[[0-9;]*m//g' |
+    awk '{ for (i = 1; i <= NF; i++) if ($i ~ /^[A-Za-z0-9_]/) { print $i; next } }'
+)
+
+targets=()
+for branch in "${branches[@]}"; do
+  [[ $branch != "$trunk" ]] || continue
+  git show-ref --verify --quiet "refs/heads/$branch" ||
+    die "parsed '$branch' from \`gt log\` but it is not a local branch; output format may have changed"
+  targets+=("$branch")
+done
+
+((${#targets[@]} > 0)) || die "no non-trunk branches found in the stack"
+
+# Resolve branches to open PRs up front so the plan shown is the plan run.
+numbers=()
+labels=()
+for branch in "${targets[@]}"; do
+  if ! pr=$(gh pr view "$branch" "${repo_flag[@]}" --json number,state,title \
+    --jq 'select(.state == "OPEN") | "\(.number)\t\(.title)"' 2>/dev/null) || [[ -z $pr ]]; then
+    echo >&2 "skip  $branch (no open PR)"
+    continue
+  fi
+  numbers+=("${pr%%$'\t'*}")
+  labels+=("$branch  ${pr#*$'\t'}")
+done
+
+((${#numbers[@]} > 0)) || die "no open PRs found in the stack"
+
+echo >&2 "gh pr edit ${edit_args[*]} on ${#numbers[@]} PR(s):"
+for i in "${!numbers[@]}"; do
+  echo >&2 "  #${numbers[i]}  ${labels[i]}"
+done
+
+if ((dry_run)); then
+  for number in "${numbers[@]}"; do
+    echo "gh pr edit $number ${repo_flag[*]} ${edit_args[*]}"
+  done
+  exit 0
+fi
+
+if ((!assume_yes)) && [[ -t 0 ]]; then
+  read -r -p "Proceed? [y/N] " reply
+  [[ $reply == [yY]* ]] || die "aborted"
+fi
+
+failed=()
+for number in "${numbers[@]}"; do
+  if gh pr edit "$number" "${repo_flag[@]}" "${edit_args[@]}" >/dev/null; then
+    echo >&2 "ok    #$number"
+  else
+    failed+=("$number")
+    echo >&2 "fail  #$number"
+  fi
+done
+
+((${#failed[@]} == 0)) || die "failed on ${#failed[@]} PR(s): ${failed[*]}"

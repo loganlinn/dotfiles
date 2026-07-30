@@ -86,6 +86,7 @@ in {
           "tab_flags.py"
           "user-var-hints.py"
           "watcher.py"
+          "window_size_guard.py"
         ]
     ))
     // (listToAttrs (

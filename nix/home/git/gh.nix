@@ -176,7 +176,20 @@ in {
         # orr = ''!gh open-review-requested "$@"'';
 
         open-review-requested = "!gh-open-review-requested \"$@\"";
-        land = "!gh-land \"$@\"";
+        land  = "pr merge --squash --rebase --delete-branch";
+
+        # `gh pr edit` applied to every open PR in the current Graphite stack.
+        # Pass -n to preview, -y to skip the confirmation.
+        stack-add-assignee = ''!gh-pr-edit-stack --add-assignee "$@"'';
+        stack-add-label = ''!gh-pr-edit-stack --add-label "$@"'';
+        stack-add-milestone = ''!gh-pr-edit-stack --milestone "$@"'';
+        stack-add-project = ''!gh-pr-edit-stack --add-project "$@"'';
+        stack-add-reviewer = ''!gh-pr-edit-stack --add-reviewer "$@"'';
+        stack-remove-assignee = ''!gh-pr-edit-stack --remove-assignee "$@"'';
+        stack-remove-label = ''!gh-pr-edit-stack --remove-label "$@"'';
+        stack-remove-milestone = ''!gh-pr-edit-stack --remove-milestone "$@"'';
+        stack-remove-project = ''!gh-pr-edit-stack --remove-project "$@"'';
+        stack-remove-reviewer = ''!gh-pr-edit-stack --remove-reviewer "$@"'';
 
         userlist = ''!${config.xdg.configHome}/gh/userlists.sh "$@"'';
       };
