@@ -149,7 +149,7 @@ in {
         my-user = "api user";
 
         prs = "pr list";
-        prs-todo = "pr list --search 'user-review-requested:@me -reviewed-by:@me'";
+        prs-todo = "pr list --search 'review-requested:@me -reviewed-by:@me'";
         prs-involved = "pr list --search involves:@me";
         prs-mine = "pr list --author @me --state all";
         prs-draft = "pr list --author @me --draft";
