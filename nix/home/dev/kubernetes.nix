@@ -27,18 +27,28 @@ in {
     kcj = "kzf cronjobs";
   };
 
+  programs.bash.initExtra = ''
+    export PATH="''${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+  '';
+
+  programs.zsh.initContent = ''
+    export PATH="''${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+  '';
+
   home.packages = with pkgs; [
     kind
     krew # required after install: krew install krew
     kubeconform
     kubectl
-    kubectl-tree
     kubectl-images
+    kubectl-tree
     kubectx
     kubernetes-helm
+    kubie
     kustomize
     kuttl
-    stern # log tailer
+    stern
+    velero
     # (pkgs.callPackage ../../pkgs/kubectl-fzf.nix { })
     (writeShellApplication {
       name = "kzf";
@@ -72,6 +82,11 @@ in {
     };
   };
   xdg.configFile = {
+    # Out-of-store so `eks-kubeconfig` reads the live repo file; the tool only
+    # knows about $XDG_CONFIG_HOME/eks-kubeconfig, not the dotfiles layout.
+    "eks-kubeconfig".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/eks-kubeconfig";
+
     "k9s/hotkey.yml".source = ../../../config/k9s/hotkey.yml;
     "k9s/views.yml".source = yaml.generate "k9s-view" {
       k9s = {

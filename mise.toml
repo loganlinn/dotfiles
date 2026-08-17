@@ -1,15 +1,14 @@
 [settings]
 experimental = true
 jobs = 4
-auto_env = true # https://mise.jdx.dev/configuration/settings.html#auto_env
+auto_env = true     # https://mise.jdx.dev/configuration/settings.html#auto_env
 
 [env]
 _.path = ["{{config_root}}/bin"]
 # _.file = [".mise/tasks/git/gpg/claude/config.env"]
 
-# ============================================================================
-# Composite Tasks
-# ============================================================================
+[dotfiles]
+"~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
 
 [tasks.clean]
 depends = "*:clean"

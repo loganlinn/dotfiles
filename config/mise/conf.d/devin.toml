@@ -1,0 +1,70 @@
+[env]
+DEVIN_API_KEY = { age = "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNzaC1lZDI1NTE5IHFaWGRsUSBrc3RRS0doRjRGRms3ckFOcjNML3hxNmNSUTdNbW96M3RBS2gxelEyMFNzCk5YbVpzaVNpNHJTS3F4dEwrNlhuMGlkOFNhaTdHMFhmSzgycnFjeksybm8KLT4gV1w9by1ncmVhc2UKZUJyNXV0UnVQSjBTQURnQk1tdnFJamh3eWJ4VHV3WVY1UDc3Rlo3aFMrYjhSQk05TTI3MGdrclViaVZHM1c3NQpTeWlSV21qZm1aNXlFQjh0V0ttd0hudWRQTzVLVm5sVFNEVDJtL3RJN3cKLS0tIENPRGxmM3kvTVRPMnpkS21zYjM5L2E1aGx0Y1ZrQ1ZzVW8vZU9sTnFVeHcKcMiqW88FZyU6f+RgksjQhjNKfp2RKP5NKq3CWQ4GDN0XUHHwRsaeOCMIrRPgagA1Vc2zfCr3Py4RvfTBrv6wRt17GsDVUEbItY5NvEQPZnbCIM61zmtjUg" }
+
+[vars]
+DEVIN_APP_URL = "https://gamma.devinenterprise.com"
+
+# [tasks."devin:util:pr"]
+# hidden = true
+# dir = "{{cwd}}"
+# run = '''
+# # TODO (stdin? || ${0-} || clipboard) | url || pwd
+# '''
+[tasks."devin:review:open"]
+alias = ["devin:pr:open", "devin:pro", "dpro"]
+dir = "{{cwd}}"
+quiet = true
+usage = '''
+arg "[pr]" help="Pull request number, URL, or branch"
+'''
+run = '''
+pr=$(gh pr view --json headRepository,number {{usage.pr}})
+open "{{ vars.DEVIN_APP_URL }}/review/$(jq -r .headRepository.nameWithOwner <<<"$pr")/pull/$(jq -r .number <<<"$pr")"
+'''
+
+[tasks."devin:self"]
+run = { task = "devin:api", args = ["GET", "/v3/self"] }
+
+[tasks."devin:review:status"]
+tools = { gh = "latest" }
+dir = "{{cwd}}"
+quiet = true
+usage = '''
+arg "[pr]" help="Pull request number, URL, or branch"
+'''
+# run = { task = "devin:api", args = ["GET", "/v3/self"] }
+run = '''
+pr_url=$(gh pr view --json url --jq .url {{usage.pr}})
+mise run devin:api GET /v3/enterprise/pr-reviews "pr_url==$pr_url"
+'''
+
+[tasks."devin:review:start"]
+tools = { gh = "latest" }
+description = "Start a Devin review for a pull request"
+dir = "{{cwd}}"
+usage = '''
+arg "[pr]" help="Pull request number, URL, or branch"
+'''
+run = '''
+pr_url=$(gh pr view "${usage_pr}" --json url --jq .url)
+body=$(jq -n --arg pr_url "${pr_url?}" '{pr_url: $pr_url}')
+curl -fsS --request POST \
+  --url "https://api.devin.ai/v3/enterprise/pr-reviews" \
+  --header "Authorization: Bearer ${DEVIN_API_KEY?}" \
+  --header 'Content-Type: application/json' \
+  --data "${body?}" |
+  jq
+'''
+
+[tasks."devin:api"]
+tools = { xh = "latest" }
+dir = "{{cwd}}"
+quiet = true
+usage = '''
+arg "<method>"
+arg "<path>"
+arg "[options]" var=#true
+'''
+run = '''
+xh -A bearer -a "$DEVIN_API_KEY" "{{usage.method}}" "https://api.devin.ai/{{usage.path|trim_start(pat='/')}}" -- {{ [o | quote for o in usage.options] | join(sep=' ') }}
+'''

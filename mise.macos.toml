@@ -9,12 +9,38 @@ run = [
 quiet = true
 
 [tasks.switch]
+description = "Switch the nix-darwin configuration (use --no-cachix to skip Cachix)"
 raw_args = true
 quiet = true
+interactive = true
+shell = "bash -o errexit -o pipefail -c"
 run = '''
-flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
-set -x
-{{config_root}}/bin/cachix-run sudo -H command nix run nix-darwin -- switch --flake "${flake}" "$@"
+switch() {
+  flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
+  args=()
+  use_cachix=true
+
+  for arg in "$@"; do
+    if [[ "$arg" == "--no-cachix" ]]; then
+      use_cachix=false
+    else
+      args+=("$arg")
+    fi
+  done
+
+  command=(
+    sudo -H command nix run nix-darwin -- switch --flake "$flake" "${args[@]}"
+  )
+
+  set -x
+  if [[ "$use_cachix" == true ]]; then
+    {{config_root}}/bin/cachix-run "${command[@]}"
+  else
+    "${command[@]}"
+  fi
+}
+
+switch
 '''
 
 [tasks."darwin:rebuild"]

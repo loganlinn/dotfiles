@@ -2,13 +2,28 @@
 experimental = true
 
 [tools]
-aube = "latest"
-# fnox = "latest"
-babashka = { version = "latest", exe = "bb" }
-"github:joa23/linear-cli" = "latest"
-"github:yshavit/mdq" = "latest"
-hk = "latest"
+oxfmt = "latest"
 watchexec = "latest"
+pinact = "latest"
+java = "21"
+kafkactl = "latest"
+terraform-docs = "latest"
+hcl2json = "latest"
+"go:github.com/hashicorp/hcl/v2/cmd/hcldec" = "latest"
+"cargo:presenterm" = "latest"
+fnox = "latest"
+pkl = "latest"
+bun = "latest"
+"github:JamesWoolfenden/pike" = "latest"
+process-compose = "latest"
+"github:pamburus/hl" = "latest"
+aws-nuke = "latest"
+"go:github.com/ugosan/logshark/cmd" = "latest"
+coder = "latest"
+"go:go.k6.io/xk6/cmd/xk6" = "latest"
+"github:corneliusweig/ketall" = "latest"
+"github:robscott/kube-capacity" = "latest"
+"github:launchdarkly/ldcli" = "latest"
 
 # [tasks."s3:pull"]
 # usage = '''

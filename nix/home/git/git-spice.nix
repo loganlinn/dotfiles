@@ -19,7 +19,7 @@ in {
     home.packages = [cfg.package];
     programs.git = {
       settings = {
-        spice.branchPrompt.sort = "comitteddate";
+        spice.branchPrompt.sort = "committerdate";
         spice.experiment.commitFixup = "true";
         spice.log.all = "false";
         spice.log.crFormat = "url";

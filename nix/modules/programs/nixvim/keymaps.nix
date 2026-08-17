@@ -407,25 +407,34 @@ in {
       options.desc = "Allow C-d and C-u to keep the cursor in the middle";
     }
     #
-    # Remap for dealing with word wrap and adding jumps to the jumplist.
-    # {
-    #   mode = "n";
-    #   key = "j";
-    #   action = mkRaw "[[(v:count > 1 ? 'm`' . v:count : 'g') . 'j']]";
-    #   options = {
-    #     expr = true;
-    #     desc = "Remap for dealing with word wrap and adding jumps to the jumplist.";
-    #   };
-    # }
-    # {
-    #   mode = "n";
-    #   key = "k";
-    #   action = mkRaw "[[(v:count > 1 ? 'm`' . v:count : 'g') . 'k']]";
-    #   options = {
-    #     expr = true;
-    #     desc = "Remap for dealing with word wrap and adding jumps to the jumplist.";
-    #   };
-    # }
+    # Move by display line when soft-wrapped; keep counted moves linewise and
+    # record them in the jumplist.
+    {
+      mode = [
+        "n"
+        "x"
+      ];
+      key = "j";
+      action = "(v:count > 1 ? \"m'\" . v:count : 'g') . 'j'";
+      options = {
+        expr = true;
+        silent = true;
+        desc = "Down (display line, or counted line + jumplist)";
+      };
+    }
+    {
+      mode = [
+        "n"
+        "x"
+      ];
+      key = "k";
+      action = "(v:count > 1 ? \"m'\" . v:count : 'g') . 'k'";
+      options = {
+        expr = true;
+        silent = true;
+        desc = "Up (display line, or counted line + jumplist)";
+      };
+    }
 
     {
       mode = "n";
