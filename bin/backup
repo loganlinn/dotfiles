@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly PROG=${0##*/}
+
+usage() {
+  cat <<EOF
+Usage: $PROG [--move] [--root DIR] SOURCE
+       $PROG -h|--help
+
+Create a timestamped backup of one file, symbolic link, or directory.
+
+By default, the backup is beside SOURCE:
+  file.txt -> file.txt~20260814T153045
+
+Options:
+  -m, --move      Move SOURCE to the backup path instead of copying it.
+  -r, --root DIR  Write the backup below DIR, mirroring SOURCE's absolute
+                  parent path. This keeps backups outside a worktree.
+  -h, --help      Show this help.
+
+When a name already exists, -2, -3, and so on are appended. Set
+BACKUP_TIMESTAMP to YYYYMMDDTHHMMSS to supply the timestamp explicitly.
+EOF
+}
+
+die() {
+  echo >&2 "$PROG: $*"
+  exit 2
+}
+
+source_parent_and_name() {
+  local source=$1
+
+  while [[ $source != / && $source == */ ]]; do
+    source=${source%/}
+  done
+
+  [[ $source != / ]] || die "refusing to back up /"
+
+  case $source in
+  */*)
+    SOURCE_PARENT=${source%/*}
+    [[ -n $SOURCE_PARENT ]] || SOURCE_PARENT=/
+    SOURCE_NAME=${source##*/}
+    ;;
+  *)
+    SOURCE_PARENT=.
+    SOURCE_NAME=$source
+    ;;
+  esac
+
+  SOURCE_PARENT=$(cd -P -- "$SOURCE_PARENT" && pwd)
+  SOURCE_PATH=$SOURCE_PARENT/$SOURCE_NAME
+
+  if [[ -d $SOURCE_PATH && ! -L $SOURCE_PATH ]]; then
+    SOURCE_PATH=$(cd -P -- "$SOURCE_PATH" && pwd)
+    SOURCE_PARENT=${SOURCE_PATH%/*}
+    [[ -n $SOURCE_PARENT ]] || SOURCE_PARENT=/
+    SOURCE_NAME=${SOURCE_PATH##*/}
+  fi
+}
+
+main() {
+  local move=0
+  local backup_root=
+
+  while (($#)); do
+    case $1 in
+    -h | --help)
+      usage
+      return 0
+      ;;
+    -m | --move)
+      move=1
+      shift
+      ;;
+    -r | --root)
+      (($# >= 2)) || die "$1 requires DIR"
+      backup_root=$2
+      shift 2
+      ;;
+    --root=*)
+      backup_root=${1#*=}
+      [[ -n $backup_root ]] || die "--root requires DIR"
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      die "unknown option: $1"
+      ;;
+    *)
+      break
+      ;;
+    esac
+  done
+
+  (($# == 1)) || die "expected exactly one SOURCE"
+  [[ -e $1 || -L $1 ]] || die "source does not exist: $1"
+
+  source_parent_and_name "$1"
+
+  local target_parent=$SOURCE_PARENT
+  if [[ -n $backup_root ]]; then
+    [[ ! -e $backup_root || -d $backup_root ]] || die "backup root is not a directory: $backup_root"
+    mkdir -p -- "$backup_root"
+    backup_root=$(cd -P -- "$backup_root" && pwd)
+    target_parent=$backup_root$SOURCE_PARENT
+  fi
+
+  local timestamp=${BACKUP_TIMESTAMP:-$(date +%Y%m%dT%H%M%S)}
+  [[ $timestamp =~ ^[0-9]{8}T[0-9]{6}$ ]] || die "BACKUP_TIMESTAMP must use YYYYMMDDTHHMMSS"
+
+  local target_base="${SOURCE_NAME}~${timestamp}"
+  local target=$target_parent/$target_base
+
+  if [[ -d $SOURCE_PATH && ! -L $SOURCE_PATH && $target == "$SOURCE_PATH"/* ]]; then
+    die "backup destination is inside source directory; choose a different --root"
+  fi
+
+  mkdir -p -- "$target_parent"
+
+  local sequence=2
+  while [[ -e $target || -L $target ]]; do
+    target=$target_parent/$target_base-$sequence
+    ((sequence++))
+  done
+
+  if ((move)); then
+    mv -- "$SOURCE_PATH" "$target"
+  else
+    if [[ -d $SOURCE_PATH && ! -L $SOURCE_PATH ]]; then
+      cp -pRP -- "$SOURCE_PATH" "$target"
+    else
+      cp -pP -- "$SOURCE_PATH" "$target"
+    fi
+  fi
+
+  printf '%s\n' "$target"
+}
+
+main "$@"
