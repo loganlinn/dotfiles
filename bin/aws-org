@@ -1,0 +1,908 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "boto3>=1.34",
+#     "click>=8.1",
+#     "pydantic>=2.7",
+#     "rich>=13.7",
+# ]
+# ///
+"""Quick access to AWS Organization data via IAM Identity Center.
+
+Caches accounts, organizational units, and your role assignments locally
+(XDG cache dir) and refreshes automatically when the cache TTL expires.
+Built for shell pipelines:
+
+    aws-org get account | fzf | cut -f1
+    aws-org get role --account prod -o json
+
+Subcommands:
+  cache info|clear|refresh|check   manage/inspect the local cache
+  config path|edit|reference       manage configuration
+  get account|role|ou              tabular views of org data
+
+Configuration lives at $XDG_CONFIG_HOME/aws-org/config.toml; see
+`aws-org config reference`. Requires a valid Identity Center session
+(`aws sso login`) when the cache needs a refresh.
+"""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+import json
+import os
+import re
+import shlex
+import subprocess
+import sys
+import tomllib
+from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from enum import Enum
+from fnmatch import fnmatchcase
+from pathlib import Path
+
+import click
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from rich import box
+from rich.console import Console
+from rich.markup import escape
+from rich.table import Table
+
+APP_NAME = "aws-org"
+SCHEMA_VERSION = 1
+DEFAULT_TTL = "1w"
+
+# Exit codes reported by `cache info -q` (and non-quiet, for consistency).
+EXIT_CACHE_MISSING = 1
+EXIT_CACHE_INVALID = 2
+EXIT_CACHE_UNWRITABLE = 3
+EXIT_CACHE_EXPIRED = 4
+
+out = Console()
+err = Console(stderr=True)
+
+
+# --- paths / durations -----------------------------------------------------
+
+
+def _xdg(env_var: str, default: str) -> Path:
+    value = os.environ.get(env_var)
+    return Path(value).expanduser() if value else Path(default).expanduser()
+
+
+def default_config_path() -> Path:
+    return _xdg("XDG_CONFIG_HOME", "~/.config") / APP_NAME / "config.toml"
+
+
+def default_cache_dir() -> Path:
+    return _xdg("XDG_CACHE_HOME", "~/.cache") / APP_NAME
+
+
+_DURATION_RE = re.compile(r"^(\d+)\s*([smhdw]?)$")
+_UNIT_SECONDS = {"": 1, "s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
+
+
+def parse_duration(value: str) -> timedelta:
+    m = _DURATION_RE.match(value.strip())
+    if not m:
+        raise ValueError(f"invalid duration {value!r} (expected e.g. '1w', '12h', '3600')")
+    return timedelta(seconds=int(m.group(1)) * _UNIT_SECONDS[m.group(2)])
+
+
+def humanize(td: timedelta) -> str:
+    secs = max(0, int(td.total_seconds()))
+    parts: list[str] = []
+    for label, size in (("w", 604800), ("d", 86400), ("h", 3600), ("m", 60), ("s", 1)):
+        if secs >= size and len(parts) < 2:
+            n, secs = divmod(secs, size)
+            parts.append(f"{n}{label}")
+    return " ".join(parts) or "0s"
+
+
+# --- config ----------------------------------------------------------------
+
+CONFIG_REFERENCE = """\
+# aws-org configuration reference
+# Default location: $XDG_CONFIG_HOME/aws-org/config.toml (~/.config/aws-org/config.toml)
+# Override per invocation: aws-org -C /path/to/config.toml
+
+[sso]
+# AWS IAM Identity Center start URL (required)
+start_url = "https://my-org.awsapps.com/start"
+# Region that hosts Identity Center (required)
+region = "us-east-1"
+
+[cache]
+# How long cached data stays fresh before it refreshes on access.
+# Format: <number><unit>, unit one of s|m|h|d|w. Default: "1w"
+ttl = "1w"
+# Override the cache directory. Default: $XDG_CACHE_HOME/aws-org
+# directory = "~/.cache/aws-org"
+
+[organizations]
+# Optional: account and role used to read the OU tree via the Organizations
+# API (usually the management account or a delegated administrator). The role
+# must be assumable through Identity Center and allow organizations:ListRoots,
+# ListOrganizationalUnitsForParent, and ListAccountsForParent.
+# When unset, `get ou` is empty and accounts have no OU data.
+# account_id = "123456789012"
+# role_name = "AWSReadOnlyAccess"
+"""
+
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class SsoConfig(StrictModel):
+    start_url: str
+    region: str
+
+
+class CacheConfig(StrictModel):
+    ttl: str = DEFAULT_TTL
+    directory: Path | None = None
+
+    @field_validator("ttl")
+    @classmethod
+    def _check_ttl(cls, v: str) -> str:
+        parse_duration(v)
+        return v
+
+
+class OrganizationsConfig(StrictModel):
+    account_id: str | None = None
+    role_name: str | None = None
+
+    @property
+    def configured(self) -> bool:
+        return bool(self.account_id and self.role_name)
+
+
+class Config(StrictModel):
+    sso: SsoConfig
+    cache: CacheConfig = CacheConfig()
+    organizations: OrganizationsConfig = OrganizationsConfig()
+
+
+def load_config(path: Path) -> Config:
+    try:
+        raw = tomllib.loads(path.read_text())
+    except FileNotFoundError:
+        raise click.ClickException(
+            f"config not found: {path}\nCreate it with: aws-org config edit"
+        )
+    except tomllib.TOMLDecodeError as e:
+        raise click.ClickException(f"invalid TOML in {path}: {e}")
+    try:
+        return Config.model_validate(raw)
+    except ValidationError as e:
+        raise click.ClickException(f"invalid config {path}:\n{e}")
+
+
+# --- org data model --------------------------------------------------------
+
+
+class OrgUnit(BaseModel):
+    id: str
+    name: str
+    parent_id: str | None = None  # None for the organization root
+    path: str  # e.g. "Root/Workloads/Prod"
+
+
+class Account(BaseModel):
+    id: str
+    name: str
+    email: str | None = None
+    ou_id: str | None = None
+
+
+class RoleAssignment(BaseModel):
+    account_id: str
+    role_name: str
+
+
+class OrgData(BaseModel):
+    schema_version: int = SCHEMA_VERSION
+    generated_at: datetime
+    start_url: str
+    region: str
+    accounts: list[Account] = Field(default_factory=list)
+    ous: list[OrgUnit] = Field(default_factory=list)
+    roles: list[RoleAssignment] = Field(default_factory=list)
+    assignments_hash: str
+
+    def age(self) -> timedelta:
+        generated = self.generated_at
+        if generated.tzinfo is None:
+            generated = generated.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) - generated
+
+    def roles_by_account(self) -> dict[str, list[str]]:
+        result: dict[str, list[str]] = {}
+        for r in self.roles:
+            result.setdefault(r.account_id, []).append(r.role_name)
+        return result
+
+    def ou_paths(self) -> dict[str, str]:
+        return {ou.id: ou.path for ou in self.ous}
+
+
+def hash_assignments(roles: list[RoleAssignment]) -> str:
+    """Order-independent content hash of account/role assignments."""
+    canonical = "\n".join(sorted(f"{r.account_id}:{r.role_name}" for r in roles))
+    return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+# --- cache store -----------------------------------------------------------
+
+
+class CacheState(Enum):
+    FRESH = "fresh"
+    EXPIRED = "expired"
+    MISSING = "missing"
+    INVALID = "invalid"
+
+
+@dataclass
+class CacheStatus:
+    state: CacheState
+    path: Path
+    writable: bool
+    age: timedelta | None = None
+    data: OrgData | None = None
+    detail: str | None = None
+
+    def exit_code(self) -> int:
+        if not self.writable:
+            return EXIT_CACHE_UNWRITABLE
+        if self.state is CacheState.MISSING:
+            return EXIT_CACHE_MISSING
+        if self.state is CacheState.INVALID:
+            return EXIT_CACHE_INVALID
+        if self.state is CacheState.EXPIRED:
+            return EXIT_CACHE_EXPIRED
+        return 0
+
+
+class CacheStore:
+    def __init__(self, directory: Path):
+        self.directory = directory
+        self.path = directory / "org.json"
+
+    def writable(self) -> bool:
+        d = self.directory
+        while not d.exists() and d.parent != d:
+            d = d.parent
+        return os.access(d, os.W_OK)
+
+    def status(self, ttl: timedelta) -> CacheStatus:
+        writable = self.writable()
+        if not self.path.exists():
+            return CacheStatus(CacheState.MISSING, self.path, writable)
+        try:
+            data = OrgData.model_validate_json(self.path.read_text())
+        except (OSError, ValueError, ValidationError) as e:
+            return CacheStatus(CacheState.INVALID, self.path, writable, detail=str(e))
+        if data.schema_version != SCHEMA_VERSION:
+            return CacheStatus(
+                CacheState.INVALID, self.path, writable,
+                detail=f"schema version {data.schema_version}, expected {SCHEMA_VERSION}",
+            )
+        age = data.age()
+        state = CacheState.FRESH if age <= ttl else CacheState.EXPIRED
+        return CacheStatus(state, self.path, writable, age=age, data=data)
+
+    def write(self, data: OrgData) -> None:
+        self.directory.mkdir(parents=True, exist_ok=True)
+        tmp = self.path.with_suffix(".json.tmp")
+        tmp.write_text(data.model_dump_json(indent=2) + "\n")
+        tmp.replace(self.path)
+
+    def clear(self) -> bool:
+        if self.path.exists():
+            self.path.unlink()
+            return True
+        return False
+
+
+# --- data sources (middleware pattern) -------------------------------------
+
+
+class OrgSource(ABC):
+    @abstractmethod
+    def load(self) -> OrgData: ...
+
+
+class AwsOrgSource(OrgSource):
+    """Loads live data from AWS using an Identity Center SSO token."""
+
+    def __init__(self, config: Config):
+        self.config = config
+
+    def load(self) -> OrgData:
+        boto3, sso, token = self._sso_client()
+        accounts_raw, roles = self._load_assignments(sso, token)
+        ous, account_ou = self._load_org_units(boto3, sso, token)
+        accounts = sorted(
+            (
+                Account(
+                    id=a["accountId"],
+                    name=a["accountName"],
+                    email=a.get("emailAddress"),
+                    ou_id=account_ou.get(a["accountId"]),
+                )
+                for a in accounts_raw
+            ),
+            key=lambda a: a.name.lower(),
+        )
+        return OrgData(
+            generated_at=datetime.now(timezone.utc),
+            start_url=self.config.sso.start_url,
+            region=self.config.sso.region,
+            accounts=accounts,
+            ous=ous,
+            roles=roles,
+            assignments_hash=hash_assignments(roles),
+        )
+
+    def load_assignments(self) -> tuple[list[dict], list[RoleAssignment]]:
+        """Fast path for change detection: accounts + roles only, no OU walk."""
+        _, sso, token = self._sso_client()
+        return self._load_assignments(sso, token)
+
+    def _sso_client(self):
+        import boto3  # deferred: import costs ~300ms, not needed on cache hits
+
+        token = find_sso_token(self.config.sso.start_url)
+        return boto3, boto3.client("sso", region_name=self.config.sso.region), token
+
+    def _load_assignments(self, sso, token: str) -> tuple[list[dict], list[RoleAssignment]]:
+        accounts_raw: list[dict] = []
+        for page in sso.get_paginator("list_accounts").paginate(accessToken=token):
+            accounts_raw.extend(page["accountList"])
+
+        def roles_for(account_id: str) -> tuple[str, list[str]]:
+            names: list[str] = []
+            paginator = sso.get_paginator("list_account_roles")
+            for page in paginator.paginate(accessToken=token, accountId=account_id):
+                names.extend(r["roleName"] for r in page["roleList"])
+            return account_id, names
+
+        with ThreadPoolExecutor(max_workers=min(16, max(1, len(accounts_raw)))) as pool:
+            role_map = dict(pool.map(roles_for, (a["accountId"] for a in accounts_raw)))
+        roles = [
+            RoleAssignment(account_id=account_id, role_name=role_name)
+            for account_id, names in sorted(role_map.items())
+            for role_name in sorted(names)
+        ]
+        return accounts_raw, roles
+
+    def _load_org_units(self, boto3, sso, token: str) -> tuple[list[OrgUnit], dict[str, str]]:
+        org_cfg = self.config.organizations
+        if not org_cfg.configured:
+            return [], {}
+        from botocore.exceptions import BotoCoreError, ClientError
+
+        try:
+            creds = sso.get_role_credentials(
+                accountId=org_cfg.account_id, roleName=org_cfg.role_name, accessToken=token
+            )["roleCredentials"]
+            org = boto3.client(
+                "organizations",
+                aws_access_key_id=creds["accessKeyId"],
+                aws_secret_access_key=creds["secretAccessKey"],
+                aws_session_token=creds["sessionToken"],
+                region_name=self.config.sso.region,
+            )
+            ous: list[OrgUnit] = []
+            account_ou: dict[str, str] = {}
+            stack: list[tuple[str, str]] = []
+            for page in org.get_paginator("list_roots").paginate():
+                for root in page["Roots"]:
+                    ous.append(OrgUnit(id=root["Id"], name=root["Name"], path=root["Name"]))
+                    stack.append((root["Id"], root["Name"]))
+            while stack:
+                parent_id, parent_path = stack.pop()
+                paginator = org.get_paginator("list_accounts_for_parent")
+                for page in paginator.paginate(ParentId=parent_id):
+                    for account in page["Accounts"]:
+                        account_ou[account["Id"]] = parent_id
+                paginator = org.get_paginator("list_organizational_units_for_parent")
+                for page in paginator.paginate(ParentId=parent_id):
+                    for ou in page["OrganizationalUnits"]:
+                        path = f"{parent_path}/{ou['Name']}"
+                        ous.append(
+                            OrgUnit(id=ou["Id"], name=ou["Name"], parent_id=parent_id, path=path)
+                        )
+                        stack.append((ou["Id"], path))
+            ous.sort(key=lambda o: o.path.lower())
+            return ous, account_ou
+        except (BotoCoreError, ClientError) as e:
+            err.print(f"[yellow]warning:[/] could not load organizational units: {escape(str(e))}")
+            return [], {}
+
+
+class CachedOrgSource(OrgSource):
+    """Cache middleware: serve from cache while fresh, else load and write behind.
+
+    TTL is checked here, on access — not at CLI startup.
+    """
+
+    def __init__(self, source: OrgSource, store: CacheStore, ttl: timedelta, start_url: str):
+        self.source = source
+        self.store = store
+        self.ttl = ttl
+        self.start_url = start_url
+
+    def load(self) -> OrgData:
+        status = self.store.status(self.ttl)
+        if (
+            status.state is CacheState.FRESH
+            and status.data is not None
+            and status.data.start_url == self.start_url
+        ):
+            return status.data
+        err.print(f"[dim]cache {status.state.value}; refreshing from AWS…[/]")
+        data = self.source.load()
+        try:
+            self.store.write(data)
+        except OSError as e:
+            err.print(f"[yellow]warning:[/] could not write cache {self.store.path}: {e}")
+        return data
+
+
+def find_sso_token(start_url: str) -> str:
+    """Find a valid Identity Center access token in ~/.aws/sso/cache."""
+    cache_dir = Path("~/.aws/sso/cache").expanduser()
+    best: tuple[datetime, str] | None = None
+    now = datetime.now(timezone.utc)
+    for path in cache_dir.glob("*.json") if cache_dir.is_dir() else []:
+        try:
+            doc = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        if doc.get("startUrl") != start_url or "accessToken" not in doc:
+            continue
+        expires = _parse_sso_expiry(doc.get("expiresAt", ""))
+        if expires and expires > now and (best is None or expires > best[0]):
+            best = (expires, doc["accessToken"])
+    if best is None:
+        raise click.ClickException(f"no valid SSO token for {start_url}\nRun: aws sso login")
+    return best[1]
+
+
+def _parse_sso_expiry(value: str) -> datetime | None:
+    value = value.replace("UTC", "+00:00").replace("Z", "+00:00")
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+# --- app context -----------------------------------------------------------
+
+
+class App:
+    def __init__(self, config_path: Path):
+        self.config_path = config_path
+        self._config: Config | None = None
+
+    def config(self) -> Config:
+        if self._config is None:
+            self._config = load_config(self.config_path)
+        return self._config
+
+    def config_or_none(self) -> Config | None:
+        try:
+            return self.config()
+        except click.ClickException:
+            return None
+
+    def cache_store(self) -> CacheStore:
+        cfg = self.config_or_none()
+        if cfg and cfg.cache.directory:
+            return CacheStore(cfg.cache.directory.expanduser())
+        return CacheStore(default_cache_dir())
+
+    def ttl(self) -> timedelta:
+        cfg = self.config_or_none()
+        return parse_duration(cfg.cache.ttl if cfg else DEFAULT_TTL)
+
+    def org_data(self) -> OrgData:
+        cfg = self.config()
+        source = CachedOrgSource(
+            AwsOrgSource(cfg), self.cache_store(), self.ttl(), cfg.sso.start_url
+        )
+        return source.load()
+
+
+# --- output helpers --------------------------------------------------------
+
+FIELD_STYLES = {
+    "id": "cyan",
+    "account_id": "cyan",
+    "ou_id": "dim cyan",
+    "parent_id": "dim cyan",
+    "name": "bold",
+    "account_name": "bold",
+    "email": "dim",
+    "ou": "green",
+    "path": "green",
+    "roles": "magenta",
+    "role_name": "magenta",
+    "accounts": "yellow",
+}
+
+
+def cell(value, human: bool = False) -> str:
+    if value is None or value == []:
+        return "-" if human else ""
+    if isinstance(value, list):
+        return (", " if human else ",").join(str(v) for v in value)
+    return str(value)
+
+
+def emit(
+    rows: list[dict],
+    *,
+    default_fields: list[str],
+    allowed_fields: list[str],
+    output: str,
+    fields: str | None,
+    no_header: bool,
+) -> None:
+    selected = [f.strip() for f in fields.split(",") if f.strip()] if fields else default_fields
+    unknown = [f for f in selected if f not in allowed_fields]
+    if unknown:
+        raise click.ClickException(
+            f"unknown field(s): {', '.join(unknown)} (available: {', '.join(allowed_fields)})"
+        )
+    if output == "json":
+        click.echo(json.dumps([{f: r.get(f) for f in selected} for r in rows], indent=2))
+    elif output == "csv":
+        writer = csv.writer(sys.stdout)
+        if not no_header:
+            writer.writerow(selected)
+        writer.writerows([cell(r.get(f)) for f in selected] for r in rows)
+    elif sys.stdout.isatty():
+        table = Table(box=box.SIMPLE_HEAD, header_style="bold", show_header=not no_header, pad_edge=False)
+        for f in selected:
+            table.add_column(f, style=FIELD_STYLES.get(f))
+        for r in rows:
+            table.add_row(*(cell(r.get(f), human=True) for f in selected))
+        out.print(table)
+    else:
+        if not no_header:
+            click.echo("\t".join(selected))
+        for r in rows:
+            click.echo("\t".join(cell(r.get(f)) for f in selected))
+
+
+def matches(pattern: str | None, *values) -> bool:
+    """Case-insensitive filter: glob when pattern has glob chars, else substring."""
+    if not pattern:
+        return True
+    p = pattern.lower()
+    is_glob = any(ch in p for ch in "*?[")
+    for value in values:
+        if value is None:
+            continue
+        s = str(value).lower()
+        if fnmatchcase(s, p) if is_glob else p in s:
+            return True
+    return False
+
+
+def output_options(fn):
+    fn = click.option(
+        "-o", "--output",
+        type=click.Choice(["text", "csv", "json"]),
+        default="text",
+        show_default=True,
+        help="Output format; text renders a table on a TTY, TSV when piped.",
+    )(fn)
+    fn = click.option("-f", "--fields", help="Comma-separated list of fields to include.")(fn)
+    fn = click.option("--no-header", is_flag=True, help="Omit the header row (text/csv).")(fn)
+    return fn
+
+
+def render_cache_info(status: CacheStatus, ttl: timedelta) -> None:
+    grid = Table(box=None, show_header=False, pad_edge=False)
+    grid.add_column(style="bold")
+    grid.add_column(overflow="fold")
+    state_style = {
+        CacheState.FRESH: "green",
+        CacheState.EXPIRED: "yellow",
+        CacheState.MISSING: "red",
+        CacheState.INVALID: "red",
+    }[status.state]
+    state = f"[{state_style}]{status.state.value}[/]"
+    if status.detail:
+        state += f" [dim]({escape(status.detail)})[/]"
+    grid.add_row("State", state)
+    grid.add_row("File", str(status.path))
+    grid.add_row("Writable", "yes" if status.writable else "[red]no[/]")
+    if status.age is not None:
+        grid.add_row("Age", f"{humanize(status.age)} [dim](ttl {humanize(ttl)})[/]")
+    if status.data is not None:
+        data = status.data
+        grid.add_row("Start URL", escape(data.start_url))
+        grid.add_row("Region", data.region)
+        grid.add_row("Accounts", str(len(data.accounts)))
+        distinct = len({r.role_name for r in data.roles})
+        grid.add_row("Roles", f"{len(data.roles)} assignments, {distinct} distinct")
+        grid.add_row("OUs", str(sum(1 for ou in data.ous if ou.parent_id)))
+        grid.add_row("Hash", f"[dim]{data.assignments_hash[:16]}[/]")
+    out.print(grid)
+
+
+# --- CLI -------------------------------------------------------------------
+
+
+class PluralAliasGroup(click.Group):
+    """Resolve `get accounts` to `get account`, etc."""
+
+    def get_command(self, ctx, cmd_name):
+        cmd = super().get_command(ctx, cmd_name)
+        if cmd is None and cmd_name.endswith("s"):
+            cmd = super().get_command(ctx, cmd_name[:-1])
+        return cmd
+
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option(
+    "-C", "--config", "config_path",
+    type=click.Path(path_type=Path),
+    envvar="AWS_ORG_CONFIG",
+    default=None,
+    help="Alternate config file [default: $XDG_CONFIG_HOME/aws-org/config.toml]",
+)
+@click.pass_context
+def cli(ctx: click.Context, config_path: Path | None):
+    """Quick access to AWS Organization data via IAM Identity Center."""
+    ctx.obj = App(config_path or default_config_path())
+
+
+# --- cache commands --
+
+
+@cli.group("cache")
+def cache_group():
+    """Manage the local cache."""
+
+
+@cache_group.command("info")
+@click.option(
+    "-q", "--quiet", is_flag=True,
+    help="No output; exit code only: 0 fresh, 1 missing, 2 invalid, 3 unwritable, 4 expired.",
+)
+@click.pass_obj
+def cache_info(app: App, quiet: bool):
+    """Show cache location, age, and summary stats."""
+    status = app.cache_store().status(app.ttl())
+    if not quiet:
+        render_cache_info(status, app.ttl())
+    sys.exit(status.exit_code())
+
+
+@cache_group.command("clear")
+@click.pass_obj
+def cache_clear(app: App):
+    """Discard cached data."""
+    store = app.cache_store()
+    if store.clear():
+        click.echo(f"removed {store.path}")
+    else:
+        click.echo("no cache data")
+
+
+@cache_group.command("refresh")
+@click.option("-q", "--quiet", is_flag=True, help="Suppress output.")
+@click.pass_obj
+def cache_refresh(app: App, quiet: bool):
+    """Load the latest data from AWS and persist it."""
+    data = AwsOrgSource(app.config()).load()
+    store = app.cache_store()
+    try:
+        store.write(data)
+    except OSError as e:
+        err.print(f"[red]error:[/] could not write cache {store.path}: {e}")
+        sys.exit(EXIT_CACHE_UNWRITABLE)
+    if not quiet:
+        render_cache_info(store.status(app.ttl()), app.ttl())
+
+
+@cache_group.command("check")
+@click.option("-q", "--quiet", is_flag=True, help="No output; exit code only.")
+@click.pass_obj
+def cache_check(app: App, quiet: bool):
+    """Detect drift between live Identity Center assignments and the cache.
+
+    Compares an order-independent hash of live account/role assignments
+    against the cached hash. Does not walk the OU tree, so it is fast.
+    Exit codes: 0 in sync, 1 drift detected, 2 unable to compare.
+    """
+    status = app.cache_store().status(app.ttl())
+    if status.data is None:
+        if not quiet:
+            err.print("[red]error:[/] no cached data to compare (run: aws-org cache refresh)")
+        sys.exit(2)
+    cached = status.data
+    try:
+        _, live_roles = AwsOrgSource(app.config()).load_assignments()
+    except click.ClickException as e:
+        e.exit_code = 2  # distinguish "unable to compare" from drift (exit 1)
+        raise
+    if hash_assignments(live_roles) == cached.assignments_hash:
+        if not quiet:
+            out.print("[green]✓[/] cache is in sync with Identity Center")
+        return
+    if not quiet:
+        live = {f"{r.account_id}:{r.role_name}" for r in live_roles}
+        known = {f"{r.account_id}:{r.role_name}" for r in cached.roles}
+        for item in sorted(live - known):
+            out.print(f"[green]+ {item}[/]")
+        for item in sorted(known - live):
+            out.print(f"[red]- {item}[/]")
+        err.print("[yellow]cache is stale[/] — run: aws-org cache refresh")
+    sys.exit(1)
+
+
+# --- config commands --
+
+
+@cli.group("config")
+def config_group():
+    """Manage configuration."""
+
+
+@config_group.command("path")
+@click.pass_obj
+def config_path_cmd(app: App):
+    """Print the path to the configuration file."""
+    click.echo(app.config_path)
+
+
+@config_group.command("edit")
+@click.pass_obj
+def config_edit(app: App):
+    """Open the configuration file in your editor ($VISUAL, $EDITOR, or vi)."""
+    path = app.config_path
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(CONFIG_REFERENCE)
+        err.print(f"[dim]created {path}[/]")
+    editor = os.environ.get("VISUAL") or os.environ.get("EDITOR") or "vi"
+    code = subprocess.call([*shlex.split(editor), str(path)])
+    if code:
+        sys.exit(code)
+    try:
+        load_config(path)
+    except click.ClickException as e:
+        err.print(f"[yellow]warning:[/] {escape(e.message)}")
+
+
+@config_group.command("reference")
+def config_reference():
+    """Print the default configuration reference with all options documented."""
+    click.echo(CONFIG_REFERENCE, nl=False)
+
+
+# --- get commands --
+
+
+@cli.group("get", cls=PluralAliasGroup)
+def get_group():
+    """Print tables of org resources (auto-refreshes the cache when expired)."""
+
+
+@get_group.command("account")
+@click.argument("pattern", required=False)
+@click.option("--ou", "ou_filter", help="Filter by OU id, name, or path.")
+@click.option("--role", "role_filter", help="Only accounts where you have a matching role.")
+@output_options
+@click.pass_obj
+def get_account(app: App, pattern, ou_filter, role_filter, output, fields, no_header):
+    """List accounts. PATTERN matches account id or name (substring or glob)."""
+    data = app.org_data()
+    roles = data.roles_by_account()
+    paths = data.ou_paths()
+    rows = [
+        {
+            "id": a.id,
+            "name": a.name,
+            "email": a.email,
+            "ou": paths.get(a.ou_id) if a.ou_id else None,
+            "ou_id": a.ou_id,
+            "roles": sorted(roles.get(a.id, [])),
+        }
+        for a in data.accounts
+    ]
+    rows = [
+        r for r in rows
+        if matches(pattern, r["id"], r["name"])
+        and matches(ou_filter, r["ou"], r["ou_id"])
+        and (not role_filter or any(matches(role_filter, name) for name in r["roles"]))
+    ]
+    emit(
+        rows,
+        default_fields=["id", "name", "email", "ou", "roles"],
+        allowed_fields=["id", "name", "email", "ou", "ou_id", "roles"],
+        output=output, fields=fields, no_header=no_header,
+    )
+
+
+@get_group.command("role")
+@click.argument("pattern", required=False)
+@click.option("--account", "account_filter", help="Filter by account id or name.")
+@output_options
+@click.pass_obj
+def get_role(app: App, pattern, account_filter, output, fields, no_header):
+    """List role assignments. PATTERN matches role name (substring or glob)."""
+    data = app.org_data()
+    names = {a.id: a.name for a in data.accounts}
+    rows = sorted(
+        (
+            {
+                "account_id": r.account_id,
+                "account_name": names.get(r.account_id),
+                "role_name": r.role_name,
+            }
+            for r in data.roles
+            if matches(pattern, r.role_name)
+            and matches(account_filter, r.account_id, names.get(r.account_id))
+        ),
+        key=lambda r: ((r["account_name"] or "").lower(), r["role_name"].lower()),
+    )
+    emit(
+        rows,
+        default_fields=["account_id", "account_name", "role_name"],
+        allowed_fields=["account_id", "account_name", "role_name"],
+        output=output, fields=fields, no_header=no_header,
+    )
+
+
+@get_group.command("ou")
+@click.argument("pattern", required=False)
+@output_options
+@click.pass_obj
+def get_ou(app: App, pattern, output, fields, no_header):
+    """List organizational units. PATTERN matches OU id, name, or path."""
+    data = app.org_data()
+    account_counts: dict[str, int] = {}
+    for a in data.accounts:
+        if a.ou_id:
+            account_counts[a.ou_id] = account_counts.get(a.ou_id, 0) + 1
+    rows = [
+        {
+            "id": ou.id,
+            "name": ou.name,
+            "path": ou.path,
+            "parent_id": ou.parent_id,
+            "accounts": account_counts.get(ou.id, 0),
+        }
+        for ou in data.ous
+        if matches(pattern, ou.id, ou.name, ou.path)
+    ]
+    if not rows and not data.ous:
+        err.print(
+            "[yellow]no OU data cached[/] — set [bold]\\[organizations][/] account_id/role_name "
+            "in config and run: aws-org cache refresh"
+        )
+    emit(
+        rows,
+        default_fields=["id", "name", "path", "accounts"],
+        allowed_fields=["id", "name", "path", "parent_id", "accounts"],
+        output=output, fields=fields, no_header=no_header,
+    )
+
+
+if __name__ == "__main__":
+    cli()
