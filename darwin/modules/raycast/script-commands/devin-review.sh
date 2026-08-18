@@ -1,19 +1,17 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
+
+# Required parameters:
 # @raycast.schemaVersion 1
-# @raycast.title deepwiki
-# @raycast.mode silent
-# @raycast.icon 🧑‍💻
+# @raycast.title Devin Review
+# @raycast.mode fullOutput
+
+# Optional parameters:
+# @raycast.icon 🧑🏻‍💻
 # @raycast.argument1 { "type": "text", "placeholder": "repo", "optional": true }
 
-set -e
+# Documentation:
+# @raycast.author loganlinn
+# @raycast.authorURL https://github.com/loganlinn
 
-hash rg
-
-repo_splug=$(
-  rg 'https://github.com/([^/]+)/([^/]+)' \
-    --replace '$1/$2' \
-    --only-matching \
-    <<<"${1?}"
-)
-
-open "https://deepwiki.com/${repo_splug}"
+PATH="$HOME/.dotfiles/bin:$HOME/.local/bin:$PATH"
+mise run devin:review:open "$1"

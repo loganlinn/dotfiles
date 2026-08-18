@@ -1,23 +1,24 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 # @raycast.schemaVersion 1
-# @raycast.title deepwiki.com
+# @raycast.title deepwiki
 # @raycast.mode silent
 # @raycast.icon 🧑‍💻
-# @raycast.argument1 { "type": "text", "placeholder": "repo", "optional": false }
+# @raycast.argument1 { "type": "text", "placeholder": "repo", "optional": true }
 
 set -e
 
 hash rg
 
-repo_arg=${1?}
+repo="${1-}"
+if [[ -z $repo ]]; then
+  repo=$(pbpaste)
+fi
 
-repo_slug=$(
-  rg '(github.com/)?([^/]+)/([^/]+)' \
-    --replace '$2/$3' \
+repo_splug=$(
+  rg 'https://github.com/([^/]+)/([^/]+)' \
+    --replace '$1/$2' \
     --only-matching \
-    <<<"${repo_arg?}"
+    <<<"${repo}"
 )
 
-: "${DEVIN_BASE_URL:="https://gamma.devinenterprise.com"}"
-
-open "https://deepwiki.com/${repo_slug}"
+open "https://deepwiki.com/${repo_splug}"
