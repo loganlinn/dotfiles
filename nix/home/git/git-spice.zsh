@@ -1,7 +1,7 @@
 function gs {
   if (($#)) && [[ ! -e $1 ]]; then
     if [[ -n $GIT_SPICE_GITHUB_TOKEN ]]; then
-      env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" command gs "$@"
+      env GITHUB_TOKEN="$GIT_SPICE_GITHUB_TOKEN" command git spice "$@"
     else
       env -u GITHUB_TOKEN command git spice "$@"
     fi
