@@ -1,0 +1,2975 @@
+#!/usr/bin/env -S mise x uv -- uv run --script
+# /// script
+# requires-python = ">=3.12"
+# ///
+"""Publish local text documents to external targets. GitHub Gist is the
+first target.
+
+``pub <file>`` is an idempotent upsert: the first run creates a secret
+gist, writes an ``x-pub:`` comment tag into the file, and prints the URL.
+Every later run syncs the file to the same gist. The tag is the durable
+link between the file and its published copy.
+
+Gist "secret" means unlisted, not private. Visibility is immutable after
+creation: ``--public`` applies at creation only, and a visibility change
+means recreating the gist.
+
+JSON output uses this envelope:
+
+    {"ok": true, "command": "...", "data": {...}}
+    {"ok": false, "error": {"code": "...", "message": "..."}}
+"""
+
+from __future__ import annotations
+
+import argparse
+import contextlib
+import datetime as dt
+import difflib
+import fcntl
+import fnmatch
+import hashlib
+import json
+import os
+import re
+import shlex
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import urllib.parse
+import webbrowser
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, ClassVar, Iterator, Protocol, Sequence
+
+TOOL_NAME = "pub"
+TOOL_VERSION = "0.1.0"
+STATE_SCHEMA_VERSION = 1
+MAX_GIST_BYTES = 900 * 1024
+HELPER_STDOUT_CAP = 10 * 1024 * 1024
+HELPER_STDERR_CAP = 64 * 1024
+HELPER_PROTOCOL_VERSION = "1"
+TAG_WINDOW = 5
+KNOWN_COMMANDS = {
+    "diff",
+    "doctor",
+    "link",
+    "list",
+    "open",
+    "publish",
+    "pull",
+    "skill",
+    "status",
+    "sync",
+    "unlink",
+}
+GLOBAL_FLAGS = {"--json", "--quiet"}
+STALE_STATES = {
+    "ahead",
+    "behind",
+    "diverged",
+    "local_missing",
+    "missing",
+    "unknown",
+}
+
+COMMENT_STYLES: dict[str, tuple[str, str]] = {
+    "dashdash": ("--", ""),
+    "hash": ("#", ""),
+    "html": ("<!--", "-->"),
+    "percent": ("%", ""),
+    "semi": (";", ""),
+    "slash": ("//", ""),
+}
+EXTENSION_STYLES: dict[str, str] = {
+    ".bash": "hash",
+    ".bib": "percent",
+    ".c": "slash",
+    ".clj": "semi",
+    ".cljs": "semi",
+    ".conf": "hash",
+    ".cpp": "slash",
+    ".edn": "semi",
+    ".el": "semi",
+    ".go": "slash",
+    ".h": "slash",
+    ".hs": "dashdash",
+    ".html": "html",
+    ".ini": "semi",
+    ".java": "slash",
+    ".js": "slash",
+    ".jsonc": "slash",
+    ".jsx": "slash",
+    ".kt": "slash",
+    ".lisp": "semi",
+    ".lua": "dashdash",
+    ".markdown": "html",
+    ".md": "html",
+    ".nix": "hash",
+    ".pl": "hash",
+    ".proto": "slash",
+    ".py": "hash",
+    ".rb": "hash",
+    ".rs": "slash",
+    ".sh": "hash",
+    ".sql": "dashdash",
+    ".svg": "html",
+    ".swift": "slash",
+    ".tex": "percent",
+    ".tf": "hash",
+    ".toml": "hash",
+    ".ts": "slash",
+    ".tsx": "slash",
+    ".xml": "html",
+    ".yaml": "hash",
+    ".yml": "hash",
+    ".zsh": "hash",
+}
+FILENAME_STYLES: dict[str, str] = {
+    ".envrc": "hash",
+    "dockerfile": "hash",
+    "justfile": "hash",
+    "makefile": "hash",
+}
+HASH_INTERPRETERS = {
+    "awk",
+    "bash",
+    "dash",
+    "fish",
+    "ksh",
+    "perl",
+    "python",
+    "ruby",
+    "sh",
+    "uv",
+    "zsh",
+}
+
+SENSITIVE_BASENAMES = (
+    ".env*",
+    "*.key",
+    "*.pem",
+    "*credentials*",
+    "*secret*",
+    "id_ed25519*",
+    "id_rsa*",
+)
+SENSITIVE_CONTENT_RES = (
+    re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"ghp_[A-Za-z0-9]{36}"),
+)
+
+URI_RE = re.compile(
+    r"^(?P<scheme>[a-z][a-z0-9+.-]*):(?P<identifier>[^?\s]+)"
+    r"(?:\?(?P<query>\S*))?$"
+)
+PARAM_KEY_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+UNRESERVED = set(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
+)
+SECRET_NOTE = "Gist secret means unlisted, not private."
+
+
+class CliError(Exception):
+    """An error with a stable code and a user-facing message."""
+
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        *,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.details = details or {}
+
+
+class CliArgumentParser(argparse.ArgumentParser):
+    """Raise stable CLI errors instead of exiting during argument parsing."""
+
+    def error(self, message: str) -> None:
+        raise CliError("usage_error", message)
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    stdout: str
+    stderr: str
+    returncode: int
+
+
+def executable(name: str) -> str:
+    override = os.environ.get(f"PUB_{name.upper()}")
+    return override or name.lower()
+
+
+def run_command(
+    args: Sequence[str],
+    *,
+    env: dict[str, str] | None = None,
+    input_text: str | None = None,
+    check: bool = True,
+) -> CommandResult:
+    try:
+        completed = subprocess.run(
+            list(args),
+            env=env,
+            input=input_text,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    except FileNotFoundError as error:
+        raise CliError(
+            "missing_command",
+            f"Command not found: {args[0]}",
+            details={"command": args[0]},
+        ) from error
+    result = CommandResult(
+        stdout=completed.stdout or "",
+        stderr=completed.stderr or "",
+        returncode=completed.returncode,
+    )
+    if check and result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip()
+        message = message[-2_000:] if message else "The command failed without output."
+        raise CliError(
+            "command_failed",
+            f"Command failed: {shlex.join(list(args))}\n{message}",
+            details={"command": args[0], "exit_code": result.returncode},
+        )
+    return result
+
+
+def emit_json(command: str, data: Any) -> None:
+    print(json.dumps({"ok": True, "command": command, "data": data}, indent=2))
+
+
+def fail(error: CliError, json_output: bool, *, exit_code: int = 1) -> int:
+    if json_output:
+        payload: dict[str, Any] = {
+            "ok": False,
+            "error": {"code": error.code, "message": error.message},
+        }
+        if error.details:
+            payload["error"]["details"] = error.details
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"{TOOL_NAME}: {error.message}", file=sys.stderr)
+    return exit_code
+
+
+def sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def utc_now_iso() -> str:
+    return dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+ANSI_CODES = {
+    "bold": "1",
+    "cyan": "36",
+    "dim": "2",
+    "green": "32",
+    "red": "31",
+    "yellow": "33",
+}
+STATE_STYLES: dict[str, tuple[str, str]] = {
+    "ahead": ("!", "yellow"),
+    "behind": ("!", "yellow"),
+    "diverged": ("!", "red"),
+    "local_missing": ("✗", "red"),
+    "missing": ("✗", "red"),
+    "synced": ("✓", "green"),
+    "unknown": ("?", "red"),
+    "untracked": ("-", "dim"),
+}
+
+
+def paint(text: str, color: str, stream: Any = None) -> str:
+    stream = sys.stdout if stream is None else stream
+    if os.environ.get("NO_COLOR"):
+        return text
+    if not getattr(stream, "isatty", lambda: False)():
+        return text
+    return f"\033[{ANSI_CODES[color]}m{text}\033[0m"
+
+
+def auto_open_enabled(
+    open_flag: bool | None, json_output: bool, quiet: bool
+) -> bool:
+    """--open/--no-open wins; otherwise open only for interactive runs
+    (a TTY, no --json, no --quiet, PUB_NO_OPEN unset)."""
+    if open_flag is not None:
+        return open_flag
+    if os.environ.get("PUB_NO_OPEN"):
+        return False
+    return not json_output and not quiet and sys.stdout.isatty()
+
+
+def successful_web_urls(data: dict[str, Any]) -> list[str]:
+    entries = data.get("results") or [data]
+    urls: list[str] = []
+    for entry in entries:
+        url = entry.get("web_url")
+        if entry.get("ok") and url and url not in urls:
+            urls.append(url)
+    return urls
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(Path.cwd()))
+    except ValueError:
+        pass
+    text = str(path)
+    home = str(Path.home())
+    if text == home or text.startswith(home + os.sep):
+        return "~" + text[len(home) :]
+    return text
+
+
+def write_bytes_atomic(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    mode = path.stat().st_mode & 0o7777 if path.exists() else None
+    handle_fd, temp_name = tempfile.mkstemp(
+        dir=str(path.parent), prefix=f".___{path.name}."
+    )
+    temp_path = Path(temp_name)
+    try:
+        with os.fdopen(handle_fd, "wb") as handle:
+            handle.write(content)
+        if mode is not None:
+            os.chmod(temp_path, mode)
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+# --- Target URI ---
+
+
+@dataclass(frozen=True)
+class TargetURI:
+    scheme: str
+    identifier: str
+    params: tuple[tuple[str, str], ...] = ()
+
+    def param(self, key: str) -> str | None:
+        for name, value in self.params:
+            if name == key:
+                return value
+        return None
+
+    def with_param(self, key: str, value: str) -> "TargetURI":
+        params = tuple(
+            (name, existing) for name, existing in self.params if name != key
+        ) + ((key, value),)
+        return TargetURI(self.scheme, self.identifier, params)
+
+
+def encode_param_value(value: str) -> str:
+    if any(ord(ch) < 0x20 or ch == "\x7f" for ch in value):
+        raise CliError(
+            "invalid_filename",
+            "Names with newlines or control characters are not supported.",
+        )
+    out: list[str] = []
+    previous = ""
+    for ch in value:
+        if ch in UNRESERVED and not (ch == "-" and previous == "-"):
+            out.append(ch)
+        else:
+            out.extend(f"%{byte:02X}" for byte in ch.encode("utf-8"))
+        previous = ch
+    return "".join(out)
+
+
+def decode_param_value(value: str) -> str:
+    try:
+        return urllib.parse.unquote(value, encoding="utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise CliError(
+            "invalid_uri", f"Invalid percent-encoding: {value}"
+        ) from error
+
+
+def parse_uri(text: str) -> TargetURI:
+    match = URI_RE.match(text)
+    if not match:
+        raise CliError("invalid_uri", f"Invalid target URI: {text}")
+    params: list[tuple[str, str]] = []
+    query = match.group("query")
+    if query:
+        for piece in query.split("&"):
+            key, separator, raw = piece.partition("=")
+            if not separator or not PARAM_KEY_RE.match(key):
+                raise CliError(
+                    "invalid_uri", f"Invalid URI parameter: {piece}"
+                )
+            params.append((key, decode_param_value(raw)))
+    return TargetURI(
+        match.group("scheme"), match.group("identifier"), tuple(params)
+    )
+
+
+def serialize_uri(uri: TargetURI) -> str:
+    text = f"{uri.scheme}:{uri.identifier}"
+    if uri.params:
+        text += "?" + "&".join(
+            f"{key}={encode_param_value(value)}" for key, value in uri.params
+        )
+    if "--" in text or re.search(r"\s", text):
+        raise CliError(
+            "invalid_uri",
+            f"The serialized URI is not comment-safe: {text}",
+        )
+    return text
+
+
+# --- Tag format ---
+
+
+@dataclass(frozen=True)
+class TagMatch:
+    line_index: int
+    uri: TargetURI
+
+
+def detect_style(path: Path, text: str) -> tuple[str, str] | None:
+    """Return (comment leader, trailer) for the file, or None when unknown."""
+    suffix = path.suffix.lower()
+    if suffix:
+        style = EXTENSION_STYLES.get(suffix)
+        return COMMENT_STYLES[style] if style else None
+    style = FILENAME_STYLES.get(path.name.lower())
+    if style:
+        return COMMENT_STYLES[style]
+    first_line = text.split("\n", 1)[0]
+    if shebang_is_hash_style(first_line):
+        return COMMENT_STYLES["hash"]
+    return None
+
+
+def shebang_is_hash_style(line: str) -> bool:
+    """A shebang that names a #-comment interpreter anywhere in its
+    tokens (env chains like `env -S mise x uv -- uv run` included)."""
+    if not line.startswith("#!"):
+        return False
+    for token in line[2:].split():
+        if token.startswith("-"):
+            continue
+        name = re.sub(r"[\d.]+$", "", Path(token).name)
+        if name in HASH_INTERPRETERS:
+            return True
+    return False
+
+
+def tag_line_for(style: tuple[str, str], uri: TargetURI) -> str:
+    leader, trailer = style
+    line = f"{leader} x-pub: {serialize_uri(uri)}"
+    if trailer:
+        line += f" {trailer}"
+    return line
+
+
+def tag_pattern(style: tuple[str, str]) -> re.Pattern[str]:
+    leader, trailer = style
+    pattern = r"^\s*" + re.escape(leader) + r"\s+x-pub:\s+(?P<uri>\S+)"
+    if trailer:
+        pattern += r"\s+" + re.escape(trailer) + r"\s*$"
+    else:
+        pattern += r"\s*$"
+    return re.compile(pattern)
+
+
+def tag_window_indexes(line_count: int) -> list[int]:
+    head = range(min(TAG_WINDOW, line_count))
+    tail = range(max(line_count - TAG_WINDOW, 0), line_count)
+    return sorted(set(head) | set(tail))
+
+
+def find_tag(text: str, style: tuple[str, str] | None) -> TagMatch | None:
+    """Find the x-pub tag in the first and last 5 lines of the file."""
+    if style is None:
+        return None
+    lines = text.splitlines()
+    pattern = tag_pattern(style)
+    matches: list[tuple[int, str]] = []
+    for index in tag_window_indexes(len(lines)):
+        found = pattern.match(lines[index])
+        if found:
+            matches.append((index, found.group("uri")))
+    if not matches:
+        return None
+    if len(matches) > 1:
+        raise CliError(
+            "ambiguous_tag",
+            "More than one x-pub tag is in the file's tag window.",
+            details={"lines": [index + 1 for index, _ in matches]},
+        )
+    index, uri_text = matches[0]
+    try:
+        uri = parse_uri(uri_text)
+    except CliError as error:
+        raise CliError(
+            "invalid_tag",
+            f"The x-pub tag does not parse: {uri_text} ({error.message})",
+        ) from error
+    return TagMatch(index, uri)
+
+
+def insert_tag(text: str, style: tuple[str, str], uri: TargetURI) -> str:
+    line = tag_line_for(style, uri)
+    if style == COMMENT_STYLES["html"]:
+        result = text
+        if result and not result.endswith("\n"):
+            result += "\n"
+        if result:
+            result += "\n"
+        return result + line + "\n"
+    lines = text.splitlines(keepends=True)
+    leader = style[0]
+    index = 0
+    if lines and lines[0].startswith("#!"):
+        index = 1
+    while index < len(lines) and lines[index].lstrip().startswith(leader):
+        index += 1
+    if index == len(lines) and lines and not lines[-1].endswith("\n"):
+        lines[-1] += "\n"
+    lines.insert(index, line + "\n")
+    return "".join(lines)
+
+
+def remove_tag(text: str, style: tuple[str, str]) -> str:
+    """Remove the tag line; drop a now-trailing final blank line."""
+    match = find_tag(text, style)
+    if match is None:
+        raise CliError("untracked", "The file has no x-pub tag.")
+    lines = text.splitlines(keepends=True)
+    was_last = match.line_index == len(lines) - 1
+    del lines[match.line_index]
+    if was_last and lines and lines[-1] == "\n":
+        del lines[-1]
+    return "".join(lines)
+
+
+def replace_tag_line(
+    text: str, style: tuple[str, str], new_uri: TargetURI
+) -> str:
+    match = find_tag(text, style)
+    if match is None:
+        raise CliError("untracked", "The file has no x-pub tag.")
+    lines = text.splitlines(keepends=True)
+    old_line = lines[match.line_index]
+    ending = "\n" if old_line.endswith("\n") else ""
+    lines[match.line_index] = tag_line_for(style, new_uri) + ending
+    return "".join(lines)
+
+
+# --- Sensitive-content guard ---
+
+
+def sensitive_reason(path: Path, text: str) -> str | None:
+    name = path.name.lower()
+    for pattern in SENSITIVE_BASENAMES:
+        if fnmatch.fnmatch(name, pattern):
+            return f"the filename matches {pattern}"
+    for content_re in SENSITIVE_CONTENT_RES:
+        found = content_re.search(text)
+        if found:
+            return f"the content matches {found.group(0)[:24]}..."
+    return None
+
+
+def check_sensitive(path: Path, text: str, allow_sensitive: bool) -> None:
+    if allow_sensitive:
+        return
+    reason = sensitive_reason(path, text)
+    if reason:
+        raise CliError(
+            "sensitive_content",
+            (
+                f"Refusing to publish {display_path(path)}: {reason}. "
+                f"{SECRET_NOTE} Use --allow-sensitive to publish anyway."
+            ),
+            details={"reason": reason},
+        )
+
+
+# --- State, journal, locks ---
+
+
+def state_root() -> Path:
+    configured = os.environ.get("XDG_STATE_HOME")
+    base = Path(configured).expanduser() if configured else Path("~/.local/state").expanduser()
+    return base / TOOL_NAME
+
+
+def state_file_path(uri_text: str) -> Path:
+    return state_root() / "targets" / f"{sha256_hex(uri_text.encode())}.json"
+
+
+def load_state(uri_text: str) -> dict[str, Any] | None:
+    path = state_file_path(uri_text)
+    try:
+        record = json.loads(path.read_text())
+    except FileNotFoundError:
+        return None
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    if not isinstance(record, dict):
+        return None
+    return record
+
+
+def save_state(
+    uri_text: str,
+    *,
+    real_path: Path,
+    base_sha256: str | None,
+    web_url: str | None,
+) -> dict[str, Any]:
+    record = {
+        "base_sha256": base_sha256,
+        "base_updated_at": utc_now_iso(),
+        "last_seen_path": str(real_path),
+        "schema_version": STATE_SCHEMA_VERSION,
+        "uri": uri_text,
+        "web_url": web_url,
+    }
+    write_bytes_atomic(
+        state_file_path(uri_text),
+        (json.dumps(record, indent=2, sort_keys=True) + "\n").encode(),
+    )
+    return record
+
+
+def delete_state(uri_text: str) -> None:
+    state_file_path(uri_text).unlink(missing_ok=True)
+
+
+def iter_states() -> Iterator[dict[str, Any]]:
+    directory = state_root() / "targets"
+    if not directory.is_dir():
+        return
+    for path in sorted(directory.glob("*.json")):
+        try:
+            record = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        if isinstance(record, dict) and record.get("uri"):
+            yield record
+
+
+def journal_path(real_path: Path) -> Path:
+    return state_root() / "journal" / f"{sha256_hex(str(real_path).encode())}.json"
+
+
+def load_journal(real_path: Path) -> dict[str, Any] | None:
+    try:
+        entry = json.loads(journal_path(real_path).read_text())
+    except FileNotFoundError:
+        return None
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    return entry if isinstance(entry, dict) else None
+
+
+def save_journal(real_path: Path, entry: dict[str, Any]) -> None:
+    entry = {**entry, "path": str(real_path), "updated_at": utc_now_iso()}
+    write_bytes_atomic(
+        journal_path(real_path),
+        (json.dumps(entry, indent=2, sort_keys=True) + "\n").encode(),
+    )
+
+
+def clear_journal(real_path: Path) -> None:
+    journal_path(real_path).unlink(missing_ok=True)
+
+
+@contextlib.contextmanager
+def held_lock(kind: str, key: str) -> Iterator[None]:
+    """flock a dedicated empty lock file. Lock files are never replaced:
+    os.replace would swap the inode a lock is held on."""
+    lock_dir = state_root() / "locks"
+    lock_dir.mkdir(parents=True, exist_ok=True)
+    lock_path = lock_dir / f"{kind}-{sha256_hex(key.encode())}.lock"
+    with open(lock_path, "a+", encoding="utf-8") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+# --- Target abstraction ---
+
+
+@dataclass(frozen=True)
+class Created:
+    uri: TargetURI
+    web_url: str
+
+
+class Target(Protocol):
+    """A byte-preserving snapshot store: what update receives, read later
+    returns, byte for byte. `public` and `name` are creation hints; schemes
+    without the concept ignore them."""
+
+    scheme: ClassVar[str]
+
+    def create(self, name: str, content: bytes, *, public: bool) -> Created: ...
+
+    def read(self, uri: TargetURI) -> bytes | None:
+        """None => the container is gone. Raises CliError target_missing
+        with details.missing == "file" when the container exists but the
+        named file does not."""
+
+    def update(self, uri: TargetURI, content: bytes) -> None: ...
+
+    def web_url(self, uri: TargetURI) -> str | None: ...
+
+    def normalize(self, ref: str) -> TargetURI | None: ...
+
+    def doctor(self) -> list[dict[str, Any]]: ...
+
+
+GIST_URL_RE = re.compile(
+    r"^https://gist\.github\.com/(?:[A-Za-z0-9-]+/)?"
+    r"(?P<id>[0-9a-f]{8,64})(?:[/#?].*)?$"
+)
+GIST_ID_RE = re.compile(r"^[0-9a-f]{16,64}$")
+
+
+class GistTarget:
+    """GitHub Gist via `gh api`. Every call pins --hostname github.com and
+    removes GITHUB_TOKEN from the environment (GH_TOKEN stays untouched)."""
+
+    scheme: ClassVar[str] = "gist"
+
+    def _gh_env(self) -> dict[str, str]:
+        env = os.environ.copy()
+        env.pop("GITHUB_TOKEN", None)
+        return env
+
+    def _api(
+        self,
+        args: Sequence[str],
+        *,
+        input_text: str | None = None,
+        check: bool = True,
+    ) -> CommandResult:
+        return run_command(
+            [executable("gh"), "api", "--hostname", "github.com", *args],
+            env=self._gh_env(),
+            input_text=input_text,
+            check=check,
+        )
+
+    def precheck(self, content: bytes) -> None:
+        self._content_text(content)
+
+    def _content_text(self, content: bytes) -> str:
+        if len(content) > MAX_GIST_BYTES:
+            raise CliError(
+                "too_large",
+                (
+                    f"The content is {len(content)} bytes; gists over "
+                    f"{MAX_GIST_BYTES} bytes cannot be read back reliably."
+                ),
+            )
+        try:
+            return content.decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise CliError(
+                "not_utf8", "The content is not valid UTF-8."
+            ) from error
+
+    def _parse_json(self, result: CommandResult) -> Any:
+        try:
+            return json.loads(result.stdout)
+        except json.JSONDecodeError as error:
+            raise CliError(
+                "invalid_github_json", "GitHub returned invalid JSON."
+            ) from error
+
+    def create(self, name: str, content: bytes, *, public: bool) -> Created:
+        payload = {
+            "public": public,
+            "files": {name: {"content": self._content_text(content)}},
+        }
+        result = self._api(
+            ["/gists", "--method", "POST", "--input", "-"],
+            input_text=json.dumps(payload),
+        )
+        data = self._parse_json(result)
+        gist_id = str(data.get("id") or "")
+        web_url = str(data.get("html_url") or "")
+        if not gist_id or not web_url:
+            raise CliError(
+                "invalid_github_json", "GitHub omitted the gist id or URL."
+            )
+        uri = TargetURI("gist", gist_id, (("file", name),))
+        return Created(uri, web_url)
+
+    def _fetch(self, uri: TargetURI) -> dict[str, Any] | None:
+        result = self._api([f"/gists/{uri.identifier}"], check=False)
+        if result.returncode != 0:
+            message = result.stderr.strip() or result.stdout.strip()
+            if "HTTP 404" in message or "Not Found" in message:
+                return None
+            raise CliError(
+                "target_error",
+                f"Could not read gist {uri.identifier}: {message[-2_000:]}",
+            )
+        data = self._parse_json(result)
+        if not isinstance(data, dict):
+            raise CliError(
+                "invalid_github_json", "GitHub returned an unexpected gist."
+            )
+        return data
+
+    def _file_entry(
+        self, uri: TargetURI, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        files = data.get("files") or {}
+        name = uri.param("file")
+        if name is None:
+            raise CliError(
+                "invalid_uri", f"The gist URI has no ?file=: {serialize_uri(uri)}"
+            )
+        entry = files.get(name)
+        if not isinstance(entry, dict):
+            raise CliError(
+                "target_missing",
+                (
+                    f"The gist {uri.identifier} exists but has no file "
+                    f"named {name}."
+                ),
+                details={"missing": "file", "candidates": sorted(files)},
+            )
+        return entry
+
+    def read(self, uri: TargetURI) -> bytes | None:
+        data = self._fetch(uri)
+        if data is None:
+            return None
+        entry = self._file_entry(uri, data)
+        if entry.get("truncated"):
+            raise CliError(
+                "too_large",
+                f"The gist file {uri.param('file')} is truncated by the API.",
+            )
+        return str(entry.get("content") or "").encode("utf-8")
+
+    def update(self, uri: TargetURI, content: bytes) -> None:
+        name = uri.param("file")
+        if name is None:
+            raise CliError(
+                "invalid_uri", f"The gist URI has no ?file=: {serialize_uri(uri)}"
+            )
+        payload = {"files": {name: {"content": self._content_text(content)}}}
+        self._api(
+            [f"/gists/{uri.identifier}", "--method", "PATCH", "--input", "-"],
+            input_text=json.dumps(payload),
+        )
+
+    def rename(
+        self, uri: TargetURI, new_name: str, content: bytes
+    ) -> TargetURI:
+        """Rename the gist file and replace its content in one PATCH."""
+        old_name = uri.param("file")
+        if old_name is None:
+            raise CliError(
+                "invalid_uri", f"The gist URI has no ?file=: {serialize_uri(uri)}"
+            )
+        payload = {
+            "files": {
+                old_name: {
+                    "filename": new_name,
+                    "content": self._content_text(content),
+                }
+            }
+        }
+        self._api(
+            [f"/gists/{uri.identifier}", "--method", "PATCH", "--input", "-"],
+            input_text=json.dumps(payload),
+        )
+        return uri.with_param("file", new_name)
+
+    def resolve_file(self, uri: TargetURI) -> TargetURI:
+        """Fill in ?file= for a single-file gist."""
+        data = self._fetch(uri)
+        if data is None:
+            raise CliError(
+                "target_missing",
+                f"The gist {uri.identifier} does not exist.",
+                details={"missing": "container"},
+            )
+        files = sorted(data.get("files") or {})
+        if len(files) == 1:
+            return uri.with_param("file", files[0])
+        raise CliError(
+            "ambiguous_file",
+            (
+                f"The gist {uri.identifier} has {len(files)} files. "
+                f"Add ?file=NAME. Candidates: {', '.join(files)}"
+            ),
+            details={"candidates": files},
+        )
+
+    def web_url(self, uri: TargetURI) -> str | None:
+        return f"https://gist.github.com/{uri.identifier}"
+
+    def normalize(self, ref: str) -> TargetURI | None:
+        if ref.startswith("gist:"):
+            return parse_uri(ref)
+        url_match = GIST_URL_RE.match(ref)
+        if url_match:
+            return TargetURI("gist", url_match.group("id"))
+        if GIST_ID_RE.match(ref):
+            return TargetURI("gist", ref)
+        return None
+
+    def doctor(self) -> list[dict[str, Any]]:
+        checks: list[dict[str, Any]] = []
+        gh_path = shutil.which(executable("gh"))
+        checks.append(
+            {"name": "gh on PATH", "ok": gh_path is not None, "detail": gh_path}
+        )
+        if gh_path is None:
+            return checks
+        auth = run_command(
+            [
+                executable("gh"),
+                "auth",
+                "status",
+                "--hostname",
+                "github.com",
+            ],
+            env=self._gh_env(),
+            check=False,
+        )
+        checks.append(
+            {
+                "name": "gh auth (github.com)",
+                "ok": auth.returncode == 0,
+                "detail": None
+                if auth.returncode == 0
+                else (auth.stderr.strip() or auth.stdout.strip())[-300:],
+            }
+        )
+        output = auth.stdout + auth.stderr
+        checks.append(
+            {
+                "name": "gist scope (advisory)",
+                "ok": True,
+                "detail": (
+                    "gist scope present"
+                    if "gist" in output
+                    else "no gist scope reported; fine-grained tokens can "
+                    "still write gists"
+                ),
+            }
+        )
+        return checks
+
+
+def helper_timeout() -> float:
+    return float(os.environ.get("PUB_HELPER_TIMEOUT", "60"))
+
+
+class ExternalTarget:
+    """Adapter for pub-target-<scheme> helper executables on PATH."""
+
+    def __init__(self, scheme: str, helper: str) -> None:
+        self.scheme = scheme
+        self.helper = helper
+        result = self._run(["protocol"])
+        version = result.stdout.decode("utf-8", errors="replace").strip()
+        if version != HELPER_PROTOCOL_VERSION:
+            raise CliError(
+                "helper_protocol",
+                (
+                    f"{helper} speaks helper protocol {version!r}; this pub "
+                    f"speaks {HELPER_PROTOCOL_VERSION!r}."
+                ),
+            )
+
+    @dataclass(frozen=True)
+    class RawResult:
+        stdout: bytes
+        stderr: str
+        returncode: int
+
+    def _run(
+        self,
+        args: Sequence[str],
+        *,
+        input_bytes: bytes | None = None,
+        ok_codes: Sequence[int] = (0,),
+    ) -> "ExternalTarget.RawResult":
+        try:
+            completed = subprocess.run(
+                [self.helper, *args],
+                input=input_bytes,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=helper_timeout(),
+                check=False,
+            )
+        except FileNotFoundError as error:
+            raise CliError(
+                "missing_command", f"Command not found: {self.helper}"
+            ) from error
+        except subprocess.TimeoutExpired as error:
+            raise CliError(
+                "helper_timeout",
+                f"{self.helper} {args[0]} timed out after "
+                f"{helper_timeout():g}s.",
+            ) from error
+        stdout = completed.stdout or b""
+        if len(stdout) > HELPER_STDOUT_CAP:
+            raise CliError(
+                "helper_output_too_large",
+                f"{self.helper} {args[0]} wrote more than "
+                f"{HELPER_STDOUT_CAP} bytes; the output was discarded.",
+            )
+        stderr = (completed.stderr or b"")[-HELPER_STDERR_CAP:].decode(
+            "utf-8", errors="replace"
+        )
+        result = ExternalTarget.RawResult(stdout, stderr, completed.returncode)
+        if completed.returncode not in ok_codes:
+            raise CliError(
+                "helper_failed",
+                (
+                    f"{self.helper} {args[0]} failed with exit "
+                    f"{completed.returncode}.\n{stderr.strip()}"
+                ),
+                details={"exit_code": completed.returncode},
+            )
+        return result
+
+    def create(self, name: str, content: bytes, *, public: bool) -> Created:
+        args = ["create", "--name", name]
+        if public:
+            args.append("--public")
+        result = self._run(args, input_bytes=content)
+        try:
+            data = json.loads(result.stdout.decode("utf-8"))
+            uri = parse_uri(str(data["uri"]))
+            web_url = str(data.get("web_url") or "")
+        except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as error:
+            raise CliError(
+                "helper_failed",
+                f"{self.helper} create returned invalid JSON.",
+            ) from error
+        return Created(uri, web_url)
+
+    def read(self, uri: TargetURI) -> bytes | None:
+        result = self._run(["read", serialize_uri(uri)], ok_codes=(0, 4))
+        if result.returncode == 4:
+            return None
+        return result.stdout
+
+    def update(self, uri: TargetURI, content: bytes) -> None:
+        try:
+            self._run(["update", serialize_uri(uri)], input_bytes=content)
+            return
+        except CliError as error:
+            if error.code not in {"helper_failed", "helper_timeout"}:
+                raise
+            # Ambiguous failure: the helper may or may not have written.
+            # Read back and compare before reporting the failure.
+            try:
+                landed = self.read(uri)
+            except CliError:
+                landed = None
+            if landed is not None and landed == content:
+                return
+            raise
+
+    def web_url(self, uri: TargetURI) -> str | None:
+        result = self._run(["web-url", serialize_uri(uri)], ok_codes=(0, 5))
+        if result.returncode == 5:
+            return None
+        return result.stdout.decode("utf-8", errors="replace").strip() or None
+
+    def normalize(self, ref: str) -> TargetURI | None:
+        result = self._run(["normalize", ref], ok_codes=(0, 4))
+        if result.returncode == 4:
+            return None
+        text = result.stdout.decode("utf-8", errors="replace").strip()
+        return parse_uri(text) if text else None
+
+    def doctor(self) -> list[dict[str, Any]]:
+        result = self._run(["doctor"], ok_codes=(0, 5))
+        if result.returncode == 5:
+            return [{"name": f"{self.helper}", "ok": True, "detail": None}]
+        try:
+            checks = json.loads(result.stdout.decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return [
+                {
+                    "name": f"{self.helper} doctor",
+                    "ok": False,
+                    "detail": "invalid JSON",
+                }
+            ]
+        return checks if isinstance(checks, list) else []
+
+
+TARGET_REGISTRY: dict[str, Any] = {"gist": GistTarget}
+_TARGET_CACHE: dict[str, Any] = {}
+
+
+def resolve_target(scheme: str) -> Any:
+    cached = _TARGET_CACHE.get(scheme)
+    if cached is not None:
+        return cached
+    factory = TARGET_REGISTRY.get(scheme)
+    if factory is not None:
+        target = factory() if callable(factory) else factory
+    else:
+        helper = shutil.which(f"pub-target-{scheme}")
+        if helper is None:
+            raise CliError(
+                "unknown_target",
+                (
+                    f"Unknown target scheme: {scheme}. No built-in target "
+                    f"and no pub-target-{scheme} on PATH."
+                ),
+            )
+        target = ExternalTarget(scheme, helper)
+    _TARGET_CACHE[scheme] = target
+    return target
+
+
+def resolve_reference(ref: str, target_scheme: str) -> TargetURI:
+    """Normalize a URI, browser URL, or bare id into a TargetURI."""
+    schemes = [target_scheme] + [
+        scheme for scheme in TARGET_REGISTRY if scheme != target_scheme
+    ]
+    for scheme in schemes:
+        try:
+            target = resolve_target(scheme)
+        except CliError:
+            continue
+        uri = target.normalize(ref)
+        if uri is not None:
+            return uri
+    if URI_RE.match(ref) and not ref.startswith(("http:", "https:")):
+        return parse_uri(ref)
+    raise CliError(
+        "invalid_reference", f"Unrecognized target reference: {ref}"
+    )
+
+
+# --- Documents and classification ---
+
+
+@dataclass
+class Document:
+    argument: str
+    real_path: Path
+    content: bytes
+    text: str
+    sha256: str
+    style: tuple[str, str] | None
+    tag: TagMatch | None
+
+    @property
+    def shown(self) -> str:
+        return display_path(self.real_path)
+
+
+def load_document(argument: str) -> Document:
+    path = Path(argument).expanduser()
+    try:
+        real_path = path.resolve(strict=True)
+    except OSError as error:
+        raise CliError(
+            "file_not_found", f"File not found: {argument}"
+        ) from error
+    if not stat.S_ISREG(real_path.stat().st_mode):
+        raise CliError(
+            "not_regular_file",
+            f"Not a regular file: {display_path(real_path)}",
+        )
+    content = real_path.read_bytes()
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise CliError(
+            "not_utf8",
+            f"The file is not valid UTF-8: {display_path(real_path)}",
+        ) from error
+    style = detect_style(real_path, text)
+    tag = find_tag(text, style)
+    return Document(
+        argument=argument,
+        real_path=real_path,
+        content=content,
+        text=text,
+        sha256=sha256_hex(content),
+        style=style,
+        tag=tag,
+    )
+
+
+def ensure_unchanged(document: Document) -> None:
+    """Re-hash the file immediately before a local write or remote update."""
+    current = document.real_path.read_bytes()
+    if sha256_hex(current) != document.sha256:
+        raise CliError(
+            "file_changed_during_run",
+            (
+                f"{document.shown} changed while pub ran (an editor save?). "
+                "Nothing was written. Run the command again."
+            ),
+        )
+
+
+def read_remote(target: Any, uri: TargetURI) -> bytes:
+    """Read remote bytes; raise target_missing for both gone shapes."""
+    remote = target.read(uri)
+    if remote is None:
+        raise CliError(
+            "target_missing",
+            (
+                f"The target {serialize_uri(uri)} does not exist. "
+                "Run `pub unlink` and republish, or fix the tag."
+            ),
+            details={"missing": "container"},
+        )
+    return remote
+
+
+@dataclass
+class Classified:
+    state: str
+    remote: bytes | None
+    record: dict[str, Any] | None
+
+
+def classify(
+    document: Document, uri: TargetURI, target: Any
+) -> Classified:
+    uri_text = serialize_uri(uri)
+    record = load_state(uri_text)
+    try:
+        remote = read_remote(target, uri)
+    except CliError as error:
+        if error.code == "target_missing":
+            return Classified("missing", None, record)
+        raise
+    local_sha = document.sha256
+    remote_sha = sha256_hex(remote)
+    base = record.get("base_sha256") if record else None
+    if local_sha == remote_sha:
+        state = "synced"
+    elif base and remote_sha == base:
+        state = "ahead"
+    elif base and local_sha == base:
+        state = "behind"
+    elif base:
+        state = "diverged"
+    else:
+        state = "unknown"
+    return Classified(state, remote, record)
+
+
+def guard_shared_uri(
+    record: dict[str, Any] | None,
+    real_path: Path,
+    force: bool,
+    command: str,
+) -> str | None:
+    """Refuse when another live local file owns this URI. When the old
+    path is gone, warn (the file moved) and proceed."""
+    if not record:
+        return None
+    seen = record.get("last_seen_path")
+    if not seen or seen == str(real_path):
+        return None
+    old_path = Path(seen)
+    if old_path.exists():
+        if force:
+            return f"ownership moved from {display_path(old_path)} (--force)"
+        raise CliError(
+            "shared_uri",
+            (
+                f"{record.get('uri')} is owned by "
+                f"{display_path(old_path)}, which still exists. Two local "
+                f"files share one URI. Use --force with {command} to move "
+                "ownership to this file."
+            ),
+            details={"last_seen_path": seen},
+        )
+    return f"the file moved from {display_path(old_path)}"
+
+
+def refresh_state(
+    document: Document,
+    uri: TargetURI,
+    target: Any,
+    classified: Classified,
+    *,
+    base: bytes,
+) -> dict[str, Any]:
+    """Record base + path. Any synced contact bootstraps state — the
+    deliberate multi-machine decision."""
+    record = classified.record
+    web_url = (record or {}).get("web_url") or target.web_url(uri)
+    return save_state(
+        serialize_uri(uri),
+        real_path=document.real_path,
+        base_sha256=sha256_hex(base),
+        web_url=web_url,
+    )
+
+
+def state_web_url(
+    record: dict[str, Any] | None, target: Any, uri: TargetURI
+) -> str | None:
+    return (record or {}).get("web_url") or target.web_url(uri)
+
+
+# --- Journal recovery ---
+
+
+def raise_pending(document: Document, entry: dict[str, Any]) -> None:
+    journal = shlex.quote(str(journal_path(document.real_path)))
+    phase = entry.get("phase")
+    if phase == "creating":
+        raise CliError(
+            "pending_create",
+            (
+                f"A create for {document.shown} started earlier and pub "
+                "cannot know whether it landed. Check `gh gist list "
+                "--limit 5`. If it landed: `pub link "
+                f"{shlex.quote(document.argument)} gist:<id>`. If it did "
+                f"not: `rm {journal}` and publish again."
+            ),
+            details={"phase": "creating"},
+        )
+    if phase == "created":
+        uri_text = str(entry.get("uri") or "")
+        raise CliError(
+            "pending_create",
+            (
+                f"A create for {document.shown} landed at {uri_text} but "
+                "the tag was not written. Run: `pub link "
+                f"{shlex.quote(document.argument)} {uri_text}`."
+            ),
+            details={"phase": "created", "uri": uri_text},
+        )
+    if phase == "renaming":
+        old_uri = str(entry.get("old_uri") or "")
+        new_uri = str(entry.get("new_uri") or "")
+        raise CliError(
+            "pending_rename",
+            (
+                f"A rename of {document.shown} ({old_uri} -> {new_uri}) "
+                "did not finish. Check which filename the gist has, then "
+                f"run `pub link {shlex.quote(document.argument)} <the "
+                f"surviving URI>` (it clears this entry), or `rm {journal}`."
+            ),
+            details={"old_uri": old_uri, "new_uri": new_uri},
+        )
+    raise CliError(
+        "pending_create",
+        f"An unrecognized journal entry exists for {document.shown}. "
+        f"Inspect and remove it: {journal}",
+    )
+
+
+def settle_journal_for_tagged(document: Document, uri_text: str) -> None:
+    """Self-heal a `created` entry whose tag already landed; otherwise a
+    journal entry is an explicit stop."""
+    entry = load_journal(document.real_path)
+    if entry is None:
+        return
+    phase = entry.get("phase")
+    if phase == "created" and entry.get("uri") == uri_text:
+        clear_journal(document.real_path)
+        return
+    if phase == "renaming" and entry.get("new_uri") == uri_text:
+        clear_journal(document.real_path)
+        return
+    raise_pending(document, entry)
+
+
+# --- publish / sync ---
+
+
+@dataclass
+class PublishOptions:
+    force: bool = False
+    allow_sensitive: bool = False
+    public: bool = False
+    rename: bool = False
+    publish_as: str | None = None
+    to: str | None = None
+    target_scheme: str = "gist"
+
+
+def validate_publish_name(name: str) -> str:
+    if (
+        not name
+        or name in {".", ".."}
+        or "/" in name
+        or "\\" in name
+        or any(ord(ch) < 0x20 or ch == "\x7f" for ch in name)
+    ):
+        raise CliError(
+            "invalid_filename", f"Invalid published filename: {name!r}"
+        )
+    return name
+
+
+def refuse_remote_changed(state: str, force: bool, direction: str) -> None:
+    if force:
+        return
+    if direction == "publish" and state in {"behind", "diverged", "unknown"}:
+        raise CliError(
+            "remote_changed",
+            (
+                f"The published copy is {state}. Run `pub diff`, then "
+                "`pub sync --force` (local wins) or `pub pull --force` "
+                "(remote wins)."
+            ),
+            details={"state": state},
+        )
+    if direction == "pull" and state in {"ahead", "diverged", "unknown"}:
+        raise CliError(
+            "local_changed",
+            (
+                f"The local file is {state}; an unforced pull could destroy "
+                "local work. Run `pub diff`, then `pub pull --force` "
+                "(remote wins) or `pub sync --force` (local wins)."
+            ),
+            details={"state": state},
+        )
+
+
+def publish_one(
+    argument: str, options: PublishOptions, *, allow_create: bool
+) -> dict[str, Any]:
+    document = load_document(argument)
+    check_sensitive(
+        document.real_path, document.text, options.allow_sensitive
+    )
+    if options.to:
+        if document.tag is None:
+            link_one(
+                argument,
+                options.to,
+                target_scheme=options.target_scheme,
+                force=options.force,
+            )
+            document = load_document(argument)
+        elif serialize_uri(document.tag.uri) != serialize_uri(
+            resolve_reference(options.to, options.target_scheme)
+        ):
+            raise CliError(
+                "already_linked",
+                (
+                    f"{document.shown} is already linked to "
+                    f"{serialize_uri(document.tag.uri)}. Run `pub unlink` "
+                    "first."
+                ),
+            )
+    if document.tag is None:
+        if not allow_create:
+            raise CliError(
+                "untracked",
+                f"{document.shown} has no valid x-pub tag; sync never "
+                "creates. Use `pub publish` for a first publish.",
+            )
+        return publish_create(document, options)
+    return publish_tagged(document, options)
+
+
+def publish_create(
+    document: Document, options: PublishOptions
+) -> dict[str, Any]:
+    if document.style is None:
+        raise CliError(
+            "unsupported_filetype",
+            (
+                f"No known comment syntax for {document.shown}; pub cannot "
+                "write the x-pub tag. (JSON has no comments.)"
+            ),
+        )
+    with held_lock("path", str(document.real_path)):
+        document = load_document(document.argument)
+        if document.tag is not None:
+            # Lost a create race; the winner tagged the file.
+            return publish_tagged(document, options)
+        entry = load_journal(document.real_path)
+        if entry is not None:
+            raise_pending(document, entry)
+        target = resolve_target(options.target_scheme)
+        name = options.publish_as or document.real_path.name
+        # Validate before journaling: a deterministic local refusal must
+        # not leave a pending-create entry behind.
+        precheck = getattr(target, "precheck", None)
+        if precheck is not None:
+            precheck(document.content)
+        save_journal(
+            document.real_path,
+            {
+                "name": name,
+                "phase": "creating",
+                "scheme": options.target_scheme,
+            },
+        )
+        created = target.create(
+            name, document.content, public=options.public
+        )
+        uri_text = serialize_uri(created.uri)
+        save_journal(
+            document.real_path,
+            {
+                "name": name,
+                "phase": "created",
+                "scheme": options.target_scheme,
+                "uri": uri_text,
+            },
+        )
+        assert document.style is not None
+        tagged_text = insert_tag(document.text, document.style, created.uri)
+        tagged = tagged_text.encode("utf-8")
+        ensure_unchanged(document)
+        write_bytes_atomic(document.real_path, tagged)
+        target.update(created.uri, tagged)
+        save_state(
+            uri_text,
+            real_path=document.real_path,
+            base_sha256=sha256_hex(tagged),
+            web_url=created.web_url,
+        )
+        clear_journal(document.real_path)
+    return {
+        "created": True,
+        "file": document.shown,
+        "note": SECRET_NOTE,
+        "ok": True,
+        "public": options.public,
+        "state": "synced",
+        "state_before": "untracked",
+        "uri": uri_text,
+        "web_url": created.web_url,
+    }
+
+
+def publish_tagged(
+    document: Document, options: PublishOptions
+) -> dict[str, Any]:
+    assert document.tag is not None
+    uri = document.tag.uri
+    uri_text = serialize_uri(uri)
+    target = resolve_target(uri.scheme)
+    notes: list[str] = []
+    renamed_to: str | None = None
+    with held_lock("uri", uri_text):
+        settle_journal_for_tagged(document, uri_text)
+        classified = classify(document, uri, target)
+        if classified.state == "missing":
+            raise CliError(
+                "target_missing",
+                (
+                    f"The target {uri_text} is gone. Run `pub unlink "
+                    f"{shlex.quote(document.argument)}` and republish, or "
+                    "fix the tag's ?file=."
+                ),
+            )
+        remote_name = uri.param("file")
+        local_name = document.real_path.name
+        if options.publish_as and remote_name is None:
+            raise CliError(
+                "rename_unsupported",
+                f"{uri_text} has no ?file= name to rename.",
+            )
+        desired_name: str | None = None
+        if options.publish_as:
+            desired_name = options.publish_as
+        elif options.rename:
+            desired_name = local_name
+        renaming = (
+            desired_name is not None
+            and remote_name is not None
+            and remote_name != desired_name
+        )
+        if renaming and not hasattr(target, "rename"):
+            raise CliError(
+                "rename_unsupported",
+                f"The {uri.scheme} target cannot rename published files.",
+            )
+        name_note = (
+            f"the local name {local_name} differs from the published "
+            f"name {remote_name}; the tag is the truth. Use --rename "
+            "to rename the published file, or --as NAME to keep them "
+            "different on purpose."
+        )
+        # A rename proceeds even from synced: renaming a published copy
+        # is exactly the case where the content has not changed.
+        if classified.state == "synced" and not renaming:
+            record = refresh_state(
+                document, uri, target, classified, base=document.content
+            )
+            result: dict[str, Any] = {
+                "file": document.shown,
+                "ok": True,
+                "state": "synced",
+                "state_before": "synced",
+                "uri": uri_text,
+                "web_url": record.get("web_url"),
+            }
+            if (
+                remote_name is not None
+                and remote_name != local_name
+                and not options.publish_as
+                and classified.record is None
+            ):
+                result["notes"] = [name_note]
+            return result
+        if classified.state != "synced":
+            refuse_remote_changed(classified.state, options.force, "publish")
+        moved = guard_shared_uri(
+            classified.record, document.real_path, options.force, "publish"
+        )
+        if moved:
+            notes.append(moved)
+        # The name-mismatch note only when the difference is news: the
+        # file just moved, or no state existed. An established mismatch
+        # (deliberate --as naming) stays quiet on every later sync.
+        if (
+            remote_name is not None
+            and remote_name != local_name
+            and not renaming
+            and not options.publish_as
+            and (moved is not None or classified.record is None)
+        ):
+            notes.append(name_note)
+        ensure_unchanged(document)
+        if renaming:
+            assert document.style is not None
+            assert desired_name is not None
+            new_uri = uri.with_param("file", desired_name)
+            new_uri_text = serialize_uri(new_uri)
+            new_text = replace_tag_line(document.text, document.style, new_uri)
+            new_content = new_text.encode("utf-8")
+            save_journal(
+                document.real_path,
+                {
+                    "new_uri": new_uri_text,
+                    "old_uri": uri_text,
+                    "phase": "renaming",
+                },
+            )
+            target.rename(uri, desired_name, new_content)
+            write_bytes_atomic(document.real_path, new_content)
+            web_url = state_web_url(classified.record, target, new_uri)
+            save_state(
+                new_uri_text,
+                real_path=document.real_path,
+                base_sha256=sha256_hex(new_content),
+                web_url=web_url,
+            )
+            delete_state(uri_text)
+            clear_journal(document.real_path)
+            renamed_to = desired_name
+            uri_text = new_uri_text
+        else:
+            target.update(uri, document.content)
+            web_url = state_web_url(classified.record, target, uri)
+            save_state(
+                uri_text,
+                real_path=document.real_path,
+                base_sha256=document.sha256,
+                web_url=web_url,
+            )
+    result: dict[str, Any] = {
+        "file": document.shown,
+        "ok": True,
+        "state": "synced",
+        "state_before": classified.state,
+        "uri": uri_text,
+        "web_url": web_url,
+    }
+    if renamed_to:
+        result["renamed_to"] = renamed_to
+    if notes:
+        result["notes"] = notes
+    return result
+
+
+def run_batch(
+    arguments: Sequence[str],
+    one: Any,
+) -> tuple[dict[str, Any], int]:
+    """Process each file independently; continue past failures."""
+    if len(arguments) == 1:
+        return one(arguments[0]), 0
+    results: list[dict[str, Any]] = []
+    failed = False
+    for argument in arguments:
+        try:
+            results.append(one(argument))
+        except CliError as error:
+            failed = True
+            item: dict[str, Any] = {
+                "error": {"code": error.code, "message": error.message},
+                "file": argument,
+                "ok": False,
+            }
+            if error.details:
+                item["error"]["details"] = error.details
+            results.append(item)
+    return {"results": results}, 1 if failed else 0
+
+
+# --- status ---
+
+
+def status_named(argument: str) -> dict[str, Any]:
+    document = load_document(argument)
+    if document.tag is None:
+        return {"file": document.shown, "ok": True, "state": "untracked"}
+    uri = document.tag.uri
+    target = resolve_target(uri.scheme)
+    classified = classify(document, uri, target)
+    if classified.state == "synced":
+        record = refresh_state(
+            document, uri, target, classified, base=document.content
+        )
+    else:
+        record = classified.record
+    return {
+        "file": document.shown,
+        "ok": True,
+        "state": classified.state,
+        "uri": serialize_uri(uri),
+        "web_url": state_web_url(record, target, uri),
+    }
+
+
+def status_from_state(record: dict[str, Any]) -> dict[str, Any]:
+    uri_text = str(record["uri"])
+    uri = parse_uri(uri_text)
+    seen = str(record.get("last_seen_path") or "")
+    base: dict[str, Any] = {"file": display_path(Path(seen)) if seen else None, "ok": True, "uri": uri_text}
+    path = Path(seen) if seen else None
+    if path is None or not path.exists():
+        return {**base, "state": "local_missing"}
+    document = load_document(seen)
+    target = resolve_target(uri.scheme)
+    classified = classify(document, uri, target)
+    if classified.state == "synced":
+        refresh_state(document, uri, target, classified, base=document.content)
+    return {
+        **base,
+        "state": classified.state,
+        "web_url": state_web_url(classified.record or record, target, uri),
+    }
+
+
+def command_status(
+    arguments: Sequence[str], check: bool
+) -> tuple[dict[str, Any], int]:
+    named = bool(arguments)
+    if named:
+        data, exit_code = run_batch(arguments, status_named)
+    else:
+        results: list[dict[str, Any]] = []
+        exit_code = 0
+        for record in iter_states():
+            try:
+                results.append(status_from_state(record))
+            except CliError as error:
+                exit_code = 1
+                results.append(
+                    {
+                        "error": {"code": error.code, "message": error.message},
+                        "file": record.get("last_seen_path"),
+                        "ok": False,
+                        "uri": record.get("uri"),
+                    }
+                )
+        data = {"results": results}
+    if not check:
+        return data, exit_code
+    entries = data.get("results", [data])
+    if any(not entry.get("ok") for entry in entries):
+        return data, 1
+    stale_states = STALE_STATES | ({"untracked"} if named else set())
+    stale = any(entry.get("state") in stale_states for entry in entries)
+    return data, 3 if stale else exit_code
+
+
+# --- diff / pull ---
+
+
+def command_diff(argument: str) -> tuple[dict[str, Any], int]:
+    document = load_document(argument)
+    if document.tag is None:
+        raise CliError(
+            "untracked", f"{document.shown} has no x-pub tag."
+        )
+    uri = document.tag.uri
+    target = resolve_target(uri.scheme)
+    remote = read_remote(target, uri)
+    if remote == document.content:
+        return {"file": document.shown, "identical": True}, 0
+    name = uri.param("file") or document.real_path.name
+    diff_lines = list(
+        difflib.unified_diff(
+            remote.decode("utf-8", errors="replace").splitlines(keepends=True),
+            document.text.splitlines(keepends=True),
+            fromfile=f"a/{name}",
+            tofile=f"b/{name}",
+        )
+    )
+    return {
+        "diff": "".join(diff_lines),
+        "file": document.shown,
+        "identical": False,
+    }, 1
+
+
+def colorize_diff(diff_text: str) -> str:
+    lines: list[str] = []
+    for line in diff_text.splitlines():
+        if line.startswith(("+++", "---")):
+            lines.append(f"\033[1m{line}\033[0m")
+        elif line.startswith("@@"):
+            lines.append(f"\033[36m{line}\033[0m")
+        elif line.startswith("+"):
+            lines.append(f"\033[32m{line}\033[0m")
+        elif line.startswith("-"):
+            lines.append(f"\033[31m{line}\033[0m")
+        else:
+            lines.append(line)
+    return "\n".join(lines) + ("\n" if diff_text.endswith("\n") else "")
+
+
+def command_pull(argument: str, force: bool) -> dict[str, Any]:
+    document = load_document(argument)
+    if document.tag is None:
+        raise CliError(
+            "untracked", f"{document.shown} has no x-pub tag."
+        )
+    uri = document.tag.uri
+    uri_text = serialize_uri(uri)
+    target = resolve_target(uri.scheme)
+    notes: list[str] = []
+    with held_lock("uri", uri_text):
+        classified = classify(document, uri, target)
+        if classified.state == "missing":
+            raise CliError(
+                "target_missing", f"The target {uri_text} is gone."
+            )
+        moved = guard_shared_uri(
+            classified.record, document.real_path, force, "pull"
+        )
+        if moved:
+            notes.append(moved)
+        if classified.state == "synced":
+            record = refresh_state(
+                document, uri, target, classified, base=document.content
+            )
+            return {
+                "changed": False,
+                "file": document.shown,
+                "ok": True,
+                "state": "synced",
+                "state_before": "synced",
+                "web_url": record.get("web_url"),
+            }
+        refuse_remote_changed(classified.state, force, "pull")
+        remote = classified.remote or b""
+        # Identity check: the fetched content must carry a tag for the
+        # same URI, or a remote edit could silently retarget this file.
+        remote_text = remote.decode("utf-8", errors="replace")
+        remote_tag = find_tag(remote_text, document.style)
+        migrate_to: TargetURI | None = None
+        if remote_tag is None or serialize_uri(remote_tag.uri) != uri_text:
+            found = (
+                serialize_uri(remote_tag.uri) if remote_tag else "no tag"
+            )
+            if not force:
+                raise CliError(
+                    "pull_identity",
+                    (
+                        f"The published copy carries {found}, not "
+                        f"{uri_text}. Pulling would import a retargeted "
+                        "file. Use --force to pull and reconcile."
+                    ),
+                    details={"found": found},
+                )
+            if remote_tag is not None:
+                migrate_to = remote_tag.uri
+                notes.append(
+                    f"migrated state to {serialize_uri(remote_tag.uri)} "
+                    "(the pulled tag)"
+                )
+            else:
+                notes.append(
+                    "WARNING: the pulled content has no x-pub tag; the "
+                    "file is now untracked"
+                )
+        ensure_unchanged(document)
+        write_bytes_atomic(document.real_path, remote)
+        added = 0
+        removed = 0
+        for line in difflib.unified_diff(
+            document.text.splitlines(), remote_text.splitlines(), lineterm=""
+        ):
+            if line.startswith("+") and not line.startswith("+++"):
+                added += 1
+            elif line.startswith("-") and not line.startswith("---"):
+                removed += 1
+        if migrate_to is not None:
+            new_uri_text = serialize_uri(migrate_to)
+            migrate_target = resolve_target(migrate_to.scheme)
+            save_state(
+                new_uri_text,
+                real_path=document.real_path,
+                base_sha256=sha256_hex(remote),
+                web_url=migrate_target.web_url(migrate_to),
+            )
+            delete_state(uri_text)
+            web_url = migrate_target.web_url(migrate_to)
+        elif remote_tag is not None:
+            record = save_state(
+                uri_text,
+                real_path=document.real_path,
+                base_sha256=sha256_hex(remote),
+                web_url=state_web_url(classified.record, target, uri),
+            )
+            web_url = record.get("web_url")
+        else:
+            web_url = state_web_url(classified.record, target, uri)
+    result: dict[str, Any] = {
+        "changed": True,
+        "file": document.shown,
+        "lines_added": added,
+        "lines_removed": removed,
+        "ok": True,
+        "state": "untracked" if remote_tag is None else "synced",
+        "state_before": classified.state,
+        "web_url": web_url,
+    }
+    if notes:
+        result["notes"] = notes
+    return result
+
+
+# --- link / unlink / open / list / doctor ---
+
+
+def link_one(
+    argument: str,
+    ref: str,
+    *,
+    target_scheme: str = "gist",
+    force: bool = False,
+) -> dict[str, Any]:
+    document = load_document(argument)
+    if document.style is None:
+        raise CliError(
+            "unsupported_filetype",
+            f"No known comment syntax for {document.shown}; pub cannot "
+            "write the x-pub tag.",
+        )
+    uri = resolve_reference(ref, target_scheme)
+    target = resolve_target(uri.scheme)
+    if uri.param("file") is None and hasattr(target, "resolve_file"):
+        uri = target.resolve_file(uri)
+    uri_text = serialize_uri(uri)
+    if document.tag is not None and serialize_uri(document.tag.uri) != uri_text:
+        raise CliError(
+            "already_linked",
+            (
+                f"{document.shown} is already linked to "
+                f"{serialize_uri(document.tag.uri)}. Run `pub unlink` "
+                "first."
+            ),
+        )
+    notes: list[str] = []
+    with held_lock("uri", uri_text):
+        record = load_state(uri_text)
+        moved = guard_shared_uri(record, document.real_path, force, "link")
+        if moved:
+            notes.append(moved)
+        remote = read_remote(target, uri)
+        if document.tag is None:
+            compare_text = document.text
+        else:
+            compare_text = remove_tag(document.text, document.style)
+        matched = compare_text.encode("utf-8") == remote
+        if document.tag is None:
+            tagged = insert_tag(document.text, document.style, uri)
+            ensure_unchanged(document)
+            write_bytes_atomic(document.real_path, tagged.encode("utf-8"))
+        web_url = state_web_url(record, target, uri)
+        save_state(
+            uri_text,
+            real_path=document.real_path,
+            base_sha256=sha256_hex(remote) if matched else None,
+            web_url=web_url,
+        )
+        clear_journal(document.real_path)
+    if not matched:
+        notes.append(
+            "the local content does not match the remote copy, so no base "
+            "was recorded (state: unknown). Run `pub diff`, then "
+            f"`pub {shlex.quote(argument)} --force` (local wins) or "
+            f"`pub pull {shlex.quote(argument)} --force` (remote wins)."
+        )
+    result: dict[str, Any] = {
+        "file": document.shown,
+        "matched": matched,
+        "ok": True,
+        "uri": uri_text,
+        "web_url": web_url,
+    }
+    if notes:
+        result["notes"] = notes
+    return result
+
+
+def command_unlink(argument: str) -> dict[str, Any]:
+    document = load_document(argument)
+    if document.tag is None:
+        raise CliError(
+            "untracked", f"{document.shown} has no x-pub tag."
+        )
+    assert document.style is not None
+    uri_text = serialize_uri(document.tag.uri)
+    with held_lock("uri", uri_text):
+        record = load_state(uri_text)
+        stripped = remove_tag(document.text, document.style)
+        ensure_unchanged(document)
+        write_bytes_atomic(document.real_path, stripped.encode("utf-8"))
+        owned = bool(
+            record and record.get("last_seen_path") == str(document.real_path)
+        )
+        if owned:
+            delete_state(uri_text)
+    result: dict[str, Any] = {
+        "file": document.shown,
+        "ok": True,
+        "state_deleted": owned,
+        "uri": uri_text,
+    }
+    if record and not owned:
+        result["notes"] = [
+            (
+                "state was kept: it belongs to "
+                f"{display_path(Path(str(record.get('last_seen_path'))))}"
+            )
+        ]
+    return result
+
+
+def command_open(argument: str) -> dict[str, Any]:
+    document = load_document(argument)
+    if document.tag is None:
+        raise CliError(
+            "untracked", f"{document.shown} has no x-pub tag."
+        )
+    uri = document.tag.uri
+    record = load_state(serialize_uri(uri))
+    url = state_web_url(record, resolve_target(uri.scheme), uri)
+    if not url:
+        raise CliError(
+            "no_web_url", f"No web URL is known for {serialize_uri(uri)}."
+        )
+    webbrowser.open(url)
+    return {"file": document.shown, "ok": True, "web_url": url}
+
+
+def command_list() -> dict[str, Any]:
+    documents = [
+        {
+            "base_updated_at": record.get("base_updated_at"),
+            "file": display_path(Path(str(record.get("last_seen_path") or ""))),
+            "uri": record.get("uri"),
+            "web_url": record.get("web_url"),
+        }
+        for record in iter_states()
+    ]
+    return {"documents": documents}
+
+
+def command_doctor() -> dict[str, Any]:
+    root = state_root()
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+        probe_fd, probe_name = tempfile.mkstemp(dir=str(root), prefix=".___probe.")
+        os.close(probe_fd)
+        os.unlink(probe_name)
+        writable = True
+    except OSError:
+        writable = False
+    targets: dict[str, Any] = {}
+    ready = writable
+    for scheme in sorted(TARGET_REGISTRY):
+        try:
+            checks = resolve_target(scheme).doctor()
+        except CliError as error:
+            checks = [{"name": scheme, "ok": False, "detail": error.message}]
+        advisory_ok = all(
+            check["ok"] or "advisory" in str(check.get("name", ""))
+            for check in checks
+        )
+        targets[scheme] = {"checks": checks, "ready": advisory_ok}
+        ready = ready and advisory_ok
+    return {
+        "ready": ready,
+        "skill": skill_status_data(scopes=default_skill_scopes()),
+        "state": {"root": str(root), "writable": writable},
+        "targets": targets,
+        "tool_version": TOOL_VERSION,
+    }
+
+
+# --- pub skill (Part II) ---
+
+SKILL_NAME = "pub-sync"
+SKILL_VERSION = 1
+SKILL_MD = '''---
+name: pub-sync
+description: >-
+  Keep files that contain an `x-pub:` comment line in sync with their
+  published copy (GitHub gist etc.) using the `pub` CLI. Use after editing
+  a tagged file, when the user asks to publish/share/sync a document, or
+  when deciding whether a local document matches its published version.
+---
+
+# Syncing pub-tagged files
+
+A line like `<!-- x-pub: gist:ID?file=NAME -->` (comment syntax varies by
+filetype) marks a file linked to a published copy at that URI. Neither
+side is canonical: either may be newer. The link is standing authorization
+to keep the published copy updated with this file's content via
+`pub sync` — no need to ask before syncing. It authorizes nothing else:
+no creating targets, no forcing, no overriding guards.
+
+## After editing a tagged file
+
+At the end of a coherent round of edits (task done or a natural
+checkpoint — not after every small edit):
+
+    pub --json sync <file>
+
+On success (`ok: true`): report the web URL, one line. If `data.state_before`
+is `ahead` and you knew from your preflight that the file had local changes
+before your own edits, say the sync carried those too.
+
+On failure, act on `error.code`:
+
+| `error.code` | action |
+| --- | --- |
+| `remote_changed` (`details.state`: `behind`, `diverged`, or `unknown`) | The published copy has content this machine has not reconciled. Report the state and the commands `pub` printed (`pub diff`, then `pub sync --force` or `pub pull --force`). Do not choose a side yourself. |
+| `untracked` | The tag is missing or invalid. Say so; do not run plain `pub <file>` — that would create a new gist. |
+| `sensitive_content` | Stop. Report the finding verbatim and await the user's decision. |
+| `shared_uri`, `pending_create`, `target_missing` | Report the message verbatim; these need a human decision. |
+| anything else (auth, network, `pub`/`gh` absent) | Report which dependency failed, once, and finish the task without syncing — note the file is now newer than its published copy. If the sandbox asks for approval to run `pub`, request it once; if denied, treat as unavailable. |
+
+Never retry a refused command with `--force` or `--allow-sensitive` on
+your own. If the user then explicitly picks a side ("remote wins" /
+"publish anyway"), run the command they chose and report what it did.
+
+## Before relying on a tagged file
+
+If a task centers on a tagged document (you will edit it, or the answer
+depends on its current published content), check freshness first:
+
+    pub --json status <file>
+
+| `data.state` | action |
+| --- | --- |
+| `synced` | Proceed. |
+| `ahead` | Proceed; the file has local changes predating you — mention that when you later sync. |
+| `behind` | Tell the user before editing — the published copy is newer (another machine or the web editor), and editing the stale local copy forces a conflict later. Offer `pub pull`. |
+| `diverged`, `unknown`, `missing` | Report; a human reconciles before edits make it worse. |
+| `untracked` or error | Proceed with the local file; note that syncing will not work until the tag/state is fixed. |
+
+Skip this check for incidental reads.
+
+## Publishing something new
+
+Only on explicit request ("share this", "publish this as a gist"):
+
+    pub --json <file>
+
+on an untagged file creates a secret gist, writes the tag into the file,
+and prints the URL — report it. Secret means unlisted, not private; use
+`--public` only if asked. If the filetype has no comment syntax, `pub`
+refuses; relay its message.
+
+## Rules
+
+- Automatic work uses `pub sync` only — never plain `pub`/`pub publish`,
+  which can create.
+- `--force` and `--allow-sensitive` only ever execute an explicit user
+  decision made after seeing the refusal; never preemptively.
+- Never edit an `x-pub:` line by hand; `pub link`/`pub unlink` manage it.
+- Honor "local only" / "don't sync" for the task, and say the file is
+  ahead of its published copy when you finish.
+
+<!-- pub-skill-version: 1 -->
+'''
+
+
+def known_skill_digests() -> dict[str, int]:
+    """sha256 of every SKILL.md version this binary has shipped."""
+    return {sha256_hex(SKILL_MD.encode("utf-8")): SKILL_VERSION}
+
+
+def git_toplevel() -> Path | None:
+    result = run_command(
+        [executable("git"), "rev-parse", "--show-toplevel"], check=False
+    )
+    if result.returncode != 0:
+        return None
+    return Path(result.stdout.strip())
+
+
+@dataclass(frozen=True)
+class SkillScope:
+    name: str
+    skill_dir: Path
+
+    @property
+    def skill_file(self) -> Path:
+        return self.skill_dir / "SKILL.md"
+
+
+def skill_scope_from_args(namespace: argparse.Namespace) -> SkillScope:
+    if getattr(namespace, "dir", None):
+        base = Path(namespace.dir).expanduser().resolve()
+        return SkillScope("dir", base / SKILL_NAME)
+    if getattr(namespace, "project", False):
+        toplevel = git_toplevel()
+        if toplevel is None:
+            raise CliError(
+                "outside_repository",
+                "--project needs a git repository. Run pub inside one.",
+            )
+        return SkillScope(
+            "project", toplevel / ".claude" / "skills" / SKILL_NAME
+        )
+    return SkillScope(
+        "user", Path("~/.claude/skills").expanduser() / SKILL_NAME
+    )
+
+
+def default_skill_scopes() -> list[SkillScope]:
+    scopes = [
+        SkillScope("user", Path("~/.claude/skills").expanduser() / SKILL_NAME)
+    ]
+    toplevel = git_toplevel()
+    if toplevel is not None:
+        scopes.append(
+            SkillScope("project", toplevel / ".claude" / "skills" / SKILL_NAME)
+        )
+    return scopes
+
+
+def refuse_symlinked_skill_dir(scope: SkillScope) -> None:
+    try:
+        mode = os.lstat(scope.skill_dir).st_mode
+    except FileNotFoundError:
+        return
+    if stat.S_ISLNK(mode):
+        raise CliError(
+            "skill_dir_symlink",
+            (
+                f"{display_path(scope.skill_dir)} is a symlink; pub never "
+                "follows it for writes or removals."
+            ),
+        )
+
+
+def classify_skill_file(scope: SkillScope) -> dict[str, Any]:
+    """absent / current / stale / newer / foreign / irregular by digest."""
+    path = scope.skill_file
+    info: dict[str, Any] = {
+        "path": str(path),
+        "scope": scope.name,
+    }
+    try:
+        mode = os.lstat(path).st_mode
+    except FileNotFoundError:
+        return {**info, "state": "absent"}
+    if not stat.S_ISREG(mode):
+        return {**info, "state": "irregular"}
+    digest = sha256_hex(path.read_bytes())
+    version = known_skill_digests().get(digest)
+    if version is None:
+        return {**info, "digest": digest, "state": "foreign"}
+    if version == SKILL_VERSION:
+        state = "current"
+    elif version < SKILL_VERSION:
+        state = "stale"
+    else:
+        state = "newer"
+    return {**info, "state": state, "version": version}
+
+
+def skill_install(scope: SkillScope, force: bool) -> dict[str, Any]:
+    refuse_symlinked_skill_dir(scope)
+    existing = classify_skill_file(scope)
+    state = existing["state"]
+    if state == "irregular":
+        raise CliError(
+            "skill_file_irregular",
+            f"{display_path(scope.skill_file)} is not a regular file; pub "
+            "never replaces symlinks or special files.",
+        )
+    if state == "foreign" and not force:
+        raise CliError(
+            "skill_file_foreign",
+            (
+                f"{display_path(scope.skill_file)} is not a SKILL.md that "
+                "pub shipped. Use --force to replace it."
+            ),
+        )
+    if state == "newer" and not force:
+        raise CliError(
+            "skill_file_newer",
+            (
+                f"{display_path(scope.skill_file)} is from a newer pub. "
+                "Upgrades never roll back silently; use --force to "
+                "downgrade."
+            ),
+        )
+    scope.skill_dir.mkdir(parents=True, exist_ok=True)
+    write_bytes_atomic(scope.skill_file, SKILL_MD.encode("utf-8"))
+    notes = [
+        (
+            "Claude Code discovers new skills at session start; the "
+            "current session will not see it."
+        ),
+        (
+            "Optional CLAUDE.md pointer (pub never edits CLAUDE.md): "
+            "`- Files with an `x-pub:` comment sync to their published "
+            "copy via `pub sync` (see the pub-sync skill).`"
+        ),
+    ]
+    return {
+        "installed": True,
+        "ok": True,
+        "path": str(scope.skill_file),
+        "previous_state": state,
+        "notes": notes,
+        "scope": scope.name,
+        "version": SKILL_VERSION,
+    }
+
+
+def skill_uninstall(scope: SkillScope, force: bool) -> dict[str, Any]:
+    refuse_symlinked_skill_dir(scope)
+    existing = classify_skill_file(scope)
+    state = existing["state"]
+    if state == "absent":
+        return {
+            "ok": True,
+            "path": str(scope.skill_file),
+            "removed": False,
+            "scope": scope.name,
+            "state": "absent",
+        }
+    if state == "irregular":
+        raise CliError(
+            "skill_file_irregular",
+            f"{display_path(scope.skill_file)} is not a regular file; pub "
+            "never removes symlinks or special files.",
+        )
+    if state == "foreign" and not force:
+        raise CliError(
+            "skill_file_foreign",
+            (
+                f"{display_path(scope.skill_file)} is not a SKILL.md that "
+                "pub shipped. Use --force to remove it."
+            ),
+        )
+    scope.skill_file.unlink()
+    removed_dir = False
+    try:
+        scope.skill_dir.rmdir()
+        removed_dir = True
+    except OSError:
+        pass
+    return {
+        "ok": True,
+        "path": str(scope.skill_file),
+        "removed": True,
+        "removed_dir": removed_dir,
+        "scope": scope.name,
+    }
+
+
+def skill_status_data(scopes: Sequence[SkillScope]) -> dict[str, Any]:
+    return {
+        "locations": [classify_skill_file(scope) for scope in scopes],
+        "version": SKILL_VERSION,
+    }
+
+
+def run_skill(namespace: argparse.Namespace) -> tuple[str, dict[str, Any], int]:
+    action = namespace.skill_command
+    if action == "show":
+        return "skill show", {"content": SKILL_MD}, 0
+    if action == "status":
+        if namespace.user or namespace.project or namespace.dir:
+            scopes = [skill_scope_from_args(namespace)]
+        else:
+            scopes = default_skill_scopes()
+        return "skill status", skill_status_data(scopes), 0
+    scope = skill_scope_from_args(namespace)
+    if action == "install":
+        return "skill install", skill_install(scope, namespace.force), 0
+    if action == "uninstall":
+        return "skill uninstall", skill_uninstall(scope, namespace.force), 0
+    raise CliError("usage_error", "Pick a skill command: install, uninstall, status, show.")
+
+
+# --- CLI ---
+
+
+def build_parser() -> tuple[argparse.ArgumentParser, argparse.ArgumentParser]:
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument(
+        "--json",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        dest="json_output",
+        help="Emit the machine-readable JSON envelope.",
+    )
+    common.add_argument(
+        "--quiet",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Suppress success output.",
+    )
+    parser = CliArgumentParser(
+        prog=TOOL_NAME,
+        parents=[common],
+        description=(
+            "Publish local text documents to external targets (GitHub "
+            "Gist first). `pub <file>` is an idempotent upsert: the first "
+            "run creates a secret gist and writes an x-pub comment tag "
+            "into the file; every later run syncs it."
+        ),
+        epilog=(
+            f"{SECRET_NOTE} Visibility is immutable after creation: "
+            "--public applies at creation only, and a visibility change "
+            "means recreating the gist. A first token that is not a "
+            "subcommand routes to publish; to publish a file literally "
+            "named like a subcommand, use `pub publish -- status`."
+        ),
+    )
+    parser.add_argument("--version", action="version", version=TOOL_VERSION)
+    subparsers = parser.add_subparsers(dest="command")
+
+    publish_parser = subparsers.add_parser(
+        "publish",
+        parents=[common],
+        help="Upsert: create on first publish, sync after (the default "
+        "command).",
+        epilog=(
+            f"{SECRET_NOTE} --public applies at creation only; changing "
+            "visibility means recreating the gist."
+        ),
+    )
+    publish_parser.add_argument("files", nargs="+", metavar="FILE")
+    publish_parser.add_argument(
+        "--target",
+        default="gist",
+        dest="target_scheme",
+        help="Target scheme for creation when no tag exists (default: gist).",
+    )
+    publish_parser.add_argument(
+        "--to",
+        help="Adopt an existing target and publish to it (link + publish; "
+        "single file only). Never creates at an address.",
+    )
+    publish_parser.add_argument(
+        "--public",
+        action="store_true",
+        help="Create as public (creation only; visibility is immutable "
+        "after creation).",
+    )
+    naming = publish_parser.add_mutually_exclusive_group()
+    naming.add_argument(
+        "--rename",
+        action="store_true",
+        help="Rename the remote file to match the local basename.",
+    )
+    naming.add_argument(
+        "--as",
+        dest="publish_as",
+        metavar="NAME",
+        help="Publish under NAME instead of the local basename (single "
+        "file only) — for local scratch names that should not be the "
+        "published title. On a tagged file, renames the published copy "
+        "to NAME.",
+    )
+    publish_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite a behind/diverged/unknown remote, or take over a "
+        "shared URI.",
+    )
+    publish_parser.add_argument(
+        "--allow-sensitive",
+        action="store_true",
+        help="Publish despite the sensitive-content guard (--force never "
+        "covers this).",
+    )
+    publish_parser.add_argument(
+        "--open",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        dest="open_browser",
+        help="Open the published copy in your browser after success "
+        "(default: on for interactive runs; PUB_NO_OPEN=1 turns the "
+        "default off).",
+    )
+
+    sync_parser = subparsers.add_parser(
+        "sync",
+        parents=[common],
+        help="Publish without the ability to create; untagged files are "
+        "an error.",
+    )
+    sync_parser.add_argument("files", nargs="+", metavar="FILE")
+    sync_parser.add_argument("--force", action="store_true")
+    sync_parser.add_argument("--allow-sensitive", action="store_true")
+    sync_parser.add_argument(
+        "--open",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        dest="open_browser",
+        help="Open the published copy in your browser after success "
+        "(default: on for interactive runs).",
+    )
+
+    status_parser = subparsers.add_parser(
+        "status",
+        parents=[common],
+        help="Compare files with their published copies (no files: scan "
+        "state).",
+    )
+    status_parser.add_argument("files", nargs="*", metavar="FILE")
+    status_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit 3 when anything is stale (explicitly named untracked "
+        "files count as stale).",
+    )
+
+    diff_parser = subparsers.add_parser(
+        "diff",
+        parents=[common],
+        help="Unified diff, remote (a/) vs local (b/). Exits 0/1/2 like "
+        "diff(1).",
+    )
+    diff_parser.add_argument("file", metavar="FILE")
+
+    pull_parser = subparsers.add_parser(
+        "pull",
+        parents=[common],
+        help="Overwrite the local file with the published copy.",
+    )
+    pull_parser.add_argument("file", metavar="FILE")
+    pull_parser.add_argument("--force", action="store_true")
+
+    link_parser = subparsers.add_parser(
+        "link",
+        parents=[common],
+        help="Adopt an existing target: write the tag, record a base when "
+        "the contents match.",
+    )
+    link_parser.add_argument("file", metavar="FILE")
+    link_parser.add_argument("ref", metavar="URI_OR_URL")
+    link_parser.add_argument(
+        "--target",
+        default="gist",
+        dest="target_scheme",
+        help="Scheme for bare identifiers (default: gist).",
+    )
+    link_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-link a URI that another live path owns.",
+    )
+
+    unlink_parser = subparsers.add_parser(
+        "unlink",
+        parents=[common],
+        help="Remove the tag line and this file's state. Never touches "
+        "the remote.",
+    )
+    unlink_parser.add_argument("file", metavar="FILE")
+
+    open_parser = subparsers.add_parser(
+        "open", parents=[common], help="Open the target's web URL."
+    )
+    open_parser.add_argument("file", metavar="FILE")
+
+    subparsers.add_parser(
+        "list", parents=[common], help="List locally known documents."
+    )
+    subparsers.add_parser(
+        "doctor",
+        parents=[common],
+        help="Check dependencies, auth, and state-directory health.",
+    )
+
+    skill_parser = subparsers.add_parser(
+        "skill",
+        parents=[common],
+        help="Manage the embedded pub-sync agent skill.",
+    )
+    skill_subparsers = skill_parser.add_subparsers(dest="skill_command")
+
+    def add_skill_locations(sub: argparse.ArgumentParser) -> None:
+        group = sub.add_mutually_exclusive_group()
+        group.add_argument(
+            "--user",
+            action="store_true",
+            help="~/.claude/skills/pub-sync (the default).",
+        )
+        group.add_argument(
+            "--project",
+            action="store_true",
+            help=".claude/skills/pub-sync at the git toplevel.",
+        )
+        group.add_argument(
+            "--dir", metavar="PATH", help="Any skills directory."
+        )
+
+    for action in ("install", "uninstall"):
+        sub = skill_subparsers.add_parser(action, parents=[common])
+        add_skill_locations(sub)
+        sub.add_argument("--force", action="store_true")
+    status_sub = skill_subparsers.add_parser("status", parents=[common])
+    add_skill_locations(status_sub)
+    skill_subparsers.add_parser("show", parents=[common])
+    return parser, publish_parser
+
+
+def normalize_argv(argv: list[str]) -> list[str]:
+    """Route `pub <file>` to publish. Skip known global flags; if the
+    first remaining token is not a subcommand, insert `publish`."""
+    values = list(argv)
+    index = 0
+    while index < len(values) and values[index] in GLOBAL_FLAGS:
+        index += 1
+    if index == len(values):
+        return values
+    first = values[index]
+    if first in KNOWN_COMMANDS or first in {"-h", "--help", "--version"}:
+        return values
+    return values[:index] + ["publish"] + values[index:]
+
+
+def publish_options(namespace: argparse.Namespace) -> PublishOptions:
+    return PublishOptions(
+        force=namespace.force,
+        allow_sensitive=namespace.allow_sensitive,
+        public=getattr(namespace, "public", False),
+        rename=getattr(namespace, "rename", False),
+        publish_as=getattr(namespace, "publish_as", None),
+        to=getattr(namespace, "to", None),
+        target_scheme=getattr(namespace, "target_scheme", "gist"),
+    )
+
+
+def run_cli(namespace: argparse.Namespace) -> tuple[str, Any, int]:
+    command = namespace.command
+    if command in {"publish", "sync"}:
+        options = publish_options(namespace)
+        allow_create = command == "publish"
+        if options.to and len(namespace.files) > 1:
+            raise CliError(
+                "usage_error", "--to works with a single file only."
+            )
+        if options.publish_as is not None:
+            validate_publish_name(options.publish_as)
+            if len(namespace.files) > 1:
+                raise CliError(
+                    "usage_error", "--as works with a single file only."
+                )
+        data, exit_code = run_batch(
+            namespace.files,
+            lambda argument: publish_one(
+                argument, options, allow_create=allow_create
+            ),
+        )
+        if auto_open_enabled(
+            getattr(namespace, "open_browser", None),
+            getattr(namespace, "json_output", False),
+            getattr(namespace, "quiet", False),
+        ):
+            for url in successful_web_urls(data):
+                webbrowser.open(url)
+        return command, data, exit_code
+    if command == "status":
+        data, exit_code = command_status(namespace.files, namespace.check)
+        return command, data, exit_code
+    if command == "diff":
+        data, exit_code = command_diff(namespace.file)
+        return command, data, exit_code
+    if command == "pull":
+        return command, command_pull(namespace.file, namespace.force), 0
+    if command == "link":
+        return command, link_one(
+            namespace.file,
+            namespace.ref,
+            target_scheme=namespace.target_scheme,
+            force=namespace.force,
+        ), 0
+    if command == "unlink":
+        return command, command_unlink(namespace.file), 0
+    if command == "open":
+        return command, command_open(namespace.file), 0
+    if command == "list":
+        return command, command_list(), 0
+    if command == "doctor":
+        data = command_doctor()
+        return command, data, 0 if data["ready"] else 1
+    if command == "skill":
+        return run_skill(namespace)
+    raise CliError(
+        "usage_error",
+        "No command was selected. Run `pub --help` for usage.",
+    )
+
+
+def result_verb(command: str, entry: dict[str, Any]) -> str:
+    before = entry.get("state_before")
+    if command in {"publish", "sync"}:
+        if entry.get("created"):
+            return "published (new)"
+        renamed_to = entry.get("renamed_to")
+        if renamed_to:
+            verb = f"renamed to {renamed_to}"
+            if before != "synced":
+                verb += f" (was {before})"
+            return verb
+        if before == "synced":
+            return "already synced"
+        return f"published (was {before})"
+    if command == "pull":
+        if not entry.get("changed"):
+            return "already synced"
+        stat = f"+{entry.get('lines_added', 0)} -{entry.get('lines_removed', 0)}"
+        return f"pulled {stat} (was {before})"
+    if command == "link":
+        if entry.get("matched"):
+            return "linked (contents match; base recorded)"
+        return "linked (contents differ; no base)"
+    return str(entry.get("state") or "")
+
+
+def print_note(note: str) -> None:
+    print(f"    {paint('note', 'yellow')}  {note}")
+
+
+def print_result_lines(
+    command: str, entries: Sequence[dict[str, Any]], quiet: bool
+) -> None:
+    width = max(
+        (len(str(entry.get("file") or "")) for entry in entries), default=0
+    )
+    for entry in entries:
+        name = str(entry.get("file") or entry.get("uri") or "?")
+        if not entry.get("ok"):
+            error = entry.get("error") or {}
+            glyph = paint("✗", "red", sys.stderr)
+            print(f"  {glyph} {name}  {error.get('message')}", file=sys.stderr)
+            continue
+        if quiet:
+            continue
+        if command == "status":
+            state = str(entry.get("state") or "")
+            glyph_char, color = STATE_STYLES.get(state, ("·", "dim"))
+            glyph = paint(glyph_char, color)
+            verb = paint(state, color)
+        else:
+            glyph = paint("✓", "green")
+            verb = result_verb(command, entry)
+        line = f"  {glyph} {name:<{width}}  {verb}"
+        url = entry.get("web_url")
+        if url:
+            line += f"  {paint(str(url), 'dim')}"
+        print(line)
+        for note in entry.get("notes") or []:
+            print_note(note)
+        if entry.get("created"):
+            print_note(entry.get("note", SECRET_NOTE))
+
+
+def print_check(label: str, ok: bool, detail: str | None) -> None:
+    glyph = paint("✓", "green") if ok else paint("✗", "red")
+    line = f"  {glyph} {label}"
+    if detail:
+        line += f"  {paint(str(detail), 'dim')}"
+    print(line)
+
+
+def print_human(command: str, data: Any, quiet: bool) -> None:
+    if command in {"publish", "sync", "status", "pull", "link"}:
+        entries = data.get("results", [data])
+        if not entries and not quiet:
+            print(paint("nothing tracked yet — publish with: pub <file>", "dim"))
+            return
+        print_result_lines(command, entries, quiet)
+        return
+    if command == "diff":
+        if data.get("identical"):
+            return
+        diff_text = data.get("diff") or ""
+        if sys.stdout.isatty():
+            diff_text = colorize_diff(diff_text)
+        sys.stdout.write(diff_text)
+        return
+    if command == "unlink":
+        if not quiet:
+            glyph = paint("✓", "green")
+            tail = "state removed" if data.get("state_deleted") else "state kept"
+            print(
+                f"  {glyph} {data['file']}  unlinked ({tail})  "
+                f"{paint(data['uri'], 'dim')}"
+            )
+            for note in data.get("notes") or []:
+                print_note(note)
+        return
+    if command == "open":
+        if not quiet:
+            print(data["web_url"])
+        return
+    if command == "list":
+        documents = data["documents"]
+        if not documents:
+            if not quiet:
+                print(
+                    paint(
+                        "nothing tracked yet — publish with: pub <file>",
+                        "dim",
+                    )
+                )
+            return
+        file_width = max(len(str(doc["file"])) for doc in documents)
+        uri_width = max(len(str(doc["uri"])) for doc in documents)
+        for document in documents:
+            updated = str(document.get("base_updated_at") or "-")
+            print(
+                f"  {document['file']:<{file_width}}  "
+                f"{document['uri']:<{uri_width}}  "
+                f"{paint(updated, 'dim')}  "
+                f"{paint(str(document.get('web_url') or ''), 'dim')}"
+            )
+        return
+    if command == "doctor":
+        ready = data["ready"]
+        status = (
+            paint("ready", "green") if ready else paint("not ready", "red")
+        )
+        print(f"{paint(TOOL_NAME, 'bold')} {data['tool_version']} — {status}")
+        print()
+        print(paint("state", "bold"))
+        print_check(
+            data["state"]["root"],
+            data["state"]["writable"],
+            "writable" if data["state"]["writable"] else "NOT writable",
+        )
+        for scheme, info in data["targets"].items():
+            print(paint(scheme, "bold"))
+            for check in info["checks"]:
+                print_check(check["name"], check["ok"], check.get("detail"))
+        print(paint("skill", "bold"))
+        for location in data["skill"]["locations"]:
+            state = location["state"]
+            ok = state in {"current", "absent"}
+            print_check(
+                f"{location['scope']}: {state}", ok, location["path"]
+            )
+        return
+    if command == "skill show":
+        sys.stdout.write(data["content"])
+        return
+    if command == "skill status":
+        state_colors = {
+            "absent": "dim",
+            "current": "green",
+            "foreign": "red",
+            "irregular": "red",
+            "newer": "yellow",
+            "stale": "yellow",
+        }
+        width = max(len(loc["scope"]) for loc in data["locations"])
+        for location in data["locations"]:
+            state = location["state"]
+            print(
+                f"  {location['scope']:<{width}}  "
+                f"{paint(state, state_colors.get(state, 'dim')):<8}  "
+                f"{paint(location['path'], 'dim')}"
+            )
+        return
+    if command in {"skill install", "skill uninstall"}:
+        if not quiet:
+            glyph = paint("✓", "green")
+            if data.get("installed"):
+                verb = f"installed {SKILL_NAME} (v{data['version']})"
+            elif data.get("removed"):
+                verb = f"removed {SKILL_NAME}"
+            else:
+                verb = "already absent"
+            print(f"  {glyph} {verb}  {paint(data['path'], 'dim')}")
+            for note in data.get("notes") or []:
+                print_note(note)
+        return
+    print(json.dumps(data, indent=2))
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser, _ = build_parser()
+    raw = list(argv if argv is not None else sys.argv[1:])
+    normalized = normalize_argv(raw)
+    json_output = "--json" in normalized
+    remaining = [token for token in normalized if token not in GLOBAL_FLAGS]
+    error_exit = 2 if remaining[:1] == ["diff"] else 1
+    quiet = False
+    try:
+        namespace = parser.parse_args(normalized)
+        json_output = getattr(namespace, "json_output", False)
+        quiet = getattr(namespace, "quiet", False)
+        command, data, exit_code = run_cli(namespace)
+    except CliError as error:
+        return fail(error, json_output, exit_code=error_exit)
+    if json_output:
+        emit_json(command, data)
+    else:
+        print_human(command, data, quiet)
+    return exit_code
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
