@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   programs.tmux = {
     enable = true;
     sensibleOnTop = true;
@@ -14,13 +15,8 @@
 
   programs.fzf.tmux.enableShellIntegration = true;
 
-  # Fix IntelliJ terminal issue where every keypress was accompanied by 'tmux' or 'tmux;'
   programs.zsh = {
-    shellAliases."t" = "tmux";
     dirHashes."tmux" = "${config.xdg.configHome}/tmux";
-    initContent = ''
-      [[ $TERMINAL_EMULATOR -ne "JetBrains-JediTerm" ]] || unset TMUX
-    '';
   };
 
   xdg.configFile."tmux/tmux.conf".source =

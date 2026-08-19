@@ -87,18 +87,6 @@ in {
         prw = "pr list --web";
         co = "!gh prz | ifne xargs -n1 gh pr checkout";
         publish = ''gist create --web'';
-        prv = ''pr view --web'';
-        prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
-        prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
-        pro = ''!gh pr view --web "$@"'';
-        prc = ''
-          !gh pr view --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,closingIssuesReferences,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url
-                  --jq "''${1:-.url}" | ${pkgs.moreutils}/bin/pee ${
-            if pkgs.stdenv.isDarwin
-            then "pbcopy"
-            else "${pkgs.xclip}/bin/xclip -sel clip"
-          }'';
-        pr-copy = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
         needs-testing = ''!gh pr list --search "is:merged label:needs-testing ''${1-'author:@me'}"'';
 
         checks = "pr checks";
@@ -147,9 +135,13 @@ in {
         my-prs = "pr list --author @me";
         my-runs = ''!gh run list --user "$(gh api user --jq .login)"''; # does not support @me
         my-user = "api user";
+        whoami = "api user";
 
         prs = "pr list";
-        prs-todo = "pr list --search 'review-requested:@me -reviewed-by:@me'";
+        pr-url = "pr view --json url --jq .url";
+        pr-branch = "pr view --json headRefName --jq .headRefName";
+        pr-body = "pr view --json body --jq .body";
+        prs-todo = "pr list --search 'review-involves:@me -reviewed-by:@me'";
         prs-involved = "pr list --search involves:@me";
         prs-mine = "pr list --author @me --state all";
         prs-draft = "pr list --author @me --draft";
@@ -160,6 +152,18 @@ in {
         prs-unmerged = "pr list --author @me --search is:unmerged";
         prs-reviewed-by-me = "pr list --search 'reviewed-by:@me'";
         pr-reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
+        prv = ''pr view --web'';
+        prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
+        prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
+        pro = ''!gh pr view --web "$@"'';
+        prc = ''
+          !gh pr view --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,closingIssuesReferences,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url
+                  --jq "''${1:-.url}" | ${pkgs.moreutils}/bin/pee ${
+            if pkgs.stdenv.isDarwin
+            then "pbcopy"
+            else "${pkgs.xclip}/bin/xclip -sel clip"
+          }'';
+        pr-copy = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
 
         edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
 
