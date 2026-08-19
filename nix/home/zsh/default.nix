@@ -6,7 +6,8 @@
   ...
 }:
 with builtins;
-with lib; let
+with lib;
+let
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -20,7 +21,8 @@ with lib; let
       config.programs.atuin.enableZshIntegration
       || any (hasPrefix "atuinsh/atuin") config.programs.zsh.antidote.plugins
     );
-in {
+in
+{
   imports = [
     ./options.nix
     ./plugins.nix
@@ -36,7 +38,7 @@ in {
     enableCompletion = true;
     defaultKeymap = "emacs";
     sessionVariables = config.home.sessionVariables;
-    localVariables = {};
+    localVariables = { };
     autosuggestion.enable = true;
     history = {
       expireDuplicatesFirst = true;
@@ -88,33 +90,32 @@ in {
       "-?" = "--help 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain";
       # "-h" = ''-h 2>&1 | ${pkgs.bat}/bin/bat --language=help --style=plain --paging=never'';
     };
-    siteFunctions =
-      {
-        # was: broken shellAliases (aliases can't take positional args)
-        path_prepend = ''
-          emulate -L zsh
-          [[ -d $1 ]] && path=($1 ''${path:#$1})
-        '';
-        path_append = ''
-          emulate -L zsh
-          [[ -d $1 ]] && path=(''${path:#$1} $1)
-        '';
+    siteFunctions = {
+      # was: broken shellAliases (aliases can't take positional args)
+      path_prepend = ''
+        emulate -L zsh
+        [[ -d $1 ]] && path=($1 ''${path:#$1})
+      '';
+      path_append = ''
+        emulate -L zsh
+        [[ -d $1 ]] && path=(''${path:#$1} $1)
+      '';
 
-        "+nixpkgs" = ''
-          emulate -L zsh
-          command nix shell "''${@/#/nixpkgs#}"
-        '';
-        "@nixpkgs" = ''
-          emulate -L zsh
-          command nix run "nixpkgs#''${1?}" "''${@:2}"
-        '';
-      }
-      // lib.optionalAttrs config.programs.bat.enable {
-        help = ''
-          emulate -L zsh
-          "$@" --help 2>&1 | bat --plain --language=help
-        '';
-      };
+      "+nixpkgs" = ''
+        emulate -L zsh
+        command nix shell "''${@/#/nixpkgs#}"
+      '';
+      "@nixpkgs" = ''
+        emulate -L zsh
+        command nix run "nixpkgs#''${1?}" "''${@:2}"
+      '';
+    }
+    // lib.optionalAttrs config.programs.bat.enable {
+      help = ''
+        emulate -L zsh
+        "$@" --help 2>&1 | bat --plain --language=help
+      '';
+    };
     dirHashes = mergeAttrsList [
       (mapAttrs (_: input: "${input}") inputs) # ~nixpkgs, ~home-manager, etc
       (filterAttrs (_: value: value != null) config.my.userDirs)
@@ -176,9 +177,8 @@ in {
       stty -ixon
     '';
     initContent = mkMerge [
-      (
-        mkOrder 500 # pre-compinit
-        
+      (mkOrder 500 # pre-compinit
+
         ''
           typeset -U fpath # Ensure fpath does not contain duplicates.
           fpath+=(
@@ -246,31 +246,31 @@ in {
         ##########################################################
 
         ${
-          if atuinOwnsZshHistory
-          then ''
-            ##########################################################
-
-            # Restore Atuin's Ctrl-R bindings after fzf and television
-            bindkey -M emacs '^R' atuin-search
-            bindkey -M viins '^R' atuin-search-viins
-
-          ''
-          else
-            lib.optionalString
-            (
-              config.programs.television.enable
-              && config.programs.television.enableZshIntegration
-              && config.programs.fzf.enableZshIntegration
-            )
+          if atuinOwnsZshHistory then
             ''
               ##########################################################
 
-              # Prefer fzf's history search over television's
-              bindkey -M emacs '^R' fzf-history-widget
-              bindkey -M vicmd '^R' fzf-history-widget
-              bindkey -M viins '^R' fzf-history-widget
+              # Restore Atuin's Ctrl-R bindings after fzf and television
+              bindkey -M emacs '^R' atuin-search
+              bindkey -M viins '^R' atuin-search-viins
 
             ''
+          else
+            lib.optionalString
+              (
+                config.programs.television.enable
+                && config.programs.television.enableZshIntegration
+                && config.programs.fzf.enableZshIntegration
+              )
+              ''
+                ##########################################################
+
+                # Prefer fzf's history search over television's
+                bindkey -M emacs '^R' fzf-history-widget
+                bindkey -M vicmd '^R' fzf-history-widget
+                bindkey -M viins '^R' fzf-history-widget
+
+              ''
         }
       '')
       (mkAfter ''
@@ -314,6 +314,9 @@ in {
         ##########################################################
 
         [[ ! -f ~/.zshrc.local ]] || source ~/.zshrc.local
+      '')
+      (mkAfter ''
+        path=("$HOME/.local/bin" ''${path:#$HOME/.local/bin})
       '')
     ];
     loginExtra = ''
