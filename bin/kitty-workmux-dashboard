@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# Toggle a singleton kitty OS panel that runs the `workmux dashboard` TUI.
+# The first call creates the panel. Each later call toggles its visibility.
+# The panel hides when it loses focus, but the TUI process stays running.
+#
+# Extra arguments are passed to `kitten panel` as flag overrides.
+#
+# Workarounds baked in:
+# - KITTY_DEVELOP_FROM is unset: a source checkout that does not match
+#   the installed kitty binary makes the panel crash at startup.
+# - nohup + & instead of `--detach`: on macOS (kitty 0.48.1) the
+#   `--detach` re-exec drops the `+kitten panel` argv prefix and the
+#   panel flags fail to parse.
+# - The panel kitty instance removes KITTY_LISTEN_ON from the child
+#   environment, but the workmux kitty backend needs the socket of the
+#   main kitty instance. Pass it through WORKMUX_KITTY_SOCKET and
+#   restore it in a small sh wrapper.
+set -euo pipefail
+
+# Callers like Hammerspoon have a minimal PATH; make kitten and workmux resolve.
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/Applications/kitty.app/Contents/MacOS:$PATH"
+
+: "${WORKMUX_DASHBOARD_EDGE:=center-sized}"
+: "${WORKMUX_DASHBOARD_LINES:=40}"
+: "${WORKMUX_DASHBOARD_COLUMNS:=160}"
+: "${WORKMUX_DASHBOARD_LOG:=/dev/null}"
+
+main_socket="${KITTY_LISTEN_ON:-}"
+if [[ -z $main_socket ]]; then
+  # Not launched from inside kitty: find the socket of a running instance.
+  for s in "${TMPDIR:-/tmp}"/kitty.sock-*; do
+    [[ -S $s ]] && main_socket="unix:$s"
+  done
+fi
+
+# shellcheck disable=SC2016  # the inner variable expands in the panel, not here
+WORKMUX_KITTY_SOCKET="$main_socket" env -u KITTY_DEVELOP_FROM nohup kitten panel \
+  --single-instance \
+  --instance-group workmux-dashboard \
+  --toggle-visibility \
+  --move-to-active-monitor \
+  --hide-on-focus-loss \
+  --layer top \
+  -o tab_bar_style=hidden \
+  --edge "$WORKMUX_DASHBOARD_EDGE" \
+  --lines "$WORKMUX_DASHBOARD_LINES" \
+  --columns "$WORKMUX_DASHBOARD_COLUMNS" \
+  "$@" \
+  sh -c 'KITTY_LISTEN_ON="$WORKMUX_KITTY_SOCKET" exec workmux dashboard' \
+  </dev/null >>"$WORKMUX_DASHBOARD_LOG" 2>&1 &

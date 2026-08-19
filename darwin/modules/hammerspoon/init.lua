@@ -204,6 +204,11 @@ local emacsPanelToggle = function()
 	}
 	log.i(hs.execute(table.concat(args, " "), true))
 end
+local workmuxDashboardToggle = function()
+	-- hs.task spawns directly (no login shell) and is async, unlike hs.execute
+	log.i("toggle workmux dashboard")
+	hs.task.new(DOTFILES_DIR .. "/bin/kitty-workmux-dashboard", nil):start()
+end
 
 local modes = {}
 modes.main = hotkey.modal.new(HYPER, "-")
@@ -213,7 +218,8 @@ end)
 modes.main:bind(HYPER, "space", focusKitty)
 modes.main:bind(HYPER, "return", appSwitcher({ name = "Google Chrome" }))
 -- modes.main:bind(HYPER, "a", appSwitcher({ bundleID = "com.fastmail.mac.Fastmail", name = "Fastmail" }))
-modes.main:bind(HYPER, "d", hs.toggleConsole)
+modes.main:bind(HYPER, "d", workmuxDashboardToggle)
+modes.main:bind(HYPER, 41, hs.toggleConsole)
 -- modes.main:bind(HYPER, "e", appSwitcher({ name = "Emacs" }))
 -- modes.main:bind(HYPER, "e", emacsPanelToggle)
 modes.main:bind(HYPER, "1", appSwitcher({ name = "Slack" }))
