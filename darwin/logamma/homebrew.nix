@@ -33,7 +33,6 @@
       }
       # "anthropics/tap/ant"
       "aspell"
-      "docker-credential-helper-ecr"
       "buildkite/buildkite/bk@3"
       "caddy"
       "charmbracelet/tap/freeze"
