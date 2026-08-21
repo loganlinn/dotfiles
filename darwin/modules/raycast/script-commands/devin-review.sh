@@ -13,5 +13,9 @@
 # @raycast.author loganlinn
 # @raycast.authorURL https://github.com/loganlinn
 
+set -euo pipefail
+
 PATH="$HOME/.dotfiles/bin:$HOME/.local/bin:$PATH"
+pr=${1:-}
+[[ -n $pr ]] || pr=$(pbpaste)
 mise run devin:review:open "$1"

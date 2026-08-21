@@ -30,6 +30,7 @@ in {
         spice.shorthand.amend = "commit amend --no-edit";
         spice.shorthand.bottom = "trunk";
         spice.shorthand.main = "trunk";
+        spice.shorthand.con = "rebase continue";
         spice.shorthand.can = "commit amend --no-edit";
         spice.shorthand.checkout = "branch checkout";
         spice.shorthand.data = "!git log --patch refs/spice/data";
@@ -48,7 +49,9 @@ in {
         spice.shorthand.rsr = "repo sync --restack";
         spice.shorthand.squash = "branch squash";
         spice.shorthand.sync = "repo sync --restack";
+        spice.shorthand.t = "branch track";
         spice.shorthand.track = "branch track";
+        spice.shorthand.unt = "branch untrack";
         spice.shorthand.untrack = "branch untrack";
         spice.submit.draft = "false";
         spice.submit.navigationComment = "multiple";

@@ -7,10 +7,6 @@
 {
   programs.tmux = {
     enable = true;
-    sensibleOnTop = true;
-    mouse = true;
-    shortcut = "f";
-    terminal = "screen-256color";
   };
 
   programs.fzf.tmux.enableShellIntegration = true;
