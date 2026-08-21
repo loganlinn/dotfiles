@@ -30,7 +30,7 @@ if [[ $# -eq 0 ]]; then
   exit 2
 fi
 
-if [[ -z "${CACHIX_AUTH_TOKEN:-}" ]] && command -v op >/dev/null 2>&1; then
+if [[ -z "${CACHIX_AUTH_TOKEN:-}" ]] && command -v op >/dev/null 2>&1 && [[ -z $SSH_TTY ]]; then
   CACHIX_AUTH_TOKEN="$(op read "$token_ref" 2>/dev/null || true)"
 fi
 
