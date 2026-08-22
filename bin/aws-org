@@ -18,13 +18,21 @@ Built for shell pipelines:
     aws-org get role --account prod -o json
 
 Subcommands:
-  cache info|clear|refresh|check   manage/inspect the local cache
-  config path|edit|reference       manage configuration
-  get account|role|ou              tabular views of org data
+  cache info|clear|refresh|check       manage/inspect the local cache
+  config path|edit|reference           manage configuration
+  get account|role|ou|permission-set   tabular views of org data (pm = permission-set)
+  tree                                 OU/account hierarchy
+
+By default, views show what your Identity Center start page shows: accounts
+with at least one permission set assigned to you. `-a/--all` adds the accounts
+(and OUs holding only such accounts) that Organizations reports but you have
+no assignment in; this needs the optional [organizations] config.
 
 Configuration lives at $XDG_CONFIG_HOME/aws-org/config.toml; see
 `aws-org config reference`. Requires a valid Identity Center session
-(`aws sso login`) when the cache needs a refresh.
+(`aws sso login`) when the cache needs a refresh. `--disable-cache` (or
+AWS_ORG_DISABLE_CACHE=1) never reads or writes the disk cache: data is
+fetched from AWS once per process and held in memory.
 """
 
 from __future__ import annotations
@@ -52,9 +60,11 @@ from rich import box
 from rich.console import Console
 from rich.markup import escape
 from rich.table import Table
+from rich.text import Text
+from rich.tree import Tree
 
 APP_NAME = "aws-org"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_TTL = "1w"
 
 # Exit codes reported by `cache info -q` (and non-quiet, for consistency).
@@ -128,8 +138,12 @@ ttl = "1w"
 # Optional: account and role used to read the OU tree via the Organizations
 # API (usually the management account or a delegated administrator). The role
 # must be assumable through Identity Center and allow organizations:ListRoots,
-# ListOrganizationalUnitsForParent, and ListAccountsForParent.
-# When unset, `get ou` is empty and accounts have no OU data.
+# ListOrganizationalUnitsForParent, ListAccountsForParent, and
+# DescribeOrganization (identifies the management account; optional).
+# When unset, `get ou` and `tree` are empty, accounts have no OU data, and
+# `--all` cannot show accounts with no permission set assigned to you.
+# If the role cannot be assumed or lacks permissions, refresh warns and
+# continues with Identity Center data only.
 # account_id = "123456789012"
 # role_name = "AWSReadOnlyAccess"
 """
@@ -200,6 +214,7 @@ class Account(BaseModel):
     name: str
     email: str | None = None
     ou_id: str | None = None
+    status: str | None = None  # ACTIVE, SUSPENDED, PENDING_CLOSURE; None without Organizations data
 
 
 class RoleAssignment(BaseModel):
@@ -216,6 +231,7 @@ class OrgData(BaseModel):
     ous: list[OrgUnit] = Field(default_factory=list)
     roles: list[RoleAssignment] = Field(default_factory=list)
     assignments_hash: str
+    management_account_id: str | None = None
 
     def age(self) -> timedelta:
         generated = self.generated_at
@@ -231,6 +247,50 @@ class OrgData(BaseModel):
 
     def ou_paths(self) -> dict[str, str]:
         return {ou.id: ou.path for ou in self.ous}
+
+    def view(self, include_all: bool = False) -> OrgData:
+        """What you can see: accounts with a permission set assigned to you, and
+        the OUs on the path from those accounts to the root. Roots always stay.
+
+        With include_all, return everything known (self, unchanged).
+        """
+        if include_all:
+            return self
+        assigned = {r.account_id for r in self.roles}
+        accounts = [a for a in self.accounts if a.id in assigned]
+        parent = {ou.id: ou.parent_id for ou in self.ous}
+        keep: set[str] = set()
+        for a in accounts:
+            ou_id = a.ou_id
+            while ou_id and ou_id not in keep:
+                keep.add(ou_id)
+                ou_id = parent.get(ou_id)
+        ous = [ou for ou in self.ous if ou.parent_id is None or ou.id in keep]
+        return self.model_copy(update={"accounts": accounts, "ous": ous})
+
+
+def merge_accounts(sso_accounts: list[dict], org_accounts: list[Account]) -> list[Account]:
+    """Union of Identity Center accounts (assigned to you) and Organizations accounts.
+
+    Identity Center supplies name/email for accounts assigned to you;
+    Organizations adds OU, status, and the accounts with no assignment.
+    """
+    by_id = {a.id: a for a in org_accounts}
+    accounts = []
+    for raw in sso_accounts:
+        org = by_id.pop(raw["accountId"], None)
+        accounts.append(
+            Account(
+                id=raw["accountId"],
+                name=raw["accountName"],
+                email=raw.get("emailAddress"),
+                ou_id=org.ou_id if org else None,
+                status=org.status if org else None,
+            )
+        )
+    accounts.extend(by_id.values())
+    accounts.sort(key=lambda a: a.name.lower())
+    return accounts
 
 
 def hash_assignments(roles: list[RoleAssignment]) -> str:
@@ -328,27 +388,16 @@ class AwsOrgSource(OrgSource):
     def load(self) -> OrgData:
         boto3, sso, token = self._sso_client()
         accounts_raw, roles = self._load_assignments(sso, token)
-        ous, account_ou = self._load_org_units(boto3, sso, token)
-        accounts = sorted(
-            (
-                Account(
-                    id=a["accountId"],
-                    name=a["accountName"],
-                    email=a.get("emailAddress"),
-                    ou_id=account_ou.get(a["accountId"]),
-                )
-                for a in accounts_raw
-            ),
-            key=lambda a: a.name.lower(),
-        )
+        ous, org_accounts, management_account_id = self._load_org(boto3, sso, token)
         return OrgData(
             generated_at=datetime.now(timezone.utc),
             start_url=self.config.sso.start_url,
             region=self.config.sso.region,
-            accounts=accounts,
+            accounts=merge_accounts(accounts_raw, org_accounts),
             ous=ous,
             roles=roles,
             assignments_hash=hash_assignments(roles),
+            management_account_id=management_account_id,
         )
 
     def load_assignments(self) -> tuple[list[dict], list[RoleAssignment]]:
@@ -383,10 +432,17 @@ class AwsOrgSource(OrgSource):
         ]
         return accounts_raw, roles
 
-    def _load_org_units(self, boto3, sso, token: str) -> tuple[list[OrgUnit], dict[str, str]]:
+    def _load_org(
+        self, boto3, sso, token: str
+    ) -> tuple[list[OrgUnit], list[Account], str | None]:
+        """Walk the OU tree. Returns (ous, all org accounts, management account id).
+
+        Any failure (role not assumable, missing permissions) warns and returns
+        no org data, so commands fall back to Identity Center data only.
+        """
         org_cfg = self.config.organizations
         if not org_cfg.configured:
-            return [], {}
+            return [], [], None
         from botocore.exceptions import BotoCoreError, ClientError
 
         try:
@@ -401,7 +457,7 @@ class AwsOrgSource(OrgSource):
                 region_name=self.config.sso.region,
             )
             ous: list[OrgUnit] = []
-            account_ou: dict[str, str] = {}
+            accounts: list[Account] = []
             stack: list[tuple[str, str]] = []
             for page in org.get_paginator("list_roots").paginate():
                 for root in page["Roots"]:
@@ -411,8 +467,13 @@ class AwsOrgSource(OrgSource):
                 parent_id, parent_path = stack.pop()
                 paginator = org.get_paginator("list_accounts_for_parent")
                 for page in paginator.paginate(ParentId=parent_id):
-                    for account in page["Accounts"]:
-                        account_ou[account["Id"]] = parent_id
+                    for a in page["Accounts"]:
+                        accounts.append(
+                            Account(
+                                id=a["Id"], name=a["Name"], email=a.get("Email"),
+                                ou_id=parent_id, status=a.get("Status"),
+                            )
+                        )
                 paginator = org.get_paginator("list_organizational_units_for_parent")
                 for page in paginator.paginate(ParentId=parent_id):
                     for ou in page["OrganizationalUnits"]:
@@ -422,10 +483,15 @@ class AwsOrgSource(OrgSource):
                         )
                         stack.append((ou["Id"], path))
             ous.sort(key=lambda o: o.path.lower())
-            return ous, account_ou
         except (BotoCoreError, ClientError) as e:
             err.print(f"[yellow]warning:[/] could not load organizational units: {escape(str(e))}")
-            return [], {}
+            return [], [], None
+        try:
+            management_id = org.describe_organization()["Organization"]["MasterAccountId"]
+        except (BotoCoreError, ClientError) as e:
+            err.print(f"[yellow]warning:[/] could not identify management account: {escape(str(e))}")
+            management_id = None
+        return ous, accounts, management_id
 
 
 class CachedOrgSource(OrgSource):
@@ -455,6 +521,19 @@ class CachedOrgSource(OrgSource):
         except OSError as e:
             err.print(f"[yellow]warning:[/] could not write cache {self.store.path}: {e}")
         return data
+
+
+class MemoryOrgSource(OrgSource):
+    """In-process memo: the wrapped source loads at most once per instance."""
+
+    def __init__(self, source: OrgSource):
+        self.source = source
+        self._data: OrgData | None = None
+
+    def load(self) -> OrgData:
+        if self._data is None:
+            self._data = self.source.load()
+        return self._data
 
 
 def find_sso_token(start_url: str) -> str:
@@ -490,9 +569,11 @@ def _parse_sso_expiry(value: str) -> datetime | None:
 
 
 class App:
-    def __init__(self, config_path: Path):
+    def __init__(self, config_path: Path, disable_cache: bool = False):
         self.config_path = config_path
+        self.disable_cache = disable_cache
         self._config: Config | None = None
+        self._source: OrgSource | None = None
 
     def config(self) -> Config:
         if self._config is None:
@@ -515,12 +596,25 @@ class App:
         cfg = self.config_or_none()
         return parse_duration(cfg.cache.ttl if cfg else DEFAULT_TTL)
 
+    def source(self) -> OrgSource:
+        """Memory -> disk cache -> AWS; with --disable-cache, memory -> AWS.
+
+        One instance per App, so the in-memory copy lives as long as the process.
+        """
+        if self._source is None:
+            cfg = self.config()
+            live: OrgSource = AwsOrgSource(cfg)
+            if self.disable_cache:
+                err.print("[dim]cache disabled; loading from AWS…[/]")
+                self._source = MemoryOrgSource(live)
+            else:
+                self._source = MemoryOrgSource(
+                    CachedOrgSource(live, self.cache_store(), self.ttl(), cfg.sso.start_url)
+                )
+        return self._source
+
     def org_data(self) -> OrgData:
-        cfg = self.config()
-        source = CachedOrgSource(
-            AwsOrgSource(cfg), self.cache_store(), self.ttl(), cfg.sso.start_url
-        )
-        return source.load()
+        return self.source().load()
 
 
 # --- output helpers --------------------------------------------------------
@@ -532,7 +626,10 @@ FIELD_STYLES = {
     "parent_id": "dim cyan",
     "name": "bold",
     "account_name": "bold",
+    "account_names": "bold",
+    "account_ids": "cyan",
     "email": "dim",
+    "status": "dim",
     "ou": "green",
     "path": "green",
     "roles": "magenta",
@@ -585,6 +682,78 @@ def emit(
             click.echo("\t".join(cell(r.get(f)) for f in selected))
 
 
+NO_OU_DATA_HINT = (
+    "[yellow]no OU data cached[/] — set [bold]\\[organizations][/] account_id/role_name "
+    "in config and run: aws-org cache refresh"
+)
+
+TREE_STYLES = {
+    "root": "bold green",
+    "ou": "green",
+    "account": "bold",
+    "management": "bold yellow",
+    "id": "dim",
+    "guide": "dim",
+}
+
+
+def tree_label(name: str, node_id: str, style: str) -> Text:
+    return Text.assemble((name, style), (f" ({node_id})", TREE_STYLES["id"]))
+
+
+def build_trees(data: OrgData) -> list[Tree]:
+    """One Tree per organization root.
+
+    Within a parent: accounts (management account first) sorted by name, then
+    child OUs sorted by name. Accounts with no known OU attach to the root.
+    """
+    ou_children: dict[str | None, list[OrgUnit]] = {}
+    for ou in data.ous:
+        ou_children.setdefault(ou.parent_id, []).append(ou)
+    roots = ou_children.get(None, [])
+    known = {ou.id for ou in data.ous}
+    accounts: dict[str | None, list[Account]] = {}
+    for a in data.accounts:
+        parent = a.ou_id if a.ou_id in known else (roots[0].id if roots else None)
+        accounts.setdefault(parent, []).append(a)
+
+    def is_management(a: Account) -> bool:
+        return a.id == data.management_account_id
+
+    def add_children(node: Tree, parent_id: str) -> None:
+        for a in sorted(accounts.get(parent_id, []), key=lambda a: (not is_management(a), a.name.lower())):
+            style = "management" if is_management(a) else "account"
+            node.add(tree_label(a.name, a.id, TREE_STYLES[style]))
+        for ou in sorted(ou_children.get(parent_id, []), key=lambda o: o.name.lower()):
+            add_children(node.add(tree_label(ou.name, ou.id, TREE_STYLES["ou"])), ou.id)
+
+    trees: list[Tree] = []
+    for root in roots:
+        tree = Tree(tree_label(root.name, root.id, TREE_STYLES["root"]), guide_style=TREE_STYLES["guide"])
+        add_children(tree, root.id)
+        n_accounts = len(accounts.get(root.id, []))
+        n_ous = len(ou_children.get(root.id, []))
+        space_groups(tree, [False] * n_accounts + [True] * n_ous)
+        trees.append(tree)
+    return trees
+
+
+def space_groups(tree: Tree, is_ou: list[bool]) -> None:
+    """Blank guide line between top-level groups: the accounts block and each OU subtree.
+
+    A trailing newline on a subtree's last label renders as a line that
+    carries only the guide (e.g. `│`).
+    """
+    for i, child in enumerate(tree.children[:-1]):
+        if not (is_ou[i] or is_ou[i + 1]):
+            continue
+        last = child
+        while last.children:
+            last = last.children[-1]
+        assert isinstance(last.label, Text)
+        last.label.append("\n")
+
+
 def matches(pattern: str | None, *values) -> bool:
     """Case-insensitive filter: glob when pattern has glob chars, else substring."""
     if not pattern:
@@ -613,6 +782,14 @@ def output_options(fn):
     return fn
 
 
+def all_option(fn):
+    return click.option(
+        "-a", "--all", "include_all", is_flag=True,
+        help="Include accounts with no permission set assigned to you, and OUs that hold "
+        "only such accounts (needs [organizations] config).",
+    )(fn)
+
+
 def render_cache_info(status: CacheStatus, ttl: timedelta) -> None:
     grid = Table(box=None, show_header=False, pad_edge=False)
     grid.add_column(style="bold")
@@ -635,7 +812,11 @@ def render_cache_info(status: CacheStatus, ttl: timedelta) -> None:
         data = status.data
         grid.add_row("Start URL", escape(data.start_url))
         grid.add_row("Region", data.region)
-        grid.add_row("Accounts", str(len(data.accounts)))
+        assigned = len({r.account_id for r in data.roles})
+        accounts = str(assigned)
+        if len(data.accounts) != assigned:
+            accounts += f" assigned to you, {len(data.accounts)} known"
+        grid.add_row("Accounts", accounts)
         distinct = len({r.role_name for r in data.roles})
         grid.add_row("Roles", f"{len(data.roles)} assignments, {distinct} distinct")
         grid.add_row("OUs", str(sum(1 for ou in data.ous if ou.parent_id)))
@@ -646,10 +827,13 @@ def render_cache_info(status: CacheStatus, ttl: timedelta) -> None:
 # --- CLI -------------------------------------------------------------------
 
 
-class PluralAliasGroup(click.Group):
-    """Resolve `get accounts` to `get account`, etc."""
+class AliasGroup(click.Group):
+    """Resolve plurals (`accounts` -> `account`) and short aliases (`pm` -> `permission-set`)."""
+
+    aliases = {"pm": "permission-set"}
 
     def get_command(self, ctx, cmd_name):
+        cmd_name = self.aliases.get(cmd_name, cmd_name)
         cmd = super().get_command(ctx, cmd_name)
         if cmd is None and cmd_name.endswith("s"):
             cmd = super().get_command(ctx, cmd_name[:-1])
@@ -664,18 +848,27 @@ class PluralAliasGroup(click.Group):
     default=None,
     help="Alternate config file [default: $XDG_CONFIG_HOME/aws-org/config.toml]",
 )
+@click.option(
+    "--disable-cache",
+    is_flag=True,
+    envvar="AWS_ORG_DISABLE_CACHE",
+    help="Never read or write the disk cache; fetch from AWS once per process, keep in memory.",
+)
 @click.pass_context
-def cli(ctx: click.Context, config_path: Path | None):
+def cli(ctx: click.Context, config_path: Path | None, disable_cache: bool):
     """Quick access to AWS Organization data via IAM Identity Center."""
-    ctx.obj = App(config_path or default_config_path())
+    ctx.obj = App(config_path or default_config_path(), disable_cache=disable_cache)
 
 
 # --- cache commands --
 
 
 @cli.group("cache")
-def cache_group():
+@click.pass_obj
+def cache_group(app: App):
     """Manage the local cache."""
+    if app.disable_cache:
+        raise click.UsageError("cache commands are unavailable with --disable-cache")
 
 
 @cache_group.command("info")
@@ -798,20 +991,24 @@ def config_reference():
 # --- get commands --
 
 
-@cli.group("get", cls=PluralAliasGroup)
+@cli.group("get", cls=AliasGroup)
 def get_group():
-    """Print tables of org resources (auto-refreshes the cache when expired)."""
+    """Print tables of org resources (auto-refreshes the cache when expired).
+
+    Nouns accept plurals; `pm` is short for permission-set.
+    """
 
 
 @get_group.command("account")
 @click.argument("pattern", required=False)
 @click.option("--ou", "ou_filter", help="Filter by OU id, name, or path.")
 @click.option("--role", "role_filter", help="Only accounts where you have a matching role.")
+@all_option
 @output_options
 @click.pass_obj
-def get_account(app: App, pattern, ou_filter, role_filter, output, fields, no_header):
+def get_account(app: App, pattern, ou_filter, role_filter, include_all, output, fields, no_header):
     """List accounts. PATTERN matches account id or name (substring or glob)."""
-    data = app.org_data()
+    data = app.org_data().view(include_all)
     roles = data.roles_by_account()
     paths = data.ou_paths()
     rows = [
@@ -821,6 +1018,7 @@ def get_account(app: App, pattern, ou_filter, role_filter, output, fields, no_he
             "email": a.email,
             "ou": paths.get(a.ou_id) if a.ou_id else None,
             "ou_id": a.ou_id,
+            "status": a.status,
             "roles": sorted(roles.get(a.id, [])),
         }
         for a in data.accounts
@@ -834,7 +1032,7 @@ def get_account(app: App, pattern, ou_filter, role_filter, output, fields, no_he
     emit(
         rows,
         default_fields=["id", "name", "email", "ou", "roles"],
-        allowed_fields=["id", "name", "email", "ou", "ou_id", "roles"],
+        allowed_fields=["id", "name", "email", "ou", "ou_id", "status", "roles"],
         output=output, fields=fields, no_header=no_header,
     )
 
@@ -869,13 +1067,48 @@ def get_role(app: App, pattern, account_filter, output, fields, no_header):
     )
 
 
-@get_group.command("ou")
+@get_group.command("permission-set")
 @click.argument("pattern", required=False)
+@click.option("--account", "account_filter", help="Filter by account id or name.")
 @output_options
 @click.pass_obj
-def get_ou(app: App, pattern, output, fields, no_header):
-    """List organizational units. PATTERN matches OU id, name, or path."""
+def get_permission_set(app: App, pattern, account_filter, output, fields, no_header):
+    """List permission sets assigned to you. PATTERN matches the name (substring or glob)."""
     data = app.org_data()
+    names = {a.id: a.name for a in data.accounts}
+    by_name: dict[str, list[RoleAssignment]] = {}
+    for r in data.roles:
+        if matches(pattern, r.role_name) and matches(
+            account_filter, r.account_id, names.get(r.account_id)
+        ):
+            by_name.setdefault(r.role_name, []).append(r)
+    rows = [
+        {
+            "name": name,
+            "accounts": len(assignments),
+            "account_names": sorted(
+                (names.get(r.account_id) or r.account_id for r in assignments), key=str.lower
+            ),
+            "account_ids": sorted(r.account_id for r in assignments),
+        }
+        for name, assignments in sorted(by_name.items(), key=lambda kv: kv[0].lower())
+    ]
+    emit(
+        rows,
+        default_fields=["name", "accounts"],
+        allowed_fields=["name", "accounts", "account_names", "account_ids"],
+        output=output, fields=fields, no_header=no_header,
+    )
+
+
+@get_group.command("ou")
+@click.argument("pattern", required=False)
+@all_option
+@output_options
+@click.pass_obj
+def get_ou(app: App, pattern, include_all, output, fields, no_header):
+    """List organizational units. PATTERN matches OU id, name, or path."""
+    data = app.org_data().view(include_all)
     account_counts: dict[str, int] = {}
     for a in data.accounts:
         if a.ou_id:
@@ -892,16 +1125,29 @@ def get_ou(app: App, pattern, output, fields, no_header):
         if matches(pattern, ou.id, ou.name, ou.path)
     ]
     if not rows and not data.ous:
-        err.print(
-            "[yellow]no OU data cached[/] — set [bold]\\[organizations][/] account_id/role_name "
-            "in config and run: aws-org cache refresh"
-        )
+        err.print(NO_OU_DATA_HINT)
     emit(
         rows,
         default_fields=["id", "name", "path", "accounts"],
         allowed_fields=["id", "name", "path", "parent_id", "accounts"],
         output=output, fields=fields, no_header=no_header,
     )
+
+
+# --- tree command --
+
+
+@cli.command("tree")
+@all_option
+@click.pass_obj
+def tree_cmd(app: App, include_all: bool):
+    """Print the organization as a tree of OUs and accounts."""
+    data = app.org_data().view(include_all)
+    if not data.ous:
+        err.print(NO_OU_DATA_HINT)
+        sys.exit(1)
+    for tree in build_trees(data):
+        out.print(tree)
 
 
 if __name__ == "__main__":
