@@ -1,0 +1,468 @@
+#!/usr/bin/env bash
+#
+# Render Markdown to HTML with pandoc and open it in a browser.
+#
+# Usage: mdpreview [--theme CSS_FILE] [MARKDOWN_FILE|-]
+#
+# The default theme is embedded in default_theme() below, so the script needs
+# nothing but pandoc.
+
+set -euo pipefail
+
+usage() {
+  printf 'Usage: mdpreview [--theme CSS_FILE] [MARKDOWN_FILE|-]\n' >&2
+  exit 2
+}
+
+main() {
+  hash pandoc
+
+  local theme='' in=''
+  while (($#)); do
+    case $1 in
+    --theme)
+      (($# > 1)) || usage
+      theme=$2
+      shift
+      ;;
+    --theme=*) theme=${1#--theme=} ;;
+    *)
+      [[ -z $in ]] || usage
+      in=$1
+      ;;
+    esac
+    shift
+  done
+  in=${in:--}
+
+  local dir
+  dir=$(mktemp -d "${TMPDIR:-/tmp}/mdpreview.XXXXXX")
+
+  if [[ -z $theme ]]; then
+    theme=$dir/mdpreview.css
+    default_theme >"$theme"
+  elif [[ -f $theme ]]; then
+    # The HTML is written to $dir, so the stylesheet link must be absolute.
+    [[ $theme == /* ]] || theme=$PWD/$theme
+  else
+    printf 'mdpreview: unknown theme: %s\n' "$theme" >&2
+    exit 2
+  fi
+
+  if [[ $in == '-' ]]; then
+    in=$dir/stdin.md
+    cat >"$in"
+  fi
+
+  local name=${in##*/}
+  local out=$dir/${name%.*}.html
+
+  # -V highlighting-css= drops pandoc's own token colors (code span.kw {...}),
+  # which would out-rank the theme's pre .kw rules. The theme owns the colors.
+  pandoc -s -f markdown -t html5 --mathjax -V highlighting-css= \
+    -M "pagetitle=$name" -c "$theme" -o "$out" -- "$in"
+
+  if hash open 2>/dev/null; then
+    open "$out"
+  elif hash xdg-open 2>/dev/null; then
+    xdg-open "$out"
+  else
+    printf '%q\n' "$out"
+  fi
+}
+
+default_theme() {
+  cat <<'CSS'
+/* mdpreview default theme
+ *
+ * Dark stylesheet tuned for coding-agent plan documents: deep heading
+ * hierarchies, task lists, tables, blockquote callouts, and code blocks
+ * highlighted by pandoc/skylighting token classes.
+ *
+ * pandoc's standalone template puts a small <style> block before this file
+ * (inline code wraps, task-list checkbox offsets). Rules here match or beat
+ * its specificity where they disagree. mdpreview disables pandoc's own
+ * highlighting CSS, so this file owns the token colors.
+ *
+ * Active palette: Catppuccin Mocha. Dracula and Gruvbox Dark blocks are at
+ * the bottom of this file — copy one over the :root values to switch.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Catppuccin Mocha */
+  --bg: #1e1e2e;
+  --bg-code: #181825;        /* fenced code blocks (mantle) */
+  --bg-surface: #313244;     /* inline code, table header (surface0) */
+  --bg-hover: #45475a;       /* stripes, hover (surface1) */
+  --border: #45475a;
+  --border-faint: #313244;
+  --fg: #cdd6f4;
+  --fg-muted: #a6adc8;       /* completed tasks, captions (subtext0) */
+  --fg-faint: #7f849c;       /* meta text (overlay1) */
+  --heading: #b4befe;        /* lavender */
+  --link: #89b4fa;           /* blue */
+  --link-hover: #b4befe;
+  --accent: #cba6f7;         /* blockquote bar, markers (mauve) */
+  --inline-code: #fab387;    /* file paths, symbols (peach) */
+  --checkbox: #a6e3a1;       /* green */
+  --del: #f38ba8;
+  --add: #a6e3a1;
+
+  /* syntax tokens (skylighting classes) */
+  --syn-kw: #cba6f7;         /* keyword, control flow (mauve) */
+  --syn-str: #a6e3a1;        /* strings (green) */
+  --syn-num: #fab387;        /* numbers, constants (peach) */
+  --syn-fn: #89b4fa;         /* functions (blue) */
+  --syn-type: #f9e2af;       /* datatypes, attributes (yellow) */
+  --syn-com: #7f849c;        /* comments (overlay1) */
+  --syn-op: #89dceb;         /* operators (sky) */
+  --syn-var: #cdd6f4;        /* variables (text) */
+  --syn-builtin: #eba0ac;    /* builtins, extensions (maroon) */
+  --syn-pp: #f5c2e7;         /* preprocessor, imports (pink) */
+  --syn-err: #f38ba8;        /* alerts, errors (red) */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  max-width: 52rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 6rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--bg-hover);
+}
+
+/* ---------------------------------------------------------------- headings */
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading);
+  font-weight: 650;
+  line-height: 1.3;
+  margin: 2em 0 0.6em;
+  scroll-margin-top: 1.5rem;
+}
+
+h1 {
+  font-size: 1.9em;
+  margin-top: 0.5em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--border);
+}
+
+h2 {
+  font-size: 1.45em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+h3 { font-size: 1.2em; }
+h4 { font-size: 1.05em; }
+
+h5, h6 {
+  font-size: 0.9em;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* -------------------------------------------------------------- text/links */
+
+p { margin: 0 0 1em; }
+
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--link) 35%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--link-hover);
+  text-decoration-color: currentColor;
+}
+
+del { color: var(--fg-faint); }
+
+mark {
+  background: color-mix(in srgb, var(--syn-type) 25%, transparent);
+  color: var(--fg);
+  padding: 0 0.15em;
+  border-radius: 3px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+
+img {
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+kbd {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--bg-surface);
+}
+
+/* ------------------------------------------------------------------- lists */
+
+ul, ol {
+  margin: 0 0 1em;
+  padding-left: 1.6em;
+}
+
+li { margin: 0.25em 0; }
+
+li > ul,
+li > ol {
+  margin-bottom: 0;
+}
+
+li::marker { color: var(--accent); }
+
+/* GFM task lists (pandoc: <ul class="task-list"><li><label><input …) */
+
+ul.task-list {
+  list-style: none;
+  padding-left: 0.4em;
+}
+
+ul.task-list li { margin: 0.35em 0; }
+
+/* same specificity as pandoc's base rule; this file loads later and wins */
+ul.task-list li input[type="checkbox"] {
+  accent-color: var(--checkbox);
+  width: 0.95em;
+  height: 0.95em;
+  margin: 0 0.55em 0 0;
+  vertical-align: -0.1em;
+}
+
+ul.task-list li:has(input:checked) > label {
+  color: var(--fg-muted);
+}
+
+/* ------------------------------------------------------------------- code */
+
+code, pre, samp, tt {
+  font-family: "Victor Mono", "JetBrains Mono", "SF Mono", ui-monospace,
+    Menlo, Consolas, monospace;
+}
+
+/* inline code: file paths, symbols, commands */
+code {
+  font-size: 0.875em;
+  color: var(--inline-code);
+  background: var(--bg-surface);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+h1 code, h2 code, h3 code, h4 code { color: inherit; }
+
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border-faint);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+  margin: 0 0 1.25em;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+
+pre code {
+  font-size: 0.85rem;
+  color: var(--fg);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  white-space: pre; /* pandoc's base rule code{white-space: pre-wrap} would wrap */
+}
+
+div.sourceCode { margin: 0 0 1.25em; }
+div.sourceCode pre { margin: 0; }
+
+/* pandoc emits an empty anchor per code line; keep it inert */
+pre a[aria-hidden="true"] { display: none; }
+
+/* skylighting token classes */
+pre .kw, pre .cf { color: var(--syn-kw); }                      /* keyword, control flow */
+pre .st, pre .vs, pre .ss, pre .ch { color: var(--syn-str); }   /* strings, chars */
+pre .dv, pre .bn, pre .fl, pre .cn, pre .sc { color: var(--syn-num); } /* numbers, constants */
+pre .fu { color: var(--syn-fn); }                               /* functions */
+pre .dt, pre .at { color: var(--syn-type); }                    /* types, attributes */
+pre .co, pre .do, pre .an, pre .cv, pre .in {                   /* comments, docs */
+  color: var(--syn-com);
+  font-style: italic;
+}
+pre .op { color: var(--syn-op); }                               /* operators */
+pre .va { color: var(--syn-var); }                              /* variables */
+pre .bu, pre .ex { color: var(--syn-builtin); }                 /* builtins */
+pre .im, pre .pp, pre .ot { color: var(--syn-pp); }             /* imports, preprocessor */
+pre .al { color: var(--syn-err); font-weight: bold; }           /* alerts */
+pre .er { color: var(--syn-err); text-decoration: underline; }  /* errors */
+pre .wa { color: var(--syn-type); font-style: italic; }         /* warnings */
+
+/* diff blocks: skylighting tags deleted lines .st and added lines .va */
+pre.diff .st { color: var(--del); }
+pre.diff .va { color: var(--add); }
+
+/* ------------------------------------------------------------------ tables */
+
+table {
+  border-collapse: collapse;
+  margin: 0 0 1.25em;
+  display: block;
+  max-width: fit-content;
+  overflow-x: auto;
+  font-size: 0.95em;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.45em 0.9em;
+  text-align: left;
+}
+
+thead th {
+  background: var(--bg-surface);
+  color: var(--heading);
+  font-weight: 650;
+}
+
+tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--bg-surface) 45%, transparent);
+}
+
+/* ------------------------------------------------------------- blockquotes */
+
+blockquote {
+  margin: 0 0 1.25em;
+  padding: 0.5em 1.1em;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--bg-surface) 40%, transparent);
+  color: var(--fg-muted);
+}
+
+blockquote > :last-child { margin-bottom: 0; }
+
+/* --------------------------------------------------------- details/footnotes */
+
+details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6em 1em;
+  margin: 0 0 1.25em;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--heading);
+}
+
+details[open] summary { margin-bottom: 0.5em; }
+
+section.footnotes {
+  margin-top: 3em;
+  font-size: 0.9em;
+  color: var(--fg-muted);
+}
+
+/* ------------------------------------------------------- alternate palettes
+
+Dracula — copy over the matching :root values:
+
+  --bg: #282a36;
+  --bg-code: #21222c;
+  --bg-surface: #343746;
+  --bg-hover: #44475a;
+  --border: #44475a;
+  --border-faint: #343746;
+  --fg: #f8f8f2;
+  --fg-muted: #b8bcce;
+  --fg-faint: #6272a4;
+  --heading: #bd93f9;
+  --link: #8be9fd;
+  --link-hover: #d6f6ff;
+  --accent: #ff79c6;
+  --inline-code: #ffb86c;
+  --checkbox: #50fa7b;
+  --del: #ff5555;
+  --add: #50fa7b;
+  --syn-kw: #ff79c6;
+  --syn-str: #f1fa8c;
+  --syn-num: #bd93f9;
+  --syn-fn: #50fa7b;
+  --syn-type: #8be9fd;
+  --syn-com: #6272a4;
+  --syn-op: #ff79c6;
+  --syn-var: #f8f8f2;
+  --syn-builtin: #8be9fd;
+  --syn-pp: #ffb86c;
+  --syn-err: #ff5555;
+
+Gruvbox Dark — copy over the matching :root values:
+
+  --bg: #282828;
+  --bg-code: #1d2021;
+  --bg-surface: #3c3836;
+  --bg-hover: #504945;
+  --border: #504945;
+  --border-faint: #3c3836;
+  --fg: #ebdbb2;
+  --fg-muted: #bdae93;
+  --fg-faint: #928374;
+  --heading: #fabd2f;
+  --link: #83a598;
+  --link-hover: #b8cbc7;
+  --accent: #fe8019;
+  --inline-code: #fe8019;
+  --checkbox: #b8bb26;
+  --del: #fb4934;
+  --add: #b8bb26;
+  --syn-kw: #fb4934;
+  --syn-str: #b8bb26;
+  --syn-num: #d3869b;
+  --syn-fn: #fabd2f;
+  --syn-type: #fabd2f;
+  --syn-com: #928374;
+  --syn-op: #fe8019;
+  --syn-var: #83a598;
+  --syn-builtin: #fe8019;
+  --syn-pp: #8ec07c;
+  --syn-err: #fb4934;
+*/
+CSS
+}
+
+main "$@"

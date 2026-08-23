@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Print kitty's os-window > tab > window hierarchy.
+# Extra arguments are passed to `kitty @ ls` (e.g. --match, --self).
+set -euo pipefail
+
+kitty @ ls "$@" | jq -r '
+  def mark: if .is_focused then " (focused)" elif .is_active then " (active)" else "" end;
+  def branch($i; $n): if $i == $n - 1 then ["└── ", "    "] else ["├── ", "│   "] end;
+  def count($n; $noun): "\($n) \($noun)\(if $n == 1 then "" else "s" end)";
+  . as $all |
+  ($all[] as $os |
+    "\($os.wm_name):\($os.wm_class)#\($os.id)\($os | mark)",
+    ($os.tabs as $tabs | $tabs | to_entries[] as {key: $ti, value: $tab} |
+      branch($ti; $tabs | length) as [$tbranch, $tindent] |
+      "\($tbranch)\($tab.id): \($tab.title)\($tab | mark)",
+      ($tab.windows as $ws | $ws | to_entries[] as {key: $wi, value: $w} |
+        branch($wi; $ws | length) as [$wbranch, $_] |
+        "\($tindent)\($wbranch)\($w.id): \($w.title)\($w | mark)"))),
+  "",
+  ([count($all | length; "os-window"),
+    count([$all[].tabs[]] | length; "tab"),
+    count([$all[].tabs[].windows[]] | length; "window")] | join(", "))
+'

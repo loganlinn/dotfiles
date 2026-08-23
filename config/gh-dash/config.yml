@@ -1,17 +1,78 @@
+# yaml-language-server: $schema=https://gh-dash.dev/schema.json
+repoPaths:
+  loganlinn/*: ~/src/github.com/loganlinn/*
+  gamma/*: ~/src/github.com/gamma-app/*
 prSections:
-- title: My Pull Requests
-  filters: is:open author:@me
-- title: Needs My Review
-  filters: is:open review-requested:@me
-- title: Involved
-  filters: is:open involves:@me -author:@me
+  - title: Inbox
+    filters: >
+      is:open
+      review-involves:@me 
+      -author:@me
+      -reviewed-by:@me 
+      updated:>={{ nowModify "-2w" }}
+  - title: Approved
+    filters: >
+      is:open
+      author:@me
+      review:approved
+      -is:draft 
+      updated:>={{ nowModify "-2w" }}
+  - title: Rejected
+    filters: >
+      is:open
+      author:@me
+      review:changes-requested
+      -is:draft 
+      updated:>={{ nowModify "-2w" }}
+  - title: Blocked
+    filters: >
+      is:open
+      author:@me
+      review:required
+      -is:draft 
+      updated:>={{ nowModify "-2w" }}
+  - title: Merged
+    filters: >
+      author:@me
+      is:merged
+      updated:>={{ nowModify "-2w" }}
+  - title: Closed
+    filters: >
+      author:@me
+      is:closed
+      updated:>={{ nowModify "-2w" }}
+  - title: Drafts
+    filters: >
+      author:@me
+      is:draft 
+      updated:>={{ nowModify "-2w" }}
+  - title: Created
+    filters: >
+      author:@me
+      updated:>={{ nowModify "-2w" }}
+  - title: Reviewed
+    filters: >
+      reviewed-by:@me 
+      updated:>={{ nowModify "-2w" }}
+  - title: "#needs-testing"
+    filters: >
+      is:merged
+      label:needs-testing 
+      updated:>={{ nowModify "-2w" }}
+  - title: "#terraform"
+    filters: >
+      label:terraform 
+      updated:>={{ nowModify "-2w" }}
+
 issuesSections:
-- title: My Issues
-  filters: is:open author:@me
-- title: Assigned
-  filters: is:open assignee:@me
-- title: Involved
-  filters: is:open involves:@me -author:@me
+  - title: Assigned
+    filters: is:open assignee:@me
+  - title: Involved
+    filters: is:open involves:@me -author:@me
+  - title: Open
+    filters: is:open
+  - title: Closed
+    filters: -is:open
 defaults:
   preview:
     open: true
@@ -47,8 +108,11 @@ defaults:
         hidden: true
   refetchIntervalMinutes: 30
 keybindings:
+  prs:
+    - key: T
+      command: gh enhance -R {{.RepoName}} {{.PrNumber}}
+    - key: O
+      command: gh enhance -R {{.RepoName}} {{.PrNumber}}
   issues: []
-  prs: []
-repoPaths: {}
 pager:
-  diff: ""
+  diff: diffnav

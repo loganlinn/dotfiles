@@ -8,6 +8,7 @@
 with builtins;
 with lib;
 let
+  mdpreview = pkgs.callPackage ../../pkgs/mdpreview {};
   includeFile = file: ''
 
     #---------------------------------------------------------
@@ -29,6 +30,7 @@ in
   ];
 
   home.packages = [
+    mdpreview
     (pkgs.writeScriptBin "zshi" (builtins.readFile ./bin/zshi))
   ];
 
@@ -180,6 +182,8 @@ in
       (mkOrder 500 # pre-compinit
 
         ''
+          alias -s md=${getExe mdpreview}
+
           typeset -U fpath # Ensure fpath does not contain duplicates.
           fpath+=(
             "$HOME/.local/share/zsh/site-functions"

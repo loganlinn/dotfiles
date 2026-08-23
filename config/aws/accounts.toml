@@ -1,0 +1,95 @@
+# AWS SSO accounts + roles for the `gammatech` access portal.
+# Source: AWS access portal (https://gammatech.awsapps.com/start).
+# Purpose: data file to generate ~/.aws/config SSO profiles.
+#
+# `key`/`aliases`/`role_aliases` are derived from the existing ~/.aws/config so a
+# generator reproduces the current short profile names (e.g. `prod:admin`). Adjust freely.
+
+[sso]
+session = "gamma"
+start_url = "https://gammatech.awsapps.com/start"
+region = "us-east-2"
+registration_scopes = "sso:account:access"
+
+[defaults]
+region = "us-east-2"
+output = "json"
+
+# Full SSO role name -> short profile suffix. Both prefixed (AWS*) and unprefixed
+# variants map to the same suffix; accounts only get suffixes for roles they list.
+[role_aliases]
+AdministratorAccess = "admin"
+AWSAdministratorAccess = "admin"
+AWSPowerUserAccess = "poweruser"
+ReadOnlyAccess = "readonly"
+AWSReadOnlyAccess = "readonly"
+Engineer = "eng"
+BackendEngineer = "backend"
+SitesEngineer = "sites"
+DaytonaEngineer = "daytona"
+
+[[accounts]]
+key = "audit"
+name = "Audit"
+id = "363225048054"
+email = "aws-audit@gamma.app"
+roles = ["ReadOnlyAccess"]
+
+[[accounts]]
+key = "daytona-staging"
+aliases = ["staging:daytona"]
+name = "Daytona Staging"
+id = "439328746527"
+email = "aws+daytona.staging@gamma.app"
+roles = ["AWSAdministratorAccess", "AWSPowerUserAccess", "AWSReadOnlyAccess", "DaytonaEngineer"]
+
+[[accounts]]
+key = "auto"
+name = "Gamma Automation"
+id = "392746353097"
+email = "aws+automation@gamma.app"
+roles = ["AWSAdministratorAccess", "AWSPowerUserAccess", "AWSReadOnlyAccess"]
+
+[[accounts]]
+key = "prod"
+name = "Gamma Prod"
+id = "672045063110"
+email = "aws+672045063110@gamma.app"
+roles = ["AWSAdministratorAccess", "AWSPowerUserAccess", "AWSReadOnlyAccess", "AdministratorAccess"]
+
+[[accounts]]
+key = "sandbox"
+name = "Gamma Sandbox"
+id = "988905385693"
+email = "aws+988905385693@gamma.app"
+roles = ["AWSAdministratorAccess", "AWSPowerUserAccess", "AWSReadOnlyAccess", "AdministratorAccess"]
+
+[[accounts]]
+key = "staging"
+name = "Gamma Staging"
+id = "926028310313"
+email = "aws+926028310313@gamma.app"
+roles = ["AWSAdministratorAccess", "AWSPowerUserAccess", "AWSReadOnlyAccess", "AdministratorAccess"]
+
+[[accounts]]
+key = "gamma"
+aliases = ["root"]
+name = "Gamma Tech"
+id = "591791561455"
+email = "james@gamma.app"
+roles = ["AdministratorAccess", "BackendEngineer", "Engineer", "ReadOnlyAccess", "SitesEngineer"]
+
+[[accounts]]
+key = "log-archive"
+name = "Log Archive"
+id = "158259501922"
+email = "aws-logs@gamma.app"
+roles = ["ReadOnlyAccess"]
+
+[[accounts]]
+key = "tpuf-staging"
+aliases = ["turbopuffer-staging", "staging:tpuf", "staging:turbopuffer"]
+name = "Turbopuffer Staging"
+id = "760964999449"
+email = "aws+turbopuffer@gamma.app"
+roles = ["AWSAdministratorAccess", "AWSPowerUserAccess", "AWSReadOnlyAccess"]

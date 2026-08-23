@@ -18,4 +18,4 @@ set -euo pipefail
 PATH="$HOME/.dotfiles/bin:$HOME/.local/bin:$PATH"
 pr=${1:-}
 [[ -n $pr ]] || pr=$(pbpaste)
-mise run devin:review:open "$1"
+mise run devin:review:open "$pr"

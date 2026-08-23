@@ -7,7 +7,6 @@
 
   paths = [
     ./age-op
-    ./chrome-cli
     ./closh
     ./everything-fzf
     ./fztea
@@ -15,6 +14,7 @@
     ./i3-auto-layout.nix
     ./jib.nix
     ./kubefwd
+    ./mdpreview
     ./notify-send-py.nix
   ];
 

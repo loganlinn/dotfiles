@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Required parameters:
+# @raycast.schemaVersion 1
+# @raycast.title Chrome URL
+# @raycast.mode compact
+# @raycast.packageName Google Chrome
+#
+# Optional parameters:
+# @raycast.icon 🔗
+#
+# Documentation:
+# @raycast.description Gets the URL of the active Google Chrome tab.
+# @raycast.author Logan Linn
+# @raycast.authorURL https://github.com/loganlinn
+
+set -euo pipefail
+
+SCRIPT=${BASH_SOURCE[0]}
+HERE="$(dirname -- "$SCRIPT")"
+PATH="$(cd -- "$HERE" && pwd -P):$PATH"
+export PATH
+
+usage() {
+  printf 'Usage: %s [-c|--clipboard] [-q|--quiet]\n' "$(basename "$SCRIPT")"
+}
+
+if [[ ${__CFBundleIdentifier:-} = "com.raycast.macos" ]]; then
+  set -- --clipboard
+fi
+
+clipboard=false
+quiet=false
+
+while (($#)); do
+  case $1 in
+  -c | --clipboard)
+    clipboard=true
+    ;;
+  -q | --quiet)
+    quiet=true
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+  esac
+  shift
+done
+
+platform=$(uname -s)
+if [[ $platform != Darwin ]]; then
+  # TODO: Implement Google Chrome URL lookup for Linux.
+  printf '%s: unsupported operating system: %s\n' "$SCRIPT" "$platform" >&2
+  exit 1
+fi
+
+if ! url=$(osascript -e 'tell application "Google Chrome" to get URL of active tab of first window'); then
+  exit 1
+fi
+
+if [[ $clipboard == true ]]; then
+  cb "$url"
+fi
+
+if [[ $quiet == false ]]; then
+  printf '%s' "$url"
+fi

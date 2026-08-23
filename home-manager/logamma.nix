@@ -50,7 +50,6 @@
     mcat
     mkcert
     openssh
-    # self'.packages.chrome-cli # disabled: Xcode build fails to link under newer clang/cctools toolchain (ld exit 133)
     self'.packages.everything-fzf
     typescript-language-server
   ];

@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ../accounts.nix
     ../age-op.nix
@@ -27,7 +28,8 @@
     ./linux.nix
   ];
 
-  home.packages = with pkgs;
+  home.packages =
+    with pkgs;
     [
       as-tree
       bc

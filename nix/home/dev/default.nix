@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ../git
     ../just
@@ -23,12 +24,12 @@
   ];
 
   home.packages = with pkgs; [
-    process-compose
     entr
     gum
+    process-compose
     sad
     tree
-    unipicker
+    # unipicker
     unzip
     watch
     xh

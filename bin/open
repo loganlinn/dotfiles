@@ -1,0 +1,109 @@
+#!/bin/sh
+# open — cross-platform desktop opener (macOS, Linux)
+#
+# Hands a URI or path to the desktop: /usr/bin/open on macOS, xdg-open (or an
+# equivalent) on Linux.
+#
+# On macOS this script shadows /usr/bin/open, so arguments pass through
+# unchanged and the usual flags (-a, -R, -n, -W, ...) keep working.
+#
+# With no arguments, or with a trailing `-`, it reads targets from stdin,
+# one per line:
+#
+#   echo https://example.com | open
+#   pbpaste | open -
+#   grep -o 'https://[^ ]*' notes.md | open -a Firefox -
+
+set -eu
+
+self=$(cd "$(dirname "$0")" && pwd)/${0##*/}
+
+usage() {
+  cat <<'EOF'
+Usage: open [OPTIONS] TARGET...
+       open [OPTIONS] -     Read targets from stdin, one per line
+       open                 Same as `open -`
+
+Open URIs and paths with the desktop handler:
+  macOS   /usr/bin/open (all other options pass through; see `/usr/bin/open --help`)
+  Linux   $OPENER, xdg-open, gio, gnome-open, kde-open, exo-open, wslview
+EOF
+}
+
+# Resolve the opener: $OPENER wins, then the platform default. A candidate
+# that resolves back to this script is skipped, so PATH shadowing cannot
+# recurse.
+case "$(uname -s)" in
+Darwin) candidates="/usr/bin/open" ;;
+*) candidates="xdg-open gio gnome-open kde-open kde-open5 exo-open wslview" ;;
+esac
+
+opener=
+for candidate in ${OPENER:-} $candidates; do
+  resolved=$(command -v "$candidate" 2>/dev/null) || continue
+  [ "$resolved" = "$self" ] && continue
+  opener=$resolved
+  break
+done
+
+desktop_open() {
+  if [ -z "$opener" ]; then
+    echo >&2 "open: no desktop opener found (set \$OPENER); target: $*"
+    return 1
+  fi
+  case "${opener##*/}" in
+  gio) "$opener" open "$@" </dev/null ;;
+  *) "$opener" "$@" </dev/null ;;
+  esac
+}
+
+case "${1:-}" in
+-h | --help)
+  if [ $# -eq 1 ]; then
+    usage
+    exit 0
+  fi
+  ;;
+esac
+
+# Read targets from stdin when there are no arguments, or when the last
+# argument is `-`. Everything before the `-` stays as opener options.
+explicit_stdin=0
+if [ $# -gt 0 ]; then
+  for last in "$@"; do :; done
+  if [ "$last" = "-" ]; then
+    explicit_stdin=1
+    # Rotate the argument list left, dropping the trailing `-`.
+    n=$#
+    i=1
+    while [ "$i" -lt "$n" ]; do
+      set -- "$@" "$1"
+      shift
+      i=$((i + 1))
+    done
+    shift
+  else
+    desktop_open "$@"
+    exit
+  fi
+fi
+
+if [ "$explicit_stdin" -eq 0 ] && [ -t 0 ]; then
+  usage >&2
+  exit 1
+fi
+
+status=0
+found=0
+while IFS=$(printf ' \t\r') read -r target || [ -n "${target:-}" ]; do
+  [ -n "$target" ] || continue
+  found=1
+  desktop_open "$@" "$target" || status=1
+done
+
+if [ "$found" -eq 0 ]; then
+  echo >&2 "open: no target on stdin"
+  exit 1
+fi
+
+exit "$status"

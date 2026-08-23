@@ -1,0 +1,169 @@
+[toplevel]
+fzf = !nix run github:aws-contrib/aws-fzf --
+gei = sts get-caller-identity
+whoami = sts get-caller-identity
+
+profiles = configure list-profiles
+
+# ---------- IAM ----------
+# customer-managed only; drop --scope Local to include AWS-managed
+iam-policy-names = iam list-policies --scope Local --query 'Policies[].[PolicyName]' --output text
+iam-policy-arns = iam list-policies --scope Local --query 'Policies[].[Arn]' --output text
+
+iam-user-names = iam list-users --query 'Users[].[UserName]' --output text
+iam-user-arns = iam list-users --query 'Users[].[Arn]' --output text
+
+iam-groups-names = iam list-groups --query 'Groups[].[GroupName]' --output text
+iam-groups-arns = iam list-groups --query 'Groups[].[Arn]' --output text
+
+list-iam-role-names = iam list-roles --query 'Roles[].[RoleName]' --output text
+list-iam-role-arns = iam list-roles --query 'Roles[].[Arn]' --output text
+
+# ---------- IAM Identity Center (pass --instance-arn <arn>) ----------
+permission-set-arns = sso-admin list-permission-sets --query 'PermissionSets[].[@]' --output text
+permission-set-names = !f() { aws permission-set-arns "$@" | while IFS= read -r ps; do aws sso-admin describe-permission-set "$@" --permission-set-arn "$ps" --query 'PermissionSet.Name' --output text; done; }; f
+
+identitystore-id = sso-admin list-instances --query 'Instances[0].IdentityStoreId' --output text
+identitystore-arn = sso-admin list-instances --query 'Instances[0].InstanceArn' --output text
+
+# ---------- S3 ----------
+s3-buckets-names = s3api list-buckets --query 'Buckets[].[Name]' --output text
+
+# ---------- EKS ----------
+eks-cluster-names = eks list-clusters --query 'clusters[].[@]' --output text
+
+# ---------- ECS ----------
+ecs-cluster-arns = ecs list-clusters --query 'clusterArns[].[@]' --output text
+ecs-cluster-names = !f() { aws ecs-cluster-arns "$@" | awk -F/ '{print $NF}'; }; f
+
+# pass --cluster <name|arn> (defaults to cluster "default" otherwise)
+ecs-service-arns = ecs list-services --query 'serviceArns[].[@]' --output text
+ecs-service-names = !f() { aws ecs-service-arns "$@" | awk -F/ '{print $NF}'; }; f
+ecs-svc-arns = ecs-service-arns
+ecs-svc-names = ecs-service-names
+
+# names = task definition families (the conventional un-revisioned reference)
+ecs-taskdef-arns = ecs list-task-definitions --query 'taskDefinitionArns[].[@]' --output text
+ecs-taskdef-names = ecs list-task-definition-families --query 'families[].[@]' --output text
+
+# ---------- Organizations ----------
+org-account-ids = organizations list-accounts --query 'Accounts[].[Id]' --output text
+org-account-names = organizations list-accounts --query 'Accounts[].[Name]' --output text
+
+# pass --parent-id <r-xxxx | ou-xxxx>
+org-ous-ids = organizations list-organizational-units-for-parent --query 'OrganizationalUnits[].[Id]' --output text
+org-ous-names = organizations list-organizational-units-for-parent --query 'OrganizationalUnits[].[Name]' --output text
+
+# ---------- VPC / EC2 networking ----------
+vpc-ids = ec2 describe-vpcs --query 'Vpcs[].[VpcId]' --output text
+vpc-names = ec2 describe-vpcs --query 'Vpcs[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+subnet-ids = ec2 describe-subnets --query 'Subnets[].[SubnetId]' --output text
+subnet-names = ec2 describe-subnets --query 'Subnets[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+route-table-ids = ec2 describe-route-tables --query 'RouteTables[].[RouteTableId]' --output text
+route-table-names = ec2 describe-route-tables --query 'RouteTables[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+vpce-ids = ec2 describe-vpc-endpoints --query 'VpcEndpoints[].[VpcEndpointId]' --output text
+vpce-names = ec2 describe-vpc-endpoints --query 'VpcEndpoints[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+# owned PrivateLink service configurations; names = ServiceName consumers connect to
+vpce-svc-ids = ec2 describe-vpc-endpoint-service-configurations --query 'ServiceConfigurations[].[ServiceId]' --output text
+vpce-svc-names = ec2 describe-vpc-endpoint-service-configurations --query 'ServiceConfigurations[].[ServiceName]' --output text
+
+vpc-internet-gateway-ids = ec2 describe-internet-gateways --query 'InternetGateways[].[InternetGatewayId]' --output text
+vpc-internet-gateway-names = ec2 describe-internet-gateways --query 'InternetGateways[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+vpc-transit-gateway-ids = ec2 describe-transit-gateways --query 'TransitGateways[].[TransitGatewayId]' --output text
+vpc-transit-gateway-names = ec2 describe-transit-gateways --query 'TransitGateways[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+vpc-peering-ids = ec2 describe-vpc-peering-connections --query 'VpcPeeringConnections[].[VpcPeeringConnectionId]' --output text
+vpc-peering-names = ec2 describe-vpc-peering-connections --query 'VpcPeeringConnections[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+# ---------- Route 53 ----------
+# ids stripped of the "/hostedzone/" prefix; names keep the trailing dot (DNS form)
+route53-zone-ids = !f() { aws route53 list-hosted-zones "$@" --query 'HostedZones[].[Id]' --output text | awk -F/ '{print $NF}'; }; f
+route53-zone-names = route53 list-hosted-zones --query 'HostedZones[].[Name]' --output text
+
+# ---------- EC2 instances ----------
+ec2-instance-ids = ec2 describe-instances --query 'Reservations[].Instances[].[InstanceId]' --output text
+ec2-instance-names = ec2 describe-instances --query 'Reservations[].Instances[].[Tags[?Key==`Name`].Value|[0]]' --output text
+ec2-instances = ec2 describe-instances --query 'Reservations[].Instances[].[InstanceId, Tags[?Key==`Name`].Value | [0]]' --output text
+
+
+# ---------- Security groups ----------
+sg-ids = ec2 describe-security-groups --query 'SecurityGroups[].[GroupId]' --output text
+sg-names = ec2 describe-security-groups --query 'SecurityGroups[].[GroupName]' --output text
+
+# ---------- Load balancing ----------
+# classic ELBs have no ARN; name is the identifier
+elb-names = elb describe-load-balancers --query 'LoadBalancerDescriptions[].[LoadBalancerName]' --output text
+
+alb-arns = elbv2 describe-load-balancers --query 'LoadBalancers[?Type==`application`].[LoadBalancerArn]' --output text
+alb-names = elbv2 describe-load-balancers --query 'LoadBalancers[?Type==`application`].[LoadBalancerName]' --output text
+
+tg-arns = elbv2 describe-target-groups --query 'TargetGroups[].[TargetGroupArn]' --output text
+tg-names = elbv2 describe-target-groups --query 'TargetGroups[].[TargetGroupName]' --output text
+
+# ---------- EIP / key pairs / ASG ----------
+eip-ids = ec2 describe-addresses --query 'Addresses[].[AllocationId]' --output text
+eip-names = ec2 describe-addresses --query 'Addresses[].[Tags[?Key==`Name`].Value|[0]]' --output text
+
+key-pair-names = ec2 describe-key-pairs --query 'KeyPairs[].[KeyName]' --output text
+key-pair-ids = ec2 describe-key-pairs --query 'KeyPairs[].[KeyPairId]' --output text
+
+asg-names = autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].[AutoScalingGroupName]' --output text
+
+# ---------- Secrets Manager / SSM ----------
+secret-names = secretsmanager list-secrets --query 'SecretList[].[Name]' --output text
+secret-arns = secretsmanager list-secrets --query 'SecretList[].[ARN]' --output text
+secret-value = secretsmanager get-secret-value --query 'SecretString' --output text --secret-id
+
+param-names = ssm describe-parameters --query 'Parameters[].[Name]' --output text
+param-value = ssm get-parameter --with-decryption --query Parameter.Value --output text --name
+
+ssm-param-names = ssm describe-parameters --query 'Parameters[].[Name]' --output text
+ssm-param-value = ssm get-parameter --with-decryption --query Parameter.Value --output text --name
+
+ssm-names = ssm describe-parameters --query 'Parameters[].[Name]' --output text
+ssm-value = ssm get-parameter --with-decryption --query Parameter.Value --output text --name
+
+# ---------- RDS ----------
+# DBInstanceIdentifier / DBClusterIdentifier double as the display name and the
+# conventional CLI reference (--db-instance-identifier), so they live under -names
+rds-instance-names = rds describe-db-instances --query 'DBInstances[].[DBInstanceIdentifier]' --output text
+rds-instance-arns = rds describe-db-instances --query 'DBInstances[].[DBInstanceArn]' --output text
+
+rds-cluster-names = rds describe-db-clusters --query 'DBClusters[].[DBClusterIdentifier]' --output text
+rds-cluster-arns = rds describe-db-clusters --query 'DBClusters[].[DBClusterArn]' --output text
+
+# ---------- DynamoDB ----------
+ddb-table-names = dynamodb list-tables --query 'TableNames[].[@]' --output text
+
+# ---------- ElastiCache (replication groups, split by engine) ----------
+redis-ids = elasticache describe-replication-groups --query 'ReplicationGroups[?Engine==`redis`].[ReplicationGroupId]' --output text
+valkey-ids = elasticache describe-replication-groups --query 'ReplicationGroups[?Engine==`valkey`].[ReplicationGroupId]' --output text
+
+# ---------- KMS ----------
+# names = KMS aliases (KMS has no Name tag convention); includes alias/aws/* entries
+kms-key-ids = kms list-keys --query 'Keys[].[KeyId]' --output text
+kms-key-arns = kms list-keys --query 'Keys[].[KeyArn]' --output text
+kms-key-names = kms list-aliases --query 'Aliases[].[AliasName]' --output text
+
+# ---------- SQS ----------
+# QueueUrl is the conventional API identifier — kept as a 4th suffix
+sqs-queue-urls = sqs list-queues --query 'QueueUrls[].[@]' --output text
+sqs-queue-names = !f() { aws sqs-queue-urls "$@" | awk -F/ '{print $NF}'; }; f
+
+# ---------- SNS ----------
+sns-topic-arns = sns list-topics --query 'Topics[].[TopicArn]' --output text
+sns-topic-names = !f() { aws sns-topic-arns "$@" | awk -F: '{print $NF}'; }; f
+
+# ---------- Lambda ----------
+lambda-names = lambda list-functions --query 'Functions[].[FunctionName]' --output text
+lambda-arns = lambda list-functions --query 'Functions[].[FunctionArn]' --output text
+
+# ---------- CloudWatch Logs ----------
+# logGroupArn is the clean form (no trailing ":*", unlike the legacy "arn" field)
+log-group-names = logs describe-log-groups --query 'logGroups[].[logGroupName]' --output text
+log-group-arns = logs describe-log-groups --query 'logGroups[].[logGroupArn]' --output text

@@ -31,10 +31,6 @@ stdenv.mkDerivation rec {
       ripgrep
       ruby
     ];
-    # chrome-cli disabled on Darwin: Xcode build fails to link under newer clang/cctools toolchain (ld exit 133)
-    # ++ lib.optionals stdenv.isDarwin [
-    #   (callPackage ../chrome-cli {})
-    # ];
 
   nativeBuildInputs = [makeWrapper];
 

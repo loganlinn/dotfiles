@@ -9,6 +9,8 @@ _.path = ["{{config_root}}/bin"]
 
 [dotfiles]
 "~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
+"~/.config/direnv/lib" = { source = "config/direnv/lib", mode = "symlink-each" }
+"~/.config/herdr/config" = "config/herdr/config.toml"
 
 [tasks.clean]
 depends = "*:clean"

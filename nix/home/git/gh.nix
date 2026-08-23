@@ -6,202 +6,145 @@
 }:
 with lib;
 with lib.my; let
-  openCmd =
-    if pkgs.stdenv.isDarwin
-    then "open"
-    else "xdg-open";
-
-  prFzfOpts = {
-    multi = true;
-    select-1 = true;
-    exit-0 = true;
-    border = true;
-    ansi = true;
-    height = "50%";
-    layout = "reverse";
-    preview = "CLICOLOR_FORCE=1 gh pr view {}";
-    preview-window = "down,85%";
+  pr-search = {
+    inbox = ''-author:@me -reviewed-by:@me review-involves:@me is:open'';
+    outbox = ''author:@me review:required is:open -is:draft'';
+    approved = ''author:@me review:approved is:open -is:draft'';
+    rejected = ''author:@me review:changes-requested is:open -is:draft'';
+    merged = ''author:@me is:merged'';
+    closed = ''author:@me is:closed'';
+    drafts = ''author:@me is:draft '';
+    created = ''author:@me'';
+    reviewed = ''reviewed-by:@me'';
+    testing = ''is:merged label:needs-testing label:needs-qa'';
   };
-
-  gh-open-review-requested = let
-    searchQuery = "type:pr state:open review-requested:${config.my.github.username} archived:false";
-  in
-    pkgs.writeShellScriptBin "gh-open-review-requested" ''
-      gh api graphql -F searchQuery=${escapeShellArg searchQuery} -f query='
-        query ReviewsRequested($searchQuery: String!) {
-          search(query: $searchQuery, type: ISSUE, first: 20) {
-            edges {
-              node {
-                ... on PullRequest {
-                  url
-                }
-              }
-            }
-          }
-        }
-      ' |
-      ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-      ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU {} prFzfOpts} |
-      tee /dev/stderr |
-      xargs ${openCmd}
-    '';
-
-  gh-pr-review = pkgs.writeShellScriptBin "gh-pr-review" ''
-
-    graphql_query='
-      query ReviewsRequested(limit: Int!) {
-        search(query: "type:pr review-requested:${config.my.github.username} state:open archived:false", type: ISSUE, first: $limit) {
-          edges {
-            node {
-              ... on PullRequest {
-                url
-              }
-            }
-          }
-        }
-      }
-    '
-
-    gh api graphql -F limit=10 -f query="$graphql_query" |
-    ${getExe pkgs.jq} -r '.data.search.edges[].node.url' |
-    ${getExe pkgs.fzf} ${cli.toCommandLineShellGNU {} prFzfOpts} |
-    tee /dev/stderr |
-    xargs ${openCmd};
-  '';
+  pr-fields = [
+    "additions"
+    "assignees"
+    "author"
+    "autoMergeRequest"
+    "baseRefName"
+    "baseRefOid"
+    "body"
+    "changedFiles"
+    "closed"
+    "closedAt"
+    "closingIssuesReferences"
+    "comments"
+    "commits"
+    "createdAt"
+    "deletions"
+    "files"
+    "fullDatabaseId"
+    "headRefName"
+    "headRefOid"
+    "headRepository"
+    "headRepositoryOwner"
+    "id"
+    "isCrossRepository"
+    "isDraft"
+    "labels"
+    "latestReviews"
+    "maintainerCanModify"
+    "mergeCommit"
+    "mergeStateStatus"
+    "mergeable"
+    "mergedAt"
+    "mergedBy"
+    "milestone"
+    "number"
+    "potentialMergeCommit"
+    "projectCards"
+    "projectItems"
+    "reactionGroups"
+    "reviewDecision"
+    "reviewRequests"
+    "reviews"
+    "state"
+    "statusCheckRollup"
+    "title"
+    "updatedAt"
+    "url"
+  ];
 in {
   home.shellAliases = {
-    gh = "env -u GITHUB_TOKEN gh";
     gist = "gh gist";
-    gistc = "gh gist create --web";
   };
+
   programs.gh = {
     enable = true;
     gitCredentialHelper.enable = true;
     settings = {
-      aliases = {
-        # alias-export = "! ";
-        release-checkout = ''!tag=$(gh release view "$@" --json tagName --jq '.tagName') && git fetch origin tag "$tag" && git checkout --detach "$tag"'';
-        cor = ''!gh checkout release "$@"'';
-        o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" .'';
-        diff = "pr diff";
-        prw = "pr list --web";
-        co = "!gh prz | ifne xargs -n1 gh pr checkout";
-        publish = ''gist create --web'';
-        needs-testing = ''!gh pr list --search "is:merged label:needs-testing ''${1-'author:@me'}"'';
-
-        checks = "pr checks";
-        # failed = ''pr checks --json bucket,completedAt,description,event,link,name,startedAt,state,workflow --jq 'select(.state != "SUCCESS" and .state != "SKIPPED"' '';
-        # procc = ''!gh failed | | .link)[]' | xargs -L1 open'';
-
-        repo-fork-sync = ''!gh api /repos/{owner}/{repo}/merge-upstream --method POST --field "branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"'';
-
-        markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
-
-        octocat = "api /octocat";
-        license = ''!gh api --paginate --jq 'if type == "object" then .body else .[].name end' licenses/"''${1-}"'';
-
-        coa = "!gh-pr-checkout-authored-by \"$@\"";
-
-        my-org = ''
-          !gh api graphql -F owner='{owner}' -F name='{repo}' -f query='
-            query($name: String!, $owner: String!) {
-              repository(owner: $owner, name: $name) {
-                owner {
-                  ... on Organization {
-                    login
-                    teams(first: 100) {
-                      nodes {
-                        slug
+      aliases =
+        listToAttrs (map (field: nameValuePair "pr-${field}" ''pr view --json ${field} --jq .${field}'') pr-fields)
+        // mapAttrs' (name: search: nameValuePair "pr-${name}" ''pr list --search "${search}"'') pr-search
+        // {
+          aliases = "alias list";
+          release-checkout = ''!tag=$(gh release view "$@" --json tagName --jq '.tagName') && git fetch origin tag "$tag" && git checkout --detach "$tag"'';
+          o = ''!gh browse --branch="$(git rev-parse --abbrev-ref HEAD)" .'';
+          co = "!gh prz | ifne xargs -n1 gh pr checkout";
+          coa = "!gh-pr-checkout-authored-by \"$@\"";
+          repo-fork-sync = ''!gh api /repos/{owner}/{repo}/merge-upstream --method POST --field "branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"'';
+          markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
+          gfm = ''markdown'';
+          octocat = "api /octocat";
+          license = ''!gh api --paginate --jq 'if type == "object" then .body else .[].name end' licenses/"''${1-}"'';
+          my-org = ''
+            !gh api graphql -F owner='{owner}' -F name='{repo}' -f query='
+              query($name: String!, $owner: String!) {
+                repository(owner: $owner, name: $name) {
+                  owner {
+                    ... on Organization {
+                      login
+                      teams(first: 100) {
+                        nodes {
+                          slug
+                        }
                       }
-                    }
-                    membersWithRole(first: 100) {
-                      nodes {
-                        login
+                      membersWithRole(first: 100) {
+                        nodes {
+                          login
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-          ' | jq -r '
-            .data.repository.owner
-            | .login as $org
-            | (.teams.nodes|map("\($org)/\(.slug)")) as $teams
-            | (.membersWithRole.nodes|map(.login)) as $users
-            | ($teams | sort) + ($users | sort_by(ascii_downcase))
-            | .[]'
-        '';
-        my-team = "!gh my-org | sed '/${config.my.github.username}/d'";
-        my-prs = "pr list --author @me";
-        my-runs = ''!gh run list --user "$(gh api user --jq .login)"''; # does not support @me
-        my-user = "api user";
-        whoami = "api user";
-
-        prs = "pr list";
-        pr-url = "pr view --json url --jq .url";
-        pr-branch = "pr view --json headRefName --jq .headRefName";
-        pr-body = "pr view --json body --jq .body";
-        prs-todo = "pr list --search 'review-involves:@me -reviewed-by:@me'";
-        prs-involved = "pr list --search involves:@me";
-        prs-mine = "pr list --author @me --state all";
-        prs-draft = "pr list --author @me --draft";
-        prs-returned = "pr list --author @me --search review:changes_requested";
-        prs-approved = "pr list --author @me --search 'review:approved -is:draft'";
-        prs-mergeable = "pr list --author @me --search 'review:approved -is:draft'";
-        prs-merged = "pr list --author @me --status closed --search is:merged";
-        prs-unmerged = "pr list --author @me --search is:unmerged";
-        prs-reviewed-by-me = "pr list --search 'reviewed-by:@me'";
-        pr-reviewers = "pr view --json 'reviewRequests' --jq '.reviewRequests[]'";
-        prv = ''pr view --web'';
-        prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
-        prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
-        pro = ''!gh pr view --web "$@"'';
-        prc = ''
-          !gh pr view --json additions,assignees,author,autoMergeRequest,baseRefName,baseRefOid,body,changedFiles,closed,closedAt,closingIssuesReferences,comments,commits,createdAt,deletions,files,fullDatabaseId,headRefName,headRefOid,headRepository,headRepositoryOwner,id,isCrossRepository,isDraft,labels,latestReviews,maintainerCanModify,mergeCommit,mergeStateStatus,mergeable,mergedAt,mergedBy,milestone,number,potentialMergeCommit,projectCards,projectItems,reactionGroups,reviewDecision,reviewRequests,reviews,state,statusCheckRollup,title,updatedAt,url
-                  --jq "''${1:-.url}" | ${pkgs.moreutils}/bin/pee ${
-            if pkgs.stdenv.isDarwin
-            then "pbcopy"
-            else "${pkgs.xclip}/bin/xclip -sel clip"
-          }'';
-        pr-copy = "!gh prz | ifne xargs -n1 gh pr view --web"; # open another PR
-
-        edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
-
-        aliases = "alias list";
-
-        gists = ''
-          !GIST=$(gh gist list --limit 128 | fzf -0 | cut -f1) || exit $? ; [[ -n $GIST ]] && gh gist view "$GIST" "$@"
-        '';
-
-        stars = ''
-          api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}'
-        '';
-
-        # orr = ''!gh open-review-requested "$@"'';
-
-        open-review-requested = "!gh-open-review-requested \"$@\"";
-        land  = "pr merge --squash --rebase --delete-branch";
-
-        # `gh pr edit` applied to every open PR in the current Graphite stack.
-        # Pass -n to preview, -y to skip the confirmation.
-        stack-add-assignee = ''!gh-pr-edit-stack --add-assignee "$@"'';
-        stack-add-label = ''!gh-pr-edit-stack --add-label "$@"'';
-        stack-add-milestone = ''!gh-pr-edit-stack --milestone "$@"'';
-        stack-add-project = ''!gh-pr-edit-stack --add-project "$@"'';
-        stack-add-reviewer = ''!gh-pr-edit-stack --add-reviewer "$@"'';
-        stack-remove-assignee = ''!gh-pr-edit-stack --remove-assignee "$@"'';
-        stack-remove-label = ''!gh-pr-edit-stack --remove-label "$@"'';
-        stack-remove-milestone = ''!gh-pr-edit-stack --remove-milestone "$@"'';
-        stack-remove-project = ''!gh-pr-edit-stack --remove-project "$@"'';
-        stack-remove-reviewer = ''!gh-pr-edit-stack --remove-reviewer "$@"'';
-
-        userlist = ''!${config.xdg.configHome}/gh/userlists.sh "$@"'';
-      };
+            ' | jq -r '
+              .data.repository.owner
+              | .login as $org
+              | (.teams.nodes|map("\($org)/\(.slug)")) as $teams
+              | (.membersWithRole.nodes|map(.login)) as $users
+              | ($teams | sort) + ($users | sort_by(ascii_downcase))
+              | .[]'
+          '';
+          my-team = "!gh my-org | sed '/${config.my.github.username}/d'";
+          my-prs = "pr list --author @me";
+          my-runs = ''!gh run list --user "$(gh api user --jq .login)"''; # does not support @me
+          my-user = "api user";
+          whoami = "api user";
+          checks = "pr checks";
+          diff = ''!gh pr diff "''$@" | diffnav'';
+          pr-by= ''!author=$1 && [[ -n $author ]] || author=$(gh my-org | fzf) && pr list --search "author:''$author"'';
+          prw = "pr list --web";
+          prv = "pr view --web";
+          prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
+          prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
+          pro = ''!gh pr view --web "$@"'';
+          lgtm = "pr review --approve";
+          edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
+          stars = ''api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}' '';
+          land = "pr merge --squash --delete-branch";
+          userlist = ''!${config.xdg.configHome}/gh/userlists.sh "$@"'';
+        };
     };
   };
 
   xdg.configFile = {
-    "gh-dash/config.yml".source = ../../../config/gh-dash/config.yml;
+    "gh-dash/config.yml".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/gh-dash/config.yml";
+    "gh-enhance/config.yml".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/gh-enhance/config.yml";
     "gh/userlists.sh".source =
       config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/gh/userlists.sh";
   };
@@ -233,23 +176,21 @@ in {
   };
 
   home.packages = [
-    gh-open-review-requested
-    gh-pr-review
   ];
 
-  programs.raycast.scriptCommands.github-open-review-requested = {
-    title = "GitHub Open Review Requested";
-    mode = "silent";
-    icon = "🤖";
-    author = config.my.github.username;
-    authorURL = "https://github.com/${config.my.github.username}";
-    description = "Fuzzy-pick a PR awaiting your review and open it in the browser.";
-    runtimeInputs = [
-      gh-open-review-requested
-      config.programs.gh.package
-    ];
-    script = ''
-      exec ${getExe gh-open-review-requested} "$@"
-    '';
-  };
+  # programs.raycast.scriptCommands.github-open-review-requested = {
+  #   title = "GitHub Open Review Requested";
+  #   mode = "silent";
+  #   icon = "🤖";
+  #   author = config.my.github.username;
+  #   authorURL = "https://github.com/${config.my.github.username}";
+  #   description = "Fuzzy-pick a PR awaiting your review and open it in the browser.";
+  #   runtimeInputs = [
+  #     gh-review-requested
+  #     config.programs.gh.package
+  #   ];
+  #   script = ''
+  #     exec ${getExe gh-review-requested} "$@"
+  #   '';
+  # };
 }
