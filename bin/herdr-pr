@@ -1,0 +1,183 @@
+#!/usr/bin/env zsh
+
+emulate -L zsh
+setopt extended_glob warn_create_global typeset_silent \
+  no_short_loops rc_quotes no_auto_pushd pipefail err_return
+
+readonly program=${0:t}
+
+usage() {
+  print -r -- "usage: $program <pr-number-or-url>" >&2
+  exit 2
+}
+
+die() {
+  print -r -- "$program: $*" >&2
+  exit 1
+}
+
+require_command() {
+  (( $+commands[$1] )) || die "required command not found: $1"
+}
+
+(( $# == 1 )) || usage
+
+require_command gh
+require_command git
+require_command jq
+require_command kitty
+
+typeset herdr_bin
+if (( $+commands[herdr] )); then
+  herdr_bin=$commands[herdr]
+elif (( $+commands[mise] )); then
+  herdr_bin=$(mise which herdr 2>/dev/null) || die "required command not found: herdr"
+else
+  die "required command not found: herdr"
+fi
+
+typeset pr_json
+pr_json=$(gh pr view "$1" \
+  --json headRefName,headRefOid,headRepository,headRepositoryOwner,number,url) || \
+  die "failed to read PR data"
+
+typeset -a pr_fields
+pr_fields=( "${(@f)$(jq -er '
+  [
+    .headRepositoryOwner.login,
+    .headRepository.name,
+    .headRefName,
+    .headRefOid,
+    (.number | tostring),
+    .url
+  ]
+  | if all(.[]; type == "string" and length > 0)
+    then .[]
+    else error("missing PR head data")
+    end
+' <<<"$pr_json")}" ) || die "the PR has no usable head repository"
+(( $#pr_fields == 6 )) || die "the PR has no usable head repository"
+
+readonly session=$pr_fields[1]
+readonly head_repo=$pr_fields[2]
+readonly branch=$pr_fields[3]
+readonly head_oid=$pr_fields[4]
+readonly pr_number=$pr_fields[5]
+readonly pr_url=$pr_fields[6]
+readonly workspace_label="${head_repo}:${branch}"
+
+typeset url_path=${pr_url#https://github.com/}
+typeset -a url_parts=( "${(@s:/:)url_path}" )
+[[ $url_parts[3] == pull && $url_parts[4] == $pr_number ]] || \
+  die "unsupported PR URL: $pr_url"
+readonly base_owner=$url_parts[1]
+readonly base_repo=$url_parts[2]
+
+readonly source_root=${HERDR_PR_SOURCE_ROOT:-$HOME/src}
+typeset repo_dir="$source_root/github.com/$session/$head_repo"
+[[ -d $repo_dir ]] || {
+  print -r -- "$program: repository not found: $repo_dir" >&2
+  print -r -- "Run: ghq get https://github.com/$session/$head_repo" >&2
+  exit 1
+}
+repo_dir=${repo_dir:A}
+git -C "$repo_dir" rev-parse --git-common-dir >/dev/null 2>&1 || \
+  die "not a Git repository: $repo_dir"
+
+typeset -a herdr_cmd=( "$herdr_bin" --session "$session" )
+typeset worktrees_json
+worktrees_json=$("${herdr_cmd[@]}" worktree list --cwd "$repo_dir") || \
+  die "failed to list Herdr worktrees for session $session"
+
+typeset worktree_path
+worktree_path=$(jq -er --arg branch "$branch" '
+  [.result.worktrees[] | select(.branch == $branch)][0].path // empty
+' <<<"$worktrees_json" 2>/dev/null) || worktree_path=
+
+typeset workspace_json
+if [[ -n $worktree_path ]]; then
+  workspace_json=$("${herdr_cmd[@]}" worktree open \
+    --cwd "$repo_dir" \
+    --path "$worktree_path" \
+    --label "$workspace_label" \
+    --focus) || die "failed to open worktree: $worktree_path"
+else
+  readonly pr_ref="refs/herdr-pr/${base_owner}/${base_repo}/${pr_number}"
+  readonly base_url="https://github.com/${base_owner}/${base_repo}.git"
+
+  git -C "$repo_dir" fetch --no-tags "$base_url" \
+    "+refs/pull/${pr_number}/head:${pr_ref}" || die "failed to fetch PR $pr_url"
+
+  typeset fetched_oid
+  fetched_oid=$(git -C "$repo_dir" rev-parse "${pr_ref}^{commit}") || \
+    die "failed to resolve the fetched PR commit"
+  [[ $fetched_oid == $head_oid ]] || \
+    die "the fetched PR commit does not match GitHub: $fetched_oid != $head_oid"
+
+  if git -C "$repo_dir" show-ref --verify --quiet "refs/heads/$branch"; then
+    typeset local_oid
+    local_oid=$(git -C "$repo_dir" rev-parse "refs/heads/${branch}^{commit}") || \
+      die "failed to resolve local branch: $branch"
+    if [[ $local_oid != $head_oid ]]; then
+      git -C "$repo_dir" merge-base --is-ancestor "$local_oid" "$head_oid" || \
+        die "local branch differs from the PR: $branch"
+      git -C "$repo_dir" update-ref "refs/heads/$branch" "$head_oid" "$local_oid" || \
+        die "failed to update local branch: $branch"
+    fi
+  fi
+
+  workspace_json=$("${herdr_cmd[@]}" worktree create \
+    --cwd "$repo_dir" \
+    --branch "$branch" \
+    --base "$pr_ref" \
+    --label "$workspace_label" \
+    --focus) || die "failed to create worktree for branch: $branch"
+fi
+
+worktree_path=$(jq -er '.result.worktree.path' <<<"$workspace_json") || \
+  die "Herdr did not return a worktree path"
+
+typeset kitty_json
+kitty_json=$(kitty @ ls) || die "cannot connect to Kitty"
+
+typeset window_id
+window_id=$(jq -er --arg session "$session" '
+  [.[] | .tabs[]? | .windows[]?
+    | select(.user_vars.HERDR_SESSION == $session)][0].id // empty
+' <<<"$kitty_json" 2>/dev/null) || window_id=
+
+if [[ -n $window_id ]]; then
+  kitty @ focus-window --match "id:$window_id"
+  exit
+fi
+
+typeset herdr_window_id
+herdr_window_id=$(jq -er '
+  [.[] | .tabs[]? | .windows[]?
+    | select(.user_vars.HERDR == "1")][0].id // empty
+' <<<"$kitty_json" 2>/dev/null) || herdr_window_id=
+
+typeset -a launch_args=(
+  --cwd "$worktree_path"
+  --tab-title "$session"
+  --var HERDR=1
+  --var "HERDR_SESSION=$session"
+)
+
+if [[ -n $herdr_window_id ]]; then
+  window_id=$(kitty @ launch \
+    --type=tab \
+    --match "window_id:$herdr_window_id" \
+    "${launch_args[@]}" \
+    -- "$herdr_bin" session attach "$session") || \
+    die "failed to open a Kitty tab"
+else
+  window_id=$(kitty @ launch \
+    --type=os-window \
+    --os-window-title Herdr \
+    "${launch_args[@]}" \
+    -- "$herdr_bin" session attach "$session") || \
+    die "failed to open a Kitty OS window"
+fi
+
+kitty @ focus-window --match "id:$window_id"

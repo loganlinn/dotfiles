@@ -1,0 +1,120 @@
+# vim: ft=zsh
+emulate -L zsh
+setopt warn_create_global typeset_silent no_short_loops pipefail
+
+local action=list
+local -a aws_args
+while [[ ${1-} == -p ]]; do
+  if (( $# < 2 )); then
+    print -ru2 -- 'sm: option -p requires a value'
+    return 2
+  fi
+  aws_args=(--profile "$2")
+  shift 2
+done
+
+case ${1-} in
+  '') ;;
+  -h|--help) action=help; shift ;;
+  -*) ;;
+  *) action=$1; shift ;;
+esac
+
+case $action in
+  list|ls|names)
+    integer OPTIND=1
+    local opt OPTARG output=text
+    local -a fields predicates
+
+    while getopts ':acdmno:p:t' opt; do
+      case $opt in
+        a) fields+=(ARN) ;;
+        c) fields+=(CreatedDate) ;;
+        d) fields+=(Description) ;;
+        m) fields+=(LastChangedDate) ;;
+        n) fields+=(Name) ;;
+        o) output=$OPTARG ;;
+        p) aws_args=(--profile "$OPTARG") ;;
+        t) fields+=('join(`,`, Tags[].join(`=`, [Key, Value]))') ;;
+        :)
+          print -ru2 -- "sm: option -$OPTARG requires a value"
+          return 2
+          ;;
+        \?)
+          print -ru2 -- "sm: unknown option: -$OPTARG"
+          return 2
+          ;;
+      esac
+    done
+    shift $((OPTIND - 1))
+
+    (( $#fields )) || fields=(Name)
+
+    local term escaped
+    for term in "$@"; do
+      escaped=${term//\\/\\\\}
+      escaped=${escaped//\'/\\\'}
+      predicates+=("contains(Name, '$escaped')")
+    done
+
+    local selection='SecretList[]'
+    (( $#predicates )) && selection="SecretList[?${(j: || :)predicates}]"
+
+    command aws "${aws_args[@]}" secretsmanager list-secrets \
+      --query "${selection}.[${(j:,:)fields}]" \
+      --output "$output"
+    ;;
+
+  value|get|decrypt)
+    integer OPTIND=1
+    local opt OPTARG output=text
+
+    while getopts ':o:p:' opt; do
+      case $opt in
+        o) output=$OPTARG ;;
+        p) aws_args=(--profile "$OPTARG") ;;
+        :)
+          print -ru2 -- "sm: option -$OPTARG requires a value"
+          return 2
+          ;;
+        \?)
+          print -ru2 -- "sm: unknown option: -$OPTARG"
+          return 2
+          ;;
+      esac
+    done
+    shift $((OPTIND - 1))
+
+    if (( $# == 0 )); then
+      print -ru2 -- 'usage: sm [-p PROFILE] value [-o FORMAT] SECRET_ID'
+      return 2
+    fi
+
+    command aws "${aws_args[@]}" secretsmanager get-secret-value \
+      --secret-id "$1" \
+      --query SecretString \
+      --output "$output"
+    ;;
+
+  help|-h|--help)
+    local -a usage=(
+      'usage: sm [-p PROFILE] [list] [-acdmnt] [-o FORMAT] [NAME_SUBSTRING ...]'
+      '       sm [-p PROFILE] value [-o FORMAT] SECRET_ID'
+      ''
+      '  -a  ARN'
+      '  -c  creation date'
+      '  -d  description'
+      '  -m  last changed date'
+      '  -n  name (default)'
+      '  -o  AWS CLI output format (default: text)'
+      '  -p  AWS CLI profile'
+      '  -t  tags as comma-separated Key=Value pairs'
+    )
+    print -rl -- "${usage[@]}"
+    ;;
+
+  *)
+    print -ru2 -- "sm: unknown command: $action"
+    return 2
+    ;;
+esac

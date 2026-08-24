@@ -206,8 +206,7 @@ local emacsPanelToggle = function()
 end
 local workmuxDashboardToggle = function()
 	-- hs.task spawns directly (no login shell) and is async, unlike hs.execute
-	log.i("toggle workmux dashboard")
-	hs.task.new(DOTFILES_DIR .. "/bin/kitty-workmux-dashboard", nil):start()
+	hs.task.new(DOTFILES_DIR .. "/bin/kitty-dashboard", nil, {"/opt/homebrew/bin/gh", "extension", "exec", "dash"}):start()
 end
 
 local modes = {}

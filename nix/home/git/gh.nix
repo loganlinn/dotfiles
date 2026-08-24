@@ -131,6 +131,26 @@ in {
           prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
           prz = ''!gh prl "$@" | fzf --ansi --header-lines=1 --accept-nth=1'';
           pro = ''!gh pr view --web "$@"'';
+          pr-unresolved = ''
+            !number=$(gh pr view "$@" --json number --jq .number) && gh api graphql --paginate -F owner='{owner}' -F name='{repo}' -F number="$number" -f query='
+              query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $number) {
+                    reviewThreads(first: 100, after: $endCursor) {
+                      pageInfo { hasNextPage endCursor }
+                      nodes {
+                        id
+                        isResolved
+                        comments(first: 1) {
+                          nodes { body path }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved | not)'
+          '';
           lgtm = "pr review --approve";
           edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
           stars = ''api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}' '';

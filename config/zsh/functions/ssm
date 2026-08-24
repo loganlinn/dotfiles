@@ -1,0 +1,121 @@
+# vim: ft=zsh
+emulate -L zsh
+setopt warn_create_global typeset_silent no_short_loops pipefail
+
+local action=list
+local -a aws_args
+while [[ ${1-} == -p ]]; do
+  if (( $# < 2 )); then
+    print -ru2 -- 'ssm: option -p requires a value'
+    return 2
+  fi
+  aws_args=(--profile "$2")
+  shift 2
+done
+
+case ${1-} in
+  '') ;;
+  -h|--help) action=help; shift ;;
+  -*) ;;
+  *) action=$1; shift ;;
+esac
+
+case $action in
+  list|ls|names)
+    integer OPTIND=1
+    local opt OPTARG output=text
+    local -a fields filter_args
+
+    while getopts ':adkmno:p:tv' opt; do
+      case $opt in
+        a) fields+=(ARN) ;;
+        d) fields+=(Description) ;;
+        k) fields+=(KeyId) ;;
+        m) fields+=(LastModifiedDate) ;;
+        n) fields+=(Name) ;;
+        o) output=$OPTARG ;;
+        p) aws_args=(--profile "$OPTARG") ;;
+        t) fields+=(Type) ;;
+        v) fields+=(Version) ;;
+        :)
+          print -ru2 -- "ssm: option -$OPTARG requires a value"
+          return 2
+          ;;
+        \?)
+          print -ru2 -- "ssm: unknown option: -$OPTARG"
+          return 2
+          ;;
+      esac
+    done
+    shift $((OPTIND - 1))
+
+    (( $#fields )) || fields=(Name)
+
+    if (( $# )); then
+      filter_args=(
+        --parameter-filters
+        "Key=Name,Option=Contains,Values=${(j:,:)@}"
+      )
+    fi
+
+    command aws "${aws_args[@]}" ssm describe-parameters \
+      "${filter_args[@]}" \
+      --query "Parameters[].[${(j:,:)fields}]" \
+      --output "$output"
+    ;;
+
+  value|get|decrypt)
+    integer OPTIND=1
+    local opt OPTARG output=text
+
+    while getopts ':o:p:' opt; do
+      case $opt in
+        o) output=$OPTARG ;;
+        p) aws_args=(--profile "$OPTARG") ;;
+        :)
+          print -ru2 -- "ssm: option -$OPTARG requires a value"
+          return 2
+          ;;
+        \?)
+          print -ru2 -- "ssm: unknown option: -$OPTARG"
+          return 2
+          ;;
+      esac
+    done
+    shift $((OPTIND - 1))
+
+    if (( $# == 0 )); then
+      print -ru2 -- 'usage: ssm [-p PROFILE] value [-o FORMAT] PARAMETER_NAME'
+      return 2
+    fi
+
+    command aws "${aws_args[@]}" ssm get-parameter \
+      --name "$1" \
+      --with-decryption \
+      --query Parameter.Value \
+      --output "$output"
+    ;;
+
+  help|-h|--help)
+    local -a usage=(
+      'usage: ssm [-p PROFILE] [list] [-adkmntv] [-o FORMAT] [NAME_SUBSTRING ...]'
+      '       ssm [-p PROFILE] value [-o FORMAT] PARAMETER_NAME'
+      ''
+      '  -a  ARN'
+      '  -d  description'
+      '  -k  KMS key ID'
+      '  -m  last modified date'
+      '  -n  name (default)'
+      '  -o  AWS CLI output format (default: text)'
+      '  -p  AWS CLI profile'
+      '  -t  parameter type'
+      '  -v  version'
+    )
+    print -rl -- "${usage[@]}"
+    ;;
+
+  *)
+    print -ru2 -- "ssm: unknown command: $action"
+    return 2
+    ;;
+esac

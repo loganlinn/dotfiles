@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+#
+# Toggle a singleton kitty OS panel that runs a TUI command.
+#
+# Usage: kitty-dashboard [-C DIR] [PANEL_FLAGS...] -- COMMAND [ARGS...]
+#
+#   kitty-dashboard -- gh dash
+#   kitty-dashboard -C ~/src/github.com/gamma-app/gamma -- gh dash
+#   kitty-dashboard -- workmux dashboard
+#   kitty-dashboard --edge top --lines 20 -- btop
+#
+# Options:
+#   -C, --chdir DIR   run COMMAND from DIR (default: the caller's cwd)
+#
+# The first call creates the panel. Each later call with the same command
+# (and DIR) toggles its visibility. The panel hides when it loses focus, but
+# the command keeps running.
+#
+# Each command gets its own panel, keyed by a kitten panel instance group
+# derived from the command (`gh dash` -> `gh-dash`) plus a checksum of DIR
+# when given, so the same command in two directories gives two panels. Set
+# KITTY_DASHBOARD_GROUP to choose the group explicitly.
+#
+# Other flags before `--` are passed to `kitten panel` and override the
+# defaults. Without `--`, all arguments after the options are COMMAND.
+#
+# Environment:
+#   KITTY_DASHBOARD_GROUP     instance group (default: derived from COMMAND)
+#   KITTY_DASHBOARD_EDGE      default: center-sized
+#   KITTY_DASHBOARD_LINES     default: 40
+#   KITTY_DASHBOARD_COLUMNS   default: 160
+#   KITTY_DASHBOARD_LOG       default: /dev/null
+#
+# Workarounds baked in:
+# - KITTY_DEVELOP_FROM is unset: a source checkout that does not match
+#   the installed kitty binary makes the panel crash at startup.
+# - nohup + & instead of `--detach`: on macOS (kitty 0.48.1) the
+#   `--detach` re-exec drops the `+kitten panel` argv prefix and the
+#   panel flags fail to parse.
+# - The panel kitty instance removes KITTY_LISTEN_ON from the child
+#   environment, but commands that drive kitty (e.g. workmux) need the
+#   socket of the main kitty instance. Pass it through
+#   KITTY_DASHBOARD_LISTEN_ON and restore it in a small sh wrapper.
+set -euo pipefail
+
+# Callers like Hammerspoon have a minimal PATH; make kitten and COMMAND resolve.
+PATH="$HOME/.local/bin:/etc/profiles/per-user/$USER/bin:/opt/homebrew/bin:/Applications/kitty.app/Contents/MacOS:$PATH"
+
+: "${KITTY_DASHBOARD_EDGE:=center-sized}"
+: "${KITTY_DASHBOARD_LINES:=50}"
+: "${KITTY_DASHBOARD_COLUMNS:=225}"
+: "${KITTY_DASHBOARD_LOG:=/dev/null}"
+
+usage() {
+  echo >&2 "usage: ${0##*/} [-C DIR] [PANEL_FLAGS...] -- COMMAND [ARGS...]"
+  exit 2
+}
+
+# Without `--`, panel flags are ambiguous (their values look like COMMAND), so
+# only the script's own options may precede COMMAND.
+has_sep=false
+for a in "$@"; do
+  [[ $a == -- ]] && has_sep=true && break
+done
+
+dir=""
+panel_flags=()
+while (($#)); do
+  case $1 in
+  -C | --chdir)
+    (($# >= 2)) || usage
+    dir=$2
+    shift 2
+    ;;
+  --chdir=*)
+    dir=${1#*=}
+    shift
+    ;;
+  --)
+    shift
+    break
+    ;;
+  *)
+    $has_sep || break
+    panel_flags+=("$1")
+    shift
+    ;;
+  esac
+done
+(($#)) || usage
+
+if [[ -n $dir ]]; then
+  resolved=$(cd -- "$dir" 2>/dev/null && pwd -P) || {
+    echo >&2 "${0##*/}: not a directory: $dir"
+    exit 1
+  }
+  dir=$resolved
+fi
+
+# Derive the instance group from COMMAND: alnum only, runs collapse to `-`.
+# Keep it short: on macOS the single-instance socket lives in the user cache
+# dir and sun_path is limited to 104 bytes.
+if [[ -z ${KITTY_DASHBOARD_GROUP:-} ]]; then
+  group=$(tr -cs 'A-Za-z0-9' '-' <<<"$*")
+  group=${group#-}
+  group=${group%-}
+  # A checksum keeps the name short; the path itself would not fit.
+  [[ -n $dir ]] && group="${group:0:21}-$(cksum <<<"$dir" | cut -d' ' -f1)"
+  KITTY_DASHBOARD_GROUP=${group:0:32}
+fi
+
+main_socket="${KITTY_LISTEN_ON:-}"
+if [[ -z $main_socket ]]; then
+  # Not launched from inside kitty: find the socket of a running instance.
+  for s in "${TMPDIR:-/tmp}"/kitty.sock-*; do
+    [[ -S $s ]] && main_socket="unix:$s"
+  done
+fi
+
+# The panel's kitty has no --directory flag; it inherits our cwd.
+[[ -n $dir ]] && cd -- "$dir"
+
+# shellcheck disable=SC2016  # the inner variable expands in the panel, not here
+unset KITTY_DEVELOP_FROM 
+export KITTY_DASHBOARD_LISTEN_ON="$main_socket"
+nohup kitten panel \
+  --single-instance \
+  --instance-group "$KITTY_DASHBOARD_GROUP" \
+  --toggle-visibility \
+  --move-to-active-monitor \
+  --hide-on-focus-loss \
+  --layer top \
+  -o tab_bar_style=hidden \
+  --edge "$KITTY_DASHBOARD_EDGE" \
+  --lines "$KITTY_DASHBOARD_LINES" \
+  --columns "$KITTY_DASHBOARD_COLUMNS" \
+  ${panel_flags[@]+"${panel_flags[@]}"} \
+  sh -c 'KITTY_LISTEN_ON="$KITTY_DASHBOARD_LISTEN_ON" exec "$@"' sh "$@" \
+  </dev/null >>"$KITTY_DASHBOARD_LOG" 2>&1 &

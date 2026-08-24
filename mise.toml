@@ -11,6 +11,7 @@ _.path = ["{{config_root}}/bin"]
 "~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
 "~/.config/direnv/lib" = { source = "config/direnv/lib", mode = "symlink-each" }
 "~/.config/herdr/config" = "config/herdr/config.toml"
+"~/.local/share/zsh/functions" = { source = "config/zsh/functions", mode = "symlink-each" }
 
 [tasks.clean]
 depends = "*:clean"
