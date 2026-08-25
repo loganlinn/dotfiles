@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly program=${0##*/}
+
+usage() {
+  cat <<EOF
+Usage: $program [-n|--dry-run] [<pr>] [workmux add arguments...]
+
+Open a GitHub pull request in workmux.
+
+If <pr> is not present, the command uses a URL from the system clipboard.
+EOF
+}
+
+die() {
+  printf '%s: %s\n' "$program" "$*" >&2
+  exit 1
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+read_clipboard() {
+  if [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v wl-paste >/dev/null 2>&1; then
+    wl-paste --no-newline
+  elif [[ -n ${DISPLAY:-} ]] && command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard -out
+  elif [[ -n ${DISPLAY:-} ]] && command -v xsel >/dev/null 2>&1; then
+    xsel --clipboard --output
+  elif command -v pbpaste >/dev/null 2>&1; then
+    pbpaste
+  else
+    die "required clipboard command not found: pbpaste, wl-paste, xclip, or xsel"
+  fi
+}
+
+dry_run=false
+if (($#)) && [[ $1 == -h || $1 == --help ]]; then
+  usage
+  exit 0
+fi
+if (($#)) && [[ $1 == -n || $1 == --dry-run ]]; then
+  dry_run=true
+  shift
+fi
+
+require_command gh
+require_command jq
+require_command workmux
+
+if (($#)); then
+  pr_ref=$1
+  shift
+else
+  pr_ref=$(read_clipboard)
+  [[ $pr_ref =~ ^https?://[^[:space:]]+$ ]] || \
+    die "the clipboard does not contain a URL"
+fi
+
+pr_json=$(gh pr view "$pr_ref" --json headRepository,number) || \
+  die "failed to read PR data"
+pr_fields=$(jq -er '
+  [.headRepository.nameWithOwner, (.number | tostring)]
+  | if all(.[]; type == "string" and length > 0)
+    then @tsv
+    else error("missing PR data")
+    end
+' <<<"$pr_json") || die "the PR has no usable repository data"
+
+IFS=$'\t' read -r repo pr_number <<<"$pr_fields"
+readonly source_root=${WORKMUX_PR_SOURCE_ROOT:-$HOME/src}
+readonly repo_dir="$source_root/github.com/$repo"
+[[ -d $repo_dir ]] || {
+  printf '%s: repository not found: %s\n' "$program" "$repo_dir" >&2
+  printf 'Run: ghq get https://github.com/%s\n' "$repo" >&2
+  exit 1
+}
+
+workmux_command=(workmux add -o --pr "$pr_number" "$@")
+if [[ $dry_run == true ]]; then
+  printf 'cd %q &&' "$repo_dir"
+  printf ' %q' "${workmux_command[@]}"
+  printf '\n'
+  exit 0
+fi
+
+cd -- "$repo_dir"
+exec "${workmux_command[@]}"

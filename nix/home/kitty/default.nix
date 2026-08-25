@@ -65,6 +65,7 @@ in {
           "cssh.py"
           "current-theme.conf"
           "diff.conf"
+          "edit_clipboard.py"
           "file-menu.sh"
           "focus-drill.py"
           "grab.conf"

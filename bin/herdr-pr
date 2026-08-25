@@ -16,6 +16,10 @@ die() {
   exit 1
 }
 
+progress() {
+  print -r -- "$program: $*" >&2
+}
+
 require_command() {
   (( $+commands[$1] )) || die "required command not found: $1"
 }
@@ -26,6 +30,7 @@ require_command gh
 require_command git
 require_command jq
 require_command kitty
+require_command nohup
 
 typeset herdr_bin
 if (( $+commands[herdr] )); then
@@ -37,6 +42,7 @@ else
 fi
 
 typeset pr_json
+progress "Resolve PR: $1"
 pr_json=$(gh pr view "$1" \
   --json headRefName,headRefOid,headRepository,headRepositoryOwner,number,url) || \
   die "failed to read PR data"
@@ -84,10 +90,88 @@ repo_dir=${repo_dir:A}
 git -C "$repo_dir" rev-parse --git-common-dir >/dev/null 2>&1 || \
   die "not a Git repository: $repo_dir"
 
+open_herdr_tab() {
+  emulate -L zsh
+  typeset cwd=$1 kitty_json window_id herdr_window_id
+  typeset -a launch_args
+
+  kitty_json=$(kitty @ ls) || die "cannot connect to Kitty"
+  window_id=$(jq -er --arg session "$session" '
+    [.[] | .tabs[]? | .windows[]?
+      | select(.user_vars.HERDR_SESSION == $session)][0].id // empty
+  ' <<<"$kitty_json" 2>/dev/null) || window_id=
+
+  if [[ -z $window_id ]]; then
+    herdr_window_id=$(jq -er '
+      [.[] | .tabs[]? | .windows[]?
+        | select(.user_vars.HERDR == "1")][0].id // empty
+    ' <<<"$kitty_json" 2>/dev/null) || herdr_window_id=
+
+    launch_args=(
+      --cwd "$cwd"
+      --tab-title "$session"
+      --var HERDR=1
+      --var "HERDR_SESSION=$session"
+    )
+
+    if [[ -n $herdr_window_id ]]; then
+      window_id=$(kitty @ launch \
+        --type=tab \
+        --match "window_id:$herdr_window_id" \
+        "${launch_args[@]}" \
+        -- "$herdr_bin" session attach "$session") || \
+        die "failed to open a Kitty tab"
+    else
+      window_id=$(kitty @ launch \
+        --type=os-window \
+        --os-window-title Herdr \
+        "${launch_args[@]}" \
+        -- "$herdr_bin" session attach "$session") || \
+        die "failed to open a Kitty OS window"
+    fi
+  fi
+
+  kitty @ focus-window --match "id:$window_id"
+}
+
 typeset -a herdr_cmd=( "$herdr_bin" --session "$session" )
-typeset worktrees_json
-worktrees_json=$("${herdr_cmd[@]}" worktree list --cwd "$repo_dir") || \
-  die "failed to list Herdr worktrees for session $session"
+typeset worktrees_json worktrees_error
+integer attempt=0
+
+if ! worktrees_json=$("${herdr_cmd[@]}" worktree list --cwd "$repo_dir" 2>&1); then
+  worktrees_error=$worktrees_json
+  jq -e '.error.code == "server_not_running"' <<<"$worktrees_error" \
+    >/dev/null 2>&1 || {
+      print -r -- "$worktrees_error" >&2
+      die "failed to list Herdr worktrees for session $session"
+    }
+
+  progress "Start Herdr session: $session"
+  (
+    builtin cd -q "$repo_dir" || exit 1
+    nohup "$herdr_bin" --session "$session" server \
+      </dev/null >/dev/null 2>&1 &!
+  ) || die "failed to start Herdr session: $session"
+
+  while (( attempt < 100 )); do
+    if worktrees_json=$("${herdr_cmd[@]}" worktree list --cwd "$repo_dir" 2>&1); then
+      break
+    fi
+    worktrees_error=$worktrees_json
+    jq -e '.error.code == "server_not_running"' <<<"$worktrees_error" \
+      >/dev/null 2>&1 || {
+        print -r -- "$worktrees_error" >&2
+        die "failed to list Herdr worktrees for session $session"
+      }
+    (( ++attempt ))
+    sleep 0.1
+  done
+
+  (( attempt < 100 )) || {
+    print -r -- "$worktrees_error" >&2
+    die "Herdr session did not start: $session"
+  }
+fi
 
 typeset worktree_path
 worktree_path=$(jq -er --arg branch "$branch" '
@@ -96,6 +180,7 @@ worktree_path=$(jq -er --arg branch "$branch" '
 
 typeset workspace_json
 if [[ -n $worktree_path ]]; then
+  progress "Open existing worktree: $branch"
   workspace_json=$("${herdr_cmd[@]}" worktree open \
     --cwd "$repo_dir" \
     --path "$worktree_path" \
@@ -105,6 +190,7 @@ else
   readonly pr_ref="refs/herdr-pr/${base_owner}/${base_repo}/${pr_number}"
   readonly base_url="https://github.com/${base_owner}/${base_repo}.git"
 
+  progress "Fetch PR: $pr_url"
   git -C "$repo_dir" fetch --no-tags "$base_url" \
     "+refs/pull/${pr_number}/head:${pr_ref}" || die "failed to fetch PR $pr_url"
 
@@ -126,6 +212,7 @@ else
     fi
   fi
 
+  progress "Create worktree: $branch"
   workspace_json=$("${herdr_cmd[@]}" worktree create \
     --cwd "$repo_dir" \
     --branch "$branch" \
@@ -137,47 +224,5 @@ fi
 worktree_path=$(jq -er '.result.worktree.path' <<<"$workspace_json") || \
   die "Herdr did not return a worktree path"
 
-typeset kitty_json
-kitty_json=$(kitty @ ls) || die "cannot connect to Kitty"
-
-typeset window_id
-window_id=$(jq -er --arg session "$session" '
-  [.[] | .tabs[]? | .windows[]?
-    | select(.user_vars.HERDR_SESSION == $session)][0].id // empty
-' <<<"$kitty_json" 2>/dev/null) || window_id=
-
-if [[ -n $window_id ]]; then
-  kitty @ focus-window --match "id:$window_id"
-  exit
-fi
-
-typeset herdr_window_id
-herdr_window_id=$(jq -er '
-  [.[] | .tabs[]? | .windows[]?
-    | select(.user_vars.HERDR == "1")][0].id // empty
-' <<<"$kitty_json" 2>/dev/null) || herdr_window_id=
-
-typeset -a launch_args=(
-  --cwd "$worktree_path"
-  --tab-title "$session"
-  --var HERDR=1
-  --var "HERDR_SESSION=$session"
-)
-
-if [[ -n $herdr_window_id ]]; then
-  window_id=$(kitty @ launch \
-    --type=tab \
-    --match "window_id:$herdr_window_id" \
-    "${launch_args[@]}" \
-    -- "$herdr_bin" session attach "$session") || \
-    die "failed to open a Kitty tab"
-else
-  window_id=$(kitty @ launch \
-    --type=os-window \
-    --os-window-title Herdr \
-    "${launch_args[@]}" \
-    -- "$herdr_bin" session attach "$session") || \
-    die "failed to open a Kitty OS window"
-fi
-
-kitty @ focus-window --match "id:$window_id"
+progress "Attach Herdr session: $session"
+open_herdr_tab "$worktree_path"

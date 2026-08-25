@@ -1,34 +1,39 @@
 #!/usr/bin/env bash
 #
-# Toggle a singleton kitty OS panel that runs a TUI command.
+# Toggle a singleton kitty OS panel that runs a TUI command, with one tab
+# per git repository.
 #
 # Usage: kitty-dashboard [-C DIR] [PANEL_FLAGS...] -- COMMAND [ARGS...]
 #
 #   kitty-dashboard -- gh dash
 #   kitty-dashboard -C ~/src/github.com/gamma-app/gamma -- gh dash
-#   kitty-dashboard -- workmux dashboard
 #   kitty-dashboard --edge top --lines 20 -- btop
 #
 # Options:
-#   -C, --chdir DIR   run COMMAND from DIR (default: the caller's cwd)
+#   -C, --chdir DIR   select the tab for DIR's git repository (default: the
+#                     repository of the focused window in the main kitty)
 #
-# The first call creates the panel. Each later call with the same command
-# (and DIR) toggles its visibility. The panel hides when it loses focus, but
-# the command keeps running.
+# Each COMMAND gets one panel instance. Inside it, each git repository gets
+# its own tab, keyed by the repository root path (set as tab title override).
+# What a press does:
+#   - panel focused        -> hide it (always, even if -C names another repo)
+#   - tab for repo exists  -> focus it and show the panel
+#   - tab missing          -> create it (cwd = repo root), show the panel
+#   - no repo resolvable   -> show the panel on its last active tab
 #
-# Each command gets its own panel, keyed by a kitten panel instance group
-# derived from the command (`gh dash` -> `gh-dash`) plus a checksum of DIR
-# when given, so the same command in two directories gives two panels. Set
-# KITTY_DASHBOARD_GROUP to choose the group explicitly.
+# The repository defaults to the git toplevel of the active window's cwd in
+# the main kitty instance, read over its remote control socket. This needs
+# `allow_remote_control socket-only` plus `listen_on` in kitty.conf.
 #
 # Other flags before `--` are passed to `kitten panel` and override the
 # defaults. Without `--`, all arguments after the options are COMMAND.
 #
 # Environment:
-#   KITTY_DASHBOARD_GROUP     instance group (default: derived from COMMAND)
+#   KITTY_DASHBOARD_GROUP     instance group (default: derived from COMMAND;
+#                             two COMMANDs with the same group share a panel)
 #   KITTY_DASHBOARD_EDGE      default: center-sized
-#   KITTY_DASHBOARD_LINES     default: 40
-#   KITTY_DASHBOARD_COLUMNS   default: 160
+#   KITTY_DASHBOARD_LINES     default: 50
+#   KITTY_DASHBOARD_COLUMNS   default: 225
 #   KITTY_DASHBOARD_LOG       default: /dev/null
 #
 # Workarounds baked in:
@@ -37,9 +42,9 @@
 # - nohup + & instead of `--detach`: on macOS (kitty 0.48.1) the
 #   `--detach` re-exec drops the `+kitten panel` argv prefix and the
 #   panel flags fail to parse.
-# - The panel kitty instance removes KITTY_LISTEN_ON from the child
-#   environment, but commands that drive kitty (e.g. workmux) need the
-#   socket of the main kitty instance. Pass it through
+# - The panel kitty instance sets KITTY_LISTEN_ON to its own socket in
+#   child environments, but commands that drive kitty (e.g. workmux) need
+#   the socket of the main kitty instance. Pass it through
 #   KITTY_DASHBOARD_LISTEN_ON and restore it in a small sh wrapper.
 set -euo pipefail
 
@@ -54,6 +59,16 @@ PATH="$HOME/.local/bin:/etc/profiles/per-user/$USER/bin:/opt/homebrew/bin:/Appli
 usage() {
   echo >&2 "usage: ${0##*/} [-C DIR] [PANEL_FLAGS...] -- COMMAND [ARGS...]"
   exit 2
+}
+
+die() {
+  echo >&2 "${0##*/}: $*"
+  exit 1
+}
+
+log() {
+  [[ $KITTY_DASHBOARD_LOG == /dev/null ]] && return 0
+  printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$KITTY_DASHBOARD_LOG"
 }
 
 # Without `--`, panel flags are ambiguous (their values look like COMMAND), so
@@ -90,50 +105,183 @@ done
 (($#)) || usage
 
 if [[ -n $dir ]]; then
-  resolved=$(cd -- "$dir" 2>/dev/null && pwd -P) || {
-    echo >&2 "${0##*/}: not a directory: $dir"
-    exit 1
-  }
+  resolved=$(cd -- "$dir" 2>/dev/null && pwd -P) || die "not a directory: $dir"
   dir=$resolved
 fi
 
 # Derive the instance group from COMMAND: alnum only, runs collapse to `-`.
-# Keep it short: on macOS the single-instance socket lives in the user cache
-# dir and sun_path is limited to 104 bytes.
-if [[ -z ${KITTY_DASHBOARD_GROUP:-} ]]; then
-  group=$(tr -cs 'A-Za-z0-9' '-' <<<"$*")
-  group=${group#-}
-  group=${group%-}
-  # A checksum keeps the name short; the path itself would not fit.
-  [[ -n $dir ]] && group="${group:0:21}-$(cksum <<<"$dir" | cut -d' ' -f1)"
-  KITTY_DASHBOARD_GROUP=${group:0:32}
-fi
+# The group also names the panel's control socket, so sanitize env-provided
+# values too. Keep it short: on macOS the single-instance socket lives in the
+# user cache dir and sun_path is limited to 104 bytes.
+group=$(tr -cs 'A-Za-z0-9_-' '-' <<<"${KITTY_DASHBOARD_GROUP:-$*}")
+group=${group#-}
+group=${group%-}
+group=${group:0:32}
+[[ -n $group ]] || group=default
 
-main_socket="${KITTY_LISTEN_ON:-}"
-if [[ -z $main_socket ]]; then
-  # Not launched from inside kitty: find the socket of a running instance.
-  for s in "${TMPDIR:-/tmp}"/kitty.sock-*; do
-    [[ -S $s ]] && main_socket="unix:$s"
+sock_dir="$HOME/.cache/kitty-dashboard"
+mkdir -p -- "$sock_dir"
+panel_sock="$sock_dir/$group.sock"
+lock="$sock_dir/$group.lock"
+
+rc() {
+  kitten @ --to "unix:$panel_sock" "$@"
+}
+
+probe() { # $1 = socket path
+  kitten @ --to "unix:$1" ls >/dev/null 2>&1
+}
+
+# Debounce concurrent presses (Hammerspoon can double-fire). macOS has no
+# flock(1); use noclobber creation with a stale-steal.
+acquire_lock() {
+  local now mtime
+  for _ in 1 2; do
+    if (set -o noclobber && echo "$$" >"$lock") 2>/dev/null; then
+      # shellcheck disable=SC2064  # expand $lock now, not at exit
+      trap "rm -f '$lock'" EXIT
+      return 0
+    fi
+    mtime=$(stat -f %m "$lock" 2>/dev/null || stat -c %Y "$lock" 2>/dev/null) || mtime=0
+    now=$(date +%s)
+    ((now - mtime > 10)) || break
+    rm -f -- "$lock"
   done
+  log "lock held by another invocation; exiting"
+  exit 0
+}
+
+find_main_socket() { # prints unix:<path> of a live main kitty socket, or nothing
+  local s
+  if [[ -n ${KITTY_LISTEN_ON:-} ]] && probe "${KITTY_LISTEN_ON#unix:}"; then
+    printf '%s\n' "$KITTY_LISTEN_ON"
+    return 0
+  fi
+  # kitty.conf: listen_on unix:/tmp/kitty-{kitty_pid} -> numeric suffix.
+  # Panel sockets live elsewhere, so this only matches main instances.
+  for s in /tmp/kitty-[0-9]*; do
+    [[ -S $s ]] || continue
+    if probe "$s"; then
+      printf 'unix:%s\n' "$s"
+      return 0
+    fi
+  done
+  return 0
+}
+
+resolve_repo() { # prints the repo root for this press, or nothing
+  local cwd
+  if [[ -n $dir ]]; then
+    git -C "$dir" rev-parse --show-toplevel 2>/dev/null || printf '%s\n' "$dir"
+    return 0
+  fi
+  [[ -n $main_socket ]] || return 0
+  cwd=$(kitten @ --to "$main_socket" ls 2>/dev/null | jq -r '
+    (([.[] | select(.is_focused)] + [.[] | select(.last_focused)] + .) | .[0])
+    | .tabs[] | select(.is_active) | .windows[] | select(.is_active)
+    | .cwd // empty
+  ' 2>/dev/null) || cwd=""
+  [[ -n $cwd ]] || return 0
+  git -C "$cwd" rev-parse --show-toplevel 2>/dev/null || true
+}
+
+# First invocation creates the panel instance; later ones are forwarded over
+# the single-instance socket, where --toggle-visibility shows/hides the
+# existing panel (moving it to the active monitor) and COMMAND is ignored.
+launch_panel() {
+  cd -- "$target_cwd"
+  nohup kitten panel \
+    "${panel_argv[@]}" \
+    "${wrapper[@]}" "$@" \
+    </dev/null >>"$KITTY_DASHBOARD_LOG" 2>&1 &
+}
+
+create_panel() {
+  local out
+  launch_panel "$@"
+  for _ in $(seq 50); do
+    if out=$(rc ls 2>/dev/null) && [[ $(jq '[.[].tabs[]] | length' <<<"$out") -ge 1 ]]; then
+      if [[ -n $tab_key ]]; then
+        rc set-tab-title "$tab_key" >/dev/null 2>&1 || log "set-tab-title failed"
+      fi
+      log "created panel group=$group tab=${tab_key:-<untitled>}"
+      return 0
+    fi
+    sleep 0.1
+  done
+  die "panel did not start (see $KITTY_DASHBOARD_LOG)"
+}
+
+ensure_tab() { # focus the repo's tab, creating it if needed
+  local found tab_id is_active
+  found=$(jq -r --arg t "$tab_key" '
+    [.[] | .tabs[] | select(.title == $t and .title_overridden)][0] // empty
+    | "\(.id) \(.is_active)"
+  ' <<<"$panel_ls") || found=""
+  if [[ -n $found ]]; then
+    tab_id=${found%% *}
+    is_active=${found##* }
+    if [[ $is_active != true ]]; then
+      rc focus-tab --match "id:$tab_id" || log "focus-tab id:$tab_id failed"
+      log "focused tab $tab_key"
+    fi
+  else
+    rc launch --type=tab --tab-title "$tab_key" --cwd "$repo" \
+      --env KITTY_DASHBOARD_LISTEN_ON="$main_socket" \
+      "${wrapper[@]}" "$@" >/dev/null || log "launch tab $tab_key failed"
+    log "created tab $tab_key"
+  fi
+}
+
+hide_panel() {
+  rc resize-os-window --action=hide >/dev/null 2>&1 || log "hide failed"
+  log "hid panel"
+}
+
+acquire_lock
+
+main_socket=$(find_main_socket)
+repo=$(resolve_repo)
+tab_key=${repo/#"$HOME"/\~}
+target_cwd=${repo:-$HOME}
+
+unset KITTY_DEVELOP_FROM
+export KITTY_DASHBOARD_LISTEN_ON="$main_socket"
+
+# Same argv for create and show: the forwarded toggle reapplies geometry when
+# it differs, so both paths must agree.
+panel_argv=(
+  --single-instance
+  --instance-group "$group"
+  --toggle-visibility
+  --move-to-active-monitor
+  --hide-on-focus-loss
+  --layer top
+  --listen-on "unix:$panel_sock"
+  -o allow_remote_control=socket-only
+  --edge "$KITTY_DASHBOARD_EDGE"
+  --lines "$KITTY_DASHBOARD_LINES"
+  --columns "$KITTY_DASHBOARD_COLUMNS"
+  ${panel_flags[@]+"${panel_flags[@]}"}
+)
+# shellcheck disable=SC2016  # the inner variable expands in the panel, not here
+wrapper=(sh -c 'KITTY_LISTEN_ON="$KITTY_DASHBOARD_LISTEN_ON" exec "$@"' sh)
+
+if ! panel_ls=$(rc ls 2>/dev/null); then
+  if [[ -e $panel_sock ]]; then
+    log "removing stale socket $panel_sock"
+    rm -f -- "$panel_sock"
+  fi
+  create_panel "$@"
+  exit 0
 fi
 
-# The panel's kitty has no --directory flag; it inherits our cwd.
-[[ -n $dir ]] && cd -- "$dir"
+# --hide-on-focus-loss keeps the panel hidden whenever it is unfocused, so
+# focus is a reliable visibility proxy.
+if jq -e 'any(.[]; .is_focused)' <<<"$panel_ls" >/dev/null; then
+  hide_panel
+  exit 0
+fi
 
-# shellcheck disable=SC2016  # the inner variable expands in the panel, not here
-unset KITTY_DEVELOP_FROM 
-export KITTY_DASHBOARD_LISTEN_ON="$main_socket"
-nohup kitten panel \
-  --single-instance \
-  --instance-group "$KITTY_DASHBOARD_GROUP" \
-  --toggle-visibility \
-  --move-to-active-monitor \
-  --hide-on-focus-loss \
-  --layer top \
-  -o tab_bar_style=hidden \
-  --edge "$KITTY_DASHBOARD_EDGE" \
-  --lines "$KITTY_DASHBOARD_LINES" \
-  --columns "$KITTY_DASHBOARD_COLUMNS" \
-  ${panel_flags[@]+"${panel_flags[@]}"} \
-  sh -c 'KITTY_LISTEN_ON="$KITTY_DASHBOARD_LISTEN_ON" exec "$@"' sh "$@" \
-  </dev/null >>"$KITTY_DASHBOARD_LOG" 2>&1 &
+[[ -n $repo ]] && ensure_tab "$@"
+launch_panel "$@" # forwarded --toggle-visibility: reveals on the active monitor

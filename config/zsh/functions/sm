@@ -1,6 +1,7 @@
 # vim: ft=zsh
 emulate -L zsh
 setopt warn_create_global typeset_silent no_short_loops pipefail
+zmodload zsh/zutil
 
 local action=list
 local -a aws_args
@@ -22,6 +23,11 @@ esac
 
 case $action in
   list|ls|names)
+    local -a parsed_options
+    zparseopts -D -E -F -a parsed_options -- \
+      a+ c+ d+ m+ n+ o+: p+: t+ || return 2
+    set -- "${parsed_options[@]}" -- "$@"
+
     integer OPTIND=1
     local opt OPTARG output=text
     local -a fields predicates
@@ -50,11 +56,21 @@ case $action in
 
     (( $#fields )) || fields=(Name)
 
-    local term escaped
+    if (( $# == 1 )) && [[ $1 == arn:aws:* ]]; then
+      command aws "${aws_args[@]}" secretsmanager describe-secret \
+        --secret-id "$1" \
+        --query "[${(j:,:)fields}]" \
+        --output "$output"
+      return
+    fi
+
+    local escaped target term
     for term in "$@"; do
       escaped=${term//\\/\\\\}
       escaped=${escaped//\'/\\\'}
-      predicates+=("contains(Name, '$escaped')")
+      target=Name
+      [[ $term == arn:aws:* ]] && target=ARN
+      predicates+=("contains($target, '$escaped')")
     done
 
     local selection='SecretList[]'
@@ -66,6 +82,10 @@ case $action in
     ;;
 
   value|get|decrypt)
+    local -a parsed_options
+    zparseopts -D -E -F -a parsed_options -- o+: p+: || return 2
+    set -- "${parsed_options[@]}" -- "$@"
+
     integer OPTIND=1
     local opt OPTARG output=text
 
@@ -86,7 +106,7 @@ case $action in
     shift $((OPTIND - 1))
 
     if (( $# == 0 )); then
-      print -ru2 -- 'usage: sm [-p PROFILE] value [-o FORMAT] SECRET_ID'
+      print -ru2 -- 'usage: sm [-p PROFILE] value [OPTIONS] SECRET_ID [OPTIONS]'
       return 2
     fi
 
@@ -98,8 +118,11 @@ case $action in
 
   help|-h|--help)
     local -a usage=(
-      'usage: sm [-p PROFILE] [list] [-acdmnt] [-o FORMAT] [NAME_SUBSTRING ...]'
-      '       sm [-p PROFILE] value [-o FORMAT] SECRET_ID'
+      'usage: sm [-p PROFILE] [list] [-acdmnt] [-o FORMAT] [NAME_OR_ARN ...]'
+      '       sm [-p PROFILE] value [OPTIONS] SECRET_ID [OPTIONS]'
+      ''
+      'Options can appear before or after names.'
+      'A single ARN uses DescribeSecret and can access a shared secret.'
       ''
       '  -a  ARN'
       '  -c  creation date'

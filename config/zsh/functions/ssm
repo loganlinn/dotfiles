@@ -1,6 +1,7 @@
 # vim: ft=zsh
 emulate -L zsh
 setopt warn_create_global typeset_silent no_short_loops pipefail
+zmodload zsh/zutil
 
 local action=list
 local -a aws_args
@@ -22,6 +23,11 @@ esac
 
 case $action in
   list|ls|names)
+    local -a parsed_options
+    zparseopts -D -E -F -a parsed_options -- \
+      a+ d+ k+ m+ n+ o+: p+: t+ v+ || return 2
+    set -- "${parsed_options[@]}" -- "$@"
+
     integer OPTIND=1
     local opt OPTARG output=text
     local -a fields filter_args
@@ -65,6 +71,10 @@ case $action in
     ;;
 
   value|get|decrypt)
+    local -a parsed_options
+    zparseopts -D -E -F -a parsed_options -- o+: p+: || return 2
+    set -- "${parsed_options[@]}" -- "$@"
+
     integer OPTIND=1
     local opt OPTARG output=text
 
@@ -85,7 +95,7 @@ case $action in
     shift $((OPTIND - 1))
 
     if (( $# == 0 )); then
-      print -ru2 -- 'usage: ssm [-p PROFILE] value [-o FORMAT] PARAMETER_NAME'
+      print -ru2 -- 'usage: ssm [-p PROFILE] value [OPTIONS] PARAMETER_NAME [OPTIONS]'
       return 2
     fi
 
@@ -99,7 +109,9 @@ case $action in
   help|-h|--help)
     local -a usage=(
       'usage: ssm [-p PROFILE] [list] [-adkmntv] [-o FORMAT] [NAME_SUBSTRING ...]'
-      '       ssm [-p PROFILE] value [-o FORMAT] PARAMETER_NAME'
+      '       ssm [-p PROFILE] value [OPTIONS] PARAMETER_NAME [OPTIONS]'
+      ''
+      'Options can appear before or after names.'
       ''
       '  -a  ARN'
       '  -d  description'

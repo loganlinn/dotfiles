@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# kitty-attach [DIR] — attach to the kitty OS window already working in DIR,
+# or create one. Opens a new tab in the OS window that has a window whose
+# foreground cwd is inside DIR; falls back to a new OS window.
+set -euo pipefail
+
+dir=$(cd "${1:-.}" && pwd -P)
+
+if ! id=$(kitty @ launch --type=tab --cwd="$dir" --match "cwd:^$dir" 2>/dev/null); then
+  id=$(kitty @ launch --type=os-window --cwd="$dir")
+fi
+# launch activates the tab but does not raise the OS window; this does.
+kitty @ focus-window --match "id:$id"

@@ -3,7 +3,7 @@ prSections:
   - title: Inbox
     filters: >
       is:open
-      review-involves:@me 
+      review-requested:@me 
       -author:@me
       -reviewed-by:@me 
       updated:>={{ nowModify "-2w" }}
