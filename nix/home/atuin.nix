@@ -7,6 +7,7 @@
   programs.atuin = {
     settings = {
       auto_sync = lib.mkDefault false;
+      ctrl_n_shortcuts = true;
       dialect = "us";
       enter_accept = lib.mkDefault false;
       inline_height = lib.mkDefault 25;

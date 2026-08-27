@@ -42,6 +42,7 @@ EOF
   PATH="$TEST_DIR/bin:/usr/bin:/bin"
   TMPDIR="$TEST_DIR/tmp"
   export PATH TMPDIR
+  unset MDPREVIEW_THEME XDG_CONFIG_HOME
 }
 
 # Prints the pandoc argument that follows the given flag.
@@ -99,6 +100,55 @@ pandoc_arg_after() {
   [ "$(tail -n 1 "$PANDOC_ARGS_FILE")" = 'notes.md' ]
 }
 
+@test "resolves a named theme from the XDG config directory" {
+  XDG_CONFIG_HOME="$TEST_DIR/config"
+  export XDG_CONFIG_HOME
+  mkdir -p "$XDG_CONFIG_HOME/mdpreview/themes"
+  printf 'body { color: blue; }\n' >"$XDG_CONFIG_HOME/mdpreview/themes/ocean.css"
+
+  run "$MDPREVIEW" --theme ocean <<<'# Heading'
+
+  [ "$status" -eq 0 ]
+  [ "$(pandoc_arg_after -c)" = "$XDG_CONFIG_HOME/mdpreview/themes/ocean.css" ]
+}
+
+@test "uses MDPREVIEW_THEME when --theme is not set" {
+  XDG_CONFIG_HOME="$TEST_DIR/config"
+  MDPREVIEW_THEME=ocean
+  export MDPREVIEW_THEME XDG_CONFIG_HOME
+  mkdir -p "$XDG_CONFIG_HOME/mdpreview/themes"
+  printf 'body { color: blue; }\n' >"$XDG_CONFIG_HOME/mdpreview/themes/ocean.css"
+
+  run "$MDPREVIEW" <<<'# Heading'
+
+  [ "$status" -eq 0 ]
+  [ "$(pandoc_arg_after -c)" = "$XDG_CONFIG_HOME/mdpreview/themes/ocean.css" ]
+}
+
+@test "--theme overrides MDPREVIEW_THEME" {
+  printf 'body { color: blue; }\n' >"$TEST_DIR/environment.css"
+  printf 'body { color: red; }\n' >"$TEST_DIR/command-line.css"
+  MDPREVIEW_THEME="$TEST_DIR/environment.css"
+  export MDPREVIEW_THEME
+
+  run "$MDPREVIEW" --theme "$TEST_DIR/command-line.css" <<<'# Heading'
+
+  [ "$status" -eq 0 ]
+  [ "$(pandoc_arg_after -c)" = "$TEST_DIR/command-line.css" ]
+}
+
+@test "uses HOME for named themes when XDG_CONFIG_HOME is not set" {
+  HOME="$TEST_DIR/home"
+  export HOME
+  mkdir -p "$HOME/.config/mdpreview/themes"
+  printf 'body { color: green; }\n' >"$HOME/.config/mdpreview/themes/forest.css"
+
+  run "$MDPREVIEW" --theme forest.css <<<'# Heading'
+
+  [ "$status" -eq 0 ]
+  [ "$(pandoc_arg_after -c)" = "$HOME/.config/mdpreview/themes/forest.css" ]
+}
+
 @test "accepts --theme=FILE after the input file" {
   printf 'body { color: red; }\n' >"$TEST_DIR/custom.css"
 
@@ -120,7 +170,7 @@ pandoc_arg_after() {
   run "$MDPREVIEW" --theme
 
   [ "$status" -eq 2 ]
-  [ "$output" = 'Usage: mdpreview [--theme CSS_FILE] [MARKDOWN_FILE|-]' ]
+  [ "$output" = 'Usage: mdpreview [--theme THEME] [MARKDOWN_FILE|-]' ]
   [ ! -e "$OPEN_PATH_FILE" ]
 }
 
@@ -128,6 +178,6 @@ pandoc_arg_after() {
   run "$MDPREVIEW" first.md second.md
 
   [ "$status" -eq 2 ]
-  [ "$output" = 'Usage: mdpreview [--theme CSS_FILE] [MARKDOWN_FILE|-]' ]
+  [ "$output" = 'Usage: mdpreview [--theme THEME] [MARKDOWN_FILE|-]' ]
   [ ! -e "$OPEN_PATH_FILE" ]
 }

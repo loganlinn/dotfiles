@@ -2,22 +2,43 @@
 #
 # Render Markdown to HTML with pandoc and open it in a browser.
 #
-# Usage: mdpreview [--theme CSS_FILE] [MARKDOWN_FILE|-]
+# Usage: mdpreview [--theme THEME] [MARKDOWN_FILE|-]
 #
-# The default theme is embedded in default_theme() below, so the script needs
-# nothing but pandoc.
+# A theme can be a CSS file or a name from:
+# ${XDG_CONFIG_HOME:-$HOME/.config}/mdpreview/themes
+# MDPREVIEW_THEME sets the default theme. --theme has precedence.
+#
+# TIP: In Zsh, run `alias -s md=mdpreview` to preview a Markdown file by
+# entering its path as a command.
 
 set -euo pipefail
 
 usage() {
-  printf 'Usage: mdpreview [--theme CSS_FILE] [MARKDOWN_FILE|-]\n' >&2
+  printf 'Usage: mdpreview [--theme THEME] [MARKDOWN_FILE|-]\n' >&2
   exit 2
+}
+
+resolve_theme() {
+  local theme=$1
+  local themes_dir=${XDG_CONFIG_HOME:-"$HOME/.config"}/mdpreview/themes
+
+  if [[ -f $theme ]]; then
+    [[ $theme == /* ]] || theme=$PWD/$theme
+  elif [[ -f $themes_dir/$theme ]]; then
+    theme=$themes_dir/$theme
+  elif [[ $theme != *.css && -f $themes_dir/$theme.css ]]; then
+    theme=$themes_dir/$theme.css
+  else
+    return 1
+  fi
+
+  printf '%s\n' "$theme"
 }
 
 main() {
   hash pandoc
 
-  local theme='' in=''
+  local theme=${MDPREVIEW_THEME:-} in='' resolved_theme
   while (($#)); do
     case $1 in
     --theme)
@@ -41,9 +62,8 @@ main() {
   if [[ -z $theme ]]; then
     theme=$dir/mdpreview.css
     default_theme >"$theme"
-  elif [[ -f $theme ]]; then
-    # The HTML is written to $dir, so the stylesheet link must be absolute.
-    [[ $theme == /* ]] || theme=$PWD/$theme
+  elif resolved_theme=$(resolve_theme "$theme"); then
+    theme=$resolved_theme
   else
     printf 'mdpreview: unknown theme: %s\n' "$theme" >&2
     exit 2
