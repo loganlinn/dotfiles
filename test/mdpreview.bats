@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 # shellcheck disable=SC2154 # Bats defines these variables.
 
+bats_require_minimum_version 1.5.0
+
 setup() {
   MDPREVIEW="${BATS_TEST_DIRNAME}/../bin/mdpreview"
   TEST_DIR="${BATS_TEST_TMPDIR}/mdpreview"
@@ -14,6 +16,10 @@ setup() {
 set -euo pipefail
 
 printf '%s\n' "$@" >"$PANDOC_ARGS_FILE"
+if [[ ${MDPREVIEW_TEST_PANDOC_STATUS:-0} != 0 ]]; then
+  printf 'Cannot convert this document.\nInternal conversion details.\n' >&2
+  exit "$MDPREVIEW_TEST_PANDOC_STATUS"
+fi
 input=${!#}
 out=''
 while (($#)); do
@@ -36,6 +42,10 @@ EOF
 set -euo pipefail
 
 printf '%s\n' "$1" >"$OPEN_PATH_FILE"
+if [[ ${MDPREVIEW_TEST_OPEN_STATUS:-0} != 0 ]]; then
+  printf 'No browser is available.\nInternal browser details.\n' >&2
+  exit "$MDPREVIEW_TEST_OPEN_STATUS"
+fi
 EOF
   chmod +x "$TEST_DIR/bin/open" "$TEST_DIR/bin/pandoc"
 
@@ -43,11 +53,43 @@ EOF
   TMPDIR="$TEST_DIR/tmp"
   export PATH TMPDIR
   unset MDPREVIEW_THEME XDG_CONFIG_HOME
+  unset MDPREVIEW_TEST_OPEN_STATUS MDPREVIEW_TEST_PANDOC_STATUS
 }
 
 # Prints the pandoc argument that follows the given flag.
 pandoc_arg_after() {
   grep -A1 -Fx -- "$1" "$PANDOC_ARGS_FILE" | tail -n 1
+}
+
+assert_usage_error() {
+  [ "$status" -eq 2 ]
+  [ -z "$output" ]
+  [[ $stderr == mdpreview:* ]]
+  [[ $stderr == *'Usage: mdpreview '* ]]
+  [[ $stderr == *'mdpreview --help'* ]]
+  [ ! -e "$PANDOC_ARGS_FILE" ]
+  [ ! -e "$OPEN_PATH_FILE" ]
+}
+
+@test "shows help without Pandoc, file validation, or temporary files" {
+  for flag in -h --help; do
+    run --separate-stderr /usr/bin/env \
+      PATH="$TEST_DIR/no-commands" \
+      TMPDIR="$TEST_DIR/no-such-directory" \
+      MDPREVIEW_THEME="$TEST_DIR/no-such-theme" \
+      /bin/bash "$MDPREVIEW" missing.md "$flag"
+
+    [ "$status" -eq 0 ]
+    [ -z "$stderr" ]
+    [[ $output == *'Usage: mdpreview '* ]]
+    [[ $output == *'--help'* ]]
+    [[ $output == *'--theme'* ]]
+    [[ $output == *'MDPREVIEW_THEME'* ]]
+    [[ $output == *'XDG_CONFIG_HOME'* ]]
+    [[ $output == *'stdin'* || $output == *'standard input'* ]]
+    [ ! -e "$PANDOC_ARGS_FILE" ]
+    [ ! -e "$OPEN_PATH_FILE" ]
+  done
 }
 
 @test "previews an option-like file name" {
@@ -66,6 +108,19 @@ pandoc_arg_after() {
   grep -F '<main># Heading' "$output_path"
 }
 
+@test "uses -- to preview a file named after an option" {
+  printf '# Heading\n' >"$TEST_DIR/--help"
+  cd "$TEST_DIR"
+
+  run "$MDPREVIEW" -- --help
+
+  [ "$status" -eq 0 ]
+  output_path=$(<"$OPEN_PATH_FILE")
+  [ "${output_path##*/}" = '--help.html' ]
+  [ "$(tail -n 1 "$PANDOC_ARGS_FILE")" = '--help' ]
+  grep -F '<main># Heading' "$output_path"
+}
+
 @test "reads Markdown from stdin" {
   run "$MDPREVIEW" <<<'# Standard input'
 
@@ -73,6 +128,15 @@ pandoc_arg_after() {
   output_path=$(<"$OPEN_PATH_FILE")
   [ "${output_path##*/}" = 'stdin.html' ]
   grep -Fqx -- 'pagetitle=stdin.md' "$PANDOC_ARGS_FILE"
+  grep -F '<main># Standard input' "$output_path"
+}
+
+@test "reads Markdown from explicit stdin" {
+  run "$MDPREVIEW" - <<<'# Standard input'
+
+  [ "$status" -eq 0 ]
+  output_path=$(<"$OPEN_PATH_FILE")
+  [ "${output_path##*/}" = 'stdin.html' ]
   grep -F '<main># Standard input' "$output_path"
 }
 
@@ -159,25 +223,176 @@ pandoc_arg_after() {
 }
 
 @test "rejects a theme that is not a file" {
-  run "$MDPREVIEW" --theme nope <<<'# Heading'
+  XDG_CONFIG_HOME="$TEST_DIR/config"
+  export XDG_CONFIG_HOME
 
-  [ "$status" -eq 2 ]
-  [ "$output" = 'mdpreview: unknown theme: nope' ]
-  [ ! -e "$OPEN_PATH_FILE" ]
+  run --separate-stderr "$MDPREVIEW" --theme nope <<<'# Heading'
+
+  assert_usage_error
+  [[ $stderr == *'Theme not found'* ]]
+  [[ $stderr == *'nope'* ]]
+  [[ $stderr == *"$XDG_CONFIG_HOME/mdpreview/themes"* ]]
 }
 
 @test "rejects --theme without a value" {
-  run "$MDPREVIEW" --theme
+  run --separate-stderr "$MDPREVIEW" --theme
 
-  [ "$status" -eq 2 ]
-  [ "$output" = 'Usage: mdpreview [--theme THEME] [MARKDOWN_FILE|-]' ]
-  [ ! -e "$OPEN_PATH_FILE" ]
+  assert_usage_error
+  [[ $stderr == *'--theme'* ]]
+}
+
+@test "rejects empty theme values" {
+  run --separate-stderr "$MDPREVIEW" --theme ''
+
+  assert_usage_error
+  [[ $stderr == *'--theme'* ]]
+
+  run --separate-stderr "$MDPREVIEW" --theme=
+
+  assert_usage_error
+  [[ $stderr == *'--theme'* ]]
+}
+
+@test "rejects an option in place of a theme value" {
+  for flag in --help --; do
+    run --separate-stderr "$MDPREVIEW" --theme "$flag"
+
+    assert_usage_error
+    [[ $stderr == *'--theme'* ]]
+  done
 }
 
 @test "rejects extra arguments" {
-  run "$MDPREVIEW" first.md second.md
+  run --separate-stderr "$MDPREVIEW" first.md second.md
 
-  [ "$status" -eq 2 ]
-  [ "$output" = 'Usage: mdpreview [--theme THEME] [MARKDOWN_FILE|-]' ]
+  assert_usage_error
+  [[ $stderr == *'second.md'* ]]
+}
+
+@test "rejects an empty input path" {
+  run --separate-stderr "$MDPREVIEW" ''
+
+  assert_usage_error
+  [[ $stderr == *'empty'* ]]
+}
+
+@test "rejects unknown options" {
+  for flag in --unknown --version -x; do
+    run --separate-stderr "$MDPREVIEW" "$flag"
+
+    assert_usage_error
+    [[ $stderr == *'Unknown option'* ]]
+    [[ $stderr == *"$flag"* ]]
+  done
+}
+
+@test "rejects a missing input file" {
+  run --separate-stderr "$MDPREVIEW" "$TEST_DIR/missing.md"
+
+  assert_usage_error
+  [[ $stderr == *'not found'* ]]
+  [[ $stderr == *"$TEST_DIR/missing.md"* ]]
+}
+
+@test "rejects a directory as input" {
+  run --separate-stderr "$MDPREVIEW" "$TEST_DIR"
+
+  assert_usage_error
+  [[ $stderr == *'directory'* ]]
+  [[ $stderr == *"$TEST_DIR"* ]]
+}
+
+@test "rejects an unreadable input file" {
+  printf '# Heading\n' >"$TEST_DIR/unreadable.md"
+  chmod 000 "$TEST_DIR/unreadable.md"
+  if [[ -r $TEST_DIR/unreadable.md ]]; then
+    skip 'This account can read files with mode 000.'
+  fi
+
+  run --separate-stderr "$MDPREVIEW" "$TEST_DIR/unreadable.md"
+  chmod 600 "$TEST_DIR/unreadable.md"
+
+  assert_usage_error
+  [[ $stderr == *'read'* ]]
+  [[ $stderr == *"$TEST_DIR/unreadable.md"* ]]
+}
+
+@test "rejects empty stdin" {
+  run --separate-stderr "$MDPREVIEW" </dev/null
+
+  assert_usage_error
+  [[ $stderr == *'empty'* ]]
+
+  run --separate-stderr "$MDPREVIEW" - </dev/null
+
+  assert_usage_error
+  [[ $stderr == *'empty'* ]]
+}
+
+@test "reports an invalid temporary directory" {
+  TMPDIR="$TEST_DIR/missing-directory"
+  export TMPDIR
+
+  run --separate-stderr "$MDPREVIEW" <<<'# Heading'
+
+  [ "$status" -eq 1 ]
+  [ -z "$output" ]
+  [[ $stderr == mdpreview:* ]]
+  [[ $stderr == *'temporary directory'* ]]
+  [[ $stderr == *"$TMPDIR"* ]]
+  [[ $stderr != *'mktemp:'* ]]
+  [ ! -e "$PANDOC_ARGS_FILE" ]
   [ ! -e "$OPEN_PATH_FILE" ]
+}
+
+@test "reports missing Pandoc with an install instruction" {
+  printf '# Heading\n' >"$TEST_DIR/notes.md"
+
+  run --separate-stderr /usr/bin/env PATH="$TEST_DIR/no-commands" \
+    /bin/bash "$MDPREVIEW" "$TEST_DIR/notes.md"
+
+  [ "$status" -eq 1 ]
+  [ -z "$output" ]
+  [[ $stderr == mdpreview:* ]]
+  [[ $stderr == *'pandoc'* || $stderr == *'Pandoc'* ]]
+  [[ $stderr == *'Install'* || $stderr == *'install'* ]]
+  [[ $stderr != *'hash:'* ]]
+  [ ! -e "$OPEN_PATH_FILE" ]
+}
+
+@test "saves Pandoc errors and does not open the browser" {
+  MDPREVIEW_TEST_PANDOC_STATUS=23
+  export MDPREVIEW_TEST_PANDOC_STATUS
+
+  run --separate-stderr "$MDPREVIEW" <<<'# Heading'
+
+  [ "$status" -eq 1 ]
+  [ -z "$output" ]
+  [[ $stderr == mdpreview:* ]]
+  output_path=$(pandoc_arg_after -o)
+  log_path=${output_path%/*}/pandoc.log
+  [[ $stderr == *"$log_path"* ]]
+  grep -Fqx 'Cannot convert this document.' "$log_path"
+  grep -Fqx 'Internal conversion details.' "$log_path"
+  [[ $stderr != *'Internal conversion details.'* ]]
+  [ ! -e "$OPEN_PATH_FILE" ]
+}
+
+@test "saves browser errors and reports the HTML path" {
+  MDPREVIEW_TEST_OPEN_STATUS=24
+  export MDPREVIEW_TEST_OPEN_STATUS
+
+  run --separate-stderr "$MDPREVIEW" <<<'# Heading'
+
+  [ "$status" -eq 1 ]
+  [ -z "$output" ]
+  [[ $stderr == mdpreview:* ]]
+  output_path=$(<"$OPEN_PATH_FILE")
+  log_path=${output_path%/*}/open.log
+  [[ $stderr == *"$output_path"* ]]
+  [[ $stderr == *"$log_path"* ]]
+  grep -F '<main># Heading' "$output_path"
+  grep -Fqx 'No browser is available.' "$log_path"
+  grep -Fqx 'Internal browser details.' "$log_path"
+  [[ $stderr != *'Internal browser details.'* ]]
 }
