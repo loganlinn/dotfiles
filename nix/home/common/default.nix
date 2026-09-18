@@ -100,7 +100,7 @@
   programs.eza.enable = !config.programs.lsd.enable;
 
   my.uvTools = [
-    "vectimus"
+    # "vectimus"
   ];
 
   xdg.enable = true;

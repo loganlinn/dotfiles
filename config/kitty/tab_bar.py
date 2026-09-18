@@ -225,6 +225,23 @@ class DrawTabContext:
         group = getattr(getattr(boss, "args", None), "instance_group", "") or "default"
         return "" if group == "default" else group
 
+    def _get_window_status(self) -> str:
+        boss = get_boss()
+        if boss is None:
+            return ""
+        window = boss.active_window
+        if window is None:
+            return ""
+
+        tab_manager = boss.os_window_map.get(window.os_window_id)
+        tab = tab_manager.tab_for_id(window.tab_id) if tab_manager else None
+        if tab_manager is None or tab is None:
+            return ""
+
+        ids = f"{window.os_window_id}.{window.tab_id}.{window.id}"
+        counts = f"{len(boss.os_window_map)}.{len(tab_manager)}.{len(tab)}"
+        return f"{ids}/{counts}"
+
     def _tab_title(self) -> tuple[str, str]:
         """Return (prefix, name) for the tab title. prefix includes trailing /."""
         boss = get_boss()
@@ -248,6 +265,7 @@ class DrawTabContext:
 
         date = datetime.datetime.now().strftime("%a %b %-d %H:%M")
         instance_group = self._get_instance_group()
+        window_status = self._get_window_status()
         cells = [
             (
                 as_rgb(CURRENT),
@@ -262,6 +280,21 @@ class DrawTabContext:
                         as_rgb(YELLOW),
                         as_rgb(CURRENT),
                         f" {instance_group} ",
+                    ),
+                    (
+                        as_rgb(FG),
+                        as_rgb(CURRENT),
+                        NF_PL_RIGHT_SOFT_DIVIDER,
+                    ),
+                ]
+            )
+        if window_status:
+            cells.extend(
+                [
+                    (
+                        as_rgb(PURPLE),
+                        as_rgb(CURRENT),
+                        f" {window_status} ",
                     ),
                     (
                         as_rgb(FG),

@@ -1,7 +1,8 @@
 [settings]
 experimental = true
 jobs = 4
-auto_env = true     # https://mise.jdx.dev/configuration/settings.html#auto_env
+auto_env = true                                                                # https://mise.jdx.dev/configuration/settings.html#auto_env
+github.credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
 
 [env]
 _.path = ["{{config_root}}/bin"]
@@ -9,6 +10,7 @@ _.path = ["{{config_root}}/bin"]
 
 [dotfiles]
 "~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
+"~/.config/k9s" = { source = "config/k9s", mode = "symlink-each" }
 "~/.config/direnv/lib" = { source = "config/direnv/lib", mode = "symlink-each" }
 "~/.config/herdr/config" = "config/herdr/config.toml"
 "~/.local/share/zsh/functions" = { source = "config/zsh/functions", mode = "symlink-each" }

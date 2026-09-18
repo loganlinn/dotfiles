@@ -6,62 +6,44 @@
 }: let
   yaml = pkgs.formats.yaml {};
 in {
-  home.shellAliases = {
-    k = "kubectl";
-    kctx = "kubectx";
-    kk = "kustomize";
-    kkb = "kustomize build";
-    know = "kzf nodes";
-    kcm = "kzf configmaps";
-    kns = "kzf namespaces";
-    kpo = "kzf pods";
-    ksvc = "kzf services";
-    kpvc = "kzf persistentvolumeclaims";
-    kpv = "kzf persistentvolumes";
-    kdeploy = "kzf deployments";
-    kds = "kzf daemonsets";
-    krs = "kzf replicasets";
-    ksts = "kzf statefulsets";
-    kcrd = "kzf customresourcedefinitions";
-    kjobs = "kzf jobs";
-    kcj = "kzf cronjobs";
-  };
-
-  programs.bash.initExtra = ''
-    export PATH="''${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-  '';
-
-  programs.zsh.initContent = ''
-    export PATH="''${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-  '';
-
   home.packages = with pkgs; [
     kind
-    krew # required after install: krew install krew
+    krew # note: one time bootstrap may be needed: krew install krew
+    kubecolor
     kubeconform
     kubectl
     kubectl-images
     kubectl-tree
-    kubectx
     kubernetes-helm
     kubie
     kustomize
-    kuttl
     stern
-    velero
-    # (pkgs.callPackage ../../pkgs/kubectl-fzf.nix { })
-    (writeShellApplication {
-      name = "kzf";
-      runtimeInputs = [
-        kubectl
-        fzf
-      ];
-      text = ''
-        kubectl get "$@" --no-headers -o custom-columns=":metadata.name" |
-        fzf --exit-0 --header "$*"
-      '';
-    })
+    # kuttl  # testing framework
+    # velero # backup resources and volumes
   ];
+
+  home.shellAliases = {
+    kubectl = "kubecolor";
+    k = "kubectl";
+
+    kk = "kustomize";
+    kkb = "kk build";
+
+    ku = "kubie";
+    kctx = "ku ctx";
+    kns = "ku ns";
+    kexec = "ku exec";
+
+    klist = ''kubectl get "$@" --no-headers -o custom-columns=":metadata.name"'';
+  };
+
+  home.sessionPath = [
+    "$HOME/.krew/bin"
+  ];
+
+  my.shellInitExtra = ''
+    source <(kubie generate-completion)
+  '';
 
   programs.k9s.enable = true;
 
@@ -87,7 +69,6 @@ in {
     "eks-kubeconfig".source =
       config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/eks-kubeconfig";
 
-    "k9s/hotkey.yml".source = ../../../config/k9s/hotkey.yml;
     "k9s/views.yml".source = yaml.generate "k9s-view" {
       k9s = {
         views = {

@@ -73,6 +73,7 @@ in {
           "kitty.linux.conf"
           "kitty.macos.conf"
           "launch-actions.conf"
+          "move_tab_to_last_os_window.py"
           "nerdfont_glyphnames.json"
           "nerdfont_selector.py"
           "open-actions.conf"

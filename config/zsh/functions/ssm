@@ -3,7 +3,7 @@ emulate -L zsh
 setopt warn_create_global typeset_silent no_short_loops pipefail
 zmodload zsh/zutil
 
-local action=list
+local action=help
 local -a aws_args
 while [[ ${1-} == -p ]]; do
   if (( $# < 2 )); then
@@ -22,7 +22,7 @@ case ${1-} in
 esac
 
 case $action in
-  list|ls|names)
+  list|ls)
     local -a parsed_options
     zparseopts -D -E -F -a parsed_options -- \
       a+ d+ k+ m+ n+ o+: p+: t+ v+ || return 2
@@ -70,7 +70,7 @@ case $action in
       --output "$output"
     ;;
 
-  value|get|decrypt)
+  read)
     local -a parsed_options
     zparseopts -D -E -F -a parsed_options -- o+: p+: || return 2
     set -- "${parsed_options[@]}" -- "$@"
@@ -95,7 +95,7 @@ case $action in
     shift $((OPTIND - 1))
 
     if (( $# == 0 )); then
-      print -ru2 -- 'usage: ssm [-p PROFILE] value [OPTIONS] PARAMETER_NAME [OPTIONS]'
+      print -ru2 -- 'usage: ssm [-p PROFILE] read [OPTIONS] PARAMETER_NAME [OPTIONS]'
       return 2
     fi
 
@@ -108,11 +108,11 @@ case $action in
 
   help|-h|--help)
     local -a usage=(
-      'usage: ssm [-p PROFILE] [list] [-adkmntv] [-o FORMAT] [NAME_SUBSTRING ...]'
-      '       ssm [-p PROFILE] value [OPTIONS] PARAMETER_NAME [OPTIONS]'
+      'USAGE: ssm [-p PROFILE] list [-adkmntv] [-o FORMAT] [NAME_SUBSTRING ...]'
+      '       ssm [-p PROFILE] read [OPTIONS] PARAMETER_NAME [OPTIONS]'
+      '       ssm help'
       ''
-      'Options can appear before or after names.'
-      ''
+      'OPTIONS'
       '  -a  ARN'
       '  -d  description'
       '  -k  KMS key ID'

@@ -15,6 +15,7 @@
       keys.prefix = "s";
       prefers_reduced_motion = true;
       style = "compact";
+      workspaces = true;
       update_check = false;
     };
     flags = [
