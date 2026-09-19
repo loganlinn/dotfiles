@@ -213,7 +213,7 @@ class DrawTabContext:
         start = self.screen.cursor.x
         session_name = self._get_session_name()
         segments = [
-            (self._get_os_window_index(), DARK, YELLOW, True),
+            (self._get_os_window_index(), FG, CURRENT, False),
             (self._get_mode_label(), DARK, PURPLE, True),
             (session_name, FG, CURRENT, False),
         ]
@@ -226,7 +226,7 @@ class DrawTabContext:
         if not session_name:
             self.screen.cursor.fg = as_rgb(CURRENT)
             self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
-            self.screen.draw(" ")
+            # self.screen.draw(" ")
         return self.screen.cursor.x - start
 
     def _get_instance_group(self) -> str:
