@@ -19,6 +19,9 @@ BG = int("282a36", 16)
 FG = int("f8f8f2", 16)
 CURRENT = int("44475a", 16)
 COMMENT = int("6272a4", 16)
+CYAN = int("8be9fd", 16)
+GREEN = int("50fa7b", 16)
+PINK = int("ff79c6", 16)
 PURPLE = int("bd93f9", 16)
 YELLOW = int("f1fa8c", 16)
 ORANGE = int("ffb86c", 16)
@@ -209,24 +212,18 @@ class DrawTabContext:
                     return getattr(tm, "created_in_session_name", "") or ""
         return ""
 
-    def _draw_left_status(self) -> int:
+    def _draw_left_status(self, next_tab_bg: int) -> int:
         start = self.screen.cursor.x
         session_name = self._get_session_name()
         segments = [
             (self._get_os_window_index(), FG, CURRENT, False),
-            (self._get_mode_label(), DARK, PURPLE, True),
             (session_name, FG, CURRENT, False),
         ]
         segments = [segment for segment in segments if segment[0]]
-        trailing_bg = BG if session_name else INACTIVE_TAB_BG
         for index, (label, fg, bg, bold) in enumerate(segments):
-            next_bg = segments[index + 1][2] if index + 1 < len(segments) else trailing_bg
+            next_bg = segments[index + 1][2] if index + 1 < len(segments) else next_tab_bg
             self._draw_segment(label, fg, bg, next_bg, bold)
 
-        if not session_name:
-            self.screen.cursor.fg = as_rgb(CURRENT)
-            self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
-            # self.screen.draw(" ")
         return self.screen.cursor.x - start
 
     def _get_instance_group(self) -> str:
@@ -266,15 +263,23 @@ class DrawTabContext:
             return self.screen.cursor.x
 
         date = datetime.datetime.now().strftime("%a %b %-d %H:%M")
+        mode = self._get_mode_label()
         instance_group = self._get_instance_group()
         window_status = self._get_window_status()
         cells = [
             (
-                as_rgb(CURRENT),
+                as_rgb(YELLOW if mode else CURRENT),
                 as_rgb(BG),
                 NF_PL_RIGHT_HARD_DIVIDER,
             ),
         ]
+        if mode:
+            cells.extend(
+                [
+                    (as_rgb(DARK), as_rgb(YELLOW), f" {mode} "),
+                    (as_rgb(CURRENT), as_rgb(YELLOW), NF_PL_RIGHT_HARD_DIVIDER),
+                ]
+            )
         if instance_group:
             cells.extend(
                 [
@@ -336,13 +341,14 @@ class DrawTabContext:
         if self.timer_id is None:
             self.timer_id = add_timer(_redraw_tab_bar, REFRESH_TIME, True)
 
+        flag_bg = _tab_flag_color(self.tab.tab_id)
         if self.tab_index == 1:
             self.prev_tab_was_active = False
-            self.before += self._draw_left_status()
+            next_tab_bg = flag_bg if flag_bg is not None else PURPLE if self.tab.is_active else INACTIVE_TAB_BG
+            self.before += self._draw_left_status(next_tab_bg)
 
         prefix, name = self._tab_title()
         idx = f" {self.tab_index} "
-        flag_bg = _tab_flag_color(self.tab.tab_id)
         if flag_bg is not None:
             prefix = " " + prefix
         prev_is_active = self.extra_data.prev_tab is not None and self.extra_data.prev_tab.is_active
@@ -350,7 +356,8 @@ class DrawTabContext:
         if self.tab.is_active:
             self.screen.cursor.fg = as_rgb(INACTIVE_TAB_BG)
             self.screen.cursor.bg = as_rgb(flag_bg or PURPLE)
-            self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
+            if self.tab_index != 1:
+                self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
             self.screen.cursor.bg = as_rgb(flag_bg or PURPLE)
             self.screen.cursor.fg = as_rgb(DARK)
             self.screen.cursor.bold = True
@@ -370,10 +377,10 @@ class DrawTabContext:
         else:
             number_bg = flag_bg or INACTIVE_TAB_BG
             self.screen.cursor.bg = as_rgb(number_bg)
-            if flag_bg is not None:
+            if flag_bg is not None and self.tab_index != 1:
                 self.screen.cursor.fg = as_rgb(INACTIVE_TAB_BG)
                 self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
-            elif not prev_is_active:
+            elif not prev_is_active and self.tab_index != 1:
                 self.screen.cursor.fg = as_rgb(CURRENT)
                 self.screen.draw(NF_PL_LEFT_SOFT_DIVIDER)
             self.screen.cursor.fg = as_rgb(DARK if flag_bg is not None else FG)
