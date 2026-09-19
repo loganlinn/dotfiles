@@ -4,6 +4,8 @@ local NOTES_DIR = os.getenv("XDG_NOTES_DIR") or (HOME .. "/Notes")
 package.path = package.path .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?.lua"
 package.path = package.path .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?/init.lua"
 package.cpath = package.cpath .. ";" .. DOTFILES_DIR .. "/darwin/modules/hammerspoon/?.so"
+-- Develop the standalone Spoon directly from this checkout.
+package.path = DOTFILES_DIR .. "/darwin/modules/hammerspoon/Spoons/?.spoon/init.lua;" .. package.path
 
 local command = require("command")
 
@@ -46,6 +48,24 @@ local execute = function(...)
 end
 
 ipc.cliInstall()
+
+local deploymentsLoaded, deploymentError = pcall(function()
+	local deploymentMenu = assert(hs.loadSpoon("GammaInfraMenu"))
+	deploymentMenu.applications = require("deployments")
+	deploymentMenu:start()
+end)
+if not deploymentsLoaded then
+	log.e("Deployment indicators: " .. tostring(deploymentError))
+end
+local previousShutdown = hs.shutdownCallback
+hs.shutdownCallback = function()
+	if spoon and spoon.GammaInfraMenu then
+		spoon.GammaInfraMenu:stop()
+	end
+	if previousShutdown then
+		previousShutdown()
+	end
+end
 
 application.enableSpotlightForNameSearches(true)
 

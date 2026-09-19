@@ -57,6 +57,7 @@ in {
           }
         )
         [
+          "auto_tab_title.py"
           "big_mode.py"
           "choose-files.conf"
           "claude-fork.py"

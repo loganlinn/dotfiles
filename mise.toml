@@ -1,8 +1,7 @@
 [settings]
 experimental = true
 jobs = 4
-auto_env = true                                                                # https://mise.jdx.dev/configuration/settings.html#auto_env
-github.credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
+auto_env = true     # https://mise.jdx.dev/configuration/settings.html#auto_env
 
 [env]
 _.path = ["{{config_root}}/bin"]

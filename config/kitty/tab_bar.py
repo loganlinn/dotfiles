@@ -144,9 +144,7 @@ def update_tab_flags(boss, action: str) -> None:
 
 
 def _redraw_tab_bar(_):
-    tm = get_boss().active_tab_manager
-    if tm is not None:
-        tm.mark_tab_bar_dirty()
+    _mark_all_tab_bars_dirty()
 
 
 # https://github.com/kovidgoyal/kitty/blob/81c3fa71a02e28758b7edb53b40a662e53f6defa/kitty/tab_bar.py
@@ -175,26 +173,31 @@ class DrawTabContext:
         self.is_last = is_last
         self.extra_data = extra_data
 
-    def _draw_mode_indicator(self, next_bg: int) -> int:
-        boss = get_boss()
-        mode = boss.mappings.current_keyboard_mode_name if boss and boss.mappings else ""
-        if mode == "" or mode is None:
-            return 0
-        elif mode == KEYBOARD_MODE_SEQUENCE:
-            label = "SEQ"
-        else:
-            label = mode
-
-        cell = f" {label} "
-        self.screen.cursor.fg = as_rgb(DARK)
-        self.screen.cursor.bg = as_rgb(PURPLE)
-        self.screen.cursor.bold = True
-        self.screen.draw(cell)
+    def _draw_segment(self, label: str, fg: int, bg: int, next_bg: int, bold: bool = False) -> int:
+        start = self.screen.cursor.x
+        self.screen.cursor.fg = as_rgb(fg)
+        self.screen.cursor.bg = as_rgb(bg)
+        self.screen.cursor.bold = bold
+        self.screen.draw(f" {label} ")
         self.screen.cursor.bold = False
-        self.screen.cursor.fg = as_rgb(PURPLE)
+        self.screen.cursor.fg = as_rgb(bg)
         self.screen.cursor.bg = as_rgb(next_bg)
         self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
-        return len(cell) + 1
+        return self.screen.cursor.x - start
+
+    def _get_os_window_index(self) -> str:
+        boss = get_boss()
+        if boss:
+            # Match the 1-based ordering used by Boss.nth_os_window().
+            for index, os_window_id in enumerate(boss.os_window_map, 1):
+                if os_window_id == self.tab.os_window_id:
+                    return str(index)
+        return ""
+
+    def _get_mode_label(self) -> str:
+        boss = get_boss()
+        mode = boss.mappings.current_keyboard_mode_name if boss and boss.mappings else ""
+        return "SEQ" if mode == KEYBOARD_MODE_SEQUENCE else mode or ""
 
     def _get_session_name(self) -> str:
         boss = get_boss()
@@ -206,41 +209,40 @@ class DrawTabContext:
                     return getattr(tm, "created_in_session_name", "") or ""
         return ""
 
-    def _draw_session_indicator(self, next_bg: int = BG) -> int:
+    def _draw_left_status(self) -> int:
+        start = self.screen.cursor.x
         session_name = self._get_session_name()
-        if not session_name:
-            return 0
+        segments = [
+            (self._get_os_window_index(), DARK, YELLOW, True),
+            (self._get_mode_label(), DARK, PURPLE, True),
+            (session_name, FG, CURRENT, False),
+        ]
+        segments = [segment for segment in segments if segment[0]]
+        trailing_bg = BG if session_name else INACTIVE_TAB_BG
+        for index, (label, fg, bg, bold) in enumerate(segments):
+            next_bg = segments[index + 1][2] if index + 1 < len(segments) else trailing_bg
+            self._draw_segment(label, fg, bg, next_bg, bold)
 
-        cell = f" {session_name} "
-        self.screen.cursor.fg = as_rgb(FG)
-        self.screen.cursor.bg = as_rgb(CURRENT)
-        self.screen.draw(cell)
-        self.screen.cursor.fg = as_rgb(CURRENT)
-        self.screen.cursor.bg = as_rgb(next_bg)
-        self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
-        return len(cell) + 1
+        if not session_name:
+            self.screen.cursor.fg = as_rgb(CURRENT)
+            self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
+            self.screen.draw(" ")
+        return self.screen.cursor.x - start
 
     def _get_instance_group(self) -> str:
         boss = get_boss()
         group = getattr(getattr(boss, "args", None), "instance_group", "") or "default"
         return "" if group == "default" else group
 
-    def _get_window_status(self) -> str:
+    def _get_window_status(self) -> tuple[str, ...]:
         boss = get_boss()
         if boss is None:
-            return ""
+            return ()
         window = boss.active_window
         if window is None:
-            return ""
+            return ()
 
-        tab_manager = boss.os_window_map.get(window.os_window_id)
-        tab = tab_manager.tab_for_id(window.tab_id) if tab_manager else None
-        if tab_manager is None or tab is None:
-            return ""
-
-        ids = f"{window.os_window_id}.{window.tab_id}.{window.id}"
-        counts = f"{len(boss.os_window_map)}.{len(tab_manager)}.{len(tab)}"
-        return f"{ids}/{counts}"
+        return f"WIN:{window.id}", f"TAB:{window.tab_id}"
 
     def _tab_title(self) -> tuple[str, str]:
         """Return (prefix, name) for the tab title. prefix includes trailing /."""
@@ -288,13 +290,13 @@ class DrawTabContext:
                     ),
                 ]
             )
-        if window_status:
+        for label in window_status:
             cells.extend(
                 [
                     (
                         as_rgb(PURPLE),
                         as_rgb(CURRENT),
-                        f" {window_status} ",
+                        f" {label} ",
                     ),
                     (
                         as_rgb(FG),
@@ -336,16 +338,7 @@ class DrawTabContext:
 
         if self.tab_index == 1:
             self.prev_tab_was_active = False
-            has_session = bool(self._get_session_name())
-            mode_next_bg = CURRENT if has_session else INACTIVE_TAB_BG
-            self.before += self._draw_mode_indicator(mode_next_bg)
-            self.before += self._draw_session_indicator()
-            # space after mode arrow when no session
-            if not has_session:
-                self.screen.cursor.fg = as_rgb(CURRENT)
-                self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
-                self.screen.draw(" ")
-                self.before += 1
+            self.before += self._draw_left_status()
 
         prefix, name = self._tab_title()
         idx = f" {self.tab_index} "

@@ -213,7 +213,6 @@ in
 
   programs.delta = {
     enable = true;
-    # enableGitIntegration = true; # trying diffnav
     options = {
       features = "arctic-fox"; # from included themes.gitconfig
       zero-style = "dim syntax auto";
@@ -283,7 +282,6 @@ in
       gpg.ssh.program = mkDefault gpg-ssh-program;
       help.autocorrect = "prompt";
       init.defaultBranch = "main";
-      pager.diff = "${lib.getExe pkgs.diffnav}";
       pull.rebase = true;
       push.autoSetupRemote = true;
       push.default = "current";

@@ -1,6 +1,7 @@
-"""Pin the tab title to the focused window's current directory name."""
+"""Pin the tab title to the focused window's Git worktree or cwd name."""
 
 import os
+import subprocess
 
 from kittens.tui.handler import result_handler
 
@@ -17,4 +18,13 @@ def handle_result(args, answer, target_window_id, boss) -> None:
     tab = window.tabref()
     cwd = window.get_cwd_of_child(oldest=True)
     if tab is not None and cwd:
+        try:
+            cwd = subprocess.check_output(
+                ["git", "-C", cwd, "rev-parse", "--show-toplevel"],
+                stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=1,
+            ).rstrip("\n") or cwd
+        except (OSError, subprocess.SubprocessError):
+            pass
         tab.set_title(os.path.basename(os.path.normpath(cwd)) or cwd)
