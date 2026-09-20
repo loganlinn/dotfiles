@@ -23,6 +23,9 @@ Example:
 
 Exit status: 0 success, non-zero on error.
 
+Requires Python 3.11 or newer. Compressed sessions also require Python 3.14
+or the zstd command. Live-session checks use ps and lsof on macOS.
+
 Why this is not just "mv":
   Codex does not store history in a per-project directory. Sessions live in a
   date-bucketed tree (~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl) and each one
@@ -32,15 +35,23 @@ Why this is not just "mv":
 """
 
 import argparse
+from contextlib import contextmanager
 import json
 import os
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from datetime import datetime
+
+try:
+    from compression import zstd
+except ImportError:
+    zstd = None
 
 VERSION = "1.0.0"
 
@@ -120,13 +131,61 @@ def state_db(codex_home):
 
 
 def rollout_files(codex_home):
-    sessions = os.path.join(codex_home, "sessions")
-    if not os.path.isdir(sessions):
-        return
-    for root, _dirs, files in os.walk(sessions):
-        for name in sorted(files):
-            if name.endswith(".jsonl"):
-                yield os.path.join(root, name)
+    for subdir in ("sessions", "archived_sessions"):
+        for root, _dirs, files in os.walk(os.path.join(codex_home, subdir)):
+            for name in sorted(files):
+                if name.endswith((".jsonl", ".jsonl.zst")):
+                    yield os.path.join(root, name)
+
+
+def zstd_command():
+    command = shutil.which("zstd")
+    if not command:
+        raise RuntimeError("Compressed rollouts require Python 3.14 or the zstd command.")
+    return command
+
+
+@contextmanager
+def read_rollout(path):
+    """Read either representation without materializing files in Codex home."""
+    if not str(path).endswith(".zst"):
+        with open(path, encoding="utf-8") as fh:
+            yield fh
+    elif zstd is not None:
+        with zstd.open(path, "rt", encoding="utf-8") as fh:
+            yield fh
+    else:
+        with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as fh:
+            subprocess.run([zstd_command(), "-q", "-d", "-c", "--", str(path)],
+                           stdout=fh, check=True)
+            fh.seek(0)
+            yield fh
+
+
+def compress_rollout(source, destination):
+    if zstd is not None:
+        with open(source, "rb") as src, zstd.open(destination, "wb") as dst:
+            shutil.copyfileobj(src, dst)
+    else:
+        with open(destination, "wb") as dst:
+            subprocess.run([zstd_command(), "-q", "-c", "--", source],
+                           stdout=dst, check=True)
+
+
+def rollout_meta_cwds(path):
+    """Save every metadata record, including embedded fork history."""
+    records = []
+    with read_rollout(path) as fh:
+        for index, line in enumerate(fh):
+            try:
+                obj = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(obj, dict) and obj.get("type") == "session_meta":
+                cwd = (obj.get("payload") or {}).get("cwd")
+                if isinstance(cwd, str):
+                    records.append({"line": index, "cwd": cwd})
+    return records
 
 
 def session_meta_cwd(path, max_scan=10):
@@ -135,7 +194,7 @@ def session_meta_cwd(path, max_scan=10):
     session_meta is normally the first line; scan a few in case that changes.
     """
     try:
-        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        with read_rollout(path) as fh:
             for i, line in enumerate(fh):
                 if i >= max_scan:
                     break
@@ -174,25 +233,76 @@ def _proc_stat(pid):
         return None, None
 
 
-def _proc_rollout(pid):
-    """The rollout file this process holds open, if any.
-
-    A live Codex session keeps its rollout open for appending, which is what
-    ties a process back to a nameable conversation.
-    """
+def _proc_rollouts(pid):
+    """All rollout files held open by a CLI or multi-session app-server."""
     fd_dir = f"/proc/{pid}/fd"
     try:
         names = os.listdir(fd_dir)
     except OSError:
-        return None
+        return []
+    paths = []
     for name in names:
         try:
             target = os.readlink(os.path.join(fd_dir, name))
         except OSError:
             continue
-        if target.endswith(".jsonl") and f"{os.sep}sessions{os.sep}" in target:
-            return target
-    return None
+        if _is_rollout_path(target):
+            paths.append(target)
+    return paths
+
+
+def _is_rollout_path(path):
+    return path.endswith((".jsonl", ".jsonl.zst")) and any(
+        f"{os.sep}{subdir}{os.sep}" in path
+        for subdir in ("sessions", "archived_sessions")
+    )
+
+
+def _mac_live_codex_processes(target):
+    """Inspect every open rollout: an app-server can host several threads."""
+    snapshot = subprocess.run(
+        ["ps", "-axo", "pid=,ppid=,tty=,comm="],
+        capture_output=True, text=True, check=True,
+    )
+    found = []
+    for line in snapshot.stdout.splitlines():
+        fields = line.split(None, 3)
+        if len(fields) != 4 or "codex" not in os.path.basename(fields[3]).lower():
+            continue
+        pid, ppid = map(int, fields[:2])
+        if pid == os.getpid():
+            continue
+        opened = subprocess.run(
+            ["lsof", "-a", "-p", str(pid), "-Ffn"],
+            capture_output=True, text=True,
+        )
+        if opened.returncode:
+            # An exited process is harmless; an unreadable live process is not.
+            alive = subprocess.run(["ps", "-p", str(pid), "-o", "pid="],
+                                   capture_output=True, text=True)
+            if alive.returncode == 1 and not alive.stdout.strip():
+                continue
+            raise RuntimeError(f"Cannot inspect Codex process {pid}: {opened.stderr.strip()}")
+        cwd, fd, rollouts = None, None, []
+        for field in opened.stdout.splitlines():
+            if field.startswith("f"):
+                fd = field[1:]
+            elif field.startswith("n"):
+                path = field[1:]
+                if fd == "cwd":
+                    cwd = path
+                elif _is_rollout_path(path):
+                    rollouts.append(path)
+        bound_rollout = next((path for path in rollouts
+                              if is_under(session_meta_cwd(path) or "", target)), None)
+        if (cwd and is_under(cwd, target)) or bound_rollout:
+            found.append({
+                "pid": pid, "ppid": ppid,
+                "tty": None if fields[2] in ("??", "?") else fields[2],
+                "cwd": cwd, "cmd": fields[3], "rollout": bound_rollout,
+                "started": None,
+            })
+    return found
 
 
 def _session_id_from_rollout(path):
@@ -230,8 +340,10 @@ def live_codex_processes(target):
     editing those while a session is live risks losing or corrupting writes.
     """
     found = []
+    if sys.platform == "darwin":
+        return _mac_live_codex_processes(target)
     if not os.path.isdir("/proc"):
-        return found
+        raise RuntimeError("Cannot check live Codex sessions on this platform.")
     self_pid = os.getpid()
     for entry in os.listdir("/proc"):
         if not entry.isdigit():
@@ -257,7 +369,9 @@ def live_codex_processes(target):
             cwd = os.path.realpath(f"/proc/{pid}/cwd")
         except OSError:
             cwd = None
-        rollout = _proc_rollout(pid)
+        rollouts = _proc_rollouts(pid)
+        rollout = next((path for path in rollouts
+                        if is_under(session_meta_cwd(path) or "", target)), None)
         # A session's working directory is not the only way it can belong to
         # this project: a thread resumed from elsewhere still appends to *this
         # project's* rollout, and that file is about to be rewritten. Treat the
@@ -345,7 +459,7 @@ def group_sessions(procs, db):
         sessions.append({
             "root": root,
             "pids": sorted(m["pid"] for m in members),
-            "tty": f"pts/{tty & 0xff}" if tty else None,
+            "tty": tty if isinstance(tty, str) else f"pts/{tty & 0xff}" if tty else None,
             "cwd": next((m["cwd"] for m in members if m["cwd"]), None),
             "session_id": sid,
             "label": label,
@@ -402,7 +516,7 @@ def format_sessions(sessions, procs):
 
 # ------------------------------------------------------------------ edits ----
 def _rewrite_meta(path, pick):
-    """Stream the rollout, letting `pick(cwd)` supply a replacement cwd.
+    """Stream the rollout, letting `pick(cwd, line)` supply a replacement cwd.
 
     `pick` returns the new value, or None to leave the record alone. Only
     session_meta is considered; the transcript body is copied verbatim.
@@ -415,45 +529,63 @@ def _rewrite_meta(path, pick):
     changed = False
     directory = os.path.dirname(path)
     fd, tmp = tempfile.mkstemp(dir=directory, prefix=".codex-mv-", suffix=".jsonl")
+    compressed_tmp = None
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as out:
-            with open(path, "r", encoding="utf-8", errors="replace") as fh:
-                for line in fh:
+            with read_rollout(path) as fh:
+                for index, line in enumerate(fh):
                     stripped = line.strip()
                     if stripped:
                         try:
                             obj = json.loads(stripped)
                         except (ValueError, TypeError):
                             obj = None
-                        if obj is not None and obj.get("type") == "session_meta":
+                        if isinstance(obj, dict) and obj.get("type") == "session_meta":
                             payload = obj.get("payload") or {}
                             cwd = payload.get("cwd")
-                            replacement = pick(cwd) if isinstance(cwd, str) else None
-                            if replacement is not None:
+                            replacement = pick(cwd, index) if isinstance(cwd, str) else None
+                            if replacement is not None and replacement != cwd:
                                 payload["cwd"] = replacement
                                 obj["payload"] = payload
                                 out.write(json.dumps(obj) + "\n")
                                 changed = True
                                 continue
-                    out.write(line if line.endswith("\n") else line + "\n")
+                    out.write(line)
+        if not changed:
+            return False
+        if str(path).endswith(".zst"):
+            compressed_fd, compressed_tmp = tempfile.mkstemp(dir=directory, prefix=".codex-mv-")
+            os.close(compressed_fd)
+            compress_rollout(tmp, compressed_tmp)
+            os.unlink(tmp)
+            tmp, compressed_tmp = compressed_tmp, None
         shutil.copystat(path, tmp)
         os.replace(tmp, path)
-    except BaseException:
-        if os.path.exists(tmp):
-            os.unlink(tmp)
-        raise
+    finally:
+        for leftover in (tmp, compressed_tmp):
+            if leftover and os.path.exists(leftover):
+                os.unlink(leftover)
     return changed
 
 
 def rewrite_rollout(path, old, new):
     """Repoint a session from under `old` to under `new`."""
     return _rewrite_meta(
-        path, lambda cwd: remap(cwd, old, new) if is_under(cwd, old) else None)
+        path, lambda cwd, _index: remap(cwd, old, new) if is_under(cwd, old) else None)
 
 
-def set_rollout_cwd(path, value):
-    """Set a session's recorded cwd to exactly `value` (used by --undo)."""
-    return _rewrite_meta(path, lambda cwd: value if cwd != value else None)
+def restore_rollout(path, entry, old, new):
+    records = {record["line"]: record["cwd"] for record in entry.get("metadata", [])}
+
+    def pick(cwd, index):
+        if index in records:
+            original = records[index]
+            return original if cwd == remap(original, old, new) else None
+        # Version 1 backups have only the first cwd. Reverse only matching paths,
+        # preserving unrelated fork records. Also handles subsequently added records.
+        return remap(cwd, new, old) if is_under(cwd, new) else None
+
+    return _rewrite_meta(path, pick)
 
 
 def db_rows_to_update(db, old, attempts=6, timeout=30.0):
@@ -530,7 +662,17 @@ def update_db(db, rows, old, new, attempts=6, timeout=30.0):
     return len(rows)
 
 
-CONFIG_HEADER = re.compile(r'^(\s*\[projects\.")(.*)("\]\s*)$')
+CONFIG_HEADER = re.compile(
+    r'''^(\s*\[projects\.)("(?:\\.|[^"\\])*"|'[^']*')(\s*(?:\.[^\]]+)?\]\s*(?:\#.*)?)$'''
+)
+
+
+def config_header(line):
+    match = CONFIG_HEADER.match(line.rstrip("\n"))
+    if match:
+        projects = tomllib.loads(match.group(0))["projects"]
+        return match, next(iter(projects))
+    return None, None
 
 
 def config_entries(config_path, old):
@@ -538,32 +680,39 @@ def config_entries(config_path, old):
     hits = []
     if not os.path.exists(config_path):
         return hits
-    try:
-        with open(config_path, "r", encoding="utf-8", errors="replace") as fh:
-            for i, line in enumerate(fh):
-                m = CONFIG_HEADER.match(line.rstrip("\n"))
-                if m and is_under(m.group(2), old):
-                    hits.append((i, m.group(2)))
-    except OSError:
-        return []
+    with open(config_path, encoding="utf-8") as fh:
+        for i, line in enumerate(fh):
+            match, path = config_header(line)
+            if match and is_under(path, old):
+                hits.append((i, path))
     return hits
 
 
-def update_config(config_path, old, new):
-    """Rewrite only the [projects."..."] header lines.
-
-    Deliberately a targeted line edit rather than a parse-and-reserialise:
-    config.toml holds unrelated user settings, comments and formatting that a
-    round-trip would discard.
-    """
-    with open(config_path, "r", encoding="utf-8", errors="replace") as fh:
+def config_plan(config_path, old, new):
+    """Validate the complete result before moving a directory or writing files."""
+    if not os.path.exists(config_path):
+        return [], 0
+    with open(config_path, encoding="utf-8") as fh:
         lines = fh.readlines()
+    projects = tomllib.loads("".join(lines)).get("projects", {})
+    destinations = [remap(path, old, new) for path in projects]
+    if len(set(destinations)) != len(destinations):
+        raise ValueError("Destination project entries already exist in config.toml; "
+                         "resolve the conflicting entries before retrying.")
     count = 0
     for i, line in enumerate(lines):
-        m = CONFIG_HEADER.match(line.rstrip("\n"))
-        if m and is_under(m.group(2), old):
-            lines[i] = f"{m.group(1)}{remap(m.group(2), old, new)}{m.group(3)}\n"
+        match, path = config_header(line)
+        if match and is_under(path, old):
+            key = json.dumps(remap(path, old, new), ensure_ascii=False)
+            lines[i] = f"{match.group(1)}{key}{match.group(3)}\n"
             count += 1
+    tomllib.loads("".join(lines))
+    return lines, count
+
+
+def update_config(config_path, old, new):
+    """Edit headers while preserving unrelated settings, comments and formatting."""
+    lines, count = config_plan(config_path, old, new)
     if count:
         directory = os.path.dirname(config_path) or "."
         fd, tmp = tempfile.mkstemp(dir=directory, prefix=".codex-mv-")
@@ -580,7 +729,7 @@ def update_config(config_path, old, new):
 
 
 # ----------------------------------------------------------------- backup ----
-MANIFEST_VERSION = 1
+MANIFEST_VERSION = 2
 
 
 def human_size(n):
@@ -617,7 +766,7 @@ def backup_preview(home, rollouts, db, config_path, trust):
     # a manifest entry is roughly a path plus a cwd
     manifest = sum(len(path) + len(cwd) + 40 for path, cwd in rollouts) + 200
     return {
-        "dir": os.path.join(home, ".codex-mv-backups", "<timestamp>"),
+        "dir": os.path.join(home, ".codex-mv-backups", "<timestamp>-<unique>"),
         "copied_desc": " + ".join(parts) if parts else "nothing else",
         "total": copied + manifest,
         "transcripts": transcripts,
@@ -627,17 +776,13 @@ def backup_preview(home, rollouts, db, config_path, trust):
 def write_backup(home, old, new, rollouts, db, config_path, trust):
     """Record enough to reverse the edit, without copying whole transcripts.
 
-    Only one field on line 1 of each rollout changes, and rollouts are written
-    atomically (temp file + os.replace), so a copy of the full transcript
-    protects against nothing a manifest does not. On a real project that
-    difference is hundreds of megabytes per run: 110 sessions of chat history
-    is ~570 MB, while the manifest describing them is a few tens of kilobytes.
-
-    The state DB and config.toml are small and are copied in full.
+    Record each session_meta cwd, including embedded fork records, because their
+    original paths can differ. The state DB and config.toml are copied in full.
     """
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    backup_dir = os.path.join(home, ".codex-mv-backups", stamp)
-    os.makedirs(backup_dir, exist_ok=True)
+    backup_root = os.path.join(home, ".codex-mv-backups")
+    os.makedirs(backup_root, exist_ok=True)
+    backup_dir = tempfile.mkdtemp(prefix=stamp + "-", dir=backup_root)
 
     manifest = {
         "version": MANIFEST_VERSION,
@@ -647,7 +792,8 @@ def write_backup(home, old, new, rollouts, db, config_path, trust):
         "new_path": new,
         "state_db": os.path.basename(db) if db else None,
         "config": "config.toml" if trust else None,
-        "rollouts": [{"path": path, "cwd": cwd} for path, cwd in rollouts],
+        "rollouts": [{"path": path, "cwd": cwd, "metadata": rollout_meta_cwds(path)}
+                     for path, cwd in rollouts],
     }
     with open(os.path.join(backup_dir, "manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=1)
@@ -673,7 +819,29 @@ def write_backup(home, old, new, rollouts, db, config_path, trust):
     return backup_dir
 
 
-def undo(backup_dir, out, assume_yes):
+def check_live(targets, home, out, dry_run=False):
+    found = {}
+    for target in targets:
+        try:
+            found.update((p["pid"], p) for p in live_codex_processes(target))
+        except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+            message = f"Could not check live Codex sessions: {exc}"
+            if dry_run:
+                out.warn(message + " (a real run would refuse)")
+            else:
+                out.error(message)
+    if found:
+        procs = list(found.values())
+        message = ("Codex is running in this project - refusing to touch its data.\n"
+                   + format_sessions(group_sessions(procs, state_db(home)), procs)
+                   + "\n  Close those sessions and try again.")
+        if dry_run:
+            out.warn(message)
+        else:
+            out.error(message)
+
+
+def undo(backup_dir, out, assume_yes, dry_run=False):
     """Reverse a rename using the manifest written at the time.
 
     Restores each rollout's recorded cwd rather than remapping paths, so a
@@ -687,7 +855,7 @@ def undo(backup_dir, out, assume_yes):
         out.error(f"No manifest.json in {backup_dir}")
     with open(manifest_path, encoding="utf-8") as fh:
         manifest = json.load(fh)
-    if manifest.get("version") != MANIFEST_VERSION:
+    if manifest.get("version") not in (1, MANIFEST_VERSION):
         out.error(f"Unsupported manifest version: {manifest.get('version')}")
 
     home = manifest["codex_home"]
@@ -695,16 +863,42 @@ def undo(backup_dir, out, assume_yes):
     new = manifest["new_path"]
     rollouts = manifest.get("rollouts", [])
 
+    if os.path.lexists(new) and os.path.lexists(old):
+        out.error(f"Cannot undo: original location is occupied: {old}")
+    if not os.path.isdir(new) and not os.path.isdir(old):
+        out.error("Cannot undo: neither project directory exists.")
+    if os.path.lexists(new) and not os.path.isdir(new):
+        out.error(f"Cannot undo: project is not a directory: {new}")
+
+    check_live((old, new), home, out, dry_run)
+    config_path = os.path.join(home, "config.toml")
+    config_plan(config_path, new, old)
+    available = list(rollout_files(home))
+    by_name = {os.path.basename(path).removesuffix(".zst"): path for path in available}
+    work, missing = {}, 0
+    for entry in rollouts:
+        # Archiving and compression may have changed the stored path since backup.
+        path = by_name.get(os.path.basename(entry["path"]).removesuffix(".zst"))
+        if path is None:
+            missing += 1
+        else:
+            work[path] = entry
+    for path in available:
+        cwd = session_meta_cwd(path)
+        if cwd and is_under(cwd, new):
+            work.setdefault(path, {})
+    db = state_db(home)
+    rows = db_rows_to_update(db, new)
+
     out.info("Planned undo:")
     out.info(f"  Project dir  : {new} -> {old}")
-    out.info(f"  Sessions     : {len(rollouts)} rollout file(s) to restore")
+    out.info(f"  Sessions     : {len(work)} rollout file(s) to restore")
+    if missing:
+        out.warn(f"{missing} backed-up rollout(s) no longer exist and will be skipped.")
 
-    live = live_codex_processes(new)
-    if live:
-        out.error(
-            "Codex is running in this project - refusing to touch its data.\n"
-            + format_sessions(group_sessions(live, state_db(home)), live)
-        )
+    if dry_run:
+        out.info("Dry-run complete - no changes made.")
+        return 0
 
     if not assume_yes:
         try:
@@ -715,30 +909,21 @@ def undo(backup_dir, out, assume_yes):
             out.info("Aborted.")
             return 0
 
-    if os.path.isdir(new) and not os.path.exists(old):
+    check_live((old, new), home, out)
+    if os.path.lexists(new) and os.path.lexists(old):
+        out.error(f"Cannot undo: original location is occupied: {old}")
+    if os.path.isdir(new) and not os.path.lexists(old):
         shutil.move(new, old)
         out.success("Project directory moved back.")
     elif os.path.isdir(old):
         out.warn(f"{old} already exists - leaving the directory alone.")
 
-    restored, missing = 0, 0
-    for entry in rollouts:
-        path, cwd = entry["path"], entry["cwd"]
-        if not os.path.exists(path):
-            missing += 1
-            continue
-        if set_rollout_cwd(path, cwd):
-            restored += 1
+    restored = sum(restore_rollout(path, entry, old, new) for path, entry in work.items())
     out.success(f"Restored {restored} session file(s).")
-    if missing:
-        out.warn(f"{missing} rollout(s) no longer exist and were skipped.")
 
-    db = state_db(home)
-    rows = db_rows_to_update(db, new)
     if db and rows:
         out.success(f"Reverted {update_db(db, rows, new, old)} thread row(s).")
 
-    config_path = os.path.join(home, "config.toml")
     if config_entries(config_path, new):
         out.success(f"Reverted {update_config(config_path, new, old)} trust entry(ies).")
 
@@ -774,7 +959,7 @@ def main(argv=None):
         print(f"codex-mv {VERSION}")
         return 0
     if args.undo:
-        return undo(abs_path(args.undo), out, args.yes)
+        return undo(abs_path(args.undo), out, args.yes, args.dry_run)
     if len(args.paths) != 2:
         print(__doc__.strip())
         return 2
@@ -802,23 +987,8 @@ def main(argv=None):
 
     # ------------------------------------------------ live-session guard ----
     # A dry run writes nothing, so a live session is only a warning there.
-    live = live_codex_processes(old)
-    if args.no_move:
-        seen = {p["pid"] for p in live}
-        live += [p for p in live_codex_processes(new) if p["pid"] not in seen]
-    if live:
-        detail = format_sessions(group_sessions(live, state_db(home)), live)
-        if args.dry_run:
-            out.warn(
-                "Codex is running in this project - a real run would refuse:\n"
-                + detail
-            )
-        else:
-            out.error(
-                "Codex is running in this project - refusing to touch its data.\n"
-                + detail
-                + "\n  Close those sessions and try again."
-            )
+    targets = (old, new) if args.no_move else (old,)
+    check_live(targets, home, out, args.dry_run)
 
     # ------------------------------------------------------- gather work ----
     rollouts = []
@@ -831,6 +1001,7 @@ def main(argv=None):
     rows = db_rows_to_update(db, old)
     config_path = os.path.join(home, "config.toml")
     trust = config_entries(config_path, old)
+    config_plan(config_path, old, new)
 
     # ------------------------------------------------------------ report ----
     out.info("Planned actions:")
@@ -879,6 +1050,7 @@ def main(argv=None):
             return 0
 
     # ------------------------------------------------------------ backup ----
+    check_live(targets, home, out)
     backup_dir = None
     if not args.no_backup and (rollouts or rows or trust):
         backup_dir = write_backup(home, old, new, rollouts, db, config_path, trust)
@@ -922,4 +1094,7 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
+        Out().error(str(exc))
