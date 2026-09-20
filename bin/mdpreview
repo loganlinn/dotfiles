@@ -178,7 +178,9 @@ main() {
 
   # -V highlighting-css= drops pandoc's own token colors (code span.kw {...}),
   # which would out-rank the theme's pre .kw rules. The theme owns the colors.
-  if ! pandoc -s -f markdown -t html5 --mathjax -V highlighting-css= \
+  # Disable multiline tables: their dashed borders can consume whole sections
+  # separated by Markdown horizontal rules. Pipe tables remain supported.
+  if ! pandoc -s -f markdown-multiline_tables -t html5 --mathjax -V highlighting-css= \
     -M "pagetitle=$name" -c "$theme" -o "$out" -- "$in" 2>"$dir/pandoc.log"; then
     fail_with_log "Pandoc could not convert '$source'." "$dir/pandoc.log"
   fi
