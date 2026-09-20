@@ -85,6 +85,7 @@ in {
           "snap_splits.py"
           "ssh.conf"
           "stack_toggle.py"
+          "tab_activity.py"
           "tab_bar.py"
           "tab_flags.py"
           "user-var-hints.py"

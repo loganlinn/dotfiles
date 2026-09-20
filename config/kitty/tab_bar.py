@@ -7,12 +7,15 @@ import os
 from contextlib import suppress
 
 from kitty.boss import get_boss
-from kitty.fast_data_types import Screen, get_options, add_timer
+from kitty.fast_data_types import Screen, get_options, add_timer, monotonic
 from kitty.tab_bar import DrawData, ExtraData, TabBarData, as_rgb
 
 opts = get_options()
 
 REFRESH_TIME = 1
+ACTIVITY_VAR = "tab_activity"
+PULSE_SECONDS = 2
+INDEX_DIM_RATIO = 0.45
 
 # Dracula palette
 BG = int("282a36", 16)
@@ -79,6 +82,30 @@ def _mix_color(left: int, right: int, ratio: float) -> int:
         | (round(lg * inv + rg * ratio) << 8)
         | round(lb * inv + rb * ratio)
     )
+
+
+def _tab_activity(tab_id: int) -> str:
+    boss = get_boss()
+    tab = boss.tab_for_id(tab_id) if boss else None
+    state = "idle"
+    if tab is not None:
+        for window in tab:
+            explicit = window.user_vars.get(ACTIVITY_VAR)
+            if window.needs_attention or explicit == "attention":
+                return "attention"
+            if explicit == "working" or (
+                explicit != "idle" and window.has_running_program
+            ):
+                state = "working"
+    return state
+
+
+def _index_colors(state: str, fg: int, bg: int, pulse_bright: bool) -> tuple[int, int]:
+    if state == "attention":
+        return RED, DARK
+    if state == "working" and pulse_bright:
+        return fg, bg
+    return _mix_color(fg, bg, INDEX_DIM_RATIO), bg
 
 
 def _tab_flag_color(tab_id: int) -> int | None:
@@ -154,6 +181,7 @@ def _redraw_tab_bar(_):
 class DrawTabContext:
     def __init__(self):
         self.timer_id = None
+        self.pulse_bright = False
         self.prev_tab_was_active = False
 
     def set_context(
@@ -337,12 +365,21 @@ class DrawTabContext:
         self.screen.cursor.x = max(self.screen.cursor.x, self.screen.columns - right_status_length)
         return self.screen.cursor.x
 
+    def _draw_index(self, idx: str, activity: str, fg: int, bg: int) -> None:
+        fg, bg = _index_colors(activity, fg, bg, self.pulse_bright)
+        self.screen.cursor.fg = as_rgb(fg)
+        self.screen.cursor.bg = as_rgb(bg)
+        self.screen.draw(idx)
+
     def draw(self) -> int:
         if self.timer_id is None:
             self.timer_id = add_timer(_redraw_tab_bar, REFRESH_TIME, True)
 
+        activity = _tab_activity(self.tab.tab_id)
         flag_bg = _tab_flag_color(self.tab.tab_id)
         if self.tab_index == 1:
+            # Sample once per draw pass; never request a redraw for the pulse.
+            self.pulse_bright = bool(int(monotonic() / PULSE_SECONDS) % 2)
             self.prev_tab_was_active = False
             next_tab_bg = flag_bg if flag_bg is not None else PURPLE if self.tab.is_active else INACTIVE_TAB_BG
             self.before += self._draw_left_status(next_tab_bg)
@@ -358,10 +395,8 @@ class DrawTabContext:
             self.screen.cursor.bg = as_rgb(flag_bg or PURPLE)
             if self.tab_index != 1:
                 self.screen.draw(NF_PL_LEFT_HARD_DIVIDER)
-            self.screen.cursor.bg = as_rgb(flag_bg or PURPLE)
-            self.screen.cursor.fg = as_rgb(DARK)
             self.screen.cursor.bold = True
-            self.screen.draw(idx)
+            self._draw_index(idx, activity, DARK, flag_bg or PURPLE)
             self.screen.cursor.bold = False
             self.screen.cursor.bg = as_rgb(PURPLE)
             self.screen.cursor.fg = as_rgb(int("3a3450", 16))
@@ -383,9 +418,8 @@ class DrawTabContext:
             elif not prev_is_active and self.tab_index != 1:
                 self.screen.cursor.fg = as_rgb(CURRENT)
                 self.screen.draw(NF_PL_LEFT_SOFT_DIVIDER)
-            self.screen.cursor.fg = as_rgb(DARK if flag_bg is not None else FG)
             self.screen.cursor.bold = flag_bg is not None
-            self.screen.draw(idx)
+            self._draw_index(idx, activity, DARK if flag_bg is not None else FG, number_bg)
             self.screen.cursor.bold = False
             self.screen.cursor.bg = as_rgb(INACTIVE_TAB_BG)
             self.screen.cursor.fg = as_rgb(int("b0b4c8", 16))
