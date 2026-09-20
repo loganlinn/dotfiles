@@ -17,8 +17,10 @@ in {
       mr = "mise run";
       mx = "mise exec";
     };
-    activation.mise-dotfiles = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      mise dotfiles apply --yes
+    activation.mise-dotfiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      run ${lib.escapeShellArg miseExe} \
+        --cd ${lib.escapeShellArg config.my.flakeDirectory} \
+        bootstrap dotfiles apply --yes
     '';
   };
 
