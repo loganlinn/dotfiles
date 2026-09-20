@@ -1,0 +1,32 @@
+[bootstrap.services.mise-history]
+builtin = "history-watch"
+
+[bootstrap.services.sshd]
+scope = "user"
+description = "SSH and Mosh access to logamma on TCP 2222"
+enabled = true
+restart = "on-failure"
+# This runs without sudo: only the current user's authorized_keys are accepted.
+# Use a separate host key because the system host keys require root access.
+# The first connection will therefore have a different fingerprint from system sshd.
+# PAM requires root; this user service authenticates with public keys only.
+command = '''
+/bin/sh -eu -c '
+  umask 077
+  sshd_state_dir="$HOME/.local/state/sshd"
+  mkdir -p "$sshd_state_dir"
+  if [ ! -f "$sshd_state_dir/ssh_host_ed25519_key" ]; then
+    /usr/bin/ssh-keygen -q -t ed25519 -N "" -f "$sshd_state_dir/ssh_host_ed25519_key"
+  fi
+  exec /usr/sbin/sshd -D -e -f /dev/null -p 2222 \
+    -h "$sshd_state_dir/ssh_host_ed25519_key" \
+    -o "PidFile=$sshd_state_dir/sshd.pid" \
+    -o "AllowUsers=$(/usr/bin/id -un)" \
+    -o AuthorizedKeysFile=.ssh/authorized_keys \
+    -o UsePAM=no \
+    -o PasswordAuthentication=no \
+    -o KbdInteractiveAuthentication=no \
+    -o PermitRootLogin=no \
+    -o Subsystem="sftp internal-sftp"
+'
+'''

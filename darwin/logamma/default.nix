@@ -65,7 +65,13 @@ in
   };
   services.sketchybar.enable = false;
 
-  home-manager.users.${config.my.user.name} = import ../../home-manager/logamma.nix;
+  home-manager.users.${config.my.user.name} = { config, ... }: {
+    imports = [ ../../home-manager/logamma.nix ];
+
+    # Select the host overlay without changing mise's config discovery or MISE_ENV.
+    xdg.configFile."mise/config.local.toml".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.my.flakeDirectory}/config/mise/config.logamma.toml";
+  };
 
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
 
