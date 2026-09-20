@@ -14,7 +14,7 @@ opts = get_options()
 
 REFRESH_TIME = 1
 ACTIVITY_VAR = "tab_activity"
-PULSE_SECONDS = 2
+PULSE_SECONDS = 1
 INDEX_DIM_RATIO = 0.45
 
 # Dracula palette
@@ -31,6 +31,7 @@ ORANGE = int("ffb86c", 16)
 RED = int("ff5555", 16)
 DARK = int("21222c", 16)
 INACTIVE_TAB_BG = int("2a2a37", 16)
+SELECTED_ATTENTION_FG = int("700018", 16)
 
 NF_PL_LEFT_HARD_DIVIDER = "\ue0b0"
 NF_PL_LEFT_SOFT_DIVIDER = "\ue0b1"
@@ -93,17 +94,23 @@ def _tab_activity(tab_id: int) -> str:
             explicit = window.user_vars.get(ACTIVITY_VAR)
             if window.needs_attention or explicit == "attention":
                 return "attention"
-            if explicit == "working" or (
-                explicit != "idle" and window.has_running_program
-            ):
+            if explicit == "working":
                 state = "working"
+            elif explicit != "idle" and state == "idle" and window.last_cmd_output_start_time > 0:
+                # An open command can be waiting for input. Only explicit work pulses.
+                # Use shell lifecycle state, not cursor/prompt visibility heuristics.
+                state = "running"
     return state
 
 
-def _index_colors(state: str, fg: int, bg: int, pulse_bright: bool) -> tuple[int, int]:
+def _index_colors(state: str, fg: int, bg: int, pulse_bright: bool, is_active: bool) -> tuple[int, int]:
     if state == "attention":
+        # Deep red contrasts with the selected purple fill. Bookmark
+        # and unselected indices keep bright red on a dark background.
+        if is_active and bg == PURPLE:
+            return SELECTED_ATTENTION_FG, bg
         return RED, DARK
-    if state == "working" and pulse_bright:
+    if state == "running" or (state == "working" and pulse_bright):
         return fg, bg
     return _mix_color(fg, bg, INDEX_DIM_RATIO), bg
 
@@ -366,7 +373,7 @@ class DrawTabContext:
         return self.screen.cursor.x
 
     def _draw_index(self, idx: str, activity: str, fg: int, bg: int) -> None:
-        fg, bg = _index_colors(activity, fg, bg, self.pulse_bright)
+        fg, bg = _index_colors(activity, fg, bg, self.pulse_bright, self.tab.is_active)
         self.screen.cursor.fg = as_rgb(fg)
         self.screen.cursor.bg = as_rgb(bg)
         self.screen.draw(idx)

@@ -18,6 +18,19 @@ in {
           (lib.optional cfg.plugins.trouble.enable "trouble")
         ];
 
+        # Noice hides recording messages unless its mode status is displayed.
+        sections.lualine_x =
+          lib.optional cfg.plugins.noice.enable (mkComponent {
+              __raw = "require('noice').api.status.mode.get";
+            } {
+              cond.__raw = "require('noice').api.status.mode.has";
+            })
+          ++ [
+            "encoding"
+            "fileformat"
+            "filetype"
+          ];
+
         # options = { };
 
         # +-------------------------------------------------+

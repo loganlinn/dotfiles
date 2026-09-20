@@ -1,7 +1,8 @@
 {
-  coreutils,
   lib,
   pandoc,
+  python3,
+  ripgrep,
   stdenv,
   writeShellApplication,
   xdg-utils,
@@ -10,16 +11,18 @@ writeShellApplication {
   name = "mdpreview";
   runtimeInputs =
     [
-      coreutils
       pandoc
+      ripgrep
     ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [xdg-utils];
-  text = lib.removePrefix "#!/usr/bin/env bash\n" (builtins.readFile ../../../bin/mdpreview);
+  text = ''
+    exec ${lib.getExe python3} ${../../../lib/mdpreview}/cli.py "$@"
+  '';
 
   meta = {
-    description = "Render Markdown to HTML with pandoc and open it in a browser";
+    description = "Preview Markdown files and directories in a browser";
     license = lib.licenses.mit;
     mainProgram = "mdpreview";
-    platforms = lib.platforms.all;
+    platforms = lib.platforms.unix;
   };
 }

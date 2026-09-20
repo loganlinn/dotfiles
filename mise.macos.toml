@@ -9,7 +9,7 @@ run = [
 quiet = true
 
 [tasks.switch]
-description = "Switch the nix-darwin configuration (use --no-cachix to skip Cachix)"
+description = "Switch the nix-darwin configuration (use --cachix to enable Cachix)"
 raw_args = true
 quiet = true
 interactive = true
@@ -18,10 +18,12 @@ run = '''
 switch() {
   flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
   args=()
-  use_cachix=true
+  use_cachix=false
 
   for arg in "$@"; do
-    if [[ "$arg" == "--no-cachix" ]]; then
+    if [[ "$arg" == "--cachix" ]]; then
+      use_cachix=true
+    elif [[ "$arg" == "--no-cachix" ]]; then
       use_cachix=false
     else
       args+=("$arg")

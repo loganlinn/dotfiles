@@ -8,10 +8,11 @@ _.path = ["{{config_root}}/bin"]
 # _.file = [".mise/tasks/git/gpg/claude/config.env"]
 
 [dotfiles]
-"~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
-"~/.config/k9s" = { source = "config/k9s", mode = "symlink-each" }
+"~/.config/direnv/direnv.toml" = "config/direnv/direnv.toml"
 "~/.config/direnv/lib" = { source = "config/direnv/lib", mode = "symlink-each" }
 "~/.config/herdr/config" = "config/herdr/config.toml"
+"~/.config/k9s" = { source = "config/k9s", mode = "symlink-each" }
+"~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
 "~/.local/share/zsh/functions" = { source = "config/zsh/functions", mode = "symlink-each" }
 
 [tasks.clean]
