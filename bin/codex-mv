@@ -1,0 +1,925 @@
+#!/usr/bin/env python3
+"""codex-mv
+
+Rename a project directory *and* repoint its Codex sessions.
+
+Usage:
+  codex-mv [options] OLD_PATH NEW_PATH
+
+Options:
+  -n, --dry-run           Show what would be done, but don't make any changes.
+      --undo DIR          Reverse a previous run, using the backup directory
+                          it printed.
+  -y, --yes               Skip the confirmation prompt (assume "yes").
+      --codex-home PATH   Use PATH instead of $CODEX_HOME / ~/.codex.
+      --no-move           Repoint history only; the directory has already
+                          been moved (used by agent-mv).
+      --no-backup         Skip the pre-flight backup (not recommended).
+      --no-color          Disable ANSI colour output.
+  -h, --help              Display this help.
+
+Example:
+  codex-mv -y /home/alice/code/project /home/alice/code/project-renamed
+
+Exit status: 0 success, non-zero on error.
+
+Why this is not just "mv":
+  Codex does not store history in a per-project directory. Sessions live in a
+  date-bucketed tree (~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl) and each one
+  records the project it belongs to in a `cwd` field inside the file. That value
+  is mirrored into a sqlite cache (state_5.sqlite). `codex resume` filters by cwd,
+  so renaming a project directory orphans its sessions until both are updated.
+"""
+
+import argparse
+import json
+import os
+import re
+import shutil
+import sqlite3
+import sys
+import tempfile
+import time
+from datetime import datetime
+
+VERSION = "1.0.0"
+
+
+# ---------------------------------------------------------------- output ----
+class Out:
+    def __init__(self, color=True):
+        enabled = color and sys.stderr.isatty() and not os.environ.get("NO_COLOR")
+        self.RED = "\033[31m" if enabled else ""
+        self.GREEN = "\033[32m" if enabled else ""
+        self.YELLOW = "\033[33m" if enabled else ""
+        self.CYAN = "\033[36m" if enabled else ""
+        self.BOLD = "\033[1m" if enabled else ""
+        self.RESET = "\033[0m" if enabled else ""
+
+    def info(self, msg):
+        print(f"{self.CYAN}{msg}{self.RESET}", file=sys.stderr)
+
+    def warn(self, msg):
+        print(f"{self.YELLOW}! {msg}{self.RESET}", file=sys.stderr)
+
+    def success(self, msg):
+        print(f"{self.GREEN}+ {msg}{self.RESET}", file=sys.stderr)
+
+    def error(self, msg, code=1):
+        print(f"{self.RED}x {msg}{self.RESET}", file=sys.stderr)
+        sys.exit(code)
+
+
+# ------------------------------------------------------------- path utils ----
+def abs_path(p):
+    return os.path.abspath(os.path.expanduser(str(p).rstrip("/") or "/"))
+
+
+def is_under(path, base):
+    """True if `path` is `base` itself or lives inside it.
+
+    The separator check matters: /a/project-other must not count as being
+    under /a/project.
+    """
+    return path == base or path.startswith(base + os.sep)
+
+
+def remap(path, old, new):
+    """Rewrite `path` from under `old` to under `new`, preserving any subpath."""
+    if path == old:
+        return new
+    if is_under(path, old):
+        return new + path[len(old):]
+    return path
+
+
+# ----------------------------------------------------------- codex layout ----
+def default_codex_home():
+    env = os.environ.get("CODEX_HOME")
+    if env:
+        return abs_path(env)
+    return abs_path(os.path.join(os.path.expanduser("~"), ".codex"))
+
+
+def state_db(codex_home):
+    """Newest state_N.sqlite in the Codex home, or None.
+
+    The filename is versioned (state_5.sqlite today) and bumps between Codex
+    releases, so pick the highest N rather than hardcoding one.
+    """
+    best, best_n = None, -1
+    try:
+        entries = os.listdir(codex_home)
+    except OSError:
+        return None
+    for name in entries:
+        m = re.fullmatch(r"state_(\d+)\.sqlite", name)
+        if m and int(m.group(1)) > best_n:
+            best, best_n = os.path.join(codex_home, name), int(m.group(1))
+    return best
+
+
+def rollout_files(codex_home):
+    sessions = os.path.join(codex_home, "sessions")
+    if not os.path.isdir(sessions):
+        return
+    for root, _dirs, files in os.walk(sessions):
+        for name in sorted(files):
+            if name.endswith(".jsonl"):
+                yield os.path.join(root, name)
+
+
+def session_meta_cwd(path, max_scan=10):
+    """Read the session's recorded cwd.
+
+    session_meta is normally the first line; scan a few in case that changes.
+    """
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            for i, line in enumerate(fh):
+                if i >= max_scan:
+                    break
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except (ValueError, TypeError):
+                    continue
+                if obj.get("type") == "session_meta":
+                    payload = obj.get("payload") or {}
+                    cwd = payload.get("cwd")
+                    return cwd if isinstance(cwd, str) else None
+    except OSError:
+        return None
+    return None
+
+
+# --------------------------------------------------------- live processes ----
+def _proc_stat(pid):
+    """(ppid, tty_nr) from /proc/<pid>/stat, or (None, None).
+
+    The comm field can contain spaces and parentheses, so parse after the last
+    ')' rather than splitting the whole line.
+    """
+    try:
+        with open(f"/proc/{pid}/stat", encoding="utf-8", errors="replace") as fh:
+            data = fh.read()
+    except OSError:
+        return None, None
+    try:
+        rest = data[data.rindex(")") + 2:].split()
+        return int(rest[1]), int(rest[4])
+    except (ValueError, IndexError):
+        return None, None
+
+
+def _proc_rollout(pid):
+    """The rollout file this process holds open, if any.
+
+    A live Codex session keeps its rollout open for appending, which is what
+    ties a process back to a nameable conversation.
+    """
+    fd_dir = f"/proc/{pid}/fd"
+    try:
+        names = os.listdir(fd_dir)
+    except OSError:
+        return None
+    for name in names:
+        try:
+            target = os.readlink(os.path.join(fd_dir, name))
+        except OSError:
+            continue
+        if target.endswith(".jsonl") and f"{os.sep}sessions{os.sep}" in target:
+            return target
+    return None
+
+
+def _session_id_from_rollout(path):
+    m = re.search(r"rollout-.*?-([0-9a-fA-F-]{36})\.jsonl$", os.path.basename(path))
+    return m.group(1) if m else None
+
+
+def _thread_label(db, session_id):
+    """(label, last_activity) for a session, from the state DB."""
+    if not db or not session_id or not os.path.exists(db):
+        return None, None
+    try:
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=2)
+    except sqlite3.Error:
+        return None, None
+    try:
+        row = con.execute(
+            "SELECT COALESCE(NULLIF(name,''), NULLIF(title,''), NULLIF(preview,''), ''),"
+            " datetime(updated_at,'unixepoch','localtime')"
+            " FROM threads WHERE id = ?", (session_id,)).fetchone()
+    except sqlite3.Error:
+        return None, None
+    finally:
+        con.close()
+    if not row:
+        return None, None
+    label = " ".join((row[0] or "").split())
+    return (label or None), row[1]
+
+
+def live_codex_processes(target):
+    """Codex processes currently working inside `target`.
+
+    Codex writes to the state DB and appends to rollout files continuously, so
+    editing those while a session is live risks losing or corrupting writes.
+    """
+    found = []
+    if not os.path.isdir("/proc"):
+        return found
+    self_pid = os.getpid()
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit():
+            continue
+        pid = int(entry)
+        if pid == self_pid:
+            continue
+        try:
+            with open(f"/proc/{pid}/cmdline", "rb") as fh:
+                argv = fh.read().split(b"\0")
+        except OSError:
+            continue
+        args = [a.decode("utf-8", "replace") for a in argv if a]
+        if not args:
+            continue
+        # only consider actual codex processes, not shells that mention it
+        exe_name = os.path.basename(args[0])
+        if "codex" not in exe_name and not any(
+            os.path.basename(a) == "codex" for a in args[:2]
+        ):
+            continue
+        try:
+            cwd = os.path.realpath(f"/proc/{pid}/cwd")
+        except OSError:
+            cwd = None
+        rollout = _proc_rollout(pid)
+        # A session's working directory is not the only way it can belong to
+        # this project: a thread resumed from elsewhere still appends to *this
+        # project's* rollout, and that file is about to be rewritten. Treat the
+        # rollout it holds open as authoritative alongside the cwd.
+        rollout_cwd = session_meta_cwd(rollout) if rollout else None
+        bound = (
+            (cwd and is_under(cwd, target))
+            or (rollout_cwd and is_under(rollout_cwd, target))
+            or any(is_under(a, target) for a in args if a.startswith("/"))
+        )
+        if bound:
+            ppid, tty = _proc_stat(pid)
+            found.append({
+                "pid": pid, "ppid": ppid, "tty": tty, "cwd": cwd,
+                "cmd": " ".join(args),
+                "rollout": rollout,
+                "started": _start_time(pid),
+            })
+    return found
+
+
+def _boot_time():
+    """Epoch seconds at which the machine booted, from /proc/stat."""
+    try:
+        with open("/proc/stat", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                if line.startswith("btime "):
+                    return int(line.split()[1])
+    except (OSError, ValueError, IndexError):
+        pass
+    return None
+
+
+def _start_time(pid, boot=None):
+    """When the process actually started.
+
+    Derived from field 22 of /proc/<pid>/stat (start time in clock ticks since
+    boot). The mtime of /proc/<pid> is not the process start time - it moves,
+    and reports a time hours or days later.
+    """
+    boot = boot if boot is not None else _boot_time()
+    if boot is None:
+        return None
+    try:
+        with open(f"/proc/{pid}/stat", encoding="utf-8", errors="replace") as fh:
+            data = fh.read()
+        rest = data[data.rindex(")") + 2:].split()
+        ticks = int(rest[19])  # field 22 overall
+    except (OSError, ValueError, IndexError):
+        return None
+    hz = os.sysconf("SC_CLK_TCK") or 100
+    return datetime.fromtimestamp(boot + ticks / hz)
+
+
+def group_sessions(procs, db):
+    """Collapse Codex processes into the sessions a user would actually close.
+
+    One session shows up as several processes - a node wrapper, the platform
+    binary, and anything it spawned - so listing pids alone overstates how much
+    there is to close. Group each process under its topmost Codex ancestor, and
+    label the group with the terminal it is attached to and the conversation it
+    has open, which is what makes it findable.
+    """
+    by_pid = {p["pid"]: p for p in procs}
+
+    def root_of(proc):
+        seen = set()
+        cur = proc
+        while cur["ppid"] in by_pid and cur["pid"] not in seen:
+            seen.add(cur["pid"])
+            cur = by_pid[cur["ppid"]]
+        return cur["pid"]
+
+    groups = {}
+    for proc in procs:
+        groups.setdefault(root_of(proc), []).append(proc)
+
+    sessions = []
+    for root, members in sorted(groups.items()):
+        rollout = next((m["rollout"] for m in members if m["rollout"]), None)
+        sid = _session_id_from_rollout(rollout) if rollout else None
+        label, last = _thread_label(db, sid)
+        tty = next((m["tty"] for m in members if m["tty"]), None)
+        started = min((m["started"] for m in members if m["started"]), default=None)
+        sessions.append({
+            "root": root,
+            "pids": sorted(m["pid"] for m in members),
+            "tty": f"pts/{tty & 0xff}" if tty else None,
+            "cwd": next((m["cwd"] for m in members if m["cwd"]), None),
+            "session_id": sid,
+            "label": label,
+            "last_activity": last,
+            "started": started,
+        })
+    return sessions
+
+
+def describe_live(target, codex_home=None):
+    """Rich description of the Codex sessions live in `target`, or None.
+
+    Exposed for orchestrators such as agent-mv: they can import this file and
+    get the same session identification the tool prints for itself, rather
+    than reimplementing it and drifting. Returning None means nothing is live.
+    """
+    procs = live_codex_processes(target)
+    if not procs:
+        return None
+    home = codex_home or default_codex_home()
+    return format_sessions(group_sessions(procs, state_db(home)), procs)
+
+
+def format_sessions(sessions, procs):
+    """Human-findable description of the sessions blocking a run."""
+    lines = [
+        f"  {len(sessions)} session(s), {len(procs)} process(es):"
+    ]
+    for i, s in enumerate(sessions, 1):
+        where = s["tty"] or "no terminal"
+        started = s["started"].strftime("%Y-%m-%d %H:%M") if s["started"] else "?"
+        others = ", ".join(str(p) for p in s["pids"] if p != s["root"])
+        lines.append(f"    [{i}] {where}  started {started}  pid {s['root']}"
+                     + (f" (+{len(s['pids']) - 1} more: {others})"
+                        if others else ""))
+        if s["cwd"]:
+            lines.append(f"        cwd     : {s['cwd']}")
+        if s["session_id"]:
+            lines.append(f"        session : {s['session_id'][:8]}"
+                         + (f"  last active {s['last_activity']}"
+                            if s["last_activity"] else ""))
+        if s["label"]:
+            snippet = s["label"][:96] + ("..." if len(s["label"]) > 96 else "")
+            lines.append(f'        about   : "{snippet}"')
+        # Knowing a session blocks you is only half of it. A terminal
+        # multiplexed into one emulator process cannot be located from its
+        # pts alone, so hand over the two commands that actually resolve it.
+        if s["tty"]:
+            lines.append(f"        find it : echo '>>> close this one <<<'"
+                         f" > /dev/{s['tty']}")
+        lines.append(f"        close it: kill {s['root']}")
+    return "\n".join(lines)
+
+
+# ------------------------------------------------------------------ edits ----
+def _rewrite_meta(path, pick):
+    """Stream the rollout, letting `pick(cwd)` supply a replacement cwd.
+
+    `pick` returns the new value, or None to leave the record alone. Only
+    session_meta is considered; the transcript body is copied verbatim.
+
+    Verified: on resume Codex injects a fresh <environment_context> announcing
+    the current directory, so stale paths in the body are historical record and
+    do not affect where the resumed session operates. Rewriting them would
+    falsify the transcript for no benefit.
+    """
+    changed = False
+    directory = os.path.dirname(path)
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix=".codex-mv-", suffix=".jsonl")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    stripped = line.strip()
+                    if stripped:
+                        try:
+                            obj = json.loads(stripped)
+                        except (ValueError, TypeError):
+                            obj = None
+                        if obj is not None and obj.get("type") == "session_meta":
+                            payload = obj.get("payload") or {}
+                            cwd = payload.get("cwd")
+                            replacement = pick(cwd) if isinstance(cwd, str) else None
+                            if replacement is not None:
+                                payload["cwd"] = replacement
+                                obj["payload"] = payload
+                                out.write(json.dumps(obj) + "\n")
+                                changed = True
+                                continue
+                    out.write(line if line.endswith("\n") else line + "\n")
+        shutil.copystat(path, tmp)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+    return changed
+
+
+def rewrite_rollout(path, old, new):
+    """Repoint a session from under `old` to under `new`."""
+    return _rewrite_meta(
+        path, lambda cwd: remap(cwd, old, new) if is_under(cwd, old) else None)
+
+
+def set_rollout_cwd(path, value):
+    """Set a session's recorded cwd to exactly `value` (used by --undo)."""
+    return _rewrite_meta(path, lambda cwd: value if cwd != value else None)
+
+
+def db_rows_to_update(db, old, attempts=6, timeout=30.0):
+    """Rows whose cwd is at or under `old`.
+
+    Matching is done in Python rather than SQL LIKE so that %, _ and other
+    glob-significant characters in real paths cannot corrupt the match.
+    """
+    if not db or not os.path.exists(db):
+        return []
+    # The DB is shared with every other project, so this read contends with
+    # live sessions. A lock here must never be mistaken for "no rows": that
+    # would silently skip the database and report success having changed
+    # nothing. Retry, and let a genuine failure surface.
+    delay = 0.25
+    for attempt in range(attempts):
+        con = sqlite3.connect(db, timeout=timeout)
+        try:
+            con.row_factory = sqlite3.Row
+            rows = con.execute("SELECT id, cwd FROM threads").fetchall()
+            return [(r["id"], r["cwd"]) for r in rows
+                    if isinstance(r["cwd"], str) and is_under(r["cwd"], old)]
+        except sqlite3.OperationalError as exc:
+            if "no such table" in str(exc):
+                return []
+            if attempt == attempts - 1:
+                raise
+            time.sleep(delay)
+            delay = min(delay * 2, 4.0)
+        finally:
+            con.close()
+    return []
+
+
+def update_db(db, rows, old, new, attempts=6, timeout=30.0):
+    """Update thread rows, tolerating other Codex sessions writing concurrently.
+
+    The state DB is shared by every project, so a session in an unrelated
+    project is writing to it throughout this call. Two things matter:
+
+    BEGIN IMMEDIATE, not a deferred transaction. A deferred transaction takes a
+    read snapshot and only then asks for the write lock; SQLite cannot make that
+    upgrade wait, because data the reader already saw may have changed, so it
+    returns SQLITE_BUSY *immediately* and the busy timeout never applies.
+    Measured against three concurrent writers, a deferred transaction failed
+    identically at a 5s and a 30s timeout, while BEGIN IMMEDIATE succeeded.
+
+    Retries, because taking the lock up front can still lose to sustained write
+    load; a second attempt normally lands at once.
+    """
+    delay = 0.25
+    for attempt in range(attempts):
+        con = sqlite3.connect(db, timeout=timeout, isolation_level=None)
+        try:
+            con.execute("BEGIN IMMEDIATE")
+            for tid, cwd in rows:
+                con.execute(
+                    "UPDATE threads SET cwd = ? WHERE id = ?",
+                    (remap(cwd, old, new), tid),
+                )
+            con.execute("COMMIT")
+            return len(rows)
+        except sqlite3.OperationalError:
+            try:
+                con.execute("ROLLBACK")
+            except sqlite3.Error:
+                pass
+            if attempt == attempts - 1:
+                raise
+            time.sleep(delay)
+            delay = min(delay * 2, 4.0)
+        finally:
+            con.close()
+    return len(rows)
+
+
+CONFIG_HEADER = re.compile(r'^(\s*\[projects\.")(.*)("\]\s*)$')
+
+
+def config_entries(config_path, old):
+    """Project trust entries at or under `old`, as (lineno, path) pairs."""
+    hits = []
+    if not os.path.exists(config_path):
+        return hits
+    try:
+        with open(config_path, "r", encoding="utf-8", errors="replace") as fh:
+            for i, line in enumerate(fh):
+                m = CONFIG_HEADER.match(line.rstrip("\n"))
+                if m and is_under(m.group(2), old):
+                    hits.append((i, m.group(2)))
+    except OSError:
+        return []
+    return hits
+
+
+def update_config(config_path, old, new):
+    """Rewrite only the [projects."..."] header lines.
+
+    Deliberately a targeted line edit rather than a parse-and-reserialise:
+    config.toml holds unrelated user settings, comments and formatting that a
+    round-trip would discard.
+    """
+    with open(config_path, "r", encoding="utf-8", errors="replace") as fh:
+        lines = fh.readlines()
+    count = 0
+    for i, line in enumerate(lines):
+        m = CONFIG_HEADER.match(line.rstrip("\n"))
+        if m and is_under(m.group(2), old):
+            lines[i] = f"{m.group(1)}{remap(m.group(2), old, new)}{m.group(3)}\n"
+            count += 1
+    if count:
+        directory = os.path.dirname(config_path) or "."
+        fd, tmp = tempfile.mkstemp(dir=directory, prefix=".codex-mv-")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as out:
+                out.writelines(lines)
+            shutil.copystat(config_path, tmp)
+            os.replace(tmp, config_path)
+        except BaseException:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+            raise
+    return count
+
+
+# ----------------------------------------------------------------- backup ----
+MANIFEST_VERSION = 1
+
+
+def human_size(n):
+    for unit in ("B", "KB", "MB", "GB"):
+        if n < 1024 or unit == "GB":
+            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+        n /= 1024.0
+    return f"{n:.1f} GB"
+
+
+def _size(path):
+    try:
+        return os.path.getsize(path)
+    except OSError:
+        return 0
+
+
+def backup_preview(home, rollouts, db, config_path, trust):
+    """What the backup will cost, so --dry-run can show it before committing.
+
+    Reports the transcript bytes deliberately left in place as well: on a large
+    project that is the difference between a manifest and hundreds of MB.
+    """
+    copied, parts = 0, []
+    if db:
+        db_bytes = sum(_size(db + s) for s in ("", "-wal", "-shm"))
+        copied += db_bytes
+        parts.append(f"{os.path.basename(db)} {human_size(db_bytes)}")
+    if trust:
+        cfg = _size(config_path)
+        copied += cfg
+        parts.append(f"config.toml {human_size(cfg)}")
+    transcripts = sum(_size(path) for path, _cwd in rollouts)
+    # a manifest entry is roughly a path plus a cwd
+    manifest = sum(len(path) + len(cwd) + 40 for path, cwd in rollouts) + 200
+    return {
+        "dir": os.path.join(home, ".codex-mv-backups", "<timestamp>"),
+        "copied_desc": " + ".join(parts) if parts else "nothing else",
+        "total": copied + manifest,
+        "transcripts": transcripts,
+    }
+
+
+def write_backup(home, old, new, rollouts, db, config_path, trust):
+    """Record enough to reverse the edit, without copying whole transcripts.
+
+    Only one field on line 1 of each rollout changes, and rollouts are written
+    atomically (temp file + os.replace), so a copy of the full transcript
+    protects against nothing a manifest does not. On a real project that
+    difference is hundreds of megabytes per run: 110 sessions of chat history
+    is ~570 MB, while the manifest describing them is a few tens of kilobytes.
+
+    The state DB and config.toml are small and are copied in full.
+    """
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup_dir = os.path.join(home, ".codex-mv-backups", stamp)
+    os.makedirs(backup_dir, exist_ok=True)
+
+    manifest = {
+        "version": MANIFEST_VERSION,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "codex_home": home,
+        "old_path": old,
+        "new_path": new,
+        "state_db": os.path.basename(db) if db else None,
+        "config": "config.toml" if trust else None,
+        "rollouts": [{"path": path, "cwd": cwd} for path, cwd in rollouts],
+    }
+    with open(os.path.join(backup_dir, "manifest.json"), "w", encoding="utf-8") as fh:
+        json.dump(manifest, fh, indent=1)
+        fh.write("\n")
+
+    if db:
+        # SQLite's online backup, not a file copy: the DB is shared with every
+        # other project, so it is being written to while we read it. Copying
+        # the main file and its -wal separately races a checkpoint landing
+        # between the two. (A file copy was consistent in every trial here, but
+        # this is the method designed for a live database and costs nothing.)
+        dest = os.path.join(backup_dir, os.path.basename(db))
+        src_con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=30.0)
+        dst_con = sqlite3.connect(dest)
+        try:
+            with dst_con:
+                src_con.backup(dst_con)
+        finally:
+            src_con.close()
+            dst_con.close()
+    if trust:
+        shutil.copy2(config_path, os.path.join(backup_dir, "config.toml"))
+    return backup_dir
+
+
+def undo(backup_dir, out, assume_yes):
+    """Reverse a rename using the manifest written at the time.
+
+    Restores each rollout's recorded cwd rather than remapping paths, so a
+    session that was already somewhere unexpected goes back exactly where it
+    was. The state DB and config are remapped new -> old rather than being
+    overwritten from their copies, so unrelated work done since the rename is
+    not thrown away; the full copies remain in the backup for manual recovery.
+    """
+    manifest_path = os.path.join(backup_dir, "manifest.json")
+    if not os.path.exists(manifest_path):
+        out.error(f"No manifest.json in {backup_dir}")
+    with open(manifest_path, encoding="utf-8") as fh:
+        manifest = json.load(fh)
+    if manifest.get("version") != MANIFEST_VERSION:
+        out.error(f"Unsupported manifest version: {manifest.get('version')}")
+
+    home = manifest["codex_home"]
+    old = manifest["old_path"]
+    new = manifest["new_path"]
+    rollouts = manifest.get("rollouts", [])
+
+    out.info("Planned undo:")
+    out.info(f"  Project dir  : {new} -> {old}")
+    out.info(f"  Sessions     : {len(rollouts)} rollout file(s) to restore")
+
+    live = live_codex_processes(new)
+    if live:
+        out.error(
+            "Codex is running in this project - refusing to touch its data.\n"
+            + format_sessions(group_sessions(live, state_db(home)), live)
+        )
+
+    if not assume_yes:
+        try:
+            reply = input(f"{out.BOLD}Proceed? [y/N] {out.RESET}")
+        except EOFError:
+            reply = ""
+        if reply.strip().lower() not in ("y", "yes"):
+            out.info("Aborted.")
+            return 0
+
+    if os.path.isdir(new) and not os.path.exists(old):
+        shutil.move(new, old)
+        out.success("Project directory moved back.")
+    elif os.path.isdir(old):
+        out.warn(f"{old} already exists - leaving the directory alone.")
+
+    restored, missing = 0, 0
+    for entry in rollouts:
+        path, cwd = entry["path"], entry["cwd"]
+        if not os.path.exists(path):
+            missing += 1
+            continue
+        if set_rollout_cwd(path, cwd):
+            restored += 1
+    out.success(f"Restored {restored} session file(s).")
+    if missing:
+        out.warn(f"{missing} rollout(s) no longer exist and were skipped.")
+
+    db = state_db(home)
+    rows = db_rows_to_update(db, new)
+    if db and rows:
+        out.success(f"Reverted {update_db(db, rows, new, old)} thread row(s).")
+
+    config_path = os.path.join(home, "config.toml")
+    if config_entries(config_path, new):
+        out.success(f"Reverted {update_config(config_path, new, old)} trust entry(ies).")
+
+    out.success("Undo complete.")
+    return 0
+
+
+# ------------------------------------------------------------------- main ----
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="codex-mv",
+        description="Rename a project directory and repoint its Codex sessions.",
+        add_help=False,
+    )
+    parser.add_argument("paths", nargs="*")
+    parser.add_argument("-n", "--dry-run", action="store_true")
+    parser.add_argument("-y", "--yes", action="store_true")
+    parser.add_argument("--codex-home")
+    parser.add_argument("--undo")
+    parser.add_argument("--no-move", action="store_true")
+    parser.add_argument("--no-backup", action="store_true")
+    parser.add_argument("--no-color", action="store_true")
+    parser.add_argument("--version", action="store_true")
+    parser.add_argument("-h", "--help", action="store_true")
+    args = parser.parse_args(argv)
+
+    out = Out(color=not args.no_color)
+
+    if args.help:
+        print(__doc__.strip())
+        return 0
+    if args.version:
+        print(f"codex-mv {VERSION}")
+        return 0
+    if args.undo:
+        return undo(abs_path(args.undo), out, args.yes)
+    if len(args.paths) != 2:
+        print(__doc__.strip())
+        return 2
+
+    old = abs_path(args.paths[0])
+    new = abs_path(args.paths[1])
+    home = abs_path(args.codex_home) if args.codex_home else default_codex_home()
+
+    # ------------------------------------------------------- validation ----
+    if old == new:
+        out.error("OLD_PATH and NEW_PATH are identical.")
+    if is_under(new, old):
+        out.error("NEW_PATH cannot be inside OLD_PATH.")
+    if args.no_move:
+        # the caller has already moved the directory, so OLD is gone by now
+        if not os.path.isdir(new):
+            out.error(f"Destination directory not found: {new}")
+    else:
+        if not os.path.isdir(old):
+            out.error(f"Source directory not found: {old}")
+        if os.path.exists(new):
+            out.error(f"Destination already exists: {new}")
+    if not os.path.isdir(home):
+        out.warn(f"No Codex home at {home} - only the directory will be renamed.")
+
+    # ------------------------------------------------ live-session guard ----
+    # A dry run writes nothing, so a live session is only a warning there.
+    live = live_codex_processes(old)
+    if args.no_move:
+        seen = {p["pid"] for p in live}
+        live += [p for p in live_codex_processes(new) if p["pid"] not in seen]
+    if live:
+        detail = format_sessions(group_sessions(live, state_db(home)), live)
+        if args.dry_run:
+            out.warn(
+                "Codex is running in this project - a real run would refuse:\n"
+                + detail
+            )
+        else:
+            out.error(
+                "Codex is running in this project - refusing to touch its data.\n"
+                + detail
+                + "\n  Close those sessions and try again."
+            )
+
+    # ------------------------------------------------------- gather work ----
+    rollouts = []
+    for path in rollout_files(home):
+        cwd = session_meta_cwd(path)
+        if cwd and is_under(cwd, old):
+            rollouts.append((path, cwd))
+
+    db = state_db(home)
+    rows = db_rows_to_update(db, old)
+    config_path = os.path.join(home, "config.toml")
+    trust = config_entries(config_path, old)
+
+    # ------------------------------------------------------------ report ----
+    out.info("Planned actions:")
+    if args.no_move:
+        out.info(f"  Project dir  : {old} -> {new}  (already moved)")
+    else:
+        out.info(f"  Project dir  : {old} -> {new}")
+    if rollouts:
+        out.info(f"  Sessions     : {len(rollouts)} rollout file(s) to repoint")
+        for path, cwd in rollouts[:10]:
+            out.info(f"                 {os.path.basename(path)}  ({cwd})")
+        if len(rollouts) > 10:
+            out.info(f"                 ... and {len(rollouts) - 10} more")
+    else:
+        out.warn(f"No Codex sessions recorded for {old}")
+    if db:
+        out.info(f"  State DB     : {len(rows)} thread row(s) in {os.path.basename(db)}")
+    if trust:
+        out.info(f"  Trust entries: {len(trust)} in config.toml")
+    else:
+        out.warn(
+            "No project trust entry in config.toml - after the rename Codex "
+            "will treat this directory as untrusted (read-only sandbox) "
+            "until you approve it again."
+        )
+
+    if args.dry_run:
+        if not args.no_backup and (rollouts or rows or trust):
+            preview = backup_preview(home, rollouts, db, config_path, trust)
+            out.info(f"  Backup       : {preview['dir']}")
+            out.info(f"                 manifest.json ({len(rollouts)} entries)"
+                     f" + {preview['copied_desc']}"
+                     f"  ~= {human_size(preview['total'])}")
+            out.info("                 transcripts are not copied"
+                     f" ({human_size(preview['transcripts'])} left in place)")
+        out.info("Dry-run complete - no changes made.")
+        return 0
+
+    if not args.yes:
+        try:
+            reply = input(f"{out.BOLD}Proceed? [y/N] {out.RESET}")
+        except EOFError:
+            reply = ""
+        if reply.strip().lower() not in ("y", "yes"):
+            out.info("Aborted.")
+            return 0
+
+    # ------------------------------------------------------------ backup ----
+    backup_dir = None
+    if not args.no_backup and (rollouts or rows or trust):
+        backup_dir = write_backup(home, old, new, rollouts, db, config_path, trust)
+        out.success(f"Backup written to {backup_dir}")
+
+    # ---------------------------------------------------------- movement ----
+    # If the shell is sitting inside the directory being renamed, step out.
+    try:
+        here = os.path.realpath(os.getcwd())
+    except OSError:
+        here = None
+    if here and is_under(here, old):
+        os.chdir("/")
+
+    if args.no_move:
+        out.info("Directory move skipped (--no-move).")
+    else:
+        try:
+            shutil.move(old, new)
+        except OSError as exc:
+            out.error(f"Could not rename project directory: {exc}")
+        out.success("Project directory renamed.")
+
+    # ------------------------------------------------------------- edits ----
+    try:
+        changed = sum(1 for path, _cwd in rollouts if rewrite_rollout(path, old, new))
+        if changed:
+            out.success(f"Repointed {changed} session file(s).")
+        if db and rows:
+            out.success(f"Updated {update_db(db, rows, old, new)} thread row(s).")
+        if trust:
+            out.success(f"Migrated {update_config(config_path, old, new)} trust entry(ies).")
+    except Exception as exc:  # noqa: BLE001 - report and point at the backup
+        msg = f"Failed while updating Codex metadata: {exc}"
+        if backup_dir:
+            msg += f"\n  Originals are in {backup_dir}"
+        out.error(msg)
+
+    out.success("Done.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
