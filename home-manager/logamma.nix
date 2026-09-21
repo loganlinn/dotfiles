@@ -19,14 +19,14 @@
     ../nix/home/docker.nix
     ../nix/home/doom
     ../nix/home/ghostty.nix
-    ../nix/home/just
+    ../nix/home/java
     ../nix/home/neovide.nix
     ../nix/home/nixvim
     ../nix/home/pretty.nix
-    ../nix/home/television.nix
+    # ../nix/home/television.nix
     ../nix/home/terraform
     ../nix/home/tmux.nix
-    ../nix/home/wezterm
+    # ../nix/home/wezterm
     ../nix/home/yt-dlp.nix
   ];
 
@@ -41,7 +41,7 @@
     actionlint
     dive
     dry
-    flyctl
+    # flyctl
     google-cloud-sdk
     ipcalc
     jc

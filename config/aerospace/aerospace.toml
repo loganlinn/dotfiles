@@ -4,7 +4,7 @@ enable-normalization-flatten-containers = false
 
 enable-normalization-opposite-orientation-for-nested-containers = false
 
-accordion-padding = 40
+accordion-padding = 25
 
 default-root-container-layout = "accordion"
 
