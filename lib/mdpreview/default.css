@@ -315,6 +315,31 @@ blockquote {
 
 blockquote > :last-child { margin-bottom: 0; }
 
+/* Pandoc's GFM reader emits a div and title for each GitHub alert. */
+div:is(.note, .tip, .important, .warning, .caution) {
+  --alert-color: var(--link);
+  border-left: 3px solid var(--alert-color);
+  margin: 0 0 1.25em;
+  padding: 0.5em 1.1em;
+}
+
+div.tip { --alert-color: var(--add); }
+div.important { --alert-color: var(--accent); }
+div.warning { --alert-color: var(--syn-type); }
+div.caution { --alert-color: var(--del); }
+
+div:is(.note, .tip, .important, .warning, .caution) > .title {
+  color: var(--alert-color);
+  font-weight: 650;
+}
+
+div:is(.note, .tip, .important, .warning, .caution) > :last-child {
+  margin-bottom: 0;
+}
+
+.mermaid-diagram { margin: 0 0 1.25em; }
+.mermaid-error { color: var(--del); }
+
 /* --------------------------------------------------------- details/footnotes */
 
 details {

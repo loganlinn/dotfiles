@@ -20,7 +20,7 @@ Use a dedicated output directory. The command replaces generated files on each r
 `--output` does not change browser behavior. `--open` and `--no-open` control it, and the last flag wins.
 Successful invocations print the absolute HTML path as plain text.
 Directory previews report scanning, file counts, rendering progress, and completion on stderr.
-Progress appears immediately, including when stderr is redirected to a log.
+Progress appears immediately, including in redirected logs.
 The stdout stream contains only the HTML path.
 
 Without a path, piped or redirected input takes precedence over PWD.
@@ -46,6 +46,38 @@ Themes retain the existing behavior:
 - With no theme, each HTML page includes the built-in dark CSS.
 
 Custom CSS remains an external file, so relative resources in that CSS retain their original base directory.
+
+## Markdown support
+
+Documents use the Pandoc `gfm` reader for GitHub Flavored Markdown.
+This supports tables, task lists, strikethrough, automatic links, and GitHub-style heading anchors.
+The reader also supports GitHub alerts, footnotes, emoji shortcodes, and math.
+The built-in theme gives each alert type a distinct color.
+
+Fenced code blocks with the `mermaid` language render as diagrams in the browser.
+This works with file, stdin, and directory previews, including custom themes.
+The renderer selects a light or dark diagram theme from the page background.
+This includes CSS color spaces such as `oklch()` and transparent backgrounds.
+
+Local Mermaid `img:` paths resolve from the Markdown file's directory, or PWD for stdin.
+These images are embedded in the HTML so the browser can display them from the cache.
+
+Missing images and invalid diagrams retain their source and show an error beside it.
+Other diagrams on the page still render.
+
+Mermaid uses version 12.0.0 from jsDelivr. Math uses the MathJax CDN selected by Pandoc.
+These features need JavaScript and network access unless the browser has cached the required libraries.
+Documents without Mermaid blocks do not load Mermaid.
+
+GitHub adds services beyond the GFM syntax specification.
+This preview does not reproduce repository-aware issue links, mentions, GitHub's HTML sanitization, or its exact visual design.
+GeoJSON, TopoJSON, and STL viewers are not included.
+GitHub can use a different Mermaid version, so support for new diagram syntax can differ.
+
+References: [GFM specification](https://github.github.com/gfm/),
+[GitHub diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams),
+[Pandoc Markdown variants](https://pandoc.org/MANUAL.html#markdown-variants),
+and [Mermaid usage](https://mermaid.js.org/config/usage.html).
 
 ## Cache and rebuilds
 

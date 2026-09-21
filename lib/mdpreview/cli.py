@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
+import base64
 import fcntl
 import hashlib
 import html
 import json
+import mimetypes
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -24,6 +27,8 @@ HELP = (
     + """
 
 Convert Markdown to HTML with Pandoc and open it in a browser.
+Use GitHub Flavored Markdown, including Mermaid diagrams.
+Mermaid and math rendering require browser access to their CDN libraries.
 
 Arguments:
   PATH                A Markdown file or a directory to browse recursively.
@@ -237,6 +242,63 @@ def relative_url(target: Path, page: Path) -> str:
     return quote(os.path.relpath(target, page.parent), safe="/")
 
 
+def embed_mermaid_images(definition: str, source_dir: Path) -> str:
+    """Embed local image-shape assets without rewriting quoted labels or comments."""
+    double_quoted = r'"(?:\\.|[^"\\])*"'
+    quoted = double_quoted + r"|'(?:''|[^'])*'"
+    # Mermaid's shape lexer protects double-quoted text inside @{...}.
+    tokens = re.compile(
+        rf"%%[^\n]*|{quoted}|(?P<shape>@\{{(?:{double_quoted}|[^\"{{}}])*\}})",
+        re.DOTALL,
+    )
+    fields = re.compile(
+        rf"""(?P<key>(?<![\w.-])(?:img|"img"|'img')\s*:\s*)"""
+        rf"(?P<value>{quoted}|[^,{{}}\n]+)|{quoted}",
+        re.DOTALL,
+    )
+
+    def embed_field(match: re.Match) -> str:
+        if match.group("key") is None:
+            return match.group()
+        value = match.group("value").strip()
+        if value.startswith('"'):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                return match.group()
+        elif value.startswith("'"):
+            value = value[1:-1].replace("''", "'")
+        url = urlsplit(value)
+        if (
+            url.scheme not in ("", "file")
+            or (url.netloc and not (url.scheme == "file" and url.netloc == "localhost"))
+            or not url.path
+        ):
+            return match.group()
+        path = (source_dir / unquote(url.path)).resolve()
+        mime = mimetypes.guess_type(path.name)[0]
+        if mime is None or not mime.startswith("image/"):
+            raise ValueError(
+                f"Unknown image format for local Mermaid image: '{value}'."
+            )
+        try:
+            data = base64.b64encode(path.read_bytes()).decode("ascii")
+        except OSError as error:
+            raise ValueError(
+                f"Cannot read local Mermaid image '{value}': {error.strerror}."
+            ) from error
+        uri = f"data:{mime};base64,{data}"
+        if url.fragment:
+            uri += "#" + url.fragment
+        return match.group("key") + json.dumps(uri)
+
+    def embed_shape(match: re.Match) -> str:
+        shape = match.group("shape")
+        return fields.sub(embed_field, shape) if shape else match.group()
+
+    return tokens.sub(embed_shape, definition)
+
+
 class PreviewLinks(HTMLParser):
     """Keep local links and images valid after moving HTML away from its source."""
 
@@ -246,6 +308,9 @@ class PreviewLinks(HTMLParser):
         self.page = page
         self.pages = pages
         self.parts: list[str] = []
+        self.has_mermaid = False
+        self.mermaid_start: int | None = None
+        self.mermaid_text: list[str] = []
 
     def rewrite_url(self, value: str, is_link: bool) -> str:
         url = urlsplit(value)
@@ -263,8 +328,19 @@ class PreviewLinks(HTMLParser):
     def start_tag(
         self, tag: str, attrs: list[tuple[str, str | None]], ending: str
     ) -> None:
+        if tag == "pre" and "mermaid" in (dict(attrs).get("class") or "").split():
+            self.has_mermaid = True
+            self.mermaid_start = len(self.parts)
+            self.mermaid_text = []
         rewritten = []
         changed = False
+        if (
+            tag == "input"
+            and dict(attrs).get("type") == "checkbox"
+            and "disabled" not in dict(attrs)
+        ):
+            rewritten.append(("disabled", None))
+            changed = True
         for name, value in attrs:
             new_value = value
             if value and name in ("href", "src", "poster"):
@@ -289,15 +365,38 @@ class PreviewLinks(HTMLParser):
         self.start_tag(tag, attrs, " />")
 
     def handle_endtag(self, tag):
+        if tag == "pre" and self.mermaid_start is not None:
+            source = html.unescape("".join(self.mermaid_text))
+            try:
+                embedded = embed_mermaid_images(source, self.source_dir)
+                attribute = (
+                    f' data-mdpreview-source="{html.escape(embedded, quote=True)}"'
+                    if embedded != source
+                    else ""
+                )
+            except ValueError as error:
+                attribute = (
+                    f' data-mdpreview-error="{html.escape(str(error), quote=True)}"'
+                )
+            opening = self.parts[self.mermaid_start]
+            self.parts[self.mermaid_start] = opening[:-1] + attribute + ">"
+            self.mermaid_start = None
+            self.mermaid_text = []
         self.parts.append(f"</{tag}>")
 
     def handle_data(self, data):
+        if self.mermaid_start is not None:
+            self.mermaid_text.append(data)
         self.parts.append(data)
 
     def handle_entityref(self, name):
+        if self.mermaid_start is not None:
+            self.mermaid_text.append(f"&{name};")
         self.parts.append(f"&{name};")
 
     def handle_charref(self, name):
+        if self.mermaid_start is not None:
+            self.mermaid_text.append(f"&#{name};")
         self.parts.append(f"&#{name};")
 
     def handle_comment(self, data):
@@ -341,10 +440,13 @@ def render_file(
         "pandoc",
         "-s",
         "-f",
-        "markdown-multiline_tables",
+        "gfm",
         "-t",
         "html5",
         "--mathjax",
+        # Inline CSS does not disable Pandoc's light document theme like --css does.
+        "-M",
+        "document-css=false",
         "-V",
         "highlighting-css=",
         "-M",
@@ -367,6 +469,12 @@ def render_file(
     if index is not None:
         nav = f'<nav aria-label="Documents"><a href="{relative_url(index, destination)}">All documents</a></nav>'
         content = content.replace("<body>", f"<body>\n{nav}", 1)
+    if parser.has_mermaid:
+        script = Path(__file__).with_name("mermaid.js").read_text()
+        before, closing, after = content.rpartition("</body>")
+        content = (
+            before + f'<script type="module">\n{script}</script>\n' + closing + after
+        )
     staged.write_text(content)
 
 
@@ -482,8 +590,11 @@ def build_preview(
                 and stale.is_relative_to(site / "pages")
                 and stale.suffix == ".html"
             ):
-                if stale.exists():
+                try:
                     stale.unlink()
+                except FileNotFoundError:
+                    pass
+                else:
                     removed += 1
         if removed:
             noun = "page" if removed == 1 else "pages"
