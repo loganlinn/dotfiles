@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (($# == 0)); then
+  echo "Usage: ${0##*/} <parameter-name|pattern> [...] (quote '*' to prevent shell expansion)" >&2
+  exit 2
+fi
+
+values=('{}')
+for argument in "$@"; do
+  names=$argument
+  if [[ "$argument" == *\** ]]; then
+    filters=$(jq -cn --arg prefix "${argument%%\**}" '
+      if $prefix == "" then []
+      else [{Key: "Name", Option: "BeginsWith", Values: [$prefix]}]
+      end')
+    # AWS CLI automatically retrieves all pages of matching names.
+    names=$(aws ssm describe-parameters \
+      --parameter-filters "$filters" \
+      --output json \
+      --no-cli-pager | jq -r '.Parameters[].Name')
+  fi
+
+  while IFS= read -r name; do
+    [[ -n "$name" ]] || continue
+    # shellcheck disable=SC2053 # The argument is intentionally a glob pattern.
+    [[ "$name" == $argument ]] || continue
+    value=$(aws ssm get-parameter \
+      --name "$name" \
+      --with-decryption \
+      --output json \
+      --no-cli-pager |
+      jq --arg name "$name" '{($name): (.Parameter.Value | . as $raw | try fromjson catch $raw)}')
+    values+=("$value")
+  done <<< "$names"
+done
+
+printf '%s\n' "${values[@]}" | jq -s 'add'

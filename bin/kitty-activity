@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Set Kitty window activity, or manage agent lifecycle hooks.
+set -euo pipefail
+
+# Temporarily disabled: skip agent callback Python/remote-control startup.
+# Keep hook installation management and read-only status available.
+if [[ ${1:-} == hooks && ( ${2:-} == run || ${2:-} == emit ) ]]; then
+  exit 0
+fi
+
+usage() {
+  cat <<'EOF'
+Usage:
+  kitty-activity set [KITTY OPTIONS] working|attention|idle
+  kitty-activity clear [KITTY OPTIONS]
+  kitty-activity status [KITTY OPTIONS]
+  kitty-activity hooks install|uninstall {claude|codex|pi|all} [OPTIONS]
+  kitty-activity hooks status [claude|codex|pi|all] [OPTIONS]
+
+States:
+  working     Native indeterminate progress with a steady bright index.
+  attention   Native paused progress until resolved or command completion.
+  idle        Dim the index while a foreground program remains open.
+  clear       Remove the override and use automatic shell detection.
+
+Kitty options (accepted by set, clear, and status):
+  --match, -m MATCH      Native window expression, including 'all'.
+  --to ADDRESS          Kitty instance; defaults to KITTY_LISTEN_ON, then the TTY.
+  --password PASSWORD   Remote-control authentication.
+  --password-file FILE  Password file, '-' for stdin, or fd:NUMBER.
+  --password-env NAME   Environment variable containing the password.
+  --use-password MODE   if-available, always, or never.
+
+Kitty handles matching, connection defaults, authentication, and errors.
+Without --match, Kitty targets the originating window (its native default).
+Legacy bare states and --window-id ID remain supported.
+
+Examples:
+  kitty-activity set attention --match "id:$KITTY_WINDOW_ID"
+  kitty-activity clear --to unix:/tmp/my-kitty --match all
+  kitty-activity status --match all
+  kitty-activity hooks install all --dry-run
+  kitty-activity hooks install claude
+  kitty-activity hooks uninstall codex --preview
+
+See 'kitty-activity hooks --help', 'kitten @ kitten --help',
+and ~/.dotfiles/config/kitty/activity.md for setup and limitations.
+EOF
+}
+
+fail() { printf 'kitty-activity: %s\n' "$*" >&2; exit 2; }
+
+repo_root() {
+  # Resolve symlinks so this also works from ~/.local/bin.
+  source_path=${BASH_SOURCE[0]}
+  while [[ -L $source_path ]]; do
+    source_dir=$(cd -P -- "$(dirname -- "$source_path")" && pwd)
+    source_path=$(readlink -- "$source_path")
+    [[ $source_path == /* ]] || source_path=$source_dir/$source_path
+  done
+  cd -P -- "$(dirname -- "$source_path")/.." && pwd
+}
+
+if [[ ${1:-} == hooks ]]; then
+  shift
+  root=$(repo_root)
+  exec uv run --offline --no-project --no-config "$root/lib/kitty_activity/hooks.py" "$@"
+fi
+
+activity=
+command_seen=
+status_remote=(@ kitten)
+match=
+while (($#)); do
+  case $1 in
+    -h|--help) usage; exit 0 ;;
+    set|status)
+      [[ -z $command_seen && -z $activity ]] || fail "unexpected $1 command"
+      command_seen=$1; shift ;;
+    --match|-m)
+      (($# >= 2)) || fail "missing value for $1"
+      match=$2; shift 2 ;;
+    --match=*|-m=*)
+      match=${1#*=}; shift ;;
+    --to|--password|--password-file|--password-env|--use-password)
+      (($# >= 2)) || fail "missing value for $1"
+      status_remote+=("$1" "$2"); shift 2 ;;
+    --to=*|--password=*|--password-file=*|--password-env=*|--use-password=*)
+      status_remote+=("$1"); shift ;;
+    --window-id|--window-id=*)
+      if [[ $1 == --window-id ]]; then
+        (($# >= 2)) || fail 'missing value for --window-id'
+        window_id=$2; shift 2
+      else
+        window_id=${1#*=}; shift
+      fi
+      [[ $window_id =~ ^[1-9][0-9]*$ ]] || fail '--window-id requires a positive integer'
+      match=id:$window_id ;;
+    working|attention|idle|clear)
+      [[ -z $activity ]] || fail 'specify exactly one state'
+      activity=$1; shift ;;
+    *) fail "unknown argument: $1 (see --help)" ;;
+  esac
+done
+if [[ $command_seen == status ]]; then
+  [[ -z $activity ]] || fail 'status does not accept a state'
+  root=$(repo_root)
+  exec kitten "${status_remote[@]}" "$root/lib/kitty_activity/status.py" "$match" "${KITTY_WINDOW_ID:-}"
+fi
+[[ -n $activity ]] || fail 'specify a state or clear (see --help)'
+[[ $command_seen != set || $activity != clear ]] || fail 'use kitty-activity clear (without set)'
+root=$(repo_root)
+# Do not read stdin: native --password-file - must receive it intact.
+exec kitten "${status_remote[@]}" "$root/lib/kitty_activity/bridge.py" "$activity" "$match" "${KITTY_WINDOW_ID:-}"
