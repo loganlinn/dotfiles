@@ -60,5 +60,18 @@ in {
       ripgrep
       (writeShellScriptBin "magit" (readFile ../../../bin/magit))
     ];
+    launchd.user.agents.emacs.serviceConfig = {
+      ProgramArguments = [
+        "/opt/homebrew/bin/emacs"
+        "--init-directory"
+        "/Users/logan/.config/emacs"
+        "--fg-daemon"
+      ];
+      WorkingDirectory = "/Users/logan";
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/Users/logan/Library/Logs/emacs-daemon.log";
+      StandardErrorPath = "/Users/logan/Library/Logs/emacs-daemon.log";
+    };
   };
 }

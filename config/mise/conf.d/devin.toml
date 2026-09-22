@@ -26,7 +26,6 @@ open "{{ vars.DEVIN_APP_URL }}/review/$(jq -r .headRepository.nameWithOwner <<<"
 run = { task = "devin:api", args = ["GET", "/v3/self"] }
 
 [tasks."devin:review:status"]
-tools = { gh = "latest" }
 dir = "{{cwd}}"
 quiet = true
 usage = '''
@@ -39,7 +38,6 @@ mise run devin:api GET /v3/enterprise/pr-reviews "pr_url==$pr_url"
 '''
 
 [tasks."devin:review:start"]
-tools = { gh = "latest" }
 description = "Start a Devin review for a pull request"
 dir = "{{cwd}}"
 usage = '''
@@ -57,7 +55,6 @@ curl -fsS --request POST \
 '''
 
 [tasks."devin:api"]
-tools = { xh = "latest" }
 dir = "{{cwd}}"
 quiet = true
 usage = '''
