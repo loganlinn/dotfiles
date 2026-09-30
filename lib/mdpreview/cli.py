@@ -16,12 +16,17 @@ import stat
 import subprocess
 import sys
 import tempfile
+from collections import deque
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import quote, unquote, urlsplit
+from typing import Callable
+from urllib.error import URLError
+from urllib.parse import quote, unquote, urldefrag, urljoin, urlsplit
+from urllib.request import Request, urlopen
 
-USAGE = "Usage: mdpreview [OPTIONS] [--] [PATH|-]"
+USAGE = "Usage: mdpreview [OPTIONS] [--] [PATH|URI|-]"
 HELP = (
     USAGE
     + """
@@ -32,6 +37,7 @@ Mermaid and math rendering require browser access to their CDN libraries.
 
 Arguments:
   PATH                A Markdown file or a directory to browse recursively.
+  URI                 A local file:// URI or an HTTP(S) Markdown URL.
   -                   Read Markdown from standard input, including a terminal.
                       With no PATH, use piped/redirected input, otherwise PWD.
 
@@ -40,6 +46,7 @@ Options:
   -o, --output PATH   Write to this HTML file, or this directory for a site.
   --open             Open the preview in a browser (default).
   --no-open          Generate the preview without opening a browser.
+  --[no-]render-links Render linked local Markdown files (default: enabled).
   -a, --all          Include hidden and ignored files in directory previews.
   --theme THEME      Use a CSS file or a named theme. Also accepts --theme=THEME.
   --                 Treat remaining arguments as paths.
@@ -50,6 +57,9 @@ The .git directory, cache, output directory, and symlinks are always skipped.
 Directory previews report scan and render progress on standard error.
 The command prints the absolute HTML path after a successful invocation.
 --output does not change whether the browser opens. The last open flag wins.
+Local Markdown links render transitively, with at most five subprocesses.
+Each resolved file renders once per invocation, including cyclic links.
+The last render-links flag wins. Missing targets retain their original links.
 
 Themes:
   Names use ${XDG_CONFIG_HOME:-$HOME/.config}/mdpreview/themes.
@@ -71,6 +81,8 @@ Examples:
   mdpreview --no-open --output ./preview.html README.md
   mdpreview --no-open --output ./preview-site ./docs
   mdpreview --theme ocean README.md
+  mdpreview file:///path/to/README.md
+  mdpreview https://example.com/docs/README.md
   cat README.md | mdpreview
   mdpreview - < README.md
   mdpreview -- --notes.md
@@ -97,6 +109,7 @@ class Options:
     theme: str = ""
     open_browser: bool = True
     all_files: bool = False
+    render_links: bool = True
 
 
 def parse_args(args: list[str]) -> Options | None:
@@ -114,6 +127,9 @@ def parse_args(args: list[str]) -> Options | None:
                 continue
             if arg in ("--open", "--no-open"):
                 options.open_browser = arg == "--open"
+                continue
+            if arg in ("--render-links", "--no-render-links"):
+                options.render_links = arg == "--render-links"
                 continue
             if arg in ("-a", "--all"):
                 options.all_files = True
@@ -242,7 +258,9 @@ def relative_url(target: Path, page: Path) -> str:
     return quote(os.path.relpath(target, page.parent), safe="/")
 
 
-def embed_mermaid_images(definition: str, source_dir: Path) -> str:
+def embed_mermaid_images(
+    definition: str, source_dir: Path, source_url: str | None = None
+) -> str:
     """Embed local image-shape assets without rewriting quoted labels or comments."""
     double_quoted = r'"(?:\\.|[^"\\])*"'
     quoted = double_quoted + r"|'(?:''|[^'])*'"
@@ -268,6 +286,8 @@ def embed_mermaid_images(definition: str, source_dir: Path) -> str:
                 return match.group()
         elif value.startswith("'"):
             value = value[1:-1].replace("''", "'")
+        if source_url:
+            return match.group("key") + json.dumps(urljoin(source_url, value))
         url = urlsplit(value)
         if (
             url.scheme not in ("", "file")
@@ -302,22 +322,39 @@ def embed_mermaid_images(definition: str, source_dir: Path) -> str:
 class PreviewLinks(HTMLParser):
     """Keep local links and images valid after moving HTML away from its source."""
 
-    def __init__(self, source_dir: Path, page: Path, pages: dict[Path, Path]):
+    def __init__(
+        self,
+        source_dir: Path,
+        page: Path,
+        resolve_link: Callable[[Path], Path | None],
+        source_url: str | None = None,
+    ):
         super().__init__(convert_charrefs=False)
         self.source_dir = source_dir
         self.page = page
-        self.pages = pages
+        self.resolve_link = resolve_link
+        self.source_url = source_url
         self.parts: list[str] = []
         self.has_mermaid = False
         self.mermaid_start: int | None = None
         self.mermaid_text: list[str] = []
 
     def rewrite_url(self, value: str, is_link: bool) -> str:
+        if self.source_url:
+            return value if value.startswith("#") else urljoin(self.source_url, value)
         url = urlsplit(value)
-        if url.scheme or url.netloc or not url.path:
+        if (
+            url.scheme not in ("", "file")
+            or (url.netloc and not (url.scheme == "file" and url.netloc == "localhost"))
+            or not url.path
+        ):
             return value
-        source = (self.source_dir / unquote(url.path)).resolve()
-        target = self.pages.get(source) if is_link else None
+        try:
+            source = (self.source_dir / unquote(url.path)).resolve()
+        except (OSError, RuntimeError):
+            # Broken symlink loops cannot be followed or scheduled for rendering.
+            return value
+        target = self.resolve_link(source) if is_link else None
         path = relative_url(target, self.page) if target else source.as_uri()
         return (
             path
@@ -368,7 +405,9 @@ class PreviewLinks(HTMLParser):
         if tag == "pre" and self.mermaid_start is not None:
             source = html.unescape("".join(self.mermaid_text))
             try:
-                embedded = embed_mermaid_images(source, self.source_dir)
+                embedded = embed_mermaid_images(
+                    source, self.source_dir, self.source_url
+                )
                 attribute = (
                     f' data-mdpreview-source="{html.escape(embedded, quote=True)}"'
                     if embedded != source
@@ -424,18 +463,14 @@ def theme_header(theme: Path | None) -> str:
     return f"<style>\n{css}</style>"
 
 
-def render_file(
+def convert_file(
     source: Path,
-    destination: Path,
     staged: Path,
-    pages: dict[Path, Path],
     header: Path,
     theme: Path | None,
     log: Path,
-    source_dir: Path,
-    index: Path | None = None,
 ) -> None:
-    """Render one file without replacing its last successful preview."""
+    """Convert exactly one file; workers never discover or spawn other workers."""
     command = [
         "pandoc",
         "-s",
@@ -462,7 +497,39 @@ def render_file(
     if result.returncode:
         report_log(f"Pandoc could not convert '{source}'.", log)
     sys.stderr.write(log.read_text(errors="replace"))
-    parser = PreviewLinks(source_dir, destination, pages)
+
+
+def convert_subprocess(
+    source: Path, staged: Path, header: Path, theme: Path | None, log: Path
+) -> None:
+    """Run this same mdpreview implementation, including in the Nix package."""
+    job = {
+        "source": str(source),
+        "staged": str(staged),
+        "header": str(header),
+        "theme": str(theme) if theme else None,
+        "log": str(log),
+    }
+    result = subprocess.run(
+        [sys.executable, str(Path(__file__).resolve()), "--_convert-file"],
+        input=json.dumps(job),
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode:
+        raise PreviewError(result.stderr.removeprefix("mdpreview: ").strip())
+    sys.stderr.write(result.stderr)
+
+
+def finish_render(
+    staged: Path,
+    destination: Path,
+    source_dir: Path,
+    resolve_link: Callable[[Path], Path | None],
+    index: Path | None = None,
+    source_url: str | None = None,
+) -> None:
+    parser = PreviewLinks(source_dir, destination, resolve_link, source_url)
     parser.feed(staged.read_text())
     parser.close()
     content = "".join(parser.parts)
@@ -516,6 +583,7 @@ def build_preview(
     theme: Path | None,
     entry: Path,
     output: Path | None,
+    source_url: str | None = None,
 ) -> Path:
     """Build all pages first, then publish and remove only previously generated pages."""
     directory = source is not None and source.is_dir()
@@ -537,6 +605,7 @@ def build_preview(
         index = output or entry / (source.stem + ".html")
         pages = {source: index}
 
+    index_pages = dict(pages)
     links = dict(pages)
     if directory:
         # Directory links prefer a README; the root itself opens the index.
@@ -545,6 +614,29 @@ def build_preview(
                 links.setdefault(path.parent, pages[path])
         links[source] = index
 
+    linked_dir = (site if directory else entry) / "linked"
+    queue = deque(pages)
+
+    def resolve_link(path: Path) -> Path | None:
+        if not options.render_links:
+            return None
+        if path in links:
+            return links[path]
+        if not path.is_file() or (
+            path.suffix.lower() not in MARKDOWN_SUFFIXES
+            and path.name.lower() != "readme"
+        ):
+            return None
+        if path in pages.values():
+            raise PreviewError(f"The output must not replace linked input '{path}'.", 2)
+        key = hashlib.sha256(os.fsencode(path)).hexdigest()
+        target = linked_dir / key / (path.name + ".html")
+        # Reserve the canonical path before scheduling it. Only this coordinator
+        # mutates the graph; workers cannot recurse, race, or wait on one another.
+        pages[path] = links[path] = target
+        queue.append(path)
+        return target
+
     manifest_path = entry / "manifest.json"
     previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
     with tempfile.TemporaryDirectory(prefix=".build-", dir=entry) as temporary:
@@ -552,60 +644,87 @@ def build_preview(
         header = stage / "header.html"
         header.write_text(theme_header(theme))
         rendered = []
-        for number, (path, target) in enumerate(pages.items()):
-            staged = stage / f"{number}.html"
-            source_dir = Path.cwd() if stdin is not None else path.parent
-            if directory:
-                log_progress(
-                    f"[{number + 1}/{len(pages)}] Rendering {path.relative_to(source)}"
-                )
-            render_file(
-                path,
-                target,
-                staged,
-                links,
-                header,
-                theme,
-                entry / "pandoc.log",
-                source_dir,
-                index if directory else None,
-            )
-            rendered.append((target, staged))
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            pending = {}
+            number = 0
+            while queue or pending:
+                while queue and len(pending) < 5:
+                    path = queue.popleft()
+                    staged = stage / f"{number}.html"
+                    log = entry / (
+                        "pandoc.log" if number == 0 else f"pandoc-{number}.log"
+                    )
+                    if directory and path in index_pages:
+                        log_progress(
+                            f"[{number + 1}/{len(index_pages)}] Rendering {path.relative_to(source)}"
+                        )
+                    future = executor.submit(
+                        convert_subprocess, path, staged, header, theme, log
+                    )
+                    pending[future] = (path, staged)
+                    number += 1
+                done, _ = wait(pending, return_when=FIRST_COMPLETED)
+                for future in done:
+                    path, staged = pending.pop(future)
+                    future.result()
+                    source_dir = (
+                        Path.cwd()
+                        if stdin is not None and path == source
+                        else path.parent
+                    )
+                    finish_render(
+                        staged,
+                        pages[path],
+                        source_dir,
+                        resolve_link,
+                        index if directory else None,
+                        source_url,
+                    )
+                    rendered.append((pages[path], staged))
         if directory:
             log_progress(f"Writing index and pages to {site}")
             staged_index = stage / "index.html"
             staged_index.write_text(
-                render_index(source, pages, index, header.read_text())
+                render_index(source, index_pages, index, header.read_text())
             )
             rendered.append((index, staged_index))
         for target, staged in rendered:
             atomic_write(target, staged.read_bytes())
 
-    if directory:
-        removed = 0
-        for old in previous.get("pages", {}).values():
-            stale = Path(old)
-            if (
-                stale not in pages.values()
-                and stale.is_relative_to(site / "pages")
-                and stale.suffix == ".html"
-            ):
-                try:
-                    stale.unlink()
-                except FileNotFoundError:
-                    pass
-                else:
-                    removed += 1
-        if removed:
-            noun = "page" if removed == 1 else "pages"
-            log_progress(f"Removed {removed} stale {noun}.")
+    removed = 0
+    for old in previous.get("pages", {}).values():
+        stale = Path(old)
+        if (
+            stale not in pages.values()
+            and (
+                stale.is_relative_to(linked_dir)
+                or (directory and stale.is_relative_to(site / "pages"))
+            )
+            and stale.suffix == ".html"
+        ):
+            try:
+                stale.unlink()
+            except FileNotFoundError:
+                pass
+            else:
+                removed += 1
+    if removed and directory:
+        noun = "page" if removed == 1 else "pages"
+        log_progress(f"Removed {removed} stale {noun}.")
     manifest = {
         "version": 1,
-        "source": str(Path.cwd()) if stdin is not None else str(source),
-        "kind": "directory" if directory else "stdin" if stdin is not None else "file",
+        "source": source_url or (str(Path.cwd()) if stdin is not None else str(source)),
+        "kind": "url"
+        if source_url
+        else "directory"
+        if directory
+        else "stdin"
+        if stdin is not None
+        else "file",
         "entrypoint": str(index),
         "theme": str(theme) if theme else None,
         "all_files": options.all_files,
+        "render_links": options.render_links,
         "pages": {str(path): str(target) for path, target in pages.items()},
     }
     atomic_write(
@@ -636,6 +755,20 @@ def open_preview(path: Path, log: Path, *, show_progress: bool = False) -> None:
     sys.stderr.write(log.read_text(errors="replace"))
 
 
+def fetch_markdown(url: str) -> tuple[bytes, str]:
+    """Fetch a document and use its final URL as the base after redirects."""
+    request = Request(
+        url,
+        headers={"User-Agent": "mdpreview", "Accept": "text/markdown, text/plain, */*"},
+    )
+    try:
+        with urlopen(request, timeout=30) as response:
+            encoding = response.headers.get_content_charset() or "utf-8"
+            return response.read().decode(encoding).encode("utf-8"), response.geturl()
+    except (OSError, URLError, UnicodeError, LookupError) as error:
+        raise PreviewError(f"Cannot download '{url}': {error}") from error
+
+
 def run(options: Options) -> Path:
     path = options.path
     if path is None:
@@ -643,6 +776,27 @@ def run(options: Options) -> Path:
         path = "." if stat.S_ISCHR(os.fstat(sys.stdin.fileno()).st_mode) else "-"
     stdin = None
     source = None
+    source_url = None
+    uri = urlsplit(path)
+    if uri.scheme == "file":
+        if (
+            uri.netloc not in ("", "localhost")
+            or not Path(unquote(uri.path)).is_absolute()
+        ):
+            raise PreviewError(
+                "A file URI must contain an absolute local path (empty host or localhost).",
+                2,
+            )
+        path = unquote(uri.path)
+    elif uri.scheme in ("http", "https"):
+        if not uri.netloc:
+            raise PreviewError(f"The URL requires a host: '{path}'.", 2)
+        source_url = urldefrag(path).url
+    elif "://" in path:
+        raise PreviewError(
+            f"Unsupported input URI scheme: '{uri.scheme}'. Use file, http, or https.",
+            2,
+        )
     if path == "-":
         stdin = sys.stdin.buffer.read()
         if not stdin:
@@ -650,7 +804,7 @@ def run(options: Options) -> Path:
                 "Standard input is empty. Specify a path or pipe Markdown to standard input.",
                 2,
             )
-    else:
+    elif source_url is None:
         source = Path(path).resolve()
         if not source.exists():
             raise PreviewError(f"Input path not found: '{path}'.", 2)
@@ -684,8 +838,16 @@ def run(options: Options) -> Path:
                 2,
             )
     require_command("pandoc", "pandoc")
-    kind = "directories" if directory else "stdin" if source is None else "files"
-    identity = str(source or Path.cwd()) + "\0" + str(output or "")
+    kind = (
+        "urls"
+        if source_url
+        else "directories"
+        if directory
+        else "stdin"
+        if source is None
+        else "files"
+    )
+    identity = (source_url or str(source or Path.cwd())) + "\0" + str(output or "")
     key = hashlib.sha256(os.fsencode(identity)).hexdigest()
     entry = cache_root().resolve() / "v1" / kind / key
     try:
@@ -702,7 +864,11 @@ def run(options: Options) -> Path:
             if directory:
                 log_progress("Waiting for another invocation to finish this preview.")
             fcntl.flock(lock, fcntl.LOCK_EX)
-        result = build_preview(options, source, stdin, theme, entry, output)
+        if source_url:
+            data, source_url = fetch_markdown(source_url)
+            source = entry / "remote.md"
+            atomic_write(source, data)
+        result = build_preview(options, source, stdin, theme, entry, output, source_url)
         if options.open_browser:
             open_preview(result, entry / "open.log", show_progress=directory)
     return result
@@ -710,7 +876,19 @@ def run(options: Options) -> Path:
 
 def main(args: list[str] | None = None) -> int:
     try:
-        options = parse_args(sys.argv[1:] if args is None else args)
+        args = sys.argv[1:] if args is None else args
+        # Private worker protocol: a single conversion, no cache locks, browser,
+        # link traversal, or nested executor. The parent owns all publication.
+        if args == ["--_convert-file"]:
+            job = json.load(sys.stdin)
+            convert_file(
+                **{
+                    key: Path(value) if value is not None else None
+                    for key, value in job.items()
+                }
+            )
+            return 0
+        options = parse_args(args)
         if options is None:
             print(HELP, end="")
             return 0

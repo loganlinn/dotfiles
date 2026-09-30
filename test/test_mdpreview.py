@@ -7,13 +7,17 @@ import json
 import os
 import shlex
 import shutil
+import ssl
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
+from urllib.parse import quote
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
@@ -117,6 +121,7 @@ class PreviewTests(unittest.TestCase):
             env=self.env,
             capture_output=True,
             text=True,
+            timeout=30,
             **stdin,
         )
         if success:
@@ -183,9 +188,172 @@ class PreviewTests(unittest.TestCase):
         self.assertIn('href="../../index.html"', nested)
         single = self.preview(source)
         self.assertIn(f'src="{asset.as_uri()}"', single.read_text())
+        manifest = json.loads((single.parent / "manifest.json").read_text())
+        linked = Path(manifest["pages"][str(self.docs / "nested/notes #%.md")])
+        self.assertIn(cli.relative_url(linked, single) + "#part", single.read_text())
+        self.assertIn(cli.relative_url(single, linked), linked.read_text())
+        single = self.preview("--no-render-links", source)
         self.assertIn(
             (self.docs / "nested/notes #%.md").as_uri() + "#part", single.read_text()
         )
+        self.assertFalse(linked.exists())
+
+    def record_conversions(self):
+        records = self.root / "conversions"
+        records.mkdir()
+        converter = self.bin / "pandoc"
+        converter.write_text(
+            f"#!{sys.executable}\n"
+            "import json, os, subprocess, sys, time\n"
+            "from pathlib import Path\n"
+            "start = time.monotonic_ns()\n"
+            "time.sleep(0.15)\n"
+            f"result = subprocess.run([{PANDOC!r}, *sys.argv[1:]])\n"
+            f"record = Path({str(records)!r}) / str(os.getpid())\n"
+            "record.write_text(json.dumps({'source': sys.argv[-1], "
+            "'start': start, 'end': time.monotonic_ns()}))\n"
+            "sys.exit(result.returncode)\n"
+        )
+        converter.chmod(0o755)
+        return records
+
+    def test_link_graph_cycles_aliases_deduplication_and_parallel_limit(self):
+        source = self.write(
+            "root.md",
+            "# Root\n\n[Self](root.md#root)\n"
+            + "\n".join(f"[Child {n}](child{n}.md)" for n in range(9)),
+        )
+        shared = self.write("shared.md", "# Shared\n\n[Root](root.md)\n")
+        (self.docs / "alias.md").symlink_to(shared)
+        for n in range(9):
+            self.write(
+                f"child{n}.md",
+                f"# Child {n}\n\n[Shared](shared.md) [Alias](alias.md) "
+                "[Again](./shared.md?mode=read#shared) [Root](root.md)",
+            )
+        records = self.record_conversions()
+        output = self.preview("-o", self.root / "explicit.html", source)
+        manifest = json.loads(next(self.root.rglob("manifest.json")).read_text())
+        self.assertEqual(len(manifest["pages"]), 11)
+        shared_page = Path(manifest["pages"][str(shared)])
+        self.assertIn(cli.relative_url(output, shared_page), shared_page.read_text())
+        child = Path(manifest["pages"][str(self.docs / "child0.md")])
+        self.assertIn(
+            cli.relative_url(shared_page, child) + "?mode=read#shared",
+            child.read_text(),
+        )
+        conversions = [json.loads(path.read_text()) for path in records.iterdir()]
+        self.assertCountEqual(
+            [item["source"] for item in conversions], manifest["pages"]
+        )
+        events = sorted(
+            event
+            for item in conversions
+            for event in ((item["start"], 1), (item["end"], -1))
+        )
+        active = peak = 0
+        for _, change in events:
+            active += change
+            peak = max(peak, active)
+        self.assertGreater(peak, 1)
+        self.assertLessEqual(peak, 5)
+
+    def test_local_link_forms_and_non_links(self):
+        child = self.write("nested/child #%.MD", "# Child\n")
+        remote = "https://example.com/remote.md"
+        network = "//example.com/share.md"
+        missing = self.docs / "missing.md"
+        absolute = quote(str(child), safe="/")
+        source = self.write(
+            "root.md",
+            f"[Absolute]({absolute}?q=1#child)\n\n"
+            f"[File]({child.as_uri()}#child)\n\n"
+            f'<a href="{child.as_uri().replace("file:///", "file://localhost/")}">Raw</a>\n\n'
+            f"[Remote]({remote}) [Network]({network}) [Missing](missing.md)\n\n"
+            "[Loop](loop.md)\n\n"
+            "![Image](image.md)\n\n`[Code](code.md)`\n\n"
+            '```html\n<a href="code.md">Example</a>\n```\n',
+        )
+        self.write("image.md", "# Not a hyperlink\n")
+        self.write("code.md", "# Not a hyperlink\n")
+        (self.docs / "loop.md").symlink_to("loop.md")
+        output = self.preview(source)
+        manifest = json.loads((output.parent / "manifest.json").read_text())
+        self.assertEqual(set(manifest["pages"]), {str(source), str(child)})
+        target = Path(manifest["pages"][str(child)])
+        rendered = output.read_text()
+        self.assertIn(cli.relative_url(target, output) + "?q=1#child", rendered)
+        self.assertIn(remote, rendered)
+        self.assertIn(network, rendered)
+        self.assertIn(missing.as_uri(), rendered)
+        self.assertIn((self.docs / "image.md").as_uri(), rendered)
+
+    def test_render_links_flags_stdin_and_theme_inheritance(self):
+        child = self.write("nested/child.md", "# Child\n\n[Grandchild](grand.md)\n")
+        grandchild = self.write("nested/grand.md", "# Grandchild\n")
+        theme = self.write("custom.css", "body { color: blue; }\n")
+        output = self.preview(
+            "--no-render-links",
+            "--render-links",
+            "--theme",
+            theme,
+            data="[Child](nested/child.md)",
+        )
+        manifest = json.loads((output.parent / "manifest.json").read_text())
+        self.assertEqual(len(manifest["pages"]), 3)
+        for source in (child, grandchild):
+            self.assertIn(
+                theme.as_uri(), Path(manifest["pages"][str(source)]).read_text()
+            )
+        self.preview(
+            "--render-links", "--no-render-links", data="[Child](nested/child.md)"
+        )
+        self.assertIn(child.as_uri(), output.read_text())
+        self.assertFalse(Path(manifest["pages"][str(child)]).exists())
+
+    def test_directory_links_extend_graph_without_duplicating_discovered_pages(self):
+        root = self.write(
+            "root.md", "[Child](nested/child.md) [Outside](../outside.md)"
+        )
+        child = self.write("nested/child.md", "[Back](../root.md)")
+        outside = self.root / "outside.md"
+        outside.write_text("# Outside\n\n[Root](docs%20%26%20notes/root.md)")
+        records = self.record_conversions()
+        index = self.preview(self.docs)
+        manifest = json.loads(next(self.root.rglob("manifest.json")).read_text())
+        self.assertEqual(set(manifest["pages"]), {str(root), str(child), str(outside)})
+        self.assertEqual(len(list(records.iterdir())), 3)
+        self.assertNotIn("outside.md", index.read_text())
+        self.assertIn("Outside", Path(manifest["pages"][str(outside)]).read_text())
+        self.preview("--no-render-links", self.docs)
+        self.assertIn(child.as_uri(), Path(manifest["pages"][str(root)]).read_text())
+
+    def test_failed_linked_conversion_preserves_entire_previous_preview(self):
+        source = self.write("root.md", "# Original\n\n[Child](child.md)")
+        child = self.write("child.md", "# Original child\n")
+        output = self.preview(source)
+        manifest_path = output.parent / "manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        original = {
+            path: path.read_bytes()
+            for path in [manifest_path, *map(Path, manifest["pages"].values())]
+        }
+        source.write_text("# Changed\n\n[Child](child.md)")
+        child.write_text("FAIL_CONVERSION")
+        converter = self.bin / "pandoc"
+        converter.write_text(
+            '#!/bin/bash\nif /usr/bin/grep -q FAIL_CONVERSION "${!#}"; then\n'
+            '  echo "Linked conversion failed" >&2\n  exit 23\nfi\n'
+            f'exec {shlex.quote(PANDOC)} "$@"\n'
+        )
+        converter.chmod(0o755)
+        result = self.invoke(source, success=False)
+        self.assertIn("Linked conversion failed", result.stderr)
+        self.assertEqual(result.stdout, "")
+        self.assertFalse(self.record.exists())
+        for path, content in original.items():
+            self.assertEqual(path.read_bytes(), content)
+        self.assertEqual(list(self.root.rglob(".build-*")), [])
 
     def test_ignore_rules_all_and_symlink_cycles(self):
         subprocess.run(
@@ -216,6 +384,129 @@ class PreviewTests(unittest.TestCase):
             self.assertIn(name, index.read_text())
         for name in ("internal.md", "alias.md", "cycle"):
             self.assertNotIn(name, index.read_text())
+
+    def test_output_cannot_overwrite_a_linked_source(self):
+        source = self.write("root.md", "[Child](child.md)")
+        child = self.write("child.md", "# Keep this\n")
+        result = self.invoke("-o", child, source, success=False)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("must not replace linked input", result.stderr)
+        self.assertEqual(child.read_text(), "# Keep this\n")
+        self.assertFalse(self.record.exists())
+
+    def test_file_uri_inputs_share_path_cache_and_follow_local_links(self):
+        source = self.write("root #%.md", "# Root\n\n[Child](child.md)")
+        child = self.write("child.md", "# Child\n")
+        output = self.preview(source)
+        self.assertEqual(self.preview(source.as_uri()), output)
+        self.assertEqual(
+            self.preview(source.as_uri().replace("file:///", "file://localhost/")),
+            output,
+        )
+        manifest = json.loads((output.parent / "manifest.json").read_text())
+        self.assertIn(str(child), manifest["pages"])
+        self.assertEqual(self.preview(self.docs.as_uri()), self.preview(self.docs))
+        for uri in (
+            "file://server/share.md",
+            "file:relative.md",
+            "ftp://example.com/a.md",
+            "https:///no-host.md",
+        ):
+            result = self.invoke(uri, success=False)
+            self.assertEqual(result.returncode, 2, result.stderr)
+
+    @unittest.skipUnless(
+        shutil.which("openssl"), "OpenSSL is required for the HTTPS fixture"
+    )
+    def test_https_input_redirects_assets_cache_refresh_and_failed_download(self):
+        cert = self.root / "cert.pem"
+        key = self.root / "key.pem"
+        subprocess.run(
+            [
+                "openssl",
+                "req",
+                "-x509",
+                "-newkey",
+                "rsa:2048",
+                "-nodes",
+                "-days",
+                "1",
+                "-subj",
+                "/CN=localhost",
+                "-addext",
+                "subjectAltName=DNS:localhost",
+                "-keyout",
+                str(key),
+                "-out",
+                str(cert),
+            ],
+            check=True,
+            capture_output=True,
+        )
+        requests = []
+        document = [
+            "# Café\n\n[Next](next.md?q=1#part) [Here](#café)\n\n"
+            '![Image](../image.svg)\n\n<img src="/raw.svg">\n\n'
+            '```mermaid\nflowchart LR\n A@{ img: "icon.svg" }\n```\n'
+        ]
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                requests.append(self.path)
+                if document[0] is None:
+                    self.send_error(503, "Unavailable")
+                elif self.path == "/redirect":
+                    self.send_response(302)
+                    self.send_header("Location", "/docs/readme.md?raw=1")
+                    self.end_headers()
+                else:
+                    self.send_response(200)
+                    self.send_header(
+                        "Content-Type", "text/markdown; charset=iso-8859-1"
+                    )
+                    self.end_headers()
+                    self.wfile.write(document[0].encode("iso-8859-1"))
+
+            def log_message(self, *args):
+                pass
+
+        server = ThreadingHTTPServer(("localhost", 0), Handler)
+        self.addCleanup(server.server_close)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(cert, key)
+        server.socket = context.wrap_socket(server.socket, server_side=True)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join)
+        self.addCleanup(server.shutdown)
+        self.env["SSL_CERT_FILE"] = str(cert)
+        base = f"https://localhost:{server.server_port}"
+        output = self.preview(base + "/redirect#café")
+        rendered = output.read_text()
+        self.assertIn("Café", rendered)
+        self.assertIn(f'href="{base}/docs/next.md?q=1#part"', rendered)
+        self.assertIn('href="#café"', rendered)
+        self.assertIn(f'src="{base}/image.svg"', rendered)
+        self.assertIn(f'src="{base}/raw.svg"', rendered)
+        self.assertIn(base + "/docs/icon.svg", rendered)
+        self.assertNotIn("data-mdpreview-error", rendered)
+        self.assertEqual(requests, ["/redirect", "/docs/readme.md?raw=1"])
+        manifest_path = output.parent / "manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        self.assertEqual(manifest["kind"], "url")
+        self.assertEqual(manifest["source"], base + "/docs/readme.md?raw=1")
+        document[0] = "# Updated\n"
+        self.assertEqual(self.preview(base + "/redirect"), output)
+        self.assertIn("Updated", output.read_text())
+        previous_html = output.read_bytes()
+        previous_manifest = manifest_path.read_bytes()
+        document[0] = None
+        result = self.invoke(base + "/redirect", success=False)
+        self.assertIn("Cannot download", result.stderr)
+        self.assertIn("503", result.stderr)
+        self.assertEqual(output.read_bytes(), previous_html)
+        self.assertEqual(manifest_path.read_bytes(), previous_manifest)
+        self.assertFalse(self.record.exists())
 
     def test_file_cache_identity_and_updates(self):
         first = self.write("one/notes.md", "# First\n")
@@ -279,7 +570,8 @@ class PreviewTests(unittest.TestCase):
         converter.chmod(0o755)
         result = self.invoke(self.docs, success=False)
         self.assertIn("Conversion failed for test", result.stderr)
-        self.assertIn("pandoc.log", result.stderr)
+        log = Path(result.stderr.split("Full error log: ", 1)[1].strip())
+        self.assertIn("Conversion failed for test", log.read_text())
         self.assertNotIn("Preview ready:", result.stderr)
         self.assertEqual(result.stdout, "")
         self.assertFalse(self.record.exists())

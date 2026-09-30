@@ -7,8 +7,11 @@ A directory produces a filterable index with links to its documents.
 mdpreview                               # Browse PWD and its subdirectories
 mdpreview ./docs                        # Browse a specific directory
 mdpreview README.md                     # Preview one file
+mdpreview file:///path/to/README.md      # Preview a local file URI
+mdpreview https://example.com/README.md  # Download and preview Markdown
 cat README.md | mdpreview                # Preview standard input
 mdpreview --no-open README.md            # Print the HTML path without a browser
+mdpreview --no-render-links README.md    # Leave links pointing to source files
 mdpreview -o ./preview.html README.md    # Choose the HTML file
 mdpreview -o ./preview-site ./docs       # Choose a directory for the site
 mdpreview --all ./docs                   # Include hidden and ignored files
@@ -27,14 +30,32 @@ Without a path, piped or redirected input takes precedence over PWD.
 A terminal or `/dev/null` selects PWD. An explicit `-` always reads stdin and rejects empty input.
 An explicit file or directory takes precedence over stdin.
 
+Inputs also accept `file://` URIs with an empty host or `localhost`, and HTTP(S) URLs.
+File URI paths are percent-decoded and share the same cache and link traversal as local paths.
+HTTP(S) inputs are fetched on each invocation with a 30-second network timeout and normal
+TLS certificate verification. Supply a URL serving Markdown, such as a repository's raw-file URL.
+Redirects are followed; relative hyperlinks, images, and Mermaid image paths use the final
+URL as their base. Fragment-only links still navigate within the preview.
+Remote hyperlinks remain online links and do not trigger recursive downloads.
+Failed downloads preserve the last successful preview.
+
 Directory discovery uses ripgrep ignore rules, including `.gitignore` in Git repositories and `.ignore` files.
 It includes `.md`, `.markdown`, `.mdown`, `.mkd`, `.mkdn`, and extensionless `README` files, without regard to case.
 `--all` includes hidden and ignored files. Discovery always skips `.git`, symlinks, the cache, and the generated output directory.
 The selected directory is the search root. The command does not expand the search to the Git repository root.
 
-Links between discovered Markdown files point to their HTML previews.
+`--render-links` is on by default. Hyperlinks to existing local Markdown files
+point to generated HTML previews, including links in raw HTML and local `file:` URLs.
+Linked documents are followed transitively, even outside the selected directory
+or its discovery ignore rules. Relative links resolve from each document's directory
+(PWD for stdin). Query strings and fragments are preserved.
+Missing targets, remote URLs, images, and examples inside code blocks do not trigger renders.
+`--no-render-links` disables this behavior, including links between directory pages.
+When both forms are supplied, the last flag wins.
+
 When a directory has a discovered README, links to that directory open its preview.
 Links to the search root open the index.
+These directory shortcuts also respect `--no-render-links`.
 Local images and other local links use absolute `file:` URLs to their original files.
 These previews require access to the source files. They are not portable website exports.
 
@@ -92,6 +113,7 @@ Cache entries contain generated HTML, conversion logs, a lock, and a versioned m
 All these files can be recreated. The command does not use `TMPDIR` for preview storage.
 
 An entry key contains the canonical source path, input kind, and explicit output path.
+For HTTP(S) inputs, the requested URL (without its fragment) replaces the source path in the key.
 It excludes content, timestamps, and theme selection. A rebuild therefore retains the same browser URL.
 Stdin uses one entry per working directory and output selection.
 This keeps repeated invocations from accumulating abandoned preview directories.
@@ -100,6 +122,15 @@ Even with matching filenames, previews of different source paths remain separate
 Directory pages use `pages/<relative-source-path>.html`. The original extension remains part of the path to prevent collisions.
 For example, `notes.md` and `notes.markdown` produce distinct pages.
 The site entrypoint is `index.html`.
+Additional linked pages use `linked/<source-path-hash>/<source-name>.html` inside
+the site for directory previews, or inside the cache entry for file and stdin previews.
+They do not add entries to the directory index.
+
+One coordinator runs at most five `mdpreview` conversion subprocesses at a time.
+Workers convert a single document and never launch other `mdpreview` workers.
+The coordinator reserves canonical source paths before scheduling them, so self-links,
+cycles, repeated references, and symlink aliases render each source only once per invocation.
+All linked pages inherit the selected theme and never open additional browser windows.
 
 Each invocation renders all pages in a staging directory inside its cache entry.
 If conversion fails, the previous HTML remains available. Temporary staging files are removed.
@@ -120,7 +151,7 @@ A future `mdpreview --watch [PATH]` can reuse these functions:
 1. Resolve PATH, with PWD as the default, and acquire the existing preview lock.
 2. Use `discover()` for the initial list and for changes to the set of files.
 3. Use the manifest to map source paths to stable output paths.
-4. Use `render_file()` for changed files and rebuild the index after additions, deletions, or renames.
+4. Use `convert_subprocess()` and `finish_render()` for changed files and rebuild the index after additions, deletions, or renames.
 5. Apply the same atomic replacement and stale-page cleanup as `build_preview()`.
 
 The watcher must handle recursive writes, editor save-by-rename events, and newly created subdirectories.
