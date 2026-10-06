@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: gmx-review [<pr-number-or-url>]
+
+Review a PR with Codex in a gmx worktree, then offer to remove it.
+Defaults to the PR number or URL on the clipboard. Bare numbers use the current
+directory's repository. Enters the clone at ~/src/github.com/<owner>/<repo>.
+In Kitty, sets the tab title to the branch and the window's PR_URL user variable.
+On exit, clears PR_URL and returns the tab to its automatic title.
+EOF
+}
+
+die() {
+  printf 'gmx-review: %s\n' "$*" >&2
+  exit 1
+}
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+  usage
+  exit 0
+fi
+[[ $# -le 1 ]] || { usage >&2; exit 2; }
+
+for cmd in gh gmx codex; do
+  command -v "$cmd" >/dev/null || die "required command not found: $cmd"
+done
+if [[ -n ${KITTY_WINDOW_ID:-} ]]; then
+  command -v kitten >/dev/null || die 'required command not found: kitten'
+fi
+
+if [[ $# == 1 ]]; then
+  pr=$1
+else
+  command -v pbpaste >/dev/null || die 'required command not found: pbpaste'
+  pr=$(pbpaste)
+fi
+[[ -n $pr ]] || die 'no PR number or URL provided'
+
+fields=$(gh pr view "$pr" --json headRefName,url --jq '[.headRefName, .url] | @tsv')
+IFS=$'\t' read -r branch pr_url <<<"$fields"
+[[ -n $branch && -n $pr_url ]] || die 'could not resolve the PR branch and URL'
+
+# The canonical PR URL identifies the base repository, including for fork PRs.
+# gh resolves bare PR numbers using the caller's current repository above.
+repo=$(gh repo view "${pr_url%/pull/*}" --json nameWithOwner --jq .nameWithOwner)
+[[ -n $repo ]] || die 'could not resolve the PR repository'
+repo_dir="$HOME/src/github.com/$repo"
+[[ -d $repo_dir ]] || die "repository clone not found: $repo_dir"
+cd -- "$repo_dir"
+
+# Use gmx's scriptable path output rather than the interactive shell's cd hook.
+unset GMX_SHELL_CD_FILE
+worktree=$(gmx get "$pr_url")
+[[ -n $worktree && -d $worktree ]] || die 'gmx did not return a worktree directory'
+cd -- "$worktree"
+
+# Called by the EXIT trap below.
+# shellcheck disable=SC2329
+clear_kitty_context() {
+  kitten @ set-user-vars --match "id:$KITTY_WINDOW_ID" PR_URL || true
+  kitten @ set-tab-title --match "window_id:$KITTY_WINDOW_ID" || true
+}
+
+if [[ -n ${KITTY_WINDOW_ID:-} ]]; then
+  trap clear_kitty_context EXIT
+  kitten @ set-tab-title --match "window_id:$KITTY_WINDOW_ID" -- "$branch"
+  kitten @ set-user-vars --match "id:$KITTY_WINDOW_ID" "PR_URL=$pr_url"
+fi
+
+review_status=0
+# Pass the skill name literally to Codex.
+# shellcheck disable=SC2016
+codex '$review-agent' || review_status=$?
+
+# An explicit path prevents gmx from offering unrelated worktrees for removal.
+# Keep its usual confirmation and dirty-worktree protection.
+remove_status=0
+gmx rm --no-interactive -- "$worktree" || remove_status=$?
+if (( review_status != 0 )); then
+  exit "$review_status"
+fi
+exit "$remove_status"
