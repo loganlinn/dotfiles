@@ -35,7 +35,7 @@ adjust-cursor-height =
 adjust-box-thickness =
 grapheme-width-method =
 freetype-load-flags =
-theme = dark:catppuccin-frappe,light:catppuccin-latte
+# theme = dark:catppuccin-frappe,light:catppuccin-latte
 background-blur = true
 background-opacity = 0.8
 selection-foreground =
@@ -103,3 +103,8 @@ macos-auto-secure-input = true
 macos-secure-input-indication = true
 # macos-hidden = true # https://github.com/ghostty-org/ghostty/issues/4538
 # macos-option-as-alt = true
+
+config-file = keybind.config
+config-file = ?macos.config
+config-file = ?linux.config
+config-file = ?config.local
