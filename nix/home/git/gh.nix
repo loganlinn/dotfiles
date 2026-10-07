@@ -5,18 +5,19 @@
   ...
 }:
 with lib;
-with lib.my; let
+with lib.my;
+let
   pr-search = {
-    inbox = ''-author:@me -reviewed-by:@me review-involves:@me is:open'';
-    outbox = ''author:@me review:required is:open -is:draft'';
-    approved = ''author:@me review:approved is:open -is:draft'';
-    rejected = ''author:@me review:changes-requested is:open -is:draft'';
-    merged = ''author:@me is:merged'';
-    closed = ''author:@me is:closed'';
-    drafts = ''author:@me is:draft '';
-    created = ''author:@me'';
-    reviewed = ''reviewed-by:@me'';
-    testing = ''is:merged label:needs-testing label:needs-qa'';
+    inbox = "-author:@me -reviewed-by:@me review-involves:@me is:open";
+    outbox = "author:@me review:required is:open -is:draft";
+    approved = "author:@me review:approved is:open -is:draft";
+    rejected = "author:@me review:changes-requested is:open -is:draft";
+    merged = "author:@me is:merged";
+    closed = "author:@me is:closed";
+    drafts = "author:@me is:draft ";
+    created = "author:@me";
+    reviewed = "reviewed-by:@me";
+    testing = "is:merged label:needs-testing label:needs-qa";
   };
   pr-fields = [
     "additions"
@@ -66,7 +67,8 @@ with lib.my; let
     "updatedAt"
     "url"
   ];
-in {
+in
+{
   home.shellAliases = {
     gist = "gh gist";
   };
@@ -76,7 +78,9 @@ in {
     gitCredentialHelper.enable = true;
     settings = {
       aliases =
-        listToAttrs (map (field: nameValuePair "pr-${field}" ''pr view --json ${field} --jq .${field}'') pr-fields)
+        listToAttrs (
+          map (field: nameValuePair "pr-${field}" "pr view --json ${field} --jq .${field}") pr-fields
+        )
         // mapAttrs' (name: search: nameValuePair "pr-${name}" ''pr list --search "${search}"'') pr-search
         // {
           aliases = "alias list";
@@ -86,7 +90,7 @@ in {
           coa = "!gh-pr-checkout-authored-by \"$@\"";
           repo-fork-sync = ''!gh api /repos/{owner}/{repo}/merge-upstream --method POST --field "branch=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"'';
           markdown = ''!gh api /markdown -f text="$(cat "''${1-/dev/stdin}")"'';
-          gfm = ''markdown'';
+          gfm = "markdown";
           octocat = "api /octocat";
           license = ''!gh api --paginate --jq 'if type == "object" then .body else .[].name end' licenses/"''${1-}"'';
           my-org = ''
@@ -125,7 +129,7 @@ in {
           whoami = "api user";
           checks = "pr checks";
           diff = ''!gh pr diff "''$@" | diffnav'';
-          pr-by= ''!author=$1 && [[ -n $author ]] || author=$(gh my-org | fzf) && pr list --search "author:''$author"'';
+          pr-by = ''!author=$1 && [[ -n $author ]] || author=$(gh my-org | fzf) && pr list --search "author:''$author"'';
           prw = "pr list --web";
           prv = "pr view --web";
           prl = ''!CLICOLOR_FORCE=1 gh pr list --json number,title,headRefName,createdAt --template '{{tablerow "ID" "TITLE" "BRANCH" "CREATED AT"}}{{range .}}{{tablerow (printf "#%v" .number | autocolor "green") .title (.headRefName | autocolor "cyan") (timeago .createdAt)}}{{end}}{{tablerender}}' "$@"'';
@@ -153,9 +157,10 @@ in {
           '';
           lgtm = "pr review --approve";
           edit-reviewers = ''!gh my-team | ${pkgs.gum}/bin/gum choose --selected="$(gh reviewers)"'';
-          stars = ''api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}' '';
+          stars = "api user/starred --template '{{range .}}{{tablerow .full_name .description .html_url }}{{end}}' ";
           land = "pr merge --squash --delete-branch";
           userlist = ''!${config.xdg.configHome}/gh/userlists.sh "$@"'';
+          go = "gist new -w";
         };
     };
   };
@@ -192,7 +197,7 @@ in {
   };
 
   xsession.windowManager.i3 = mkIf config.xsession.windowManager.i3.enable {
-    config.floating.criteria = [{class = "gh-dash";}];
+    config.floating.criteria = [ { class = "gh-dash"; } ];
   };
 
   home.packages = [

@@ -300,6 +300,10 @@ if.app-id = "com.apple.reminders"
 run = "layout floating"
 
 [[on-window-detected]]
+if.app-id = "com.granola.app"
+run = "layout floating"
+
+[[on-window-detected]]
 if.app-id = "org.gnu.Emacs"
 run = "move-node-to-workspace E"
 

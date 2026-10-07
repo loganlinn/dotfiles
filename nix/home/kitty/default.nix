@@ -77,6 +77,7 @@ in {
           "kitty.macos.conf"
           "kitty_activity_state.py"
           "launch-actions.conf"
+          "minimize_other_os_windows.py"
           "move_tab_to_last_os_window.py"
           "nerdfont_glyphnames.json"
           "nerdfont_selector.py"

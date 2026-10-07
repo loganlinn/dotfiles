@@ -8,6 +8,7 @@
 with lib; let
   cfg = config.programs.emacs-plus;
   caskType = with types; either str (attrsOf anything); # options.homebrew.casks.type.nestedTypes.elemType;
+  homeConfig = config.home-manager.users.${config.my.user.name};
 in {
   options = {
     programs.emacs-plus = {
@@ -62,16 +63,16 @@ in {
     ];
     launchd.user.agents.emacs.serviceConfig = {
       ProgramArguments = [
-        "/opt/homebrew/bin/emacs"
+        "${config.homebrew.prefix}/bin/emacs"
         "--init-directory"
-        "/Users/logan/.config/emacs"
+        (removeSuffix "/" homeConfig.home.sessionVariables.EMACSDIR)
         "--fg-daemon"
       ];
-      WorkingDirectory = "/Users/logan";
+      WorkingDirectory = homeConfig.home.homeDirectory;
       RunAtLoad = true;
       KeepAlive = true;
-      StandardOutPath = "/Users/logan/Library/Logs/emacs-daemon.log";
-      StandardErrorPath = "/Users/logan/Library/Logs/emacs-daemon.log";
+      StandardOutPath = "${homeConfig.home.homeDirectory}/Library/Logs/emacs-daemon.log";
+      StandardErrorPath = "${homeConfig.home.homeDirectory}/Library/Logs/emacs-daemon.log";
     };
   };
 }

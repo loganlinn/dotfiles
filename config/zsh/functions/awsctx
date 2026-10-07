@@ -18,8 +18,4 @@ local selected=$(
     --strict
 )
 
-if (($#)); then
-  env AWS_PROFILE=$elected "$@"
-else
-  print -rl -- "$selected"
-fi
+export AWS_PROFILE=${selected?} "$@"

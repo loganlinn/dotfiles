@@ -4,11 +4,17 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: gmx-review [<pr-number-or-url>]
+Usage: gmx-review
+       gmx-review <pr-number-or-url>|- [OPTIONS] [PROMPT]
+       gmx-review <pr-number-or-url>|- [OPTIONS] <COMMAND> [ARGS]
 
 Review a PR with Codex in a gmx worktree, then offer to remove it.
 Defaults to the PR number or URL on the clipboard. Bare numbers use the current
-directory's repository. Enters the clone at ~/src/github.com/<owner>/<repo>.
+directory's repository. Use - to read the PR number or URL from stdin.
+Enters the clone at ~/src/github.com/<owner>/<repo>.
+Remaining arguments are Codex arguments. The interactive prompt starts with
+$review-agent; PROMPT adds review instructions. Subcommands pass through unchanged.
+Use -- before a prompt that starts with - or matches a Codex command name.
 In Kitty, sets the tab title to the branch and the window's PR_URL user variable.
 On exit, clears PR_URL and returns the tab to its automatic title.
 EOF
@@ -23,7 +29,6 @@ if [[ ${1:-} == -h || ${1:-} == --help ]]; then
   usage
   exit 0
 fi
-[[ $# -le 1 ]] || { usage >&2; exit 2; }
 
 for cmd in gh gmx codex; do
   command -v "$cmd" >/dev/null || die "required command not found: $cmd"
@@ -32,13 +37,81 @@ if [[ -n ${KITTY_WINDOW_ID:-} ]]; then
   command -v kitten >/dev/null || die 'required command not found: kitten'
 fi
 
-if [[ $# == 1 ]]; then
+if (( $# )); then
   pr=$1
+  shift
+  if [[ $pr == - ]]; then
+    pr=$(cat)
+    # Codex's TUI requires terminal stdin after the PR pipe has been consumed.
+    if [[ ! -t 0 ]] && { : </dev/tty; } 2>/dev/null; then
+      exec </dev/tty
+    fi
+  fi
 else
   command -v pbpaste >/dev/null || die 'required command not found: pbpaste'
   pr=$(pbpaste)
 fi
 [[ -n $pr ]] || die 'no PR number or URL provided'
+
+# Locate only the top-level prompt. Option values and subcommand arguments must
+# remain untouched. Keep these option arities and command names in sync with
+# `codex --help` (including the aliases in Codex's CLI source).
+codex_args=()
+needs_prompt=true
+end_of_options=false
+while (( $# )); do
+  case $1 in
+    --)
+      codex_args+=("$1")
+      end_of_options=true
+      shift
+      break
+      ;;
+    -c|--config|--enable|--disable|--remote|--remote-auth-token-env|\
+    -m|--model|--local-provider|-p|--profile|-s|--sandbox|\
+    -C|--cd|--add-dir|-a|--ask-for-approval)
+      [[ $# -ge 2 ]] || die "missing Codex option value: $1"
+      codex_args+=("$1" "$2")
+      shift 2
+      ;;
+    -i|--image|-i?*|--image=*)
+      # Codex's image option consumes multiple values, up to the next option.
+      codex_args+=("$1")
+      shift
+      while (( $# )) && [[ $1 != -* ]]; do
+        codex_args+=("$1")
+        shift
+      done
+      ;;
+    -*)
+      codex_args+=("$1")
+      shift
+      ;;
+    agents|exec|e|review|login|logout|mcp|plugin|app-server|remote-control|\
+    app|completion|update|doctor|sandbox|debug|apply|a|resume|queue|archive|\
+    delete|migrate-rollouts|unarchive|fork|cloud|cloud-tasks|exec-server|\
+    features|help|tcp-tunnel|execpolicy|responses-api-proxy|stdio-to-uds)
+      codex_args+=("$@")
+      set --
+      needs_prompt=false
+      break
+      ;;
+    *) break ;;
+  esac
+done
+if $needs_prompt; then
+  # Pass the skill name literally, with user instructions in the same argument.
+  # shellcheck disable=SC2016
+  prompt='$review-agent'
+  if (( $# )); then
+    prompt+=$'\n\n'"$1"
+    shift
+  elif ! $end_of_options; then
+    # End a trailing variadic option (such as --image) before adding the prompt.
+    codex_args+=(--)
+  fi
+  codex_args+=("$prompt" "$@")
+fi
 
 fields=$(gh pr view "$pr" --json headRefName,url --jq '[.headRefName, .url] | @tsv')
 IFS=$'\t' read -r branch pr_url <<<"$fields"
@@ -72,9 +145,7 @@ if [[ -n ${KITTY_WINDOW_ID:-} ]]; then
 fi
 
 review_status=0
-# Pass the skill name literally to Codex.
-# shellcheck disable=SC2016
-codex '$review-agent' || review_status=$?
+codex "${codex_args[@]}" || review_status=$?
 
 # An explicit path prevents gmx from offering unrelated worktrees for removal.
 # Keep its usual confirmation and dirty-worktree protection.

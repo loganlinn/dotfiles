@@ -140,6 +140,13 @@ A lock serializes concurrent invocations for the same cache entry.
 
 The script requires Python 3.10 or later and Pandoc. Directory previews also require ripgrep.
 The Nix package provides these dependencies and the default theme.
+The script first looks for Pandoc and ripgrep on `PATH`. If either is missing, it
+uses that command's mise shim, so GUI launches such as Kitty hints do not need an
+interactive shell's environment. The fallback honors `MISE_SHIMS_DIR`, then
+`MISE_DATA_DIR/shims`, then `${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims`.
+The shim uses the version selected by mise for the launch directory. Install and
+select a default with `mise use -g pandoc@3.11` (and `mise use -g ripgrep` for
+directory previews). `mdpreview` does not add the shim directory to `PATH`.
 
 ## Future watch mode
 

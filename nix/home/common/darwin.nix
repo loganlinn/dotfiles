@@ -8,6 +8,7 @@ with lib; {
   config = mkIf pkgs.stdenv.isDarwin {
     home.sessionPath = [
       "/Applications/Obsidian.app/Contents/MacOS"
+      "/opt/homebrew/bin"
     ];
 
     my.shellScripts = {

@@ -75,6 +75,7 @@
       "jordanbaird-ice"
       "nikitabobko/tap/aerospace"
       "orbstack"
+      "paseo"
       "pearcleaner"
       "sf-symbols"
       "tailscale-app"

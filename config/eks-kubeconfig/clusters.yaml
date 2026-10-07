@@ -1,0 +1,64 @@
+# EKS clusters -> kubeconfig contexts. Consumed by `bin/eks-kubeconfig`.
+#
+#   eks-kubeconfig status --probe          # is each context present and reachable?
+#   eks-kubeconfig sync --dry-run          # diff the kubeconfig changes
+#   eks-kubeconfig sync                    # apply; prompts before removing stale contexts
+#   eks-kubeconfig discover                # find clusters missing from this file
+#
+# Each entry becomes one `aws eks update-kubeconfig` call. `contexts` names the
+# kube contexts to point at that cluster; a mapping form adds a namespace.
+#
+# This file is authoritative: contexts written by `sync` are tagged, so renaming
+# or deleting one here removes the old context on the next run.
+#
+# Naming: short `<env>-<service>[-<slot>]` contexts, never the raw cluster name.
+
+defaults:
+  region: us-east-2
+  kubeconfig: ~/.kube/config
+
+discover:
+  regions: [us-east-2]
+  exclude: [] # cluster-name globs to ignore
+
+clusters:
+  # Daytona staging runs blue/green slots; gamma-daytona-staging (unslotted) is
+  # gone. No bare `staging-daytona` alias — name the slot you mean.
+  - name: gamma-cubesandbox-staging-blue
+    profile: Daytona-Staging.AWSAdministratorAccess
+    contexts: [staging-cubesandbox-blue]
+
+  - name: gamma-cubesandbox-staging-green
+    profile: Daytona-Staging.AWSAdministratorAccess
+    contexts: [staging-cubesandbox-green]
+
+  - name: gamma-daytona-staging-blue
+    profile: Daytona-Staging.AWSAdministratorAccess
+    contexts: [staging-daytona-blue]
+
+  - name: gamma-daytona-staging-green
+    profile: Daytona-Staging.AWSAdministratorAccess
+    contexts: [staging-daytona-green]
+
+  - name: gamma-gitops-hub
+    profile: auto.AdministratorAccess
+    contexts:
+      - gitops-hub
+      - name: argocd
+        namespace: argocd
+
+  # - name: gamma-sandbox
+  #   profile: sandbox.AdministratorAccess
+  #   contexts: [sandbox]
+  #
+  - name: gamma-turbopuffer-production
+    profile: prod-turbopuffer.AdministratorAccess
+    contexts: [prod-turbopuffer]
+
+  - name: gamma-turbopuffer-staging
+    profile: staging-turbopuffer.AdministratorAccess
+    contexts: [staging-turbopuffer]
+
+  - name: gamma-turbopuffer-staging-managed
+    profile: staging-turbopuffer.AdministratorAccess
+    contexts: [staging-turbopuffer-managed]

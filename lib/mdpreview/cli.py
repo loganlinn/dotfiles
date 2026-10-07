@@ -201,8 +201,15 @@ def resolve_theme(name: str) -> Path | None:
 def require_command(name: str, package: str) -> str:
     command = shutil.which(name)
     if command is None:
+        data_home = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+        mise_data = Path(os.environ.get("MISE_DATA_DIR") or data_home / "mise")
+        shims = Path(os.environ.get("MISE_SHIMS_DIR") or mise_data / "shims")
+        # Keep the shim path: resolving its symlink would invoke mise itself.
+        command = shutil.which(name, path=str(shims))
+    if command is None:
         raise PreviewError(
-            f"{name} is not installed or is not on PATH. Install {package} and try again."
+            f"{name} was not found on PATH or in mise shims. "
+            f"Install {package} (for example, mise use -g {package}) and try again."
         )
     return command
 
@@ -472,7 +479,7 @@ def convert_file(
 ) -> None:
     """Convert exactly one file; workers never discover or spawn other workers."""
     command = [
-        "pandoc",
+        require_command("pandoc", "pandoc"),
         "-s",
         "-f",
         "gfm",

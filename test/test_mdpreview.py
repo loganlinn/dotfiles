@@ -136,6 +136,68 @@ class PreviewTests(unittest.TestCase):
         self.assertTrue(path.is_file(), result.stdout)
         return path
 
+    def install_mise_shims(self, directory):
+        directory.mkdir(parents=True)
+        mise = self.root / "mise"
+        mise.write_text(
+            '#!/bin/sh\ncase "${0##*/}" in\n'
+            f'  pandoc) exec {shlex.quote(PANDOC)} "$@" ;;\n'
+            f'  rg) exec {shlex.quote(RIPGREP)} "$@" ;;\n'
+            '  *) exit 99 ;;\nesac\n'
+        )
+        mise.chmod(0o755)
+        for name in ("pandoc", "rg"):
+            (directory / name).symlink_to(mise)
+
+    def test_mise_shims_render_files_links_and_directories_without_shell_path(self):
+        for name in ("MISE_SHIMS_DIR", "MISE_DATA_DIR", "XDG_DATA_HOME"):
+            self.env.pop(name, None)
+        self.env["PATH"] = str(self.bin)
+        self.install_mise_shims(Path(self.env["HOME"]) / ".local/share/mise/shims")
+        self.write("README.md", "# Root page\n\n[Child](nested/child.md)\n")
+        self.write("nested/child.md", "# Linked child\n")
+
+        page = self.preview("README.md")
+        self.assertIn("Root page", page.read_text())
+        linked = list(page.parent.glob("linked/*/child.md.html"))
+        self.assertEqual(len(linked), 1)
+        self.assertIn("Linked child", linked[0].read_text())
+
+        index = self.preview(self.docs)
+        self.assertIn("nested/child.md", index.read_text())
+        self.assertIn(
+            "Linked child", (index.parent / "pages/nested/child.md.html").read_text()
+        )
+
+    def test_mise_shim_directory_overrides(self):
+        for name in ("MISE_SHIMS_DIR", "MISE_DATA_DIR", "XDG_DATA_HOME"):
+            self.env.pop(name, None)
+        self.env["PATH"] = str(self.bin)
+        self.write("README.md", "# Custom mise directory\n")
+        for name, suffix in (
+            ("MISE_SHIMS_DIR", ""),
+            ("MISE_DATA_DIR", "shims"),
+            ("XDG_DATA_HOME", "mise/shims"),
+        ):
+            with self.subTest(variable=name):
+                directory = self.root / name
+                self.install_mise_shims(directory / suffix)
+                self.env[name] = str(directory)
+                page = self.preview("README.md")
+                self.assertIn("Custom mise directory", page.read_text())
+                del self.env[name]
+
+    def test_path_dependency_takes_precedence_over_mise(self):
+        shims = self.root / "unused-shims"
+        shims.mkdir()
+        pandoc = shims / "pandoc"
+        pandoc.write_text("#!/bin/sh\nexit 99\n")
+        pandoc.chmod(0o755)
+        (self.bin / "pandoc").symlink_to(PANDOC)
+        self.env["MISE_SHIMS_DIR"] = str(shims)
+        self.write("README.md", "# PATH takes precedence\n")
+        self.assertIn("PATH takes precedence", self.preview("README.md").read_text())
+
     def test_default_directory_rebuild_add_delete_and_keep_unowned_files(self):
         first = self.write("README.md", "# Original\n")
         self.write("nested/second.markdown", "# Second\n")

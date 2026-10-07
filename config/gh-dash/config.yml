@@ -108,33 +108,33 @@ keybindings:
   prs:
     - key: T
       command: gh enhance -R {{.RepoName}} {{.PrNumber}}
-    - key: r
-      name: open repository in Herdr
-      command: |
-        repo_name='{{.RepoName}}'
-        owner=${repo_name%%/*}
-        repo=${repo_name#*/}
-        herdr_bin=$(mise which herdr) || exit 1
-        workspaces=$("$herdr_bin" --session "$owner" workspace list) || exit 1
-        workspace_id=$(
-          printf '%s\n' "$workspaces" |
-            jq -r --arg label "$repo" \
-              'first(.result.workspaces[]? | select(.label == $label) | .workspace_id) // empty'
-        ) || exit 1
-        if [ -n "$workspace_id" ]; then
-          "$herdr_bin" --session "$owner" tab create \
-            --workspace "$workspace_id" \
-            --cwd '{{.RepoPath}}' \
-            --focus
-        else
-          "$herdr_bin" --session "$owner" workspace create \
-            --cwd '{{.RepoPath}}' \
-            --label "$repo" \
-            --focus
-        fi
+    # - key: r
+    #   name: open repository in Herdr
+    #   command: |
+    #     repo_name='{{.RepoName}}'
+    #     owner=${repo_name%%/*}
+    #     repo=${repo_name#*/}
+    #     herdr_bin=$(mise which herdr) || exit 1
+    #     workspaces=$("$herdr_bin" --session "$owner" workspace list) || exit 1
+    #     workspace_id=$(
+    #       printf '%s\n' "$workspaces" |
+    #         jq -r --arg label "$repo" \
+    #           'first(.result.workspaces[]? | select(.label == $label) | .workspace_id) // empty'
+    #     ) || exit 1
+    #     if [ -n "$workspace_id" ]; then
+    #       "$herdr_bin" --session "$owner" tab create \
+    #         --workspace "$workspace_id" \
+    #         --cwd '{{.RepoPath}}' \
+    #         --focus
+    #     else
+    #       "$herdr_bin" --session "$owner" workspace create \
+    #         --cwd '{{.RepoPath}}' \
+    #         --label "$repo" \
+    #         --focus
+    #     fi
     - key: O
       command: >
-        kitty launch
+        kitty @ launch --cwd='{{.RepoPath}}'
 repoPaths:
   # ":owner/:repo": "~/src/github.com/:owner/:repo"
   "gamma-app/*": "~/src/github.com/gamma-app/*"
