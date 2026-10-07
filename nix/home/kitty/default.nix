@@ -68,6 +68,7 @@ in {
           "diff.conf"
           "edit_clipboard.py"
           "file-menu.sh"
+          "file_hints.py"
           "focus-drill.py"
           "git_context.py"
           "grab.conf"
