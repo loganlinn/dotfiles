@@ -3,17 +3,10 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   home-manager.sharedModules = lib.singleton (
-    {pkgs, ...}: {
-      home.shellAliases = {
-        pbj = "pbpipe jq";
-        pbedit = "pbpipe vipe";
-        pwdc = "pwd | pbcopy";
-        cdp = ''cd -- "$(pbp)"'';
-        uuidc = "uuidgen | tr '[:upper:]' '[:lower:]' | tr -d '\\n' | pbcopy";
-      };
-
+    { pkgs, ... }: {
       programs.zsh = {
         initContent = ''
           pbtee() { tee >(pbcopy); }
@@ -48,6 +41,13 @@
           }
           compdef copyexport=export
         '';
+      };
+      home.shellAliases = {
+        pbj = "pbpipe jq";
+        pbedit = "pbpipe vipe";
+        pwdc = ''printf '%q' "''$(pwd)" | pbcopy'';
+        cdp = ''cd -- "$(pbp)"'';
+        uuidc = "uuidgen | tr '[:upper:]' '[:lower:]' | tr -d '\\n' | pbcopy";
       };
     }
   );

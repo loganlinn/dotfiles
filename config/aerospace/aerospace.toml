@@ -107,7 +107,7 @@ alt-comma = "layout accordion horizontal vertical"
 alt-f = "layout floating"
 alt-t = "layout tiling"
 alt-shift-f = "fullscreen"
-alt-ctrl-f = "macos-native-fullscreen"
+# alt-ctrl-f = "macos-native-fullscreen"
 alt-equal = "balance-sizes"
 
 alt-h = "focus --boundaries all-monitors-outer-frame --boundaries-action wrap-around-the-workspace left"

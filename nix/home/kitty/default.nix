@@ -75,6 +75,8 @@ in {
           "kitty.common.conf"
           "kitty.linux.conf"
           "kitty.macos.conf"
+          "kitty.tabs.custom.conf"
+          "kitty.tabs.vertical.conf"
           "kitty_activity_state.py"
           "launch-actions.conf"
           "minimize_other_os_windows.py"
