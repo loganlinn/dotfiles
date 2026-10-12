@@ -1,5 +1,42 @@
 # Kitty tab activity
 
+## Agent session user variables
+
+Codex's `SessionStart` and `UserPromptSubmit` hooks call `codex-user-vars.py` to set
+`CODEX_SESSION_ID`, `CODEX_MODEL`, `CODEX_CWD`, `CODEX_PERMISSION_MODE`, and
+`CODEX_TRANSCRIPT_PATH` on the originating Kitty window. `SessionEnd` clears these
+and saves `CODEX_PREV_SESSION_ID`, mirroring Claude's current/previous session IDs.
+Subagent events are ignored. A late exit cannot clear a newer session's metadata.
+The helper requires `KITTY_LISTEN_ON`, a positive `KITTY_WINDOW_ID`, `kitten`, and
+an offline `uv` Python 3.11+ runtime. It does nothing outside Kitty.
+
+These hooks are independent of the activity bridge and its performance switch.
+New Codex hooks must be trusted in `/hooks` before they run.
+
+`kitty_mod+space`, `c`, `f` runs `fork.py` in the current window:
+
+- **Claude/Codex:** fork the foreground conversation in the same directory and
+  Kitty session. Codex uses `codex fork SESSION_ID`, preserving explicit CLI
+  settings without replaying the original prompt or images. Its startup hook
+  publishes the newly assigned session ID.
+- **Zsh at the primary prompt:** run Kitty's native `clone-in-kitty` to copy the
+  current exported environment, working directory, and supported virtualenv
+  state. The existing Escape-Q `push-line-or-edit` binding preserves any partially
+  typed command. Kitty's configured `allow_cloning` policy still applies.
+- **Other windows, busy programs, or continuation prompts:** open a sibling shell
+  in the current directory with Kitty's `--copy-env` snapshot. This does not send
+  input to the running program. The snapshot may omit exports changed inside a
+  shell; return to the primary zsh prompt for a full live environment clone.
+
+Optional launch arguments work with all modes, for example
+`kitten fork.py --type=tab`. Missing agent session metadata remains an error.
+
+The existing `kitty_mod+y`, `k` (copy) and `kitty_mod+p`, `k` (paste) variable
+pickers include the Codex variables automatically. `codex-cli:SESSION_ID` links
+launch `codex resume SESSION_ID`, alongside existing `claude-cli:` links.
+
+## Activity indicators
+
 The tab bar combines native activity from every window in each tab, including hidden windows.
 Directory labels, pinned titles, bookmarks, and tab backgrounds retain their existing behavior.
 
