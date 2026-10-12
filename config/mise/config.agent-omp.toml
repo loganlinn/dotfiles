@@ -1,0 +1,31 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Launch from a project: mise -E agent-omp exec -- omp
+# The project's mise.toml and mise.agent-omp.toml layer over these global defaults.
+min_version = "2026.10.8"
+include = ["./config.agent.toml"]
+
+[env]
+AGENT_KIND = "omp"
+
+[tasks."agent:hooks:install"]
+description = "Link the local hook framework into oh-my-pi (no active extensions by default)"
+extends = "agent:hooks:manage"
+depends = ["agent:hooks:prepare"]
+run = 'omp plugin link "$HOME/.dotfiles/config/agent-hooks/packages/pi-family"'
+
+[tasks."agent:hooks:status"]
+description = "Show oh-my-pi plugins, including dotfiles-agent-hooks"
+extends = "agent:hooks:manage"
+run = "omp plugin list --json"
+
+[tasks."agent:hooks:uninstall"]
+description = "Remove only the local hook framework from oh-my-pi"
+extends = "agent:hooks:manage"
+run = "omp plugin uninstall dotfiles-agent-hooks"
+
+[tasks."agent:hooks:update"]
+description = "Refresh oh-my-pi's local hook package link; source edits load on reload"
+extends = "agent:hooks:manage"
+depends = ["agent:hooks:prepare"]
+run = 'omp plugin link "$HOME/.dotfiles/config/agent-hooks/packages/pi-family"'

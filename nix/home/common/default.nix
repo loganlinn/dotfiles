@@ -23,6 +23,7 @@
     ../src-get
     ../shell
     ../uv-tools.nix
+    ../wezterm/shell-integration.nix
     ../xdg.nix
     ./darwin.nix
     ./linux.nix

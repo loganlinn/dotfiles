@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [{ "type": "command", "command": "MISE_AUTO_INSTALL=0 MISE_OFFLINE=1 \"$HOME/.dotfiles/bin/mise\" -E agent-codex run --quiet --raw --skip-tools agent:hook:atuin || true", "timeout": 5 }]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [{ "type": "command", "command": "MISE_AUTO_INSTALL=0 MISE_OFFLINE=1 \"$HOME/.dotfiles/bin/mise\" -E agent-codex run --quiet --raw --skip-tools agent:hook:atuin || true", "timeout": 5 }]
+      }
+    ]
+  }
+}

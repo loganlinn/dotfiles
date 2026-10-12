@@ -1,0 +1,13 @@
+{
+  "name": "dotfiles",
+  "metadata": { "description": "Personal agent integrations backed by dotfiles and mise" },
+  "owner": { "name": "Logan Linn" },
+  "plugins": [
+    {
+      "name": "agent-hooks",
+      "description": "Shared mise tasks with native Claude and Codex hook bindings",
+      "source": "./plugins/agent-hooks",
+      "version": "0.1.0"
+    }
+  ]
+}

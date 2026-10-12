@@ -1,0 +1,10 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Includes share env/tools; task templates share task properties across agents.
+min_version = "2026.10.8"
+
+[task_templates."agent:hook"]
+dir = "{{ cwd }}"
+
+[task_templates."agent:hooks:manage"]
+dir = "{{ env.HOME }}/.dotfiles"

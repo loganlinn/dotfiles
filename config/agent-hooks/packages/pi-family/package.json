@@ -1,0 +1,16 @@
+{
+  "name": "dotfiles-agent-hooks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared mise hook tasks with opt-in pi and oh-my-pi extension bindings",
+  "pi": {
+    "extensions": [],
+    "skills": [],
+    "prompts": [],
+    "themes": []
+  },
+  "omp": {
+    "extensions": []
+  }
+}

@@ -1,0 +1,36 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Launch from a project: mise -E agent-claude exec -- claude
+# The project's mise.toml and mise.agent-claude.toml layer over these global defaults.
+min_version = "2026.10.6"
+include = ["./config.agent.toml"]
+
+# Claude-specific overrides belong here.
+[env]
+AGENT_ATUIN_NAME = "claude-code"
+AGENT_KIND = "claude"
+
+[tasks."agent:hooks:install"]
+description = "Install the shared hook plugin for Claude Code"
+extends = "agent:hooks:manage"
+depends = ["agent:hooks:prepare", "agent:hooks:validate-plugin"]
+run = [
+  'claude plugin marketplace add "$HOME/.dotfiles/config/agent-hooks" --scope user',
+  'claude plugin install agent-hooks@dotfiles --scope user',
+]
+
+[tasks."agent:hooks:status"]
+description = "Show installed Claude Code plugins (including agent-hooks@dotfiles)"
+extends = "agent:hooks:manage"
+run = 'claude plugin list'
+
+[tasks."agent:hooks:uninstall"]
+description = "Remove only the shared Claude Code hook plugin"
+extends = "agent:hooks:manage"
+run = 'claude plugin uninstall agent-hooks@dotfiles --scope user'
+
+[tasks."agent:hooks:update"]
+description = "Refresh the installed Claude Code hook bindings after editing the plugin"
+extends = "agent:hooks:manage"
+depends = ["agent:hooks:prepare", "agent:hooks:validate-plugin"]
+run = 'claude plugin update agent-hooks@dotfiles --scope user'

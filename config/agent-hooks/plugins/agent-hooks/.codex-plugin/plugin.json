@@ -1,0 +1,7 @@
+{
+  "name": "agent-hooks",
+  "version": "0.1.0",
+  "description": "Run shared dotfiles hook tasks in the project's mise environment",
+  "author": { "name": "Logan Linn" },
+  "hooks": "./hooks/codex.json"
+}

@@ -5,6 +5,7 @@ import io
 import json
 import os
 import shlex
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace as NS
 import unittest
@@ -25,56 +26,145 @@ fork = load("kitty_fork", "fork.py")
 
 
 class SessionVarsTests(unittest.TestCase):
-    env = {"KITTY_LISTEN_ON": "unix:/tmp/kitty-test", "KITTY_WINDOW_ID": "42"}
+    sid = "01a12e42-a881-7542-acf4-40dcc223c647"
+    other = "01a12e42-b992-7542-acf4-40dcc223c648"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        patcher = patch.object(vars_hook, "ROUTES", Path(self.tmp.name))
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def payload(self, event="SessionStart", **fields):
-        return dict(session_id="session-123", hook_event_name=event,
+        return dict(session_id=self.sid, hook_event_name=event,
                     cwd="/tmp/space and $(literal)", model="test-model",
                     permission_mode="default", transcript_path="/tmp/history.jsonl", **fields)
 
-    def test_start_targets_origin_and_preserves_literal_metadata(self):
-        cmd = vars_hook.command(self.payload(), self.env)
-        self.assertEqual(cmd[:7], ["kitten", "@", "--to", "unix:/tmp/kitty-test",
-                                   "set-user-vars", "--match", "id:42"])
+    def route(self, wid=42):
+        return dict(endpoint="unix:/tmp/right-kitty", window_id=wid,
+                    kitty_pid=os.getpid(), prefix=self.sid[:29])
+
+    def window(self, wid=42, program="codex"):
+        w = NS(id=wid, user_vars={}, child_title="project", title_updated=Mock(),
+               child=NS(foreground_processes=[{"cmdline":[program]}]))
+        def set_var(key, value):
+            if value is None:
+                w.user_vars.pop(key, None)
+            else:
+                w.user_vars[key] = value
+        w.set_user_var = set_var
+        return w
+
+    def bind(self, w, sid=None):
+        sid = sid or self.sid
+        vars_hook.on_title_change(NS(listening_on="unix:/tmp/right-kitty"), w,
+                                  {"from_child":True, "title":sid[:29]+"... | project"})
+
+    def test_hook_uses_registered_endpoint_and_ownership_marker(self):
+        cmd = vars_hook.command(self.payload(), self.route())
+        self.assertEqual(cmd[:6], ["kitten", "@", "--to", "unix:/tmp/right-kitty", "set-user-vars", "--match"])
+        self.assertEqual(cmd[6], f"id:42 and var:CODEX_SESSION_PREFIX=^{self.sid[:29]}$ and (not var:CODEX_SESSION_ID or var:CODEX_SESSION_ID=^{self.sid}$)")
         self.assertIn("CODEX_CWD=/tmp/space and $(literal)", cmd)
-        self.assertIn("CODEX_SESSION_ID=session-123", cmd)
-        self.assertIn("CODEX_MODEL=test-model", cmd)
-        self.assertFalse(any(value.startswith("CLAUDE_") for value in cmd))
+        self.assertIn(f"CODEX_SESSION_ID={self.sid}", cmd)
 
-    def test_prompt_refresh_does_not_overwrite_another_session(self):
-        cmd = vars_hook.command(self.payload("UserPromptSubmit"), self.env)
-        self.assertEqual(cmd[6], "id:42 and (not var:CODEX_SESSION_ID or var:CODEX_SESSION_ID=^session-123$)")
+    def test_end_requires_full_session_ownership(self):
+        cmd=vars_hook.command(self.payload("SessionEnd"), self.route())
+        self.assertTrue(cmd[6].endswith(f"and var:CODEX_SESSION_ID=^{self.sid}$"))
+        self.assertEqual(cmd[7:], ["CODEX_SESSION_ID", *vars_hook.FIELDS, f"CODEX_PREV_SESSION_ID={self.sid}"])
 
-    def test_end_removes_current_fields_and_retains_previous_with_ownership_check(self):
-        cmd = vars_hook.command(self.payload("SessionEnd"), self.env)
-        self.assertEqual(cmd[6], "id:42 and var:CODEX_SESSION_ID=^session-123$")
-        self.assertEqual(cmd[7:], ["CODEX_SESSION_ID", *vars_hook.FIELDS,
-                                   "CODEX_PREV_SESSION_ID=session-123"])
+    def test_subagents_invalid_events_and_bad_routes_do_nothing(self):
+        for payload in (self.payload(agent_id="child"), self.payload("Stop"), {}, []):
+            self.assertIsNone(vars_hook.command(payload, self.route()))
+        for route in ({}, {**self.route(),"window_id":0}, {**self.route(),"window_id":"42 or all"},
+                      {**self.route(),"prefix":self.other[:29]}):
+            self.assertIsNone(vars_hook.command(self.payload(), route))
+        payload=self.payload()
+        payload['session_id']='.* or all'
+        self.assertIsNone(vars_hook.command(payload,self.route()))
 
-    def test_subagents_non_lifecycle_events_and_missing_context_do_nothing(self):
-        for payload in [self.payload(agent_id="child"), self.payload("SubagentStart"),
-                        self.payload("Stop"), self.payload("Interrupt"), [], {}]:
-            self.assertIsNone(vars_hook.command(payload, self.env))
-        for env in [{}, {**self.env, "KITTY_WINDOW_ID": "0"},
-                    {**self.env, "KITTY_WINDOW_ID": "-1"},
-                    {**self.env, "KITTY_WINDOW_ID": "42 or all"}]:
-            self.assertIsNone(vars_hook.command(self.payload(), env))
+    def test_absent_metadata_clears_stale_values(self):
+        p=self.payload()
+        p['model']=p['transcript_path']=None
+        self.assertIn('CODEX_MODEL',vars_hook.command(p,self.route()))
+        self.assertIn('CODEX_TRANSCRIPT_PATH',vars_hook.command(p,self.route()))
 
-    def test_absent_metadata_clears_stale_values_and_invalid_session_is_ignored(self):
-        p = self.payload()
-        p["model"] = p["transcript_path"] = None
-        self.assertIn("CODEX_MODEL", vars_hook.command(p, self.env))
-        self.assertIn("CODEX_TRANSCRIPT_PATH", vars_hook.command(p, self.env))
-        p["session_id"] = ".* or all"
-        self.assertIsNone(vars_hook.command(p, self.env))
+    def test_native_title_binds_route_and_preserves_visible_title(self):
+        w=self.window()
+        self.bind(w)
+        self.assertEqual(w.child_title,'project')
+        self.assertEqual(w.user_vars,{'CODEX_SESSION_PREFIX':self.sid[:29]})
+        self.assertEqual(list(vars_hook.routes_for(self.payload())),[self.route()])
+        w.title_updated.assert_called_once()
 
-    def test_main_is_silent_on_invalid_input_or_unavailable_kitty(self):
-        for raw in ["invalid", json.dumps(self.payload())]:
-            with patch.dict(os.environ, self.env), patch("sys.stdin", io.StringIO(raw)), \
-                 patch("sys.stdout", io.StringIO()) as stdout, \
-                 patch.object(vars_hook.subprocess, "run", side_effect=OSError):
+    def test_full_uuid_attention_titles_and_title_overrides(self):
+        w=self.window()
+        vars_hook.on_title_change(NS(listening_on='unix:/tmp/right-kitty'),w,
+            {'from_child':True,'title':f'Action Required: {self.sid} | project'})
+        self.assertEqual(w.child_title,'Action Required: project')
+        vars_hook.on_title_change(None,w,{'from_child':False,'title':'manual title'})
+        self.assertEqual(len(list(vars_hook.routes_for(self.payload()))),1)
+
+    def test_unrelated_foreground_program_cannot_register_a_route(self):
+        w=self.window(program='vim')
+        self.bind(w)
+        self.assertEqual(list(vars_hook.routes_for(self.payload())),[])
+        self.assertEqual(w.user_vars,{})
+
+    def test_session_switch_removes_old_route_and_metadata(self):
+        w=self.window()
+        self.bind(w)
+        w.user_vars.update(CODEX_SESSION_ID=self.sid,CODEX_MODEL='old',CODEX_CWD='/old')
+        self.bind(w,self.other)
+        self.assertEqual(list(vars_hook.routes_for(self.payload())),[])
+        self.assertEqual(w.user_vars,{'CODEX_SESSION_PREFIX':self.other[:29], 'CODEX_PREV_SESSION_ID':self.sid})
+
+    def test_shell_return_and_window_close_remove_routes(self):
+        for event in (vars_hook.on_cmd_startstop,vars_hook.on_close):
+            w=self.window()
+            self.bind(w)
+            w.user_vars['CODEX_SESSION_ID']=self.sid
+            event(None,w,{})
+            self.assertEqual(w.user_vars,{'CODEX_PREV_SESSION_ID':self.sid})
+            self.assertEqual(list(vars_hook.routes_for(self.payload())),[])
+
+    def test_two_sessions_in_same_project_do_not_cross_route(self):
+        a,b=self.window(),self.window(43)
+        self.bind(a)
+        self.bind(b,self.other)
+        self.assertEqual([r['window_id'] for r in vars_hook.routes_for(self.payload())],[42])
+        p={**self.payload(),'session_id':self.other}
+        self.assertEqual([r['window_id'] for r in vars_hook.routes_for(p)],[43])
+
+    def test_same_session_can_be_open_in_multiple_windows(self):
+        self.bind(self.window())
+        self.bind(self.window(43))
+        self.assertEqual(sorted(r['window_id'] for r in vars_hook.routes_for(self.payload())),[42,43])
+
+    def test_daemon_environment_is_ignored_even_when_wrong_or_missing(self):
+        self.bind(self.window())
+        for env in ({}, {'KITTY_WINDOW_ID':'2','KITTY_LISTEN_ON':'unix:/tmp/wrong'}):
+            with patch.dict(os.environ,env,clear=True), patch('sys.stdin',io.StringIO(json.dumps(self.payload()))), \
+                 patch.object(vars_hook.subprocess,'run',return_value=NS(returncode=0)) as run:
                 vars_hook.main()
-                self.assertEqual(stdout.getvalue(), "")
+            self.assertEqual(run.call_args.args[0][3],'unix:/tmp/right-kitty')
+            self.assertTrue(run.call_args.args[0][6].startswith('id:42 and '))
+
+    def test_unregistered_sessions_never_fall_back_to_daemon_window(self):
+        with patch.dict(os.environ,{'KITTY_WINDOW_ID':'2','KITTY_LISTEN_ON':'unix:/tmp/wrong'}), \
+             patch('sys.stdin',io.StringIO(json.dumps(self.payload()))), \
+             patch.object(vars_hook.time,'sleep'), patch.object(vars_hook.subprocess,'run') as run:
+            vars_hook.main()
+        run.assert_not_called()
+
+    def test_failed_kitty_update_is_visible_on_stderr_without_model_context(self):
+        self.bind(self.window())
+        with patch('sys.stdin',io.StringIO(json.dumps(self.payload()))), \
+             patch('sys.stdout',io.StringIO()) as out, patch('sys.stderr',io.StringIO()) as err, \
+             patch.object(vars_hook.subprocess,'run',return_value=NS(returncode=1,stderr='No matching windows')):
+            vars_hook.main()
+        self.assertEqual(out.getvalue(),'')
+        self.assertIn('No matching windows',err.getvalue())
 
 
 class ForkTests(unittest.TestCase):

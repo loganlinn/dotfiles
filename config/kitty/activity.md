@@ -7,8 +7,26 @@ Codex's `SessionStart` and `UserPromptSubmit` hooks call `codex-user-vars.py` to
 `CODEX_TRANSCRIPT_PATH` on the originating Kitty window. `SessionEnd` clears these
 and saves `CODEX_PREV_SESSION_ID`, mirroring Claude's current/previous session IDs.
 Subagent events are ignored. A late exit cannot clear a newer session's metadata.
-The helper requires `KITTY_LISTEN_ON`, a positive `KITTY_WINDOW_ID`, `kitten`, and
-an offline `uv` Python 3.11+ runtime. It does nothing outside Kitty.
+The same file is a Kitty watcher. Set Codex's `tui.terminal_title` to
+`["activity", "project-name", "thread-id"]`: the CLI announces its session identity
+through its own terminal. The watcher registers the actual Kitty socket/window
+under `~/.cache/kitty/codex-sessions/` and hides the ID from the displayed title.
+Codex 0.162 truncates this title item, so `CODEX_SESSION_PREFIX` contains the
+29-character prefix; the hooks supply the full `CODEX_SESSION_ID`. Every update
+requires that prefix and matching full-session ownership. The daemon's inherited
+`KITTY_WINDOW_ID` and `KITTY_LISTEN_ON` are never used for routing.
+
+This works with the shared Codex daemon, multiple windows in the same directory,
+and multiple Kitty instances. Routes are removed when the shell regains control,
+the window closes, or the terminal announces a different session. Windows that
+still run Codex with the old title settings need to update `/title` or restart
+Codex. Reloading Kitty installs the watcher into existing windows; it can also be
+installed with `kitten codex-user-vars.py`.
+
+The hook requires `kitten` and an offline `uv` Python 3.11+ runtime. Unregistered
+sessions and subagents do nothing. Failed Kitty updates are reported on stderr,
+without interrupting Codex or adding model context. `SessionStart` is deferred
+until the first actual prompt; opening the CLI or using `/status` is insufficient.
 
 These hooks are independent of the activity bridge and its performance switch.
 New Codex hooks must be trusted in `/hooks` before they run.

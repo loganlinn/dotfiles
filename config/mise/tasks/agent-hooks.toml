@@ -1,0 +1,36 @@
+#:schema https://mise.jdx.dev/schema/mise-task.json
+
+["agent:hook:activity"]
+description = "Forward native hook JSON to the existing Kitty activity handler"
+extends = "agent:hook"
+quiet = true
+raw = true
+tools = { uv = "0.12.3" }
+# The existing handler decides whether activity reporting is enabled.
+run = '"$HOME/.dotfiles/bin/kitty-activity" hooks run "${AGENT_KIND:?select -E agent-claude or -E agent-codex}" >/dev/null 2>&1 || true'
+
+["agent:hook:atuin"]
+description = "Record agent shell commands in Atuin"
+extends = "agent:hook"
+quiet = true
+raw = true
+tools = { atuin = "18.17.0" }
+# Observational: a history failure must not block the agent's tool call.
+run = 'atuin hook "${AGENT_ATUIN_NAME:?select -E agent-claude or -E agent-codex}" || true'
+
+["agent:hooks:prepare"]
+description = "Link shared mise tasks and install hook tools"
+extends = "agent:hooks:manage"
+run = [
+  'mise dot apply --yes "$HOME/.config/mise"',
+  # Keep these pins aligned with the individual hook tasks above.
+  'mise install atuin@18.17.0 uv@0.12.3',
+]
+
+["agent:hooks:validate-plugin"]
+description = "Validate the Claude/Codex marketplace and plugin manifests"
+extends = "agent:hooks:manage"
+run = [
+  'claude plugin validate "$HOME/.dotfiles/config/agent-hooks"',
+  'claude plugin validate "$HOME/.dotfiles/config/agent-hooks/plugins/agent-hooks"',
+]

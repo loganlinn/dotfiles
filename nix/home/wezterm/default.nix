@@ -28,13 +28,11 @@ with lib; let
     hash = "sha256-FojMuBbyw/XyQIMF8PeQFF3GbO55Nz3/05yXGYdz4dY=";
   };
 in {
-  imports = [../shell];
+  imports = [../shell ./shell-integration.nix];
 
   config = mkIf config.programs.wezterm.enable {
     programs.wezterm = {
       # package = inputs'.wezterm.packages.default or pkgs.wezterm;
-      enableBashIntegration = mkDefault false;
-      enableZshIntegration = mkDefault false;
       extraConfig = ''
         ${fennel-lua}
 
@@ -46,8 +44,6 @@ in {
         return config
       '';
     };
-
-    home.shellAliases.set-user-var = ''printf "\033]1337;SetUserVar=%s=%s\007"'';
 
     my.shellScripts.wezterm-pane-info = {
       runtimeInputs = [pkgs.jq];

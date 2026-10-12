@@ -1,6 +1,7 @@
 #:schema https://mise.jdx.dev/schema/mise.json
 
-# Shared defaults included by config.claude.toml and config.codex.toml.
+# Shared defaults included by config.agent-claude.toml, config.agent-codex.toml,
+# config.agent-omp.toml, and config.agent-pi.toml.
 # Keep agent-wide tools and environment here; includes cannot contain tasks or settings.
 
 [env]

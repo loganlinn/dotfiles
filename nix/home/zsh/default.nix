@@ -236,15 +236,6 @@ in
         zle -N exit-if-empty
         bindkey '^D' exit-if-empty
       '')
-      (mkAfter (
-        lib.optionalString config.programs.wezterm.enable ''
-          ##########################################################
-          # ${includeFile ./wezterm.zsh}
-          if [[ "$TERM_PROGRAM" == "WezTerm" ]]; then
-            source "${config.programs.wezterm.package}/etc/profile.d/wezterm.sh"
-          fi
-        ''
-      ))
       (mkAfter (includeFile ./sudo-prompt.zsh))
       (mkAfter ''
         ##########################################################
