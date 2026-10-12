@@ -13,6 +13,8 @@ _.path = ["{{config_root}}/bin"]
 "~/.config/direnv/lib" = { source = "config/direnv/lib", mode = "symlink-each" }
 "~/.config/herdr/config" = "config/herdr/config.toml"
 "~/.config/k9s" = { source = "config/k9s", mode = "symlink-each" }
+# Link all global mise configs, including the shared agent defaults and both overlays.
+# Keep config.agent.toml beside config.claude.toml and config.codex.toml for their includes.
 "~/.config/mise" = { source = "config/mise", mode = "symlink-each" }
 "~/.local/share/zsh/functions" = { source = "config/zsh/functions", mode = "symlink-each" }
 "~/.config/ghostty/config" = {source = "config/ghostty/config", mode = "symlink"}

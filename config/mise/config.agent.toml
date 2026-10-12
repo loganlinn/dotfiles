@@ -1,0 +1,10 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Shared defaults included by config.claude.toml and config.codex.toml.
+# Keep agent-wide tools and environment here; includes cannot contain tasks or settings.
+
+[env]
+RUST_BACKTRACE = "1"
+
+[tools]
+ripgrep = "latest"
