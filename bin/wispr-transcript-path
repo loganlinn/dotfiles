@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: wispr-transcript-path [meetings-directory]
+
+Print the path to the most recently modified Wispr Flow live.ndjson file.
+Defaults to ~/Library/Application Support/Wispr Flow/meetings.
+The latest transcript may belong to a meeting that has already ended.
+EOF
+}
+
+if [[ ${1:-} == -h || ${1:-} == --help ]]; then
+  usage
+  exit 0
+fi
+
+if (( $# > 1 )) || [[ ${1:-} == -* ]]; then
+  usage >&2
+  exit 2
+fi
+
+meetings_dir=${1:-"$HOME/Library/Application Support/Wispr Flow/meetings"}
+cd -- "$meetings_dir" || exit 1
+meetings_dir=$PWD
+
+shopt -s nullglob
+latest=
+for transcript in "$meetings_dir"/*/live.ndjson; do
+  [[ -f $transcript ]] || continue
+  if [[ -z $latest || $transcript -nt $latest ]]; then
+    latest=$transcript
+  fi
+done
+
+if [[ -z $latest ]]; then
+  printf 'wispr-transcript-path: no live.ndjson files found in %s\n' "$meetings_dir" >&2
+  exit 1
+fi
+
+printf '%s\n' "$latest"

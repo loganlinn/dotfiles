@@ -50,7 +50,7 @@ src-repo() {
     (
       set -eo pipefail
       gh repo list "$@" |
-        fzf --layout=reverse |
+        fzf --layout=reverse --multi |
         cut -f1 |
         sed -e 's|^|https://github.com/|' -e 's|$|.git|'
     )
@@ -126,6 +126,9 @@ src-get() {
     -h | --help | help)
       echo "Usage: src-get [options] <repository>"
       echo "       src-get [options] <owner>/<repo>"
+      echo "       src-get [options] <owner>"
+      echo ""
+      echo "Given an owner, select one or more repositories with fzf."
       echo ""
       echo "Options:"
       echo "  --depth <depth>"
@@ -136,7 +139,7 @@ src-get() {
       echo "      Print the path to the git repository. Defaults to true when stdout is not a"
       echo "      terminal (e.g. \$(src-get ...)), false otherwise."
       echo "  --[no-]cd"
-      echo "      pushd into the git repository. Defaults to true."
+      echo "      pushd into the last selected repository. Defaults to true."
       echo "  --[no-]set-window-title"
       echo "      Set the terminal window title to the repository directory, relative to"
       echo "      \$(src-home). Defaults to true for interactive invocations (stdout is a"
@@ -215,48 +218,56 @@ src-get() {
     return 1
   fi
 
-  local repo
-  repo=$(src-repo "$1") || return
+  local selected repo
+  selected=$(src-repo "$1") || return
+  [[ -n $selected ]] || return 0
 
-  local dir
-  dir=$(src-dir "$repo")
+  # Split the picker output into repositories in both Bash and zsh.
+  local repos=()
+  while IFS= read -r repo; do
+    repos+=("$repo")
+  done <<<"$selected"
 
-  if [[ ! -d $dir ]]; then
-    local git_clone_cmd=("${SRC_GIT:-git}" clone ${depth:+--depth=$depth} --progress -- "$repo" "$dir")
-    if command "${git_clone_cmd[@]}"; then
-      [[ -n $debug ]] && echo >&2 "src-get: ${git_clone_cmd[*]}"
-    else
-      return $?
+  local dir history_file history_dir rev
+  local git_clone_cmd=()
+  for repo in "${repos[@]}"; do
+    dir=$(src-dir "$repo")
+
+    if [[ ! -d $dir ]]; then
+      git_clone_cmd=("${SRC_GIT:-git}" clone ${depth:+--depth=$depth} --progress -- "$repo" "$dir")
+      if command "${git_clone_cmd[@]}"; then
+        [[ -n $debug ]] && echo >&2 "src-get: ${git_clone_cmd[*]}"
+      else
+        return $?
+      fi
     fi
-  fi
+
+    if zoxide add "$dir" >/dev/null 2>&1; then
+      [[ -n $debug ]] && echo >&2 "src-get: zoxide add '$dir'"
+    fi
+
+    if [[ -z $history_disabled ]]; then
+      history_file=$(src-history-file)
+      history_dir=$(dirname -- "$history_file")
+      if mkdir -p -- "$history_dir" 2>/dev/null; then
+        rev=$(git -C "$dir" rev-parse HEAD 2>/dev/null) || rev=-
+        if printf '%s\t%s\t%s\n' "$(date +%s)" "${dir#"$HOME"/}" "$rev" >>"$history_file" 2>/dev/null; then
+          [[ -n $debug ]] && echo >&2 "src-get: recorded history entry to '$history_file'"
+        else
+          echo >&2 "src-get: warning: unable to write to history file '$history_file'"
+        fi
+      else
+        echo >&2 "src-get: warning: unable to create history directory '$history_dir'"
+      fi
+    fi
+
+    [[ $print_path == true ]] && printf '%s\n' "$dir"
+  done
 
   if [[ $do_cd == true ]]; then
-    pushd -- "$dir" >/dev/null
+    pushd -- "$dir" >/dev/null || return
     [[ -n $debug ]] && echo >&2 "src-get: pushd -- '$dir'"
   fi
-
-  if zoxide add "$dir" >/dev/null 2>&1; then
-    [[ -n $debug ]] && echo >&2 "src-get: zoxide add '$dir'"
-  fi
-
-  if [[ -z $history_disabled ]]; then
-    local history_file history_dir
-    history_file=$(src-history-file)
-    history_dir=$(dirname -- "$history_file")
-    if mkdir -p -- "$history_dir" 2>/dev/null; then
-      local rev
-      rev=$(git -C "$dir" rev-parse HEAD 2>/dev/null) || rev=-
-      if printf '%s\t%s\t%s\n' "$(date +%s)" "${dir#"$HOME"/}" "$rev" >>"$history_file" 2>/dev/null; then
-        [[ -n $debug ]] && echo >&2 "src-get: recorded history entry to '$history_file'"
-      else
-        echo >&2 "src-get: warning: unable to write to history file '$history_file'"
-      fi
-    else
-      echo >&2 "src-get: warning: unable to create history directory '$history_dir'"
-    fi
-  fi
-
-  [[ $print_path == true ]] && printf '%s\n' "$dir"
 
   if [[ $set_window_title == true ]]; then
     local title=${PWD#"$(src-home)"/}
