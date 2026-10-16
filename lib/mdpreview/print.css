@@ -1,0 +1,90 @@
+/* Shared by the built-in and custom themes. No background-printing option needed. */
+@page { margin: 15mm; }
+
+:root { color-scheme: light; }
+
+*, *::before, *::after {
+  color: #202124 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html, body {
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  background: white !important;
+}
+
+body { font-size: 10pt; line-height: 1.45; }
+
+nav[aria-label="Documents"], label[for="filter"], input[type="search"] {
+  display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6, summary {
+  break-after: avoid;
+  break-inside: avoid;
+}
+
+h1, h2 { border-color: #a0a0a0; }
+p, li { orphans: 3; widows: 3; }
+li::marker { color: #444 !important; }
+a { color: #174b80 !important; text-decoration-color: currentColor; }
+
+code, pre, samp, a { overflow-wrap: anywhere; }
+pre, pre code {
+  white-space: pre-wrap !important;
+  word-break: normal;
+  font-size: 8.5pt;
+}
+
+pre, div.sourceCode, .mdpreview-table, .mermaid-diagram {
+  overflow: visible !important;
+  max-height: none !important;
+  break-inside: auto;
+}
+
+pre { padding: 0.65em; border: 1px solid #bbb; border-radius: 0; }
+
+/* Scroll containers and transformed tables cannot fragment reliably on paper. */
+.mdpreview-table {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  max-width: 100% !important;
+  margin: 0 0 1em !important;
+  transform: none !important;
+}
+
+table {
+  display: table !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+
+thead { display: table-header-group; }
+tfoot { display: table-footer-group; }
+tr { break-inside: avoid; }
+th, td {
+  border: 1px solid #999;
+  padding: 0.4em 0.6em;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+th { font-weight: 700; }
+th code, td code { white-space: normal !important; }
+img, svg { max-width: 100% !important; height: auto; }
+figure, .mermaid-diagram { break-inside: avoid; }
+blockquote { border-color: #777; }
+
+.mermaid-diagram[data-print-ready] > svg { display: none !important; }
+.mermaid-print[hidden] { display: block !important; }

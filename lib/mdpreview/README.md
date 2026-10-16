@@ -68,6 +68,19 @@ Themes retain the existing behavior:
 
 Custom CSS remains an external file, so relative resources in that CSS retain their original base directory.
 
+## Tables and printing
+
+In the built-in theme, top-level tables can use the window width while prose keeps
+its narrower reading column. Long identifiers wrap in smaller windows. Tables
+inside lists and callouts stay within their container.
+
+Browser **Print / Save as PDF** uses a shared light print stylesheet, including
+with custom themes. It removes navigation, uses 15 mm page margins, wraps code
+and table cells, repeats table headers, and avoids splitting rows when they fit
+on a page. The print dialog controls paper size and orientation. Background
+graphics are not required for readable text.
+Dark Mermaid diagrams prepare a separate light version for printing as they load.
+
 ## Markdown support
 
 Documents use the Pandoc `gfm` reader for GitHub Flavored Markdown.

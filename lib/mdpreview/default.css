@@ -279,17 +279,32 @@ pre.diff .va { color: var(--add); }
 
 table {
   border-collapse: collapse;
-  margin: 0 0 1.25em;
-  display: block;
-  max-width: fit-content;
-  overflow-x: auto;
+  width: 100%;
   font-size: 0.95em;
+}
+
+.mdpreview-table {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 1.25em;
+  overflow-x: auto;
+}
+
+/* Only top-level tables break out of the prose column. Nested tables stay put. */
+body > .mdpreview-table,
+.mdpreview-document > .mdpreview-table {
+  max-width: min(90rem, calc(100vw - 3rem));
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 th, td {
   border: 1px solid var(--border);
   padding: 0.45em 0.9em;
   text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 thead th {

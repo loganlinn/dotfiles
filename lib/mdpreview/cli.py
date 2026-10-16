@@ -372,6 +372,10 @@ class PreviewLinks(HTMLParser):
     def start_tag(
         self, tag: str, attrs: list[tuple[str, str | None]], ending: str
     ) -> None:
+        if tag == "table":
+            self.parts.append(
+                '<div class="mdpreview-table" role="region" aria-label="Table" tabindex="0">'
+            )
         if tag == "pre" and "mermaid" in (dict(attrs).get("class") or "").split():
             self.has_mermaid = True
             self.mermaid_start = len(self.parts)
@@ -429,6 +433,8 @@ class PreviewLinks(HTMLParser):
             self.mermaid_start = None
             self.mermaid_text = []
         self.parts.append(f"</{tag}>")
+        if tag == "table":
+            self.parts.append("</div>")
 
     def handle_data(self, data):
         if self.mermaid_start is not None:
@@ -461,13 +467,15 @@ def report_log(message: str, log: Path) -> None:
     raise PreviewError(f"{message}{detail}\nFull error log: {log}")
 
 
-def theme_header(theme: Path | None) -> str:
-    if theme:
-        return (
-            f'<link rel="stylesheet" href="{html.escape(theme.as_uri(), quote=True)}">'
-        )
-    css = Path(__file__).with_name("default.css").read_text()
-    return f"<style>\n{css}</style>"
+def theme_header(theme: Path | None, *, link_theme: bool = True) -> str:
+    header = ""
+    if theme is None:
+        css = Path(__file__).with_name("default.css").read_text()
+        header = f"<style>\n{css}</style>"
+    elif link_theme:
+        header = f'<link rel="stylesheet" href="{html.escape(theme.as_uri(), quote=True)}">'
+    css = Path(__file__).with_name("print.css").read_text()
+    return header + f'\n<style media="print">\n{css}</style>'
 
 
 def convert_file(
@@ -496,8 +504,7 @@ def convert_file(
     ]
     if theme:
         command += ["-c", theme.as_uri()]
-    else:
-        command += ["-H", str(header)]
+    command += ["-H", str(header)]
     command += ["-o", str(staged), "--", str(source)]
     with log.open("wb") as errors:
         result = subprocess.run(command, stderr=errors, stdout=subprocess.DEVNULL)
@@ -649,7 +656,8 @@ def build_preview(
     with tempfile.TemporaryDirectory(prefix=".build-", dir=entry) as temporary:
         stage = Path(temporary)
         header = stage / "header.html"
-        header.write_text(theme_header(theme))
+        # Pandoc links custom CSS with -c; the hand-written index needs its own link.
+        header.write_text(theme_header(theme, link_theme=False))
         rendered = []
         with ThreadPoolExecutor(max_workers=5) as executor:
             pending = {}
@@ -692,7 +700,7 @@ def build_preview(
             log_progress(f"Writing index and pages to {site}")
             staged_index = stage / "index.html"
             staged_index.write_text(
-                render_index(source, index_pages, index, header.read_text())
+                render_index(source, index_pages, index, theme_header(theme))
             )
             rendered.append((index, staged_index))
         for target, staged in rendered:

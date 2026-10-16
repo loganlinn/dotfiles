@@ -1,5 +1,5 @@
 # /// script
-# dependencies = ["playwright"]
+# dependencies = ["playwright", "pymupdf"]
 # ///
 """Browser integration: uv run test/test_mdpreview_browser.py.
 
@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 try:
+    import pymupdf
     from playwright.sync_api import sync_playwright
 except ImportError:
     sync_playwright = None
@@ -32,7 +33,7 @@ RENDERED = ".mermaid-diagram[data-rendered] > svg"
 @unittest.skipUnless(
     sync_playwright and shutil.which("pandoc"), "Playwright and Pandoc are required"
 )
-class MermaidBrowserTests(unittest.TestCase):
+class BrowserTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.playwright = sync_playwright().start()
@@ -73,6 +74,115 @@ class MermaidBrowserTests(unittest.TestCase):
         )
         self.page.goto(Path(result.stdout.strip()).as_uri())
 
+
+class LayoutBrowserTests(BrowserTests):
+    TABLE = """| Address | Action | Reason |
+| --- | --- | --- |
+| `module.runtime.helm_release.cube` | Update | Only `images.lifecycleManager.tag`: r5 to r6 |
+| `module.runtime.module.steel_runtime.terraform_data.steel_pod_security_gate` | Replace | Operator profile replaces Atlantis profile; reruns existing connectivity/security gate |
+| `module.runtime.module.steel_runtime.terraform_data.steel_retirement_cleanup` | Update | Stores operator profile; destroy-only cleanup does not run |
+"""
+
+    def test_tables_use_window_width_and_stay_inside_small_viewports(self):
+        self.page.set_viewport_size({"width": 1440, "height": 900})
+        self.preview("# Reviewed plan\n\nProse stays readable.\n\n" + self.TABLE)
+        prose = self.page.locator("p").bounding_box()
+        table = self.page.locator("table").bounding_box()
+        self.assertGreater(table["width"], prose["width"] + 200)
+        self.assertGreaterEqual(table["x"], 23)
+        self.assertLessEqual(table["x"] + table["width"], 1417)
+        for width in (900, 390):
+            self.page.set_viewport_size({"width": width, "height": 800})
+            self.assertTrue(
+                self.page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            )
+            self.assertTrue(
+                self.page.locator(".mdpreview-table").evaluate(
+                    "element => element.scrollWidth <= element.clientWidth + 1"
+                )
+            )
+        self.assertEqual(self.errors, [])
+
+    def test_pdf_keeps_table_cells_long_code_and_repeating_headers(self):
+        token = "very_long_path/" * 30 + "command_end_marker"
+        rows = "\n".join(
+            f"| row_{index:03} | `{'long_identifier_' * 8}{index}` | reason_{index:03}_end |"
+            for index in range(65)
+        )
+        self.preview(
+            "# Print report\n\n"
+            + self.TABLE
+            + f"\n```bash\nexport VALUE={token}\n```\n\n"
+            + "| Address | Action | Reason |\n| --- | --- | --- |\n"
+            + rows
+        )
+        for paper in ("Letter", "A4"):
+            with self.subTest(paper=paper):
+                pdf = pymupdf.open(stream=self.page.pdf(format=paper), filetype="pdf")
+                self.addCleanup(pdf.close)
+                compact = "".join("".join(page.get_text().split()) for page in pdf)
+                self.assertIn(token, compact)
+                self.assertIn("rerunsexistingconnectivity/securitygate", compact)
+                for index in range(65):
+                    self.assertIn(f"row_{index:03}", compact)
+                    self.assertIn(f"reason_{index:03}_end", compact)
+                for page in pdf:
+                    if "row_" in page.get_text():
+                        self.assertIn("Address", page.get_text())
+                    for word in page.get_text("words"):
+                        self.assertGreaterEqual(word[0], 40)
+                        self.assertLessEqual(word[2], page.rect.width - 40)
+                    for block in page.get_text("dict")["blocks"]:
+                        for line in block.get("lines", []):
+                            for span in line["spans"]:
+                                self.assertEqual(span["color"], 0x202124)
+        self.assertEqual(self.errors, [])
+
+    def test_print_overrides_custom_dark_themes(self):
+        self.preview(
+            "# Custom theme\n\n" + self.TABLE,
+            "body { max-width: 30rem; background: #111; color: #eee; }"
+            "code, th { color: pink; } table { display: block; overflow: auto; }",
+        )
+        self.page.emulate_media(media="print")
+        self.assertEqual(
+            self.page.locator("body").evaluate(
+                "element => getComputedStyle(element).backgroundColor"
+            ),
+            "rgb(255, 255, 255)",
+        )
+        self.assertEqual(
+            self.page.locator("code").first.evaluate(
+                "element => getComputedStyle(element).color"
+            ),
+            "rgb(32, 33, 36)",
+        )
+        self.assertEqual(
+            self.page.locator("table").evaluate(
+                "element => getComputedStyle(element).display"
+            ),
+            "table",
+        )
+
+
+class MermaidBrowserTests(BrowserTests):
+    def test_print_uses_prepared_light_diagrams(self):
+        self.preview(FLOW + SEQUENCE)
+        self.page.wait_for_function(
+            "document.querySelectorAll('.mermaid-diagram[data-print-ready]').length === 2"
+        )
+        self.assertFalse(self.page.locator(".mermaid-print").first.is_visible())
+        self.page.emulate_media(media="print")
+        self.assertTrue(self.page.locator(".mermaid-print").first.is_visible())
+        self.assertFalse(self.page.locator(RENDERED).first.is_visible())
+        self.assertEqual(
+            self.page.locator(".mermaid-print .messageText").evaluate(
+                "element => getComputedStyle(element).fill"
+            ),
+            "rgb(51, 51, 51)",
+        )
+        self.assertEqual(self.errors, [])
+
     def test_valid_diagrams_render_on_both_sides_of_an_invalid_diagram(self):
         invalid = "```mermaid\nThis is not a Mermaid diagram.\n```\n"
         self.preview("# Mermaid\n\n" + FLOW + invalid + FLOW)
@@ -81,8 +191,8 @@ class MermaidBrowserTests(unittest.TestCase):
         )
         self.assertEqual(self.page.locator(".mermaid-error").count(), 1)
         self.assertIn("This is not", self.page.locator("pre.mermaid").inner_text())
-        self.assertEqual(self.page.locator("svg .node").count(), 4)
-        for diagram in self.page.locator(".mermaid-diagram svg").all():
+        self.assertEqual(self.page.locator(f"{RENDERED} .node").count(), 4)
+        for diagram in self.page.locator(RENDERED).all():
             self.assertIn("Markdown", diagram.text_content())
             self.assertGreater(diagram.bounding_box()["width"], 100)
             self.assertGreater(diagram.bounding_box()["height"], 20)
