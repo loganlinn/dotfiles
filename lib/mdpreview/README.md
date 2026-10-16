@@ -81,6 +81,23 @@ on a page. The print dialog controls paper size and orientation. Background
 graphics are not required for readable text.
 Dark Mermaid diagrams prepare a separate light version for printing as they load.
 
+## Two-page reading
+
+Choose **Two pages** in the document toolbar to read facing pages. Use the arrow
+buttons, Left/Right, Page Up/Down, or Space/Shift+Space to turn pages. Home/End
+jump to the first/last spread. **Scroll** or Escape returns to continuous reading.
+The reader keeps your current paragraph when switching views or resizing, and
+internal links and keyboard focus reveal the page containing their destination.
+
+Windows up to 850 CSS pixels wide show one page at a time. Page breaks follow the
+window size, like a reflowable ebook; these page numbers are independent of the
+printed paper size. The browser remembers the selected view when local storage
+is available. The reader works offline; Mermaid and math still need their CDN
+libraries. Without JavaScript, the document remains a normal scrolling page.
+
+**Print / PDF** opens the browser print dialog. It always prints the entire
+document in the light print layout, including when a later spread is on screen.
+
 ## Markdown support
 
 Documents use the Pandoc `gfm` reader for GitHub Flavored Markdown.

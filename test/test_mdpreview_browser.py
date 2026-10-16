@@ -165,6 +165,165 @@ class LayoutBrowserTests(BrowserTests):
         )
 
 
+class ReaderBrowserTests(BrowserTests):
+    DOCUMENT = (
+        "# Start marker\n\n[Jump to end](#end-marker)\n\n"
+        + "\n\n".join(
+            f"## Section {index}\n\n"
+            + (f"Paragraph {index}. Readable document text. " * 16)
+            for index in range(18)
+        )
+        + "\n\n"
+        + LayoutBrowserTests.TABLE
+        + "\n\n# End marker\n\nFinal paragraph.\n"
+    )
+
+    def on_screen(self, selector):
+        return self.page.locator(selector).evaluate("""element => {
+            const viewport = document.querySelector('.mdpreview-viewport').getBoundingClientRect();
+            return Array.from(element.getClientRects()).some(rect =>
+                rect.left >= viewport.left - 1 && rect.right <= viewport.right + 1 &&
+                rect.top >= viewport.top - 1 && rect.bottom <= viewport.bottom + 1);
+        }""")
+
+    def test_facing_pages_navigation_last_page_and_narrow_windows(self):
+        self.page.set_viewport_size({"width": 1440, "height": 900})
+        self.preview(self.DOCUMENT)
+        self.page.get_by_role("button", name="Two pages", exact=True).click()
+        status = self.page.locator(".mdpreview-page-status")
+        self.assertRegex(status.inner_text(), r"^Pages 1–2 of \d+$")
+        self.assertTrue(self.on_screen("#start-marker"))
+        # Check actual painting: an overlaid sheet can hide text despite valid rects.
+        pixels = pymupdf.Pixmap(self.page.locator(".mdpreview-viewport").screenshot())
+        samples = pixels.samples
+        for side in (0, 1):
+            painted = sum(
+                samples[y * pixels.stride + x * pixels.n] > 100
+                for y in range(pixels.height)
+                for x in range(side * pixels.width // 2, (side + 1) * pixels.width // 2)
+            )
+            self.assertGreater(painted, 500)
+        self.assertTrue(
+            self.page.get_by_role("button", name="Previous pages").is_disabled()
+        )
+        self.page.get_by_role("button", name="Next pages").click()
+        self.assertRegex(status.inner_text(), r"^Pages 3–4 of \d+$")
+        self.assertFalse(self.on_screen("#start-marker"))
+        self.page.keyboard.press("End")
+        self.assertTrue(
+            self.page.get_by_role("button", name="Next pages").is_disabled()
+        )
+        self.assertTrue(self.on_screen("#end-marker"))
+        self.page.set_viewport_size({"width": 600, "height": 900})
+        self.page.wait_for_function(
+            "document.querySelector('.mdpreview-page-status').textContent.startsWith('Page ')"
+        )
+        self.page.keyboard.press("End")
+        self.assertTrue(self.on_screen("#end-marker"))
+        self.page.keyboard.press("Home")
+        self.assertRegex(status.inner_text(), r"^Page 1 of \d+$")
+        self.assertTrue(
+            self.page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        )
+        self.page.keyboard.press("ArrowRight")
+        self.assertRegex(status.inner_text(), r"^Page 2 of \d+$")
+        self.assertEqual(self.errors, [])
+
+    def test_hash_navigation_focus_and_printing_preserve_the_whole_document(self):
+        self.page.set_viewport_size({"width": 1440, "height": 900})
+        self.preview(self.DOCUMENT)
+        baseline = pymupdf.open(stream=self.page.pdf(format="Letter"), filetype="pdf")
+        self.addCleanup(baseline.close)
+        self.page.get_by_role("button", name="Two pages", exact=True).click()
+        self.page.get_by_role("link", name="Jump to end").click()
+        self.page.wait_for_function("location.hash === '#end-marker'")
+        self.page.wait_for_function(
+            "document.querySelector('[data-turn=\"1\"]').disabled"
+        )
+        self.assertTrue(self.on_screen("#end-marker"))
+        printed = pymupdf.open(stream=self.page.pdf(format="Letter"), filetype="pdf")
+        self.addCleanup(printed.close)
+        self.assertEqual(
+            "".join(page.get_text() for page in printed),
+            "".join(page.get_text() for page in baseline),
+        )
+        self.page.locator("#section-3").evaluate(
+            "element => { element.tabIndex = 0; element.focus(); }"
+        )
+        self.assertTrue(self.on_screen("#section-3"))
+        self.page.get_by_role("button", name="Scroll", exact=True).click()
+        self.assertFalse(self.page.locator(".mdpreview-pagination").is_visible())
+        self.assertEqual(self.errors, [])
+
+    def test_saved_view_custom_theme_and_late_content_reflow(self):
+        self.preview(
+            self.DOCUMENT,
+            "body { max-width: 40rem; margin: auto; background: white; color: black; }",
+        )
+        self.page.get_by_role("button", name="Two pages", exact=True).click()
+        self.page.reload()
+        self.assertEqual(
+            self.page.get_by_role("button", name="Two pages", exact=True).get_attribute(
+                "aria-pressed"
+            ),
+            "true",
+        )
+        before = self.page.locator(".mdpreview-page-status").inner_text()
+        self.page.locator(".mdpreview-document").evaluate("""element => {
+            for (let index = 0; index < 100; index++) {
+                const p = document.createElement('p');
+                p.textContent = 'Late content added after page load. '.repeat(10);
+                element.append(p);
+            }
+        }""")
+        self.page.wait_for_function(
+            "before => document.querySelector('.mdpreview-page-status').textContent !== before",
+            arg=before,
+        )
+        self.page.keyboard.press("End")
+        self.assertTrue(self.on_screen(".mdpreview-document > p:last-child"))
+        self.assertEqual(self.errors, [])
+
+    def test_long_tables_and_code_fit_every_page_fragment(self):
+        rows = "\n".join(
+            f"| row_{index} | `{'long_identifier_' * 8}` | End of row {index} |"
+            for index in range(60)
+        )
+        self.preview(
+            "# Long content\n\n| Name | Address | Reason |\n| --- | --- | --- |\n"
+            + rows
+            + "\n\n```text\n"
+            + ("long_command/" * 70 + "\n") * 30
+            + "```\n"
+        )
+        self.page.get_by_role("button", name="Two pages", exact=True).click()
+        failures = self.page.locator(".mdpreview-document").evaluate("""article => {
+            const bounds = article.getBoundingClientRect();
+            const style = getComputedStyle(article);
+            const gap = parseFloat(style.columnGap);
+            const stride = (bounds.width + gap) / Number(style.columnCount);
+            const width = stride - gap;
+            const failures = [];
+            const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+                if (!walker.currentNode.textContent.trim()) continue;
+                const range = document.createRange();
+                range.selectNodeContents(walker.currentNode);
+                for (const rect of range.getClientRects()) {
+                    const left = rect.left - bounds.left;
+                    const column = Math.floor((left + 1) / stride);
+                    if (rect.width > 0 && (left - column * stride < -1 ||
+                        rect.right - bounds.left - column * stride > width + 1 ||
+                        rect.top < bounds.top - 1 || rect.bottom > bounds.bottom + 1)) {
+                        failures.push(walker.currentNode.textContent.slice(0, 80));
+                    }
+                }
+            }
+            return failures.slice(0, 5);
+        }""")
+        self.assertEqual(failures, [])
+
+
 class MermaidBrowserTests(BrowserTests):
     def test_print_uses_prepared_light_diagrams(self):
         self.preview(FLOW + SEQUENCE)

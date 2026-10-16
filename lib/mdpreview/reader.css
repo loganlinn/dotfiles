@@ -1,0 +1,140 @@
+@media screen {
+  .mdpreview-document :is(h1, h2, h3, h4, h5, h6, p, li, pre, td, img, summary) {
+    scroll-margin-top: 5rem;
+  }
+  .mdpreview-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    position: sticky;
+    top: 0.5rem;
+    z-index: 10;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto 1.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--border, #888);
+    border-radius: 0.7rem;
+    background: var(--bg, Canvas);
+    color: var(--fg, CanvasText);
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .mdpreview-toolbar button {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid transparent;
+    border-radius: 0.35rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .mdpreview-toolbar button:hover,
+  .mdpreview-toolbar button[aria-pressed="true"] {
+    background: var(--bg-surface, ButtonFace);
+  }
+  .mdpreview-toolbar button[aria-pressed="true"] {
+    border-color: var(--border, #888);
+  }
+  .mdpreview-toolbar button:focus-visible {
+    outline: 2px solid var(--link, Highlight);
+    outline-offset: 2px;
+  }
+  .mdpreview-toolbar button:disabled { opacity: 0.4; cursor: default; }
+  .mdpreview-toolbar nav { margin: 0 0.5rem; }
+  .mdpreview-pagination { display: flex; align-items: center; gap: 0.25rem; }
+  .mdpreview-pagination[hidden] { display: none; }
+  .mdpreview-page-status { min-width: 7.5em; text-align: center; font-variant-numeric: tabular-nums; }
+
+  html.mdpreview-paged { scroll-behavior: auto; }
+  .mdpreview-paged body {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    max-width: none;
+    width: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 1rem;
+    overflow: hidden;
+  }
+  .mdpreview-paged .mdpreview-toolbar { position: static; flex-shrink: 0; margin-bottom: 1rem; }
+  .mdpreview-paged .mdpreview-reader {
+    --reader-columns: 2;
+    --reader-gutter: 1.25rem;
+    --reader-padding: clamp(1rem, 3vw, 2.75rem);
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    max-width: 100rem;
+    min-height: 0;
+    flex: 1;
+    margin: 0 auto;
+    padding: var(--reader-padding);
+  }
+  .mdpreview-paged .mdpreview-reader::before,
+  .mdpreview-paged .mdpreview-reader::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: calc((100% - var(--reader-gutter)) / 2);
+    border: 1px solid var(--border-faint, #ccc);
+    border-radius: 0.3rem;
+    background: var(--bg-code, Canvas);
+    box-shadow: 0 3px 16px #0002;
+    pointer-events: none;
+  }
+  .mdpreview-paged .mdpreview-reader::before { left: 0; }
+  .mdpreview-paged .mdpreview-reader::after { right: 0; }
+  .mdpreview-paged .mdpreview-viewport {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    overflow: clip;
+    overflow-wrap: anywhere;
+  }
+  .mdpreview-paged .mdpreview-document {
+    height: 100%;
+    column-count: var(--reader-columns);
+    column-gap: calc(2 * var(--reader-padding) + var(--reader-gutter));
+    column-fill: auto;
+    transform: translateX(var(--reader-offset, 0px));
+  }
+  .mdpreview-paged :is(h1, h2, h3, h4, h5, h6, summary) {
+    break-after: avoid;
+    break-inside: avoid;
+  }
+  .mdpreview-paged :is(p, li) { orphans: 2; widows: 2; }
+  .mdpreview-paged .mdpreview-table {
+    position: static;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    transform: none;
+  }
+  .mdpreview-paged table { width: 100%; table-layout: fixed; }
+  .mdpreview-paged tr { break-inside: avoid; }
+  .mdpreview-paged :is(th, td) { overflow-wrap: anywhere; }
+  .mdpreview-paged :is(pre, pre code) { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .mdpreview-paged :is(pre, div.sourceCode, .mermaid-diagram) { overflow: visible !important; }
+  .mdpreview-paged :is(img, svg) {
+    max-width: 100%;
+    max-height: calc(100dvh - 12rem);
+    object-fit: contain;
+  }
+  .mdpreview-paged .mermaid-diagram { break-inside: avoid; }
+}
+
+@media screen and (max-width: 850px) {
+  .mdpreview-paged body { padding: 0.5rem; }
+  .mdpreview-paged .mdpreview-reader { --reader-columns: 1; }
+  .mdpreview-paged .mdpreview-reader::before { width: 100%; }
+  .mdpreview-paged .mdpreview-reader::after { display: none; }
+}
+
+@media print {
+  .mdpreview-toolbar { display: none !important; }
+}

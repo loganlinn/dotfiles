@@ -67,6 +67,11 @@ Themes:
   MDPREVIEW_THEME sets the default theme. --theme has precedence.
   With no theme, use the built-in dark theme.
 
+Reading:
+  Use the page toolbar to switch between scrolling and two-page reading.
+  In page view, use Left/Right or Page Up/Down to turn pages, Home/End to jump.
+  Narrow windows show one page. Print / Save as PDF always prints the document.
+
 Cache:
   macOS: $HOME/Library/Caches/mdpreview
   Linux: ${XDG_CACHE_HOME:-$HOME/.cache}/mdpreview
@@ -474,6 +479,8 @@ def theme_header(theme: Path | None, *, link_theme: bool = True) -> str:
         header = f"<style>\n{css}</style>"
     elif link_theme:
         header = f'<link rel="stylesheet" href="{html.escape(theme.as_uri(), quote=True)}">'
+    css = Path(__file__).with_name("reader.css").read_text()
+    header += f"\n<style>\n{css}</style>"
     css = Path(__file__).with_name("print.css").read_text()
     return header + f'\n<style media="print">\n{css}</style>'
 
@@ -547,6 +554,17 @@ def finish_render(
     parser.feed(staged.read_text())
     parser.close()
     content = "".join(parser.parts)
+    content = content.replace(
+        "<body>",
+        '<body>\n<div class="mdpreview-reader"><div class="mdpreview-viewport">'
+        '<article class="mdpreview-document">',
+        1,
+    )
+    script = Path(__file__).with_name("reader.js").read_text()
+    before, closing, after = content.rpartition("</body>")
+    content = (
+        before + f"</article></div></div>\n<script>\n{script}</script>\n" + closing + after
+    )
     if index is not None:
         nav = f'<nav aria-label="Documents"><a href="{relative_url(index, destination)}">All documents</a></nav>'
         content = content.replace("<body>", f"<body>\n{nav}", 1)
