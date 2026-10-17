@@ -1,0 +1,13 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
+"""Look up, focus, resume, or preview a Codex/Claude session."""
+
+from pathlib import Path
+import runpy
+
+if __name__ == "__main__":
+    module = Path(__file__).resolve().parents[1] / "config/kitty/agent_session.py"
+    runpy.run_path(str(module), run_name="__main__")

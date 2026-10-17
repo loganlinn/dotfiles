@@ -57,6 +57,7 @@ in {
           }
         )
         [
+          "agent_session.py"
           "auto_tab_title.py"
           "big_mode.py"
           "choose-files.conf"
@@ -88,6 +89,8 @@ in {
           "paste-actions.py"
           "quick-access-terminal.conf"
           "reopen_closed_tab.py"
+          "session_hints.py"
+          "session_links.py"
           "sessions"
           "snap_splits.py"
           "ssh.conf"
