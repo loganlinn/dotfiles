@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: jcsv
+       jcsv -c LABEL EXPR ... [ROW_EXPR]
+       jcsv ROW_EXPR COL_EXPR ...
+
+Convert JSON or JSON Lines on stdin to CSV with a header for gum table.
+
+With no arguments, each input must be an object. Its entries become rows
+with Key and Value columns, preserving key order.
+
+  -c, --col LABEL EXPR
+                   Add a labeled column (repeatable; takes two arguments).
+  -h, --help        Show this help.
+  --               End options; useful for filters starting with '-'.
+
+ROW_EXPR runs once per input JSON value; each result becomes a row.
+With -c, ROW_EXPR defaults to '.'. Use '.[]' for an input array.
+Each column filter runs on that row and must emit exactly one value.
+Use '[.tags[]]' to collect results or '.field? // null' for absent values.
+
+Labels are literal strings, including empty strings. Positional columns
+use the filter itself as the header. Column order follows argument order.
+Do not mix -c columns with positional columns.
+
+Strings, numbers and booleans use jq's CSV encoding. Null/missing fields
+become empty CSV fields; arrays and objects become compact JSON strings.
+CSV cannot preserve all JSON types (e.g. null versus an empty string).
+Input is processed incrementally, without slurping the entire stream.
+Errors exit nonzero; earlier rows may already have been written.
+
+Examples:
+  jcsv < object.json | gum table
+  jcsv '.items[]' -c Name '.name' -c Count '.tags | length' < data.json | gum table
+  jcsv -c Name '.name' --col Active '.active' < data.jsonl | gum table --print
+  jcsv '.[]' '.[0]' '.[1]' < arrays.json
+  jcsv '.[]' -c Value '.' -c Type 'type' < scalars.json
+EOF
+}
+
+die() {
+  printf 'jcsv: %s\n' "$*" >&2
+  exit 2
+}
+
+columns=()
+labels=()
+positionals=()
+while (($#)); do
+  case $1 in
+    -h | --help) usage; exit 0 ;;
+    -c | --col)
+      (($# >= 3)) || die "$1 requires a label and a column expression"
+      labels+=("$2")
+      columns+=("$3")
+      shift 3
+      ;;
+    --) shift; positionals+=("$@"); break ;;
+    -*) die "unknown option: $1 (use -- before a filter starting with '-')" ;;
+    *) positionals+=("$1"); shift ;;
+  esac
+done
+
+rows=.
+if ((${#columns[@]} == 0 && ${#positionals[@]} == 0)); then
+  rows='if type == "object" then to_entries[] else error("jcsv: default mode requires an object; use explicit row and column expressions for other values") end'
+  columns=('.key' '.value')
+  labels=(Key Value)
+elif ((${#columns[@]})); then
+  ((${#positionals[@]} <= 1)) || die 'use only one rows expression with -c'
+  if ((${#positionals[@]})); then rows=${positionals[0]}; fi
+else
+  ((${#positionals[@]} >= 2)) || die 'provide columns with -c LABEL EXPR, or ROW_EXPR COL_EXPR ... (see --help)'
+  rows=${positionals[0]}
+  columns=("${positionals[@]:1}")
+  labels=("${columns[@]}")
+fi
+[[ -n $rows ]] || die 'rows expression must not be empty'
+
+command -v jq >/dev/null 2>&1 || die 'jq is required'
+
+projection=''
+separator=''
+column_index=0
+for expr in "${columns[@]}"; do
+  [[ -n $expr ]] || die 'column expression must not be empty'
+  column_index=$((column_index + 1))
+  # Newlines keep trailing jq comments from consuming generated syntax.
+  projection+="${separator}jcsv_cell($column_index; (
+$expr
+))"
+  separator=,
+done
+
+# Keep labels out of jq source: --args passes them as literal strings.
+# limit(2; ...) detects a multi-result column without collecting an unbounded
+# generator. Null is retained; a filter emitting nothing is an error.
+exec jq -nr --args -- "
+def jcsv_cell(index; f):
+  [limit(2; f)]
+  | if length == 1 then .[0]
+    else error(\"jcsv: column \\(index) must emit exactly one value; use an array to collect multiple values\")
+    end
+  | if type == \"array\" or type == \"object\" then tojson else . end;
+(\$ARGS.positional | @csv),
+(inputs | (
+$rows
+) | [$projection] | @csv)
+" "${labels[@]}"

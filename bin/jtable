@@ -1,0 +1,90 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = []
+# ///
+"""Render JSON as nested, static Gum tables."""
+
+import argparse
+import csv
+import io
+import json
+import shutil
+import subprocess
+import sys
+
+
+def nonnegative(value):
+    number = int(value)
+    if number < 0:
+        raise argparse.ArgumentTypeError("must be zero or greater")
+    return number
+
+
+def scalar(value):
+    return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
+
+
+def render(value, max_depth, depth=0):
+    if isinstance(value, (dict, list)):
+        if max_depth is not None and depth >= max_depth:
+            return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+        if isinstance(value, dict):
+            header, entries = ("Key", "Value"), value.items()
+        else:
+            header, entries = ("Index", "Value"), enumerate(value)
+        rows = ((key, render(child, max_depth, depth + 1)) for key, child in entries)
+    else:
+        # Scalar children are plain cells; a scalar root still gets a table.
+        if depth:
+            return scalar(value)
+        header, rows = ("Value",), [(scalar(value),)]
+
+    data = io.StringIO(newline="")
+    writer = csv.writer(data)
+    writer.writerow(header)
+    writer.writerows(rows)
+    result = subprocess.run(
+        ["gum", "table", "--print"],
+        input=data.getvalue(),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.removesuffix("\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Render JSON or JSON Lines from stdin as nested Gum tables.",
+        epilog="Example: jtable --max-depth 2 < github_event.json",
+    )
+    parser.add_argument(
+        "--max-depth",
+        type=nonnegative,
+        metavar="N",
+        help="render N levels of tables; keep deeper containers as compact JSON",
+    )
+    args = parser.parse_args()
+    if shutil.which("gum") is None:
+        parser.exit(1, "jtable: gum is required\n")
+
+    # Buffer input so pretty-printed JSON and multiple JSON values both work.
+    source = sys.stdin.read()
+    decoder = json.JSONDecoder()
+    position = 0
+    try:
+        while position < len(source):
+            if source[position] in " \t\r\n":
+                position += 1
+                continue
+            value, position = decoder.raw_decode(source, position)
+            print(render(value, args.max_depth))
+    except (json.JSONDecodeError, RecursionError) as error:
+        parser.exit(1, f"jtable: {error}\n")
+    except subprocess.CalledProcessError as error:
+        parser.exit(1, f"jtable: gum table failed: {error.stderr.strip()}\n")
+
+
+if __name__ == "__main__":
+    main()
