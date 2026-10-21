@@ -21,20 +21,22 @@ in
       format = concatStrings [
         "$username"
         "$hostname"
-        # "$localip"
+
+        "\${env_var.ZMX_SESSION}"
         "$shlvl"
         "$nix_shell"
-        # "$singularity"
+
         "$directory"
         "$git_branch"
         "$git_commit"
         "$git_state"
-        # "$git_status"
+
         "$aws"
         "$kubernetes"
         "$cmd_duration"
+
         "$line_break"
-        ########################################################################
+
         "$vi_mode"
         "$jobs"
         "$battery"
@@ -42,13 +44,21 @@ in
         "$status"
         "$container"
         "$os"
-        # "$env_var"
         "$shell"
+
         "$character"
       ];
       aws = {
         format = "[$symbol$profile]($style) ";
         symbol = "  ";
+      };
+      env_var = {
+        ZMX_SESSION = {
+          symbol = "  ";
+          format = "[$symbol$env_value]($style) ";
+          description = "zmx session name";
+          style = "bold magenta";
+        };
       };
       git_branch = {
         format = "[$symbol$branch(:$remote_branch)]($style) ";
