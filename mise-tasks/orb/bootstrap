@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+#MISE description="Provision an OrbStack Linux machine as a dev environment"
+#MISE dir="{{config_root}}"
+#USAGE arg "[machine]" default="debian" help="Target OrbStack machine name"
+#
+# Sets up an OrbStack VM as a dev environment, driven from macOS. mise does all
+# the portable heavy lifting; this task is only the orb-specific glue:
+#   1. write mise.vm.toml into the machine as its global mise config
+#   2. install a portable mise launcher (`mise generate bootstrap`) -- no darwin
+#      binary is copied; the launcher fetches the correct linux/arch mise in-guest
+#   3. `mise bootstrap --yes` in-guest converges everything portably:
+#      [bootstrap.packages] (apt), [tools], shell activation, pnpm via corepack
+#
+#   mise run orb:bootstrap            # default machine (debian)
+#   mise run orb:bootstrap myvm       # another machine
+#
+# shellcheck disable=SC2016  # $HOME in `sh -c '...'` is expanded in-guest, by design
+set -euo pipefail
+
+machine="${usage_machine:-debian}"
+root="${MISE_PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+config="${root}/mise.vm.toml"
+
+if ! command -v orb >/dev/null 2>&1; then
+  echo >&2 "error: orb (OrbStack) not found; this task provisions OrbStack machines"
+  exit 1
+fi
+if [[ ! -f $config ]]; then
+  echo >&2 "error: ${config} not found"
+  exit 1
+fi
+
+m=(-m "$machine")
+
+# Verify the machine is reachable (also auto-starts it if stopped).
+if ! orb "${m[@]}" true 2>/dev/null; then
+  echo >&2 "error: OrbStack machine '${machine}' not reachable."
+  echo >&2 "       create it first, e.g.: orb create debian ${machine}"
+  exit 1
+fi
+
+# In-guest commands use $HOME-absolute paths and `cd "$HOME"`: orb maps the Mac
+# cwd under /mnt/mac, and running mise from there would pull in the Mac's parent
+# config hierarchy (and its trust state). Files are written via stdin from
+# inside the guest -- `orb push` targets a read-only Mac-side mount.
+
+echo >&2 "==> [${machine}] installing mise.vm.toml -> ~/.config/mise/config.toml"
+orb "${m[@]}" sh -c 'mkdir -p "$HOME/.config/mise" "$HOME/.local/bin"'
+orb "${m[@]}" sh -c 'cat >"$HOME/.config/mise/config.toml"' <"$config"
+
+echo >&2 "==> [${machine}] installing portable mise launcher (mise generate bootstrap)"
+mise generate bootstrap |
+  orb "${m[@]}" sh -c 'cat >"$HOME/.local/bin/mise" && chmod +x "$HOME/.local/bin/mise"'
+
+echo >&2 "==> [${machine}] mise bootstrap (packages, tools, activation, corepack)"
+orb "${m[@]}" sh -c 'cd "$HOME" && exec "$HOME/.local/bin/mise" bootstrap --yes'
+
+echo >&2 "==> [${machine}] installed tools:"
+orb "${m[@]}" sh -c 'cd "$HOME" && exec "$HOME/.local/bin/mise" ls --current'

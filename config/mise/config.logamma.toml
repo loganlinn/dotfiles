@@ -1,3 +1,5 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
 [bootstrap.services.sshd]
 scope = "user"
 description = "SSH and Mosh access to logamma on TCP 2222"
@@ -27,7 +29,3 @@ command = '''
     -o Subsystem="sftp internal-sftp"
 '
 '''
-
-[bootstrap.files."/opt/steel-browser/compose.yml"]
-source = "compose/steel-browser/compose.yml"
-mode = "0644"

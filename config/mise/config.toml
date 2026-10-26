@@ -1,63 +1,23 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
 [settings]
 experimental = true
 github.credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
-shims_dir = "/Users/logan/.local/bin"
+trusted_config_paths = [
+  "~/src/github.com/loganlinn",
+  "~/src/github.com/gamma-app",
+]
+auto_env = true
 
-[shell_alias]
-codex-anon = "codex exec -p anon --ephemeral"
-codex-wild = "codex -p wild"
-codex-daybreak = "codex -p daybreak"
+[settings.write_targets]
+dotfiles = "{{ config_source | dirname }}/conf.d/dotfiles.toml"
+tools = "{{ config_source | dirname }}/conf.d/tools.toml"
 
-[tools]
-oxfmt = "latest"
-watchexec = "latest"
-pinact = "latest"
-java = "21"
-kafkactl = "latest"
-terraform-docs = "latest"
-hcl2json = "latest"
-"go:github.com/hashicorp/hcl/v2/cmd/hcldec" = "latest"
-"cargo:presenterm" = "latest"
-fnox = "latest"
-pkl = "latest"
-bun = "latest"
-"github:JamesWoolfenden/pike" = "latest"
-process-compose = "latest"
-"github:pamburus/hl" = "latest"
-aws-nuke = "latest"
-"go:github.com/ugosan/logshark/cmd" = "latest"
-"github:corneliusweig/ketall" = "latest"
-"github:robscott/kube-capacity" = "latest"
-"github:launchdarkly/ldcli" = "latest"
-aws-cli = { version = "latest", symlink_bins = "true" }
-herdr = "latest"
-"go:github.com/agent-ecosystem/skill-validator/cmd/skill-validator" = "latest"
-"github:dlvhdr/diffnav" = "latest"
-"github:oocx/tfplan2md" = "latest"
-kubecolor = "latest"
-oh-my-pi = { version = "latest", rename_exe = "omp" }
-pandoc = "3.11"
-yazi = "26"
-tfmigrate = "latest"
-"go:github.com/hashicorp/terraform-config-inspect" = "latest"
-regctl = "latest"
-"github:alltuner/mise-completions-sync" = "latest"
-jactionlint = "latest"
-"github:Skardyy/mcat" = "latest"
-"github:hyperlogue/captain-miao" = "latest"
-gitu = "latest"
-"npm:cf" = "latest"
-zmx = "latest"
-nats-server = "latest"
-"go:github.com/nats-io/natscli/nats" = "latest"
-uv = "0.13.4"
-go = { version = "1.26.10", lazy = true }
-restic = { version = "latest", lazy = true }
-rust = { version = "latest", lazy = true }
+[secrets.fnox]
 
 [hooks]
-postinstall = "misecompsync"
+postinstall = "misecompsync --shell zsh --global --new-only"
 
-# [daemons.nats]
-# preset = "nats"
-# version = "2"
+[wrappers.python]
+command = "uv"
+args = ["run", "python"]

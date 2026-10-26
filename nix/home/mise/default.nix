@@ -20,8 +20,12 @@ in {
       mr = "mise run";
       mx = "mise exec";
     };
+    activation.mise-completions = mkIf config.programs.zsh.enable (lib.hm.dag.entryAfter ["linkGeneration"] ''
+      run ${miseExe} completion zsh --install
+    '');
     activation.mise-dotfiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      run ${miseExe} \
+      run env MISE_GLOBAL_CONFIG_FILE=${lib.escapeShellArg "${config.my.flakeDirectory}/config/mise/conf.d/dotfiles.toml"} \
+        ${miseExe} \
         --cd ${lib.escapeShellArg config.my.flakeDirectory} \
         dotfiles apply --yes
     '';
@@ -39,6 +43,10 @@ in {
     };
 
     zsh = {
+      profileExtra = ''
+        eval "$(${miseExe} activate zsh --shims)"
+      '';
+
       initContent = mkOrder 2000 ''
         eval "$(${miseExe} activate zsh)"
       '';

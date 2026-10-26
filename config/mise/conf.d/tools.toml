@@ -1,0 +1,144 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+[tools]
+"github:alltuner/mise-completions-sync" = "latest"
+"github:oocx/tfplan2md" = "latest"
+age = "latest"
+aube = "latest"
+bun = "latest"
+go = { version = "1.26", lazy = true }
+java = "21"
+oxfmt = "latest"
+uv = "latest"
+zmx = "latest"
+
+[[tools."github:JamesWoolfenden/pike"]]
+version = "latest"
+lazy = true
+lazy_bins = ["pike"]
+
+[[tools."github:Skardyy/mcat"]]
+version = "latest"
+lazy = true
+lazy_bins = ["mcat"]
+
+[[tools."github:buildkite/cli"]]
+version = "latest"
+lazy = true
+lazy_bins = ["bk"]
+
+[[tools."github:corneliusweig/ketall"]]
+version = "latest"
+lazy = true
+lazy_bins = ["ketall"]
+rename_exe = "ketall"
+
+[[tools."github:dlvhdr/diffnav"]]
+version = "latest"
+lazy = true
+lazy_bins = ["diffnav"]
+
+[[tools."github:launchdarkly/ldcli"]]
+version = "latest"
+lazy = true
+lazy_bins = ["ldcli"]
+
+[[tools."github:robscott/kube-capacity"]]
+version = "latest"
+lazy = true
+lazy_bins = ["kube-capacity"]
+
+[[tools."go:github.com/hashicorp/hcl/v2/cmd/hcldec"]]
+version = "latest"
+lazy = true
+lazy_bins = ["hcldec"]
+
+[[tools."go:github.com/hashicorp/terraform-config-inspect"]]
+version = "latest"
+lazy = true
+lazy_bins = ["terraform-config-inspect"]
+
+[[tools."go:github.com/nats-io/natscli/nats"]]
+version = "latest"
+lazy = true
+lazy_bins = ["nats"]
+
+[[tools.apm]]
+version = "latest"
+lazy = true
+
+[[tools.aws-cli]]
+version = "latest"
+symlink_bins = "true"
+
+[[tools.cue]]
+version = "latest"
+lazy = true
+
+[[tools.fnox]]
+version = "latest"
+lazy = true
+
+[[tools.gitu]]
+version = "latest"
+lazy = true
+
+[[tools.hcl2json]]
+version = "latest"
+lazy = true
+
+[[tools.jactionlint]]
+version = "latest"
+lazy = true
+
+[[tools.kafkactl]]
+version = "latest"
+lazy = true
+
+[[tools.kubecolor]]
+version = "latest"
+lazy = true
+
+[[tools.oh-my-pi]]
+version = "latest"
+rename_exe = "omp"
+
+[[tools.pandoc]]
+version = "3.11"
+lazy = true
+
+[[tools.pinact]]
+version = "latest"
+lazy = true
+
+[[tools.pkl]]
+version = "latest"
+lazy = true
+
+[[tools.process-compose]]
+version = "latest"
+lazy = true
+
+[[tools.regctl]]
+version = "latest"
+lazy = true
+
+[[tools.restic]]
+version = "latest"
+lazy = true
+
+[[tools.rust]]
+version = "latest"
+lazy = true
+
+[[tools.tfmigrate]]
+version = "latest"
+lazy = true
+
+[[tools.watchexec]]
+version = "latest"
+lazy = true
+
+[[tools.yazi]]
+version = "26"
+lazy = true

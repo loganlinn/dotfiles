@@ -1,0 +1,49 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Linux VM development environment (e.g. OrbStack).
+#
+# Converged onto a machine with `mise bootstrap --yes`. Everything here is
+# portable: mise picks the right package manager and prebuilt binaries per
+# OS/arch. `mise-tasks/orb/bootstrap` provisions an OrbStack machine end-to-end.
+
+[bootstrap.packages]
+# System packages mise does not provide as [tools]: the base userland from
+# docker/pi/Dockerfile plus tree (not in the mise registry). apt: targets
+# Debian/Ubuntu; add brew:/dnf: siblings to reuse this config elsewhere.
+"apt:bash" = "latest"
+"apt:build-essential" = "latest"
+"apt:ca-certificates" = "latest"
+"apt:curl" = "latest"
+"apt:file" = "latest"
+"apt:git" = "latest"
+"apt:less" = "latest"
+"apt:lsof" = "latest"
+"apt:openssh-client" = "latest"
+"apt:procps" = "latest"
+"apt:tree" = "latest"
+"apt:unzip" = "latest"
+"apt:wget" = "latest"
+"apt:zip" = "latest"
+
+[bootstrap.mise_shell_activate]
+bashrc = "activate"
+
+[bootstrap.hooks.post-tools]
+# pnpm via corepack (ships with node); runs after [tools] are installed.
+run = "mise exec -- corepack enable pnpm"
+
+[tools]
+# Requested toolchain
+aws-cli = "latest"
+bun = "latest"
+node = "lts"         # provides corepack -> pnpm
+terraform = "latest"
+uv = "latest"
+
+# Core development CLIs (mirrors docker/pi/Dockerfile)
+bat = "latest"
+fd = "latest"
+fzf = "latest"
+gh = "latest"
+jq = "latest"
+ripgrep = "latest"

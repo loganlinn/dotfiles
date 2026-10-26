@@ -1,2 +1,4 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
 [tasks.open]
 run = '''open "$@"'''
