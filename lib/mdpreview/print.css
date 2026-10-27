@@ -88,3 +88,6 @@ blockquote { border-color: #777; }
 
 .mermaid-diagram[data-print-ready] > svg { display: none !important; }
 .mermaid-print[hidden] { display: block !important; }
+.mermaid-bar, .mermaid-status, .mermaid-lightbox { display: none !important; }
+.mermaid-block { border: 0; border-radius: 0; }
+.mermaid-diagram { padding: 0; }

@@ -1,0 +1,129 @@
+/* Shared interaction styles also apply to custom document themes. */
+.mermaid-block,
+.mermaid-lightbox {
+  --mermaid-bg: #fff;
+  --mermaid-fg: #27324b;
+  --mermaid-muted: #65718b;
+  --mermaid-surface: #eef2ff;
+  --mermaid-border: #d5dced;
+  --mermaid-accent: #5165a7;
+  box-sizing: border-box;
+  background: var(--mermaid-bg);
+  color: var(--mermaid-fg);
+  border: 1px solid var(--mermaid-border);
+  border-radius: 12px;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:is(.mermaid-block, .mermaid-lightbox)[data-theme="dark"] {
+  --mermaid-bg: #1e1e2e;
+  --mermaid-fg: #cdd6f4;
+  --mermaid-muted: #a6adc8;
+  --mermaid-surface: #313244;
+  --mermaid-border: #45475a;
+  --mermaid-accent: #89b4fa;
+  color-scheme: dark;
+}
+
+.mermaid-block { margin: 0 0 1.5rem; }
+.mermaid-bar,
+.mermaid-lightbox-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+}
+.mermaid-caption {
+  margin-right: auto;
+  color: var(--mermaid-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mermaid-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  opacity: 0;
+  pointer-events: none;
+}
+.mermaid-block:is(:hover, :focus-within) .mermaid-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  .mermaid-controls { opacity: 1; pointer-events: auto; }
+}
+
+:is(.mermaid-controls, .mermaid-lightbox-bar) button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+:is(.mermaid-controls, .mermaid-lightbox-bar) button:hover,
+.mermaid-controls button[aria-pressed="true"] {
+  background: var(--mermaid-surface);
+  color: var(--mermaid-accent);
+}
+.mermaid-controls button[aria-pressed="true"] { border-color: var(--mermaid-border); }
+.mermaid-controls [data-save] { margin-left: 0.4rem; }
+:is(.mermaid-controls, .mermaid-lightbox-bar) button:disabled { opacity: 0.5; cursor: wait; }
+:is(.mermaid-block, .mermaid-lightbox) :focus-visible {
+  outline: 2px solid var(--mermaid-accent);
+  outline-offset: -2px;
+}
+
+.mermaid-diagram {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 1rem 1.25rem 1.5rem;
+  overflow-x: auto;
+  cursor: zoom-in;
+  border-radius: 0 0 12px 12px;
+}
+.mermaid-diagram > svg { display: block; margin: auto; height: auto; }
+.mermaid-block .mermaid-source {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: 0;
+  border-top: 1px solid var(--mermaid-border);
+  border-radius: 0 0 12px 12px;
+  background: var(--bg-code, var(--mermaid-surface));
+  color: var(--mermaid-fg);
+  overflow-x: auto;
+  font: 13px/1.65 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.mermaid-source code { color: inherit; background: none; padding: 0; font: inherit; white-space: pre; }
+.mermaid-block [hidden] { display: none; }
+.mermaid-status { margin: 0; padding: 0.5rem 1rem; font-size: 0.85em; }
+.mermaid-status:empty { display: none; }
+.mermaid-error { color: var(--del, #b83c50); }
+
+.mermaid-lightbox {
+  width: calc(100vw - 3rem);
+  height: calc(100dvh - 3rem);
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  margin: auto;
+  box-shadow: 0 24px 80px #0006;
+}
+.mermaid-lightbox[open] { display: flex; flex-direction: column; }
+.mermaid-lightbox::backdrop { background: #080b16b3; backdrop-filter: blur(5px); }
+html:has(.mermaid-lightbox[open]) { overflow: hidden; }
+.mermaid-lightbox-bar { flex-shrink: 0; border-bottom: 1px solid var(--mermaid-border); }
+.mermaid-lightbox-bar > span { margin-right: auto; font-weight: 600; }
+.mermaid-lightbox-bar kbd { color: var(--mermaid-muted); font-size: 0.75em; }
+.mermaid-lightbox-canvas { flex: 1; min-height: 0; padding: clamp(0.5rem, 2vw, 2rem); }
+.mermaid-lightbox-canvas > svg { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; }
+
+@media screen {
+  .mdpreview-paged .mermaid-block { break-inside: avoid; }
+  .mdpreview-paged .mermaid-block:has(.mermaid-source:not([hidden])) { break-inside: auto; }
+}

@@ -569,6 +569,10 @@ def finish_render(
         nav = f'<nav aria-label="Documents"><a href="{relative_url(index, destination)}">All documents</a></nav>'
         content = content.replace("<body>", f"<body>\n{nav}", 1)
     if parser.has_mermaid:
+        css = Path(__file__).with_name("mermaid.css").read_text()
+        content = content.replace(
+            "</head>", f'<style media="screen">\n{css}</style>\n</head>', 1
+        )
         script = Path(__file__).with_name("mermaid.js").read_text()
         before, closing, after = content.rpartition("</body>")
         content = (

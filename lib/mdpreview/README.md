@@ -109,6 +109,19 @@ Fenced code blocks with the `mermaid` language render as diagrams in the browser
 This works with file, stdin, and directory previews, including custom themes.
 The renderer selects a light or dark diagram theme from the page background.
 This includes CSS color spaces such as `oklch()` and transparent backgrounds.
+Diagrams use a coordinated palette, readable labels, and spaced, curved connectors.
+
+Hover over a diagram or focus its controls to choose **Diagram**, **Code**, or
+**Both**. Touch screens always show these controls. The code view keeps the
+original source, including local image paths. Printing respects the selected view.
+Click a diagram (or focus it and press Enter/Space) to open a full-window lightbox.
+Close it with Escape, **Close**, or a click outside the lightbox.
+
+**Save PNG**, available beside the view controls and in the lightbox, downloads
+the diagram with its current colors and an opaque background. Exports use twice
+the diagram's natural resolution, reduced for large diagrams to stay within
+8192 pixels per dimension and 16 megapixels. Remote images must permit browser
+cross-origin downloads; an export error leaves the preview usable.
 
 Local Mermaid `img:` paths resolve from the Markdown file's directory, or PWD for stdin.
 These images are embedded in the HTML so the browser can display them from the cache.

@@ -352,9 +352,6 @@ div:is(.note, .tip, .important, .warning, .caution) > :last-child {
   margin-bottom: 0;
 }
 
-.mermaid-diagram { margin: 0 0 1.25em; }
-.mermaid-error { color: var(--del); }
-
 /* --------------------------------------------------------- details/footnotes */
 
 details {

@@ -325,6 +325,144 @@ class ReaderBrowserTests(BrowserTests):
 
 
 class MermaidBrowserTests(BrowserTests):
+    def test_display_controls_keep_original_source_and_act_independently(self):
+        self.preview(FLOW + FLOW)
+        self.page.wait_for_function("document.querySelectorAll('.mermaid-block').length === 2")
+        first, second = self.page.locator(".mermaid-block").all()
+        controls = first.locator(".mermaid-controls")
+        self.assertEqual(controls.evaluate("el => getComputedStyle(el).opacity"), "0")
+        first.hover()
+        self.assertEqual(controls.evaluate("el => getComputedStyle(el).opacity"), "1")
+        first.get_by_role("button", name="Code", exact=True).click()
+        self.assertFalse(first.locator(".mermaid-diagram").is_visible())
+        self.assertEqual(first.locator("pre").inner_text(), "flowchart LR\n  A[Markdown] --> B[Preview]")
+        self.assertFalse(second.locator("pre").is_visible())
+        self.page.emulate_media(media="print")
+        self.assertTrue(first.locator("pre").is_visible())
+        self.assertFalse(first.locator(".mermaid-diagram").is_visible())
+        self.page.emulate_media(media="screen")
+        first.get_by_role("button", name="Both", exact=True).click()
+        self.assertTrue(first.locator(".mermaid-diagram").is_visible())
+        self.assertTrue(first.locator("pre").is_visible())
+        self.assertEqual(first.get_by_role("button", name="Both", exact=True).get_attribute("aria-pressed"), "true")
+        self.page.wait_for_function("document.querySelector('.mermaid-diagram').dataset.printReady === 'true'")
+        self.page.emulate_media(media="print")
+        self.assertTrue(first.locator(".mermaid-print").is_visible())
+        self.assertTrue(first.locator("pre").is_visible())
+        self.assertFalse(controls.is_visible())
+        self.page.emulate_media(media="screen")
+        self.page.mouse.move(0, 0)
+        first.get_by_role("button", name="Diagram", exact=True).focus()
+        self.assertEqual(controls.evaluate("el => getComputedStyle(el).opacity"), "1")
+        self.page.keyboard.press("Enter")
+        self.assertFalse(first.locator("pre").is_visible())
+        self.assertEqual(self.errors, [])
+
+    def test_lightbox_keyboard_focus_and_print_work_in_page_view(self):
+        self.preview(FLOW + "\nParagraph.\n" * 80)
+        self.page.wait_for_selector(RENDERED)
+        self.page.get_by_role("button", name="Two pages").click()
+        diagram = self.page.get_by_role("button", name="Expand diagram 1", exact=True)
+        inline_width = self.page.locator(RENDERED).bounding_box()["width"]
+        diagram.click()
+        dialog = self.page.get_by_role("dialog")
+        self.assertTrue(dialog.is_visible())
+        self.assertGreater(dialog.locator("svg").bounding_box()["width"], inline_width)
+        self.assertEqual(self.page.locator("svg[id]").evaluate_all(
+            "els => new Set(els.map(el => el.id)).size === els.length"
+        ), True)
+        status = self.page.locator(".mdpreview-page-status").inner_text()
+        self.page.keyboard.press("ArrowRight")
+        self.assertEqual(self.page.locator(".mdpreview-page-status").inner_text(), status)
+        self.page.keyboard.press("Shift+Tab")
+        self.assertTrue(self.page.evaluate("!!document.activeElement.closest('dialog')"))
+        self.page.keyboard.press("Escape")
+        self.assertEqual(dialog.count(), 0)
+        self.assertTrue(diagram.evaluate("el => el === document.activeElement"))
+        self.assertTrue(self.page.locator("html").evaluate("el => el.classList.contains('mdpreview-paged')"))
+        self.page.keyboard.press("Space")
+        self.assertTrue(dialog.is_visible())
+        self.page.mouse.click(2, 2)
+        self.assertEqual(dialog.count(), 0)
+        diagram.press("Enter")
+        # Printing while expanded must put the original SVG back synchronously.
+        self.page.evaluate("window.dispatchEvent(new Event('beforeprint'))")
+        self.assertEqual(dialog.count(), 0)
+        self.assertTrue(self.page.locator(RENDERED).is_visible())
+        self.assertEqual(self.errors, [])
+
+    def test_png_download_contains_labels_and_embedded_images_in_each_view(self):
+        asset = self.root / "icon.svg"
+        asset.write_text('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60">'
+                         '<rect width="80" height="60" fill="#ff0000"/></svg>')
+        source = 'flowchart LR\n  A["Café &amp; tea"] --> B@{ img: "icon.svg", label: "Icon", h: 60 }'
+        self.preview(f"```mermaid\n{source}\n```\n")
+        self.page.wait_for_selector(RENDERED)
+        card = self.page.locator(".mermaid-block")
+        for mode in ("Diagram", "Code", "Both", "Lightbox"):
+            with self.subTest(mode=mode):
+                card.hover()
+                if mode == "Lightbox":
+                    card.get_by_role("button", name="Expand diagram 1", exact=True).click()
+                    scope = self.page.get_by_role("dialog")
+                else:
+                    card.get_by_role("button", name=mode, exact=True).click()
+                    scope = card
+                with self.page.expect_download() as downloaded:
+                    scope.get_by_role("button", name="Save PNG", exact=True).click()
+                download = downloaded.value
+                self.assertTrue(download.suggested_filename.endswith("-diagram-1.png"))
+                pixels = pymupdf.Pixmap(download.path())
+                self.assertGreater(pixels.width, 200)
+                self.assertGreater(pixels.height, 100)
+                self.assertLessEqual(pixels.width * pixels.height, 16777216)
+                samples = pixels.samples
+                colors = list(zip(samples[0::pixels.n], samples[1::pixels.n], samples[2::pixels.n]))
+                self.assertGreater(colors.count((255, 0, 0)), 500, "Embedded image missing from PNG")
+                self.assertGreater(sum(min(color) > 180 for color in colors), 50, "Light labels missing from dark PNG")
+                self.assertTrue(scope.get_by_role("button", name="Save PNG", exact=True).is_enabled())
+                if mode == "Lightbox":
+                    self.page.keyboard.press("Escape")
+        card.get_by_role("button", name="Code", exact=True).click()
+        self.assertEqual(card.locator("pre").inner_text(), source)
+        self.assertNotIn("data:image", card.locator("pre").inner_text())
+        self.assertEqual(self.errors, [])
+
+    def test_png_failure_leaves_controls_and_diagram_usable(self):
+        self.preview(FLOW)
+        self.page.wait_for_selector(RENDERED)
+        self.page.evaluate("() => { HTMLCanvasElement.prototype.toBlob = callback => callback(null); }")
+        card = self.page.locator(".mermaid-block")
+        card.hover()
+        save = card.get_by_role("button", name="Save PNG", exact=True)
+        save.click()
+        self.page.wait_for_function("document.querySelector('.mermaid-status').textContent.includes('Could not save PNG')")
+        self.assertTrue(save.is_enabled())
+        card.get_by_role("button", name="Code", exact=True).click()
+        self.assertTrue(card.locator("pre").is_visible())
+        self.assertEqual(self.errors, [])
+
+    def test_touch_controls_and_custom_theme_fit_narrow_windows(self):
+        context = self.browser.new_context(viewport={"width": 320, "height": 700}, has_touch=True)
+        self.addCleanup(context.close)
+        self.page = context.new_page()
+        self.preview(FLOW, "body { background: white; color: black; }")
+        self.page.wait_for_selector(RENDERED)
+        self.assertEqual(self.page.locator(".mermaid-controls").evaluate("el => getComputedStyle(el).opacity"), "1")
+        self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+        self.page.get_by_role("button", name="Both", exact=True).click()
+        self.assertTrue(self.page.locator(".mermaid-source").is_visible())
+        self.page.get_by_role("button", name="Expand diagram 1", exact=True).click()
+        dialog = self.page.get_by_role("dialog")
+        bounds = dialog.bounding_box()
+        self.assertGreaterEqual(bounds["x"], 0)
+        self.assertLessEqual(bounds["x"] + bounds["width"], 320)
+        dialog.get_by_role("button", name="Close expanded diagram").click()
+        self.page.emulate_media(media="print")
+        self.assertFalse(self.page.locator(".mermaid-controls").is_visible())
+        self.assertTrue(self.page.locator(".mermaid-source").is_visible())
+        self.assertTrue(self.page.locator(RENDERED).is_visible())
+
     def test_print_uses_prepared_light_diagrams(self):
         self.preview(FLOW + SEQUENCE)
         self.page.wait_for_function(
@@ -334,11 +472,11 @@ class MermaidBrowserTests(BrowserTests):
         self.page.emulate_media(media="print")
         self.assertTrue(self.page.locator(".mermaid-print").first.is_visible())
         self.assertFalse(self.page.locator(RENDERED).first.is_visible())
-        self.assertEqual(
+        self.assertLess(
             self.page.locator(".mermaid-print .messageText").evaluate(
-                "element => getComputedStyle(element).fill"
+                r"element => Math.max(...getComputedStyle(element).fill.match(/\d+/g).map(Number))"
             ),
-            "rgb(51, 51, 51)",
+            100,
         )
         self.assertEqual(self.errors, [])
 
@@ -418,19 +556,19 @@ class MermaidBrowserTests(BrowserTests):
         self.assertEqual(self.errors, [])
 
     def test_css_color_spaces_and_transparency_choose_readable_themes(self):
-        for background, expected in (
-            ("oklch(0.2 0.02 270)", "rgb(211, 211, 211)"),
-            ("color(display-p3 0.05 0.05 0.1)", "rgb(211, 211, 211)"),
-            ("color-mix(in srgb, black 95%, white)", "rgb(211, 211, 211)"),
-            ("rgba(0, 0, 0, 0.02)", "rgb(51, 51, 51)"),
+        for background, dark in (
+            ("oklch(0.2 0.02 270)", True),
+            ("color(display-p3 0.05 0.05 0.1)", True),
+            ("color-mix(in srgb, black 95%, white)", True),
+            ("rgba(0, 0, 0, 0.02)", False),
         ):
             with self.subTest(background=background):
                 self.preview(SEQUENCE, f"body {{ background: {background}; }}")
                 self.page.wait_for_selector(RENDERED)
-                fill = self.page.locator(f"{RENDERED} .messageText").evaluate(
-                    "element => getComputedStyle(element).fill"
+                lightness = self.page.locator(f"{RENDERED} .messageText").evaluate(
+                    r"element => Math.min(...getComputedStyle(element).fill.match(/\d+/g).map(Number))"
                 )
-                self.assertEqual(fill, expected)
+                self.assertEqual(lightness > 128, dark)
         self.assertEqual(self.errors, [])
 
     def test_diagram_ids_do_not_replace_headings_or_temporary_id_collisions(self):
