@@ -1,51 +1,71 @@
 # -*- mode: sh -*- vim: ft=zsh
 # function zlocal {
-local a b f
-f=$HOME/.zshrc.local
+local a b f arg name=zshrc selected=0 push=0 sync_status=0
+local gistid=90b892b5069e95c2f893fab46177334a
 
-if [[ "$1" == "--push" ]]; then
-  if hash gh &>/dev/null; then
-    local gistid=90b892b5069e95c2f893fab46177334a
-    gh gist edit "$gistid" "$f"
-    echo "updated: https://gist.github.com/$gistid"
+for arg in "$@"; do
+  case $arg in
+    --push) push=1 ;;
+    -h|--help)
+      print -r -- 'Usage: zlocal [--push] [zshrc|zshenv|zprofile]'
+      return 0
+      ;;
+    *)
+      name=${${arg#.}%.local}
+      if (( selected )) || [[ $name != (zshrc|zshenv|zprofile) ]]; then
+        print -ru2 -- 'Usage: zlocal [--push] [zshrc|zshenv|zprofile]'
+        return 2
+      fi
+      selected=1
+      ;;
+  esac
+done
+f=$HOME/.$name.local
+
+if (( ! push )); then
+  echo "editing $f"
+  a=
+  if [[ -e $f ]]; then
+    a=$(<"$f") || return
+  fi
+  b=$(vipe <<<"$a") || return
+  if [[ "$a" == "$b" ]]; then
+    echo "no changes detected"
+    return 0
+  fi
+
+  if hash delta &>/dev/null; then
+    diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b") | delta --paging=never
   else
-    echo >&2 "gh not found"
+    diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b")
+  fi
+  echo
+
+  if ! zsh -n <<<"$b"; then
+    echo >&2 "syntax error, aborting"
     return 1
   fi
-  return 0
-fi
 
-echo "editing $f"
-a=$(<"$f")
-b=$(vipe <<<"$a") || return 1
-if [[ "$a" == "$b" ]]; then
-  echo "no changes detected"
-  return 0
+  printf '%s\n' "$b" >"$f" || return
+  echo "wrote: $f"
 fi
-
-if hash delta &>/dev/null; then
-  diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b") | delta --paging=never
-else
-  diff -u <(printf '%s\n' "$a") <(printf '%s\n' "$b")
-fi
-echo
-
-if ! zsh -n <<<"$b"; then
-  echo >&2 "syntax error, aborting"
-  return 1
-fi
-
-printf '%s\n' "$b" >"$f"
-echo "wrote: $f"
 
 if hash gh &>/dev/null; then
-  local gistid=90b892b5069e95c2f893fab46177334a
-  gh gist edit "$gistid" "$f"
-  echo "updated: https://gist.github.com/$gistid"
+  gh api "gists/$gistid" --method PATCH \
+    --field "files[${f:t}][content]=@$f" --silent || sync_status=$?
+  if (( sync_status == 0 )); then
+    echo "updated: https://gist.github.com/$gistid"
+  fi
+else
+  echo >&2 "gh not found; gist not updated"
+  sync_status=1
 fi
 
-source "$f"
+(( push )) && return $sync_status
+
+source "$f" || return
 echo "sourced: $f"
 
-echo 'done!'
+(( sync_status == 0 )) && echo 'done!'
+return $sync_status
 # }
