@@ -162,6 +162,12 @@
         };
 
         darwinConfigurations = {
+          # Keep hostname-based selection while naming the configuration gammini.
+          "Logan--Gamma-Mac-mini-V3WYGGKJ7Y" = self.darwinConfigurations.gammini;
+          gammini = mkDarwinSystem {
+            system = "aarch64-darwin";
+            modules = [./darwin/gammini];
+          };
           patchbook = mkDarwinSystem {
             system = "aarch64-darwin";
             modules = [./darwin/patchbook.nix];
