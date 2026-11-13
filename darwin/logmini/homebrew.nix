@@ -9,12 +9,9 @@
         force_auto_update = true;
       })
       [
-        "charmbracelet/tap"
         "withgraphite/tap"
       ];
     brews = [
-      "charmbracelet/tap/freeze"
-      "charmbracelet/tap/sequin"
       "curl"
       "direnv"
       "gh"

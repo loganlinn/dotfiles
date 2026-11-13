@@ -13,7 +13,6 @@
           # "aws/tap"
           # "bridgecrewio/tap"
           "buildkite/buildkite"
-          "charmbracelet/tap"
           # "dagger/tap"
           # "keith/formulae"
           "localstack/tap"
@@ -35,8 +34,6 @@
       "aspell"
       "buildkite/buildkite/bk@3"
       "caddy"
-      "charmbracelet/tap/freeze"
-      "charmbracelet/tap/sequin"
       # "colima" # TODO: use https://github.com/nix-community/home-manager/blob/master/modules/services/colima.nix ?
       "curl"
       # "ddcctl"
