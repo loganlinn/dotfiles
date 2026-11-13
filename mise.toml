@@ -148,6 +148,34 @@ arg "[args]" var=#true help="Additional arguments"
 run = "nix develop --command zsh ${usage_args[@]}"
 
 # ----------------------------------------------------------------------------
+# nix-darwin
+# ----------------------------------------------------------------------------
+
+[tasks."darwin:configure"]
+description = "Save this Mac's Darwin configuration in mise.local.toml"
+usage = '''
+arg "<configuration>" help="Name in darwinConfigurations (for example, logammini)"
+'''
+run = '"{{mise_bin}}" set --file "{{config_root}}/mise.local.toml" "NIX_DARWIN_FLAKE={{config_root}}#${usage_configuration?}"'
+
+[tasks."darwin:switch"]
+alias = "switch"
+description = "Apply the selected Darwin configuration"
+run = '''
+set -eu
+flake="${NIX_DARWIN_FLAKE:-{{config_root}}}"
+configuration="${flake#*#}"
+if [ "$configuration" = "$flake" ] || [ -z "$configuration" ]; then
+  configuration="$(scutil --get LocalHostName)"
+fi
+
+# Run the rebuild tool from this configuration, including before first activation.
+sudo "$(command -v nix)" run \
+  "${flake%%#*}#darwinConfigurations.${configuration}.config.system.build.darwin-rebuild" \
+  -- switch --flake "${flake%%#*}#${configuration}"
+'''
+
+# ----------------------------------------------------------------------------
 # nixos
 # ----------------------------------------------------------------------------
 

@@ -176,6 +176,7 @@
             system = "aarch64-darwin";
             modules = [./darwin/logamma];
           };
+          logammini = self.darwinConfigurations.gammini;
           logmini = mkDarwinSystem {
             system = "aarch64-darwin";
             modules = [./darwin/logmini];
