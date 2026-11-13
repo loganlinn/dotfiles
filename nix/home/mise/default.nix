@@ -4,21 +4,24 @@
   lib,
   ...
 }: let
-  inherit (lib) mkIf getExe mkOrder;
+  inherit (lib) mkIf mkOrder;
   cfg = config.programs.mise;
-  miseExe =
-    if cfg.package != null
-    then getExe cfg.package
-    else "mise";
+  miseExe = lib.escapeShellArg "${config.my.flakeDirectory}/bin/mise";
 in {
   home = mkIf cfg.enable {
+    extraActivationPath = with pkgs; [
+      curl
+      gnutar
+      gzip
+    ];
+
     shellAliases = {
       m = "mise";
       mr = "mise run";
       mx = "mise exec";
     };
     activation.mise-dotfiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      run ${lib.escapeShellArg miseExe} \
+      run ${miseExe} \
         --cd ${lib.escapeShellArg config.my.flakeDirectory} \
         dotfiles apply --yes
     '';
@@ -26,8 +29,8 @@ in {
 
   programs = mkIf cfg.enable {
     mise = {
-      # allow self-upgrades
-      package = pkgs.runCommand "mise-bootstrap" {meta.mainProgram = "mise";} ''install -Dm755 ${./bootstrap.sh} $out/bin/mise'';
+      # The checked-in bin/mise bootstrap owns the mise version and installation.
+      package = null;
 
       enableZshIntegration = false;
       enableBashIntegration = false;
