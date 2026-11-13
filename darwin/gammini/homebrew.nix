@@ -78,7 +78,6 @@
       "paseo"
       "pearcleaner"
       "sf-symbols"
-      "tailscale-app"
       "temurin@17"
       "vlc"
       # "inkscape"
