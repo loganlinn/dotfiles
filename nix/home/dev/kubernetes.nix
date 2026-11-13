@@ -39,8 +39,12 @@
     "$HOME/.krew/bin"
   ];
 
-  my.shellInitExtra = ''
-    source <(kubie generate-completion)
+  programs.bash.initExtra = ''
+    source <(kubie generate-completion bash)
+  '';
+
+  programs.zsh.initContent = ''
+    source <(kubie generate-completion zsh)
   '';
 
   # mise.toml manages config/k9s; do not generate files at the same paths.
