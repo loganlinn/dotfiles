@@ -20,7 +20,7 @@ in {
     activation.mise-dotfiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
       run ${lib.escapeShellArg miseExe} \
         --cd ${lib.escapeShellArg config.my.flakeDirectory} \
-        bootstrap dotfiles apply --yes
+        dotfiles apply --yes
     '';
   };
 

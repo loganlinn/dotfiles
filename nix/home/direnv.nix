@@ -19,6 +19,5 @@
     nix-direnv.enable = true;
     silent = false;
     stdlib = '''';
-    # mise.toml deploys config/direnv/direnv.toml; leave that file unmanaged here.
   };
 }

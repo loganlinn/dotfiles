@@ -1,0 +1,36 @@
+# Select on this Mac with: mise -E logammini bootstrap --only packages,services --save-env
+
+[bootstrap.packages]
+"brew:mosh" = "latest"
+
+[bootstrap.services.sshd]
+scope = "user"
+description = "SSH and Mosh access to logammini on TCP 2222"
+enabled = true
+restart = "on-failure"
+# Independent of macOS Remote Login and its MDM-managed port 22 configuration.
+# This unprivileged service only accepts the current user's authorized_keys.
+# Its host key is separate from the root-owned system SSH host keys.
+command = '''
+/bin/sh -eu -c '
+  umask 077
+  sshd_state_dir="$HOME/.local/state/sshd"
+  mkdir -p "$sshd_state_dir"
+  if [ ! -f "$sshd_state_dir/ssh_host_ed25519_key" ]; then
+    /usr/bin/ssh-keygen -q -t ed25519 -N "" -f "$sshd_state_dir/ssh_host_ed25519_key"
+  fi
+  exec /usr/sbin/sshd -D -e -f /dev/null -p 2222 \
+    -h "$sshd_state_dir/ssh_host_ed25519_key" \
+    -o "PidFile=$sshd_state_dir/sshd.pid" \
+    -o "AllowUsers=$(/usr/bin/id -un)" \
+    -o AuthorizedKeysFile=.ssh/authorized_keys \
+    -o AuthenticationMethods=publickey \
+    -o UsePAM=no \
+    -o PasswordAuthentication=no \
+    -o KbdInteractiveAuthentication=no \
+    -o PermitRootLogin=no \
+    -o "AcceptEnv=LANG LC_*" \
+    -o "SetEnv=LANG=en_US.UTF-8 PATH=/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin" \
+    -o Subsystem="sftp internal-sftp"
+'
+'''

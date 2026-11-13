@@ -5,11 +5,8 @@ auto_env = true     # https://mise.jdx.dev/configuration/settings.html#auto_env
 
 [env]
 _.path = ["{{config_root}}/bin"]
-# _.file = [".mise/tasks/git/gpg/claude/config.env"]
 
 [dotfiles]
-"~/.codex/*.*.toml" = { source = "config/codex", mode = "symlink-each" }
-"~/.config/direnv/direnv.toml" = "config/direnv/direnv.toml"
 "~/.config/direnv/lib" = { source = "config/direnv/lib", mode = "symlink-each" }
 "~/.config/herdr/config" = "config/herdr/config.toml"
 "~/.config/k9s" = { source = "config/k9s", mode = "symlink-each" }
@@ -21,6 +18,27 @@ _.path = ["{{config_root}}/bin"]
 "~/.config/ghostty/keybind.config" = {source = "config/ghostty/keybind.config", mode = "symlink"}
 "~/.config/ghostty/macos.config" = {source = "config/ghostty/macos.config", mode = "symlink", variants = [{ os = "macos" }]}
 "~/.config/ghostty/linux.config" = {source = "config/ghostty/linux.config", mode = "symlink", variants = [{ os = "linux" }]}
+
+[bootstrap]
+
+[bootstrap.repos]
+
+[bootstrap.repos."~/.dotfiles"]
+url = "https://github.com/loganlinn/dotfiles"
+
+[bootstrap.repos."~/src/github.com/loganlinn/agents"]
+url = "https://github.com/loganlinn/agents"
+
+[bootstrap.repos."~/src/github.com/loganlinn/gmx"]
+url = "https://github.com/loganlinn/gmx"
+
+[bootstrap.repos."~/.config/doom"]
+url = "https://github.com/loganlinn/.doom.d.git"
+
+[bootstrap.repos."~/.config/emacs"]
+url = "https://github.com/doomemacs/core.git"
+
+[tasks]
 
 [tasks."agent:hooks:bootstrap"]
 description = "Link mise configuration and install the hook framework for Claude, Codex, oh-my-pi, and pi"
