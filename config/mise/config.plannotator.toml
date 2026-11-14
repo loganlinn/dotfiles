@@ -1,0 +1,60 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# Select with mise -E plannotator. Bootstrap just this environment's setup:
+#   mise -E plannotator bootstrap --only task --dry-run
+#   mise -E plannotator bootstrap --only task
+# Bootstrap task behavior: https://mise.jdx.dev/bootstrap.html#the-bootstrap-task
+# Keep Plannotator's own daemon lifecycle: its restarts spawn a detached process.
+# Data-dir discovery and PLANNOTATOR_DATA_DIR remain Plannotator's responsibility.
+
+[env]
+_.path = ["{{env.HOME}}/.local/bin"]
+
+[settings]
+task.run_auto_install = false
+
+[tasks.bootstrap]
+description = "Install Plannotator if missing and start its Inbox without opening a browser"
+run = [
+  'test -x "$HOME/.local/bin/plannotator" || mise -E plannotator run --skip-tools plannotator:install',
+  { task = "plannotator:inbox:start" },
+]
+
+[tasks."plannotator:inbox:open"]
+description = "Open the Inbox, starting it if needed"
+run = '"$HOME/.local/bin/plannotator" inbox --open'
+
+[tasks."plannotator:inbox:restart"]
+description = "Restart the Inbox using the installed binary"
+run = '"$HOME/.local/bin/plannotator" inbox restart'
+
+[tasks."plannotator:inbox:start"]
+description = "Start the Inbox in the background or print the running Inbox URL"
+run = '"$HOME/.local/bin/plannotator" inbox --background'
+
+[tasks."plannotator:inbox:status"]
+description = "Show Inbox status (accepts --json)"
+raw_args = true
+run = '"$HOME/.local/bin/plannotator" inbox status "$@"'
+
+[tasks."plannotator:inbox:stop"]
+description = "Stop the Inbox; a later agent message can start it again"
+run = '"$HOME/.local/bin/plannotator" inbox stop'
+
+[tasks."plannotator:install"]
+description = "Run the upstream installer; accepts --version, --minimal, --skip-skills, and other installer flags"
+# Full installs configure detected agents; --minimal installs only the binary.
+raw_args = true
+shell = "bash -o errexit -o pipefail -c"
+run = 'curl -fsSL https://plannotator.ai/install.sh | bash -s -- --non-interactive "$@"'
+
+[tasks."plannotator:uninstall"]
+description = "Uninstall Plannotator and its integrations, keeping data; accepts --dry-run"
+raw = true
+raw_args = true
+run = '"$HOME/.local/bin/plannotator" uninstall "$@"'
+
+[tasks."plannotator:update"]
+description = "Update Plannotator using saved installer choices (accepts --check)"
+raw_args = true
+run = '"$HOME/.local/bin/plannotator" update "$@"'
