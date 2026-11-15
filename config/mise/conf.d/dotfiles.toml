@@ -41,6 +41,10 @@ mode = "symlink-each"
 source = "~/.dotfiles/config/mise"
 mode = "symlink-each"
 
+[dotfiles."~/.config/rex/init.lua"]
+source = "~/.dotfiles/config/rex/init.lua"
+mode = "symlink"
+
 [dotfiles."~/.local/share/zsh/functions"]
 source = "~/.dotfiles/config/zsh/functions"
 mode = "symlink-each"
