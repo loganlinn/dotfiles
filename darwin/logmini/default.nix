@@ -54,5 +54,11 @@ in
 
   nix.enable = false; # Determinate uses its own daemon to manage the Nix installation
 
+  # Block roots that trust the compromised eMudhra intermediates.
+  security.pki.caCertificateBlacklist = [
+    "Comodo AAA Services root"
+    "emSign ECC Root CA - G3"
+  ];
+
   system.stateVersion = 7;
 }
