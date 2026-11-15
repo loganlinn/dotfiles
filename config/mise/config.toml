@@ -10,7 +10,6 @@ trusted_config_paths = [
 auto_env = true
 
 [settings.write_targets]
-dotfiles = "{{ config_source | dirname }}/conf.d/dotfiles.toml"
 tools = "{{ config_source | dirname }}/conf.d/tools.toml"
 
 [secrets.fnox]

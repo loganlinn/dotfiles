@@ -26,12 +26,61 @@ url = "https://github.com/loganlinn/dotfiles"
 # [bootstrap.repos."~/.config/emacs"]
 # url = "https://github.com/doomemacs/core.git"
 
+[dotfiles."~/.config/direnv/lib"]
+source = "~/.dotfiles/config/direnv/lib"
+mode = "symlink-each"
+
+[dotfiles."~/.config/fnox"]
+source = "~/.dotfiles/config/fnox"
+mode = "symlink-each"
+
+[dotfiles."~/.config/ghostty/config"]
+source = "~/.dotfiles/config/ghostty/config"
+mode = "symlink"
+
+[dotfiles."~/.config/ghostty/keybind.config"]
+source = "~/.dotfiles/config/ghostty/keybind.config"
+mode = "symlink"
+
+[dotfiles."~/.config/ghostty/linux.config"]
+source = "~/.dotfiles/config/ghostty/linux.config"
+mode = "symlink"
+
+[[dotfiles."~/.config/ghostty/linux.config".variants]]
+os = "linux"
+
+[dotfiles."~/.config/ghostty/macos.config"]
+source = "~/.dotfiles/config/ghostty/macos.config"
+mode = "symlink"
+
+[[dotfiles."~/.config/ghostty/macos.config".variants]]
+os = "macos"
+
+[dotfiles."~/.config/herdr/config"]
+source = "~/.dotfiles/config/herdr/config.toml"
+
+[dotfiles."~/.config/k9s"]
+source = "~/.dotfiles/config/k9s"
+mode = "symlink-each"
+
+[dotfiles."~/.config/mise"]
+source = "~/.dotfiles/config/mise"
+mode = "symlink-each"
+
+[dotfiles."~/.config/rex/init.lua"]
+source = "~/.dotfiles/config/rex/init.lua"
+mode = "symlink"
+
+[dotfiles."~/.local/share/zsh/functions"]
+source = "~/.dotfiles/config/zsh/functions"
+mode = "symlink-each"
+
 [tasks]
 
 [tasks."agent:hooks:bootstrap"]
 description = "Link mise configuration and install the hook framework for Claude, Codex, oh-my-pi, and pi"
 run = [
-  'MISE_GLOBAL_CONFIG_FILE="{{config_root}}/config/mise/conf.d/dotfiles.toml" mise dot apply --yes "$HOME/.config/mise"',
+  'mise dot apply --yes "$HOME/.config/mise"',
   'mise -E agent-claude run --skip-tools agent:hooks:install',
   'mise -E agent-codex run --skip-tools agent:hooks:install',
   'mise -E agent-omp run --skip-tools agent:hooks:install',

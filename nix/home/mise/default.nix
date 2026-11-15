@@ -24,8 +24,7 @@ in {
       run ${miseExe} completion zsh --install
     '');
     activation.mise-dotfiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      run env MISE_GLOBAL_CONFIG_FILE=${lib.escapeShellArg "${config.my.flakeDirectory}/config/mise/conf.d/dotfiles.toml"} \
-        ${miseExe} \
+      run ${miseExe} \
         --cd ${lib.escapeShellArg config.my.flakeDirectory} \
         dotfiles apply --yes
     '';
