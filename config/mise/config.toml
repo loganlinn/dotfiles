@@ -15,7 +15,7 @@ tools = "{{ config_source | dirname }}/conf.d/tools.toml"
 [secrets.fnox]
 
 [hooks]
-postinstall = "misecompsync --shell zsh --global --new-only"
+postinstall = "misecompsync --shell zsh --new-only"
 
 [wrappers.python]
 command = "uv"
