@@ -1,6 +1,63 @@
+-- https://github.com/rtuszik/sex
+require("sex").setup()
+rex.bind("ctrl+shift+space>space", "sex_pick")
+rex.bind("ctrl+shift+space>l", "sex_last")
+rex.bind("ctrl+shift+space>a", "sex_activity")
+
+-- https://github.com/xeind/rex-fingers
+require("plugins.rex-fingers.lua.rex-fingers").setup({
+	binary = os.getenv("HOME") .. "/.local/share/mise/shims/rex-fingers",
+	alphabet = "abdefghjkloprstuvwxyz", -- Plugin hint letters in Kitty's alphabetical order.
+	hint_style = "30;42",
+})
+
+local function hint(key, patterns, action)
+	rex.bind("ctrl+shift+" .. key, "rex_fingers", { patterns = patterns, main_action = action })
+end
+
+local paths = "path,quoted-path,file-line"
+local urls = "url,markdown-url"
+hint("e", urls .. "," .. paths, ":open:")
+hint("f", paths, ":paste:")
+hint("o>e", urls, ":open:")
+hint("o>f", paths, ":open:")
+hint("o>i", paths, ":open:")
+hint("o>n", "file-line", ":open:")
+hint("p>a", "ip,ipv6", ":paste:")
+hint("p>e", urls, ":paste:")
+hint("p>f", paths, ":paste:")
+hint("p>h", "sha", ":paste:")
+hint("p>i", "ip,ipv6", ":paste:")
+hint("p>n", "file-line", ":paste:")
+hint("p>p", "digit", ":paste:")
+hint("p>shift+e", urls, ":open:")
+hint("p>shift+f", paths, ":open:")
+hint("p>u", "uuid", ":paste:")
+hint("p>v", "semver", ":paste:")
+hint("p>y", urls, ":paste:")
+hint("y>e", urls, ":copy:")
+hint("y>f", paths, ":copy:")
+hint("y>h", "sha", ":copy:")
+hint("y>i", "ip,ipv6", ":copy:")
+hint("y>n", "file-line", ":copy:")
+hint("y>u", "uuid", ":copy:")
+hint("y>v", "semver", ":copy:")
+
+----
+
 rex.bind("cmd+shift+ctrl+[", "session.previous")
 rex.bind("cmd+shift+ctrl+]", "session.next")
-
+-- rex.bind("cmd+shift+ctrl+1", "session.select", { index = 1 })
+-- rex.bind("cmd+shift+ctrl+2", "session.select", { index = 2 })
+-- rex.bind("cmd+shift+ctrl+3", "session.select", { index = 3 })
+-- rex.bind("cmd+shift+ctrl+4", "session.select", { index = 4 })
+-- rex.bind("cmd+shift+ctrl+5", "session.select", { index = 5 })
+-- rex.bind("cmd+shift+ctrl+6", "session.select", { index = 6 })
+-- rex.bind("cmd+shift+ctrl+7", "session.select", { index = 7 })
+-- rex.bind("cmd+shift+ctrl+8", "session.select", { index = 8 })
+-- rex.bind("cmd+shift+ctrl+9", "session.select", { index = 9 })
+-- rex.bind("cmd+shift+ctrl+0", "session.select", { index = 10 })
+--
 rex.bind("ctrl+shift+t", "client.tab.new")
 rex.bind("ctrl+shift+[", "client.tab.previous")
 rex.bind("ctrl+shift+]", "client.tab.next")
@@ -46,10 +103,10 @@ rex.bind("cmd+down", "pane.split.down")
 rex.bind("cmd+up", "pane.split.up")
 rex.bind("cmd+right", "pane.split.right")
 
-rex.bind("alt+cmd+enter", "pane.new_floating")
-rex.bind("alt+cmd+m", "pane.minimize_floating")
-rex.bind("alt+cmd+m", "pane.minimize_floating")
-rex.bind("alt+cmd+shift+m", "pane.minimize_all_floating")
+rex.bind("cmd+alt+shift+enter", "pane.new_floating")
+rex.bind("cmd+alt+enter", "pane.float")
+rex.bind("cmd+alt+m", "pane.minimize_floating")
+rex.bind("cmd+alt+shift+m", "pane.minimize_all_floating")
 
 rex.bind("ctrl+shift+backspace", "pane.balance")
 rex.bind("ctrl+shift+left", "pane.resize", { direction = "right" })
