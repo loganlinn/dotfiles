@@ -68,16 +68,66 @@ local function focused_pane_path(ctx)
 	return pwd
 end
 
+local function prompt_rename(session_id, window_id, value)
+	local title = window_id and "Rename tab" or "Rename session"
+	if rex.ui and rex.ui.input then
+		local label, reason, detail = rex.ui.input({ title = title, value = value, confirm = "Rename" })
+		if label == nil then
+			if reason == "cancelled" or reason == "timeout" then return end
+			error(detail or reason)
+		end
+		if not label:match("%S") then return end
+		if window_id then
+			assert(rex.session.set_window_label({ session_id = session_id, window_id = window_id, label = label }))
+		else
+			assert(rex.session.set_label({ session_id = session_id, label = label }))
+		end
+		return
+	end
+
+	-- Older Rex servers lack rex.ui.input; capture the target before the floating pane takes focus.
+	local command = { "/bin/zsh", "-lc", [=[
+		label=$(gum input --value="$1" --char-limit=128 --no-show-help) || exit
+		[[ $label == *[^[:space:]]* ]] || exit 0
+		if [[ -n $3 ]]; then
+			exec rex window rename -s "$2" -- "$3" "$label"
+		fi
+		exec rex session rename -- "$2" "$label"
+	]=], "rename", value, session_id, window_id or "" }
+	assert(rex.session.new_layer({
+		session_id = session_id, window_id = window_id, focus = true,
+		bounds = { 0.2, 0.44, 0.6, 0.12 },
+		layout = rex.layout.block({
+			flavor = "com.superlogical.terminal.shell", label = title, options = { command = command },
+		}),
+	}))
+end
+
 rex.action({
 	name = "rename_session_from_pane",
 	title = "Rename Session from Focused Pane Directory",
 	category = "Sessions",
 	run = function(ctx)
 		local label = session_name_for_path({ path = focused_pane_path(ctx) })
-		assert(rex.session.set_label({ session_id = ctx.session_id, label = label }))
+		prompt_rename(ctx.session_id, nil, label)
 	end,
 })
-rex.bind("ctrl+shift+space>r", "rename_session_from_pane")
+rex.bind("ctrl+shift+space>r>s", "rename_session_from_pane")
+
+rex.action({
+	name = "rename_tab_from_branch",
+	title = "Rename Tab from Focused Pane Git Branch",
+	category = "Tabs",
+	run = function(ctx)
+		local path = focused_pane_path(ctx)
+		local result = assert(rex.exec({ "git", "-C", path, "branch", "--show-current" }))
+		assert(result.ok, result.stderr)
+		local branch = assert(result.stdout:match("^[^\r\n]+"), "Detached HEAD has no branch name")
+		local pane = assert(rex.session.describe_block({ session_id = ctx.session_id, block_id = ctx.block_id }))
+		prompt_rename(ctx.session_id, assert(pane.block.window_id, "Focused pane has no tab"), " " .. branch)
+	end,
+})
+rex.bind("ctrl+shift+space>r>t", "rename_tab_from_branch")
 
 rex.action({
 	name = "new_zoxide_session",
