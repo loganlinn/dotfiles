@@ -4,17 +4,90 @@ rex.bind("ctrl+shift+space>space", "sex_pick")
 rex.bind("ctrl+shift+space>l", "sex_last")
 rex.bind("ctrl+shift+space>a", "sex_activity")
 
+local function slug_for_remote(url)
+	local path
+	if url:match("^%a[%w+.-]*://") then
+		path = url:match("^%a[%w+.-]*://[^/]*(/[^?#]*)")
+	else
+		-- Git also accepts scp-style remotes, including bracketed IPv6 hosts.
+		path = url:match("^[^/]*%]:/*(.*)$") or url:match("^[^/:]+:/*(.*)$") or url
+	end
+	local owner, repo = (path or ""):match("^/*([^/]+)/+([^/]+)")
+	if not owner or owner == "." or owner == ".." then return end
+	repo = repo:gsub("%.git$", "")
+	if repo ~= "" and repo ~= "." and repo ~= ".." then return owner .. "/" .. repo end
+end
+
+local function session_name_for_path(args)
+	local path = assert(args.path, "Missing directory")
+	assert(path:sub(1, 1) == "/", "Expected an absolute directory")
+	local remotes = assert(rex.exec({ "git", "-C", path, "remote", "-v" }))
+	if remotes.ok then
+		local first
+		for line in remotes.stdout:gmatch("[^\n]+") do
+			local name, url = line:match("^(%S+)\t(.+) %(fetch%)$")
+			if url then
+				local slug = slug_for_remote(url)
+				if slug and name == "origin" then return slug end
+				first = first or slug
+			end
+		end
+		if first then return first end
+	end
+	path = path:gsub("/+$", "")
+	return path:match("([^/]+/[^/]+)$") or path:match("([^/]+)$") or "/"
+end
+
+rex.action({
+	name = "open_directory_session",
+	title = "New Session in Directory",
+	category = "Sessions",
+	args = { path = "string" },
+	run = function(_, args)
+		local session = assert(rex.call("session.create", {
+			label = session_name_for_path(args),
+			initial_windows = {{ layout = rex.layout.block({
+				flavor = "com.superlogical.terminal.shell", options = { cwd = args.path },
+			}) }},
+		}))
+		rex.client.queue("session.select", { session_id = session.session_id })
+	end,
+})
+
+local function focused_pane_path(ctx)
+	local block = { session_id = ctx.session_id, block_id = assert(ctx.block_id, "No focused pane") }
+	local terminal = "com.superlogical.terminal"
+	local process = assert(rex.block.call(terminal, "process", block))
+	local cwd = process.foreground and process.foreground.cwd
+	if cwd and cwd ~= "" then return cwd end
+
+	local pwd = assert(rex.block.call(terminal, "pwd", block)).pwd
+	assert(pwd and pwd ~= "", "Focused pane has no working directory")
+	local encoded = pwd:match("^file://[^/]*(/.*)$")
+	if encoded then return (encoded:gsub("%%(%x%x)", function(hex) return string.char(tonumber(hex, 16)) end)) end
+	return pwd
+end
+
+rex.action({
+	name = "rename_session_from_pane",
+	title = "Rename Session from Focused Pane Directory",
+	category = "Sessions",
+	run = function(ctx)
+		local label = session_name_for_path({ path = focused_pane_path(ctx) })
+		assert(rex.session.set_label({ session_id = ctx.session_id, label = label }))
+	end,
+})
+rex.bind("ctrl+shift+space>r", "rename_session_from_pane")
+
 rex.action({
 	name = "new_zoxide_session",
 	title = "New Session from Directory",
 	category = "Sessions",
 	run = function(ctx)
 		local command = { "/bin/zsh", "-lc", [[
-			set -o pipefail
 			dir=$(zoxide query -i) || exit
 			[ -d "$dir" ] || exit 1
-			id=$(rex new "${dir:t}" --cwd "$dir" --json | jq -er '.session_id') || exit
-			exec rex -C "$1" do session.select session_id="$id"
+				exec rex -C "$1" do open_directory_session "path=$dir"
 		]], "zoxide-picker", ctx.client_id }
 		assert(rex.session.new_layer({
 			focus = true,
