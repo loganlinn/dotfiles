@@ -4,6 +4,31 @@ rex.bind("ctrl+shift+space>space", "sex_pick")
 rex.bind("ctrl+shift+space>l", "sex_last")
 rex.bind("ctrl+shift+space>a", "sex_activity")
 
+rex.action({
+	name = "new_zoxide_session",
+	title = "New Session from Directory",
+	category = "Sessions",
+	run = function(ctx)
+		local command = { "/bin/zsh", "-lc", [[
+			set -o pipefail
+			dir=$(zoxide query -i) || exit
+			[ -d "$dir" ] || exit 1
+			id=$(rex new "${dir:t}" --cwd "$dir" --json | jq -er '.session_id') || exit
+			exec rex -C "$1" do session.select session_id="$id"
+		]], "zoxide-picker", ctx.client_id }
+		assert(rex.session.new_layer({
+			focus = true,
+			bounds = { 0.1, 0.1, 0.8, 0.8 },
+			layout = rex.layout.block({
+				flavor = "com.superlogical.terminal.shell",
+				label = "Pick directory",
+				options = { command = command },
+			}),
+		}))
+	end,
+})
+rex.bind("ctrl+shift+space>z", "new_zoxide_session")
+
 -- https://github.com/xeind/rex-fingers
 require("plugins.rex-fingers.lua.rex-fingers").setup({
 	binary = os.getenv("HOME") .. "/.local/share/mise/shims/rex-fingers",
@@ -42,6 +67,48 @@ hint("y>i", "ip,ipv6", ":copy:")
 hint("y>n", "file-line", ":copy:")
 hint("y>u", "uuid", ":copy:")
 hint("y>v", "semver", ":copy:")
+
+local function last_command(text)
+	-- shortcut: match Starship's blank line, context line and input line until Rex exposes prompt marks.
+	text = "\n\n" .. text
+	local pending, first, last
+	for boundary, input in text:gmatch("()\n\n[^\n]+\n([^\n]+)") do
+		local line = " " .. input:gsub("❮", "❯") .. " "
+		local _, arrow_end = line:find(" ❯ ", 1, true)
+		if arrow_end then
+			if pending then first, last = pending, boundary end
+			pending = line:find("%S", arrow_end + 1) and boundary + 2
+		end
+	end
+	if not first then error("No completed command found between Starship prompts", 0) end
+	return text:sub(first, last)
+end
+
+rex.action({
+	name = "copy_last_command",
+	title = "Copy Last Command and Output",
+	run = function(ctx)
+		local terminal = "com.superlogical.terminal"
+		local page = assert(rex.block.call(terminal, "format", {
+			session_id = ctx.session_id, block_id = assert(ctx.block_id, "No focused pane"),
+			format = "text", trim = true, unwrap = true, max_bytes = 983040,
+		}))
+		local parts, offset = { page.content }, #page.content
+		local id = page.id
+		while id and not page.eof do
+			page = assert(rex.block.call(terminal, "blob_read", {
+				session_id = ctx.session_id, block_id = ctx.block_id, id = id, offset = offset,
+			}))
+			parts[#parts + 1] = page.data
+			offset = offset + #page.data
+		end
+		local copied = assert(rex.exec({ "pbcopy" }, {
+			env = { LC_CTYPE = "UTF-8" }, stdin = last_command(table.concat(parts)),
+		}))
+		if not copied.ok then error(copied.stderr, 0) end
+	end,
+})
+rex.bind("ctrl+shift+y>c", "copy_last_command")
 
 ----
 
