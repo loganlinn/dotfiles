@@ -3,6 +3,7 @@
 [settings]
 experimental = true
 github.credential_command = 'gh auth token --hostname "$MISE_CREDENTIAL_HOST"'
+idiomatic_version_file_enable_tools = ["node"]
 trusted_config_paths = [
   "~/src/github.com/loganlinn",
   "~/src/github.com/gamma-app",

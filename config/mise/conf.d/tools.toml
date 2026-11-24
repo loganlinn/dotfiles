@@ -2,6 +2,7 @@
 
 [tools]
 "github:alltuner/mise-completions-sync" = "latest"
+"github:loganlinn/gmx" = "0.11.0"
 "github:oocx/tfplan2md" = "latest"
 age = "latest"
 aube = "latest"

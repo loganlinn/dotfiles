@@ -41,6 +41,14 @@ dependencies:
 source = "~/.dotfiles/config/apm"
 mode = "symlink"
 
+[dotfiles."~/.codex/AGENTS.override.md"]
+source = "~/.dotfiles/config/codex/AGENTS.override.md"
+mode = "symlink"
+
+[dotfiles."~/.config/gmx/config.toml"]
+source = "~/.dotfiles/config/gmx/config.toml"
+mode = "symlink"
+
 [dotfiles."~/.config/k9s"]
 source = "~/.dotfiles/config/k9s"
 mode = "symlink-each"
