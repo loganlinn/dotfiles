@@ -26,6 +26,21 @@ url = "https://github.com/loganlinn/dotfiles"
 # [bootstrap.repos."~/.config/emacs"]
 # url = "https://github.com/doomemacs/core.git"
 
+# APM requires a regular root manifest for compile and a real directory for its lock.
+[dotfiles."~/.apm/apm.yml"]
+content = """
+name: global
+version: 1.0.0
+targets: [claude, codex]
+dependencies:
+  apm:
+    - path: ~/.apm/catalog
+"""
+
+[dotfiles."~/.apm/catalog"]
+source = "~/.dotfiles/config/apm"
+mode = "symlink"
+
 [dotfiles."~/.config/k9s"]
 source = "~/.dotfiles/config/k9s"
 mode = "symlink-each"
