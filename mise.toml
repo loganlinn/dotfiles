@@ -105,9 +105,9 @@ run = "mise --cd ./test run test ${usage_files}"
 [tasks."nix:gc"]
 run = "nix-collect-garbage --delete-old"
 
-[tasks."nix:fmt"]
-tools = { alejandra = "latest" }
-run = "alejandra ."
+# [tasks."nix:fmt"]
+# tools = { alejandra = "latest" }
+# run = "alejandra ."
 
 [tasks."nix:clean"]
 run = "fd -u -F result"
