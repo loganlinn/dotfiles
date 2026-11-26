@@ -1,3 +1,12 @@
+-- Canary: true loads init_fnl.lua, built from config/rex-fnl by `mise run rex:build`,
+-- in place of the rest of this file.
+local use_fnl = false
+if use_fnl then
+	rex.log("config: loading init_fnl.lua, the Fennel build")
+	require("init_fnl")
+	return
+end
+
 -- https://github.com/rtuszik/sex
 require("sex").setup()
 rex.bind("ctrl+shift+space>space", "sex_pick")
