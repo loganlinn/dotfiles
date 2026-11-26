@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# Export the decisions of every Plannotator Inbox thread, in every project.
+#
+# Usage: plannotator-export-decisions [OUTDIR]
+#   OUTDIR defaults to ./plannotator-decisions
+#
+# Writes OUTDIR/<project>/<thread id>.md for each thread with at least one
+# decided question; threads with none are skipped. Prints each file written.
+
+set -euo pipefail
+
+for cmd in plannotator jq; do
+  command -v "$cmd" >/dev/null || {
+    echo >&2 "plannotator-export-decisions: $cmd not found"
+    exit 1
+  }
+done
+
+out=${1:-plannotator-decisions}
+
+# Inside an agent's shell, the Inbox scopes listings to that agent's own threads.
+unset CLAUDE_CODE_SESSION_ID PLANNOTATOR_SESSION_TAG PLANNOTATOR_SESSION_PROJECT CODEX_COMPANION_SESSION_ID
+
+plannotator inbox projects --json | jq -r '.projects[] | [.name, .root] | @tsv' |
+  while IFS=$'\t' read -r name root; do
+    # shortcut: read_thread caps limit at 100 with no paging; warn rather than miss threads silently.
+    threads=$(jq -n --arg p "$root" '{project_path: $p, limit: 100}' | plannotator inbox call read_thread -)
+    jq -r --arg n "$name" 'select(.total > (.threads | length))
+      | "plannotator-export-decisions: \($n): only \(.threads | length) of \(.total) threads listed"' \
+      <<<"$threads" >&2
+    jq -r '.threads[].thread_id' <<<"$threads" | while read -r id; do
+      md=$(plannotator inbox export-decisions --thread "$id")
+      grep -q '· 0 decided' <<<"$md" && continue
+      mkdir -p "$out/$name"
+      printf '%s\n' "$md" >"$out/$name/$id.md"
+      echo "$out/$name/$id.md"
+    done
+  done
