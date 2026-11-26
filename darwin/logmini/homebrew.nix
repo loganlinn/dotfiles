@@ -1,16 +1,6 @@
-{lib, ...}: {
+{
   homebrew = {
     enable = true;
-    taps =
-      lib.map
-      (tap: {
-        name = tap;
-        trusted = true;
-        force_auto_update = true;
-      })
-      [
-        "withgraphite/tap"
-      ];
     brews = [
       "curl"
       "direnv"
@@ -20,7 +10,6 @@
       "mkcert"
       "nss"
       "tailscale"
-      "withgraphite/tap/graphite"
     ];
     casks = [
       "1password-cli@beta"

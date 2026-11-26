@@ -22,7 +22,6 @@
           # "minamijoyo/tfupdate"
           "pulumi/tap"
           "tsonglew/dutis"
-          "withgraphite/tap"
           # "wedow/tools"
         ];
     brews = [
@@ -62,7 +61,6 @@
       "redis"
       "tfenv"
       "tsonglew/dutis/dutis"
-      "withgraphite/tap/graphite"
     ];
     casks = [
       "1password-cli@beta"

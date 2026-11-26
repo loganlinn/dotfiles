@@ -58,7 +58,7 @@ in {
   };
 
   logs = {
-    "$mod+Shift+s" = "exec kitty --title journalctl --class scratchpad -- bash -c 'journalctl --dmesg --follow --since=today --output=json | ${pkgs.lnav}/bin/lnav';";
+    "$mod+Shift+s" = "exec kitty --title journalctl --class scratchpad -- journalctl --dmesg --follow --since=today";
   };
 
   browser =

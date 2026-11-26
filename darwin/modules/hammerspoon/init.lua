@@ -105,7 +105,7 @@ local appNameMatcher = function(name)
 end
 local appBundleIDMatcher = function(bundleID)
 	return function(app)
-		return app and app:bundleID():find(bundleID)
+		return app and app:bundleID() == bundleID
 	end
 end
 local appSwitcher = function(opts)
@@ -185,10 +185,6 @@ local closeNotifications = function()
 	log.i(ok, output, hs.inspect.inspect(descriptor))
 end
 
-local focusKitty = appSwitcher({
-	bundleID = "net.kovidgoyal.kitty",
-	name = "Kitty",
-})
 local aerospaceReloadConfig = function()
 	log.i("Reloading AeroSpace config")
 	local _, ok = hs.execute("aerospace reload-config --dry-run", true)
@@ -234,7 +230,7 @@ modes.main = hotkey.modal.new(HYPER, "-")
 modes.main:bind(HYPER, "-", function()
 	modes.main:exit()
 end)
-modes.main:bind(HYPER, "space", focusKitty)
+modes.main:bind(HYPER, "space", appSwitcher({ bundleID = "com.superlogical.rex" }))
 modes.main:bind(HYPER, "return", appSwitcher({ name = "Google Chrome" }))
 -- modes.main:bind(HYPER, "a", appSwitcher({ bundleID = "com.fastmail.mac.Fastmail", name = "Fastmail" }))
 modes.main:bind(HYPER, "d", workmuxDashboardToggle)
