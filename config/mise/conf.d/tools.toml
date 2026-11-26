@@ -2,7 +2,6 @@
 
 [tools]
 "github:alltuner/mise-completions-sync" = "latest"
-"github:loganlinn/gmx" = "0.11.0"
 "github:oocx/tfplan2md" = "latest"
 age = "latest"
 aube = "latest"
@@ -12,6 +11,9 @@ java = "21"
 oxfmt = "latest"
 uv = "latest"
 zmx = "latest"
+"github:rtuszik/sex" = "latest"
+"go:github.com/xeind/rex-fingers" = "0.4.1"
+"cargo:raine/workmux" = "latest"
 
 [[tools."github:JamesWoolfenden/pike"]]
 version = "latest"
