@@ -26,6 +26,10 @@ url = "https://github.com/loganlinn/dotfiles"
 # [bootstrap.repos."~/.config/emacs"]
 # url = "https://github.com/doomemacs/core.git"
 
+[dotfiles."~/.config/1Password/ssh/agent.toml"]
+source = "~/.dotfiles/config/1Password/ssh/agent.toml"
+mode = "symlink"
+
 # APM requires a regular root manifest for compile and a real directory for its lock.
 [dotfiles."~/.apm/apm.yml"]
 content = """
@@ -66,16 +70,6 @@ source = "~/.dotfiles/config/zsh/functions"
 mode = "symlink-each"
 
 [tasks]
-
-[tasks."agent:hooks:bootstrap"]
-description = "Link mise configuration and install the hook framework for Claude, Codex, oh-my-pi, and pi"
-run = [
-  'mise dot apply --yes "$HOME/.config/mise"',
-  'mise -E agent-claude run --skip-tools agent:hooks:install',
-  'mise -E agent-codex run --skip-tools agent:hooks:install',
-  'mise -E agent-omp run --skip-tools agent:hooks:install',
-  'mise -E agent-pi run --skip-tools agent:hooks:install',
-]
 
 [tasks.clean]
 depends = "*:clean"
@@ -189,3 +183,26 @@ lns -f {{config_root}}/flake.nix "${XDG_CONFIG_HOME:-$HOME/.config}/home-manager
 
 [tasks."nixos:switch"]
 run = '{{config_root}}/bin/cachix-run sudo -E nixos-rebuild switch --flake {{config_root}}'
+
+# ============================================================================
+# Rex Tasks
+# ============================================================================
+
+[tasks."rex:build"]
+description = "Compile config/rex-fnl/init.fnl to config/rex/init_fnl.lua and check it"
+dir = "{{config_root}}/config/rex-fnl"
+run = '''
+set -eu
+out=../rex/init_fnl.lua
+# Compile before writing, so a compile error keeps the last good output.
+code="$(lua "{{config_root}}/local/share/lua/fennel.lua" --compile init.fnl)"
+printf '%s\n' '-- Generated from config/rex-fnl/init.fnl by "mise run rex:build". Do not edit.' "$code" >"$out"
+# Rex accepts a key that is bound twice without complaint.
+dups="$(sed -nE 's/.*rex\.bind\("([^"]*)".*/\1/p' "$out" | sort | uniq -d | tr '\n' ' ')"
+[ -z "$dups" ] || { echo >&2 "keys bound twice: $dups"; exit 1; }
+# Check the deployed link: the plugins it requires are only in ~/.config/rex.
+# Rex reports a missing file as an empty config, not as an error.
+live="$HOME/.config/rex/init_fnl.lua"
+[ -e "$live" ] || { echo >&2 "$live is missing: run 'mise dotfiles apply ~/.config/rex'"; exit 1; }
+rex config check "$live"
+'''
